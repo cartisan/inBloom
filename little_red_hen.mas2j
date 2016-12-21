@@ -1,0 +1,14 @@
+MAS little_red_hen {
+//	environment: c4jason.CartagoEnvironment
+	environment: little_red_hen.FarmEnvironment
+
+	agents:
+		dog lazy_animal.asl;
+//		cow lazy_animal.asl;
+//		pig lazy_animal.asl;
+
+//		hen hen.asl;
+
+	aslSourcePath:
+		"src/asl";
+}

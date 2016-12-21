@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry excluding="*.asl" kind="src" path="src/asl"/>
+	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="lib" path="D:/personal/Gecode/JaCa/jason-2.0/libs/jason-2.0a.jar"/>
+	<classpathentry kind="lib" path="D:/personal/Gecode/JaCa/jason-2.0/lib/cartago.jar"/>
+	<classpathentry kind="lib" path="D:/personal/Gecode/JaCa/jason-2.0/lib/c4jason.jar" sourcepath="D:/personal/Gecode/JaCa/cartago-2.0.1/src/bridges/jason/c4jason"/>
+	<classpathentry kind="output" path="bin/classes"/>
+</classpath>
