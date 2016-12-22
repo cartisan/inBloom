@@ -3,11 +3,12 @@ MAS little_red_hen {
 	environment: little_red_hen.FarmEnvironment
 
 	agents:
+		hen hen.asl;
+//		test_agent;
 		dog lazy_animal.asl;
 //		cow lazy_animal.asl;
 //		pig lazy_animal.asl;
 
-//		hen hen.asl;
 
 	aslSourcePath:
 		"src/asl";

@@ -54,6 +54,10 @@ public class FarmEnvironment extends Environment {
     		if (action.getTerm(0).toString().equals("bread")) {
     			result = model.eatBread(action.getTerm(1).toString());
     		}
+    	
+    	}
+    	if (action.getFunctor().equals("help")) {
+    		result = true;
     	}
     	
     	
