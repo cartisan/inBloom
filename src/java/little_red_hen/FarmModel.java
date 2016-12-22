@@ -1,5 +1,6 @@
 package little_red_hen;
 
+import java.util.LinkedList;
 import java.util.logging.Logger;
 import jason.asSyntax.*;
 
@@ -71,6 +72,8 @@ public class FarmModel {
 	boolean grindWheat() {
 		if ((this.wheat.state == WHEAT_STATE.HARVESTED)){
 			this.wheat.state = WHEAT_STATE.FLOUR;
+			
+			// TODO: Change to new Inventory system
 			this.hen.hasFlour = true;
 			logger.info("Wheat was ground to flour");
 			return true;
@@ -82,6 +85,7 @@ public class FarmModel {
 		if(this.hen.hasFlour) {
 			this.hen.hasBread = true;
 			this.hen.hasFlour = false;
+			this.wheat = null;
 			logger.info("Baked some bread.");
 			return true;
 		}
@@ -106,34 +110,61 @@ public class FarmModel {
 		public boolean hasWheat = false;
 		public boolean hasFlour = false;
 		public boolean hasBread = false;
+		
+		public LinkedList<Item> inventory = new LinkedList<Item>();
+		
+		private void addToInventory(Item item) {
+			inventory.add(item);
+		}
+		
+		private void removeFromInventory(Item item) {
+			inventory.remove(item);
+		}
+		
+		public LinkedList<String> createInventoryPercepts() {
+			LinkedList<String> invRepr = new LinkedList<String>();
+			
+			for (Item item : inventory) {
+				invRepr.add("has(" + item.literal() + ")");
+			}
+
+			return invRepr;
+		}
 	}
 	
-	class Wheat {
+	class Wheat implements Item {
 		public WHEAT_STATE state = WHEAT_STATE.SEED;
 		
-		public Literal literal() {
+		public String literal() {
 			if (state == WHEAT_STATE.SEED) {
-				return Literal.parseLiteral("wheat(seed)");
+				return "wheat(seed)";
 			}
 			
 			if (state == WHEAT_STATE.GROWING) {
-				return Literal.parseLiteral("wheat(growing)");
+				return "wheat(growing)";
 			}
 
 			if (state == WHEAT_STATE.RIPE) {
-				return Literal.parseLiteral("wheat(ripe)");
+				return "wheat(ripe)";
 			}
 			
 			if (state == WHEAT_STATE.HARVESTED) {
-				return Literal.parseLiteral("wheat(harvested)");
+				return "wheat(harvested)";
 			}
 			
 			if (state == WHEAT_STATE.FLOUR) {
-				return Literal.parseLiteral("wheat(flour)");
+				return "wheat(flour)";
 			}
 		
 			return null;
 		}
 	}
 	
+	class Bread implements Item {
+
+		public String literal() {
+			return "bread";
+		}
+		
+	}
 }

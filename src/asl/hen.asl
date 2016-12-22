@@ -17,7 +17,9 @@ indignation(0).
 /*********** Initial rules ***********/
 
 +baked(X) <- +has(X).
-+found(X) <- +has(X).
++find(X) <- 
+	+has(X);
+	-find(X).
 
 +has(wheat) <- 
 	.suspend(make_great_again(farm));

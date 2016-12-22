@@ -17,7 +17,7 @@ is_work(bake(_)).
 /* Initial rules */
 
 +baked(X) <- +has(X).
-+found(X) <- +has(X).
++find(X) <- +has(X).
 +receives(X) <- +has(X).
 
 +has(bread) <- 	

@@ -9,7 +9,7 @@ public class FarmEnvironment extends Environment {
     static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
     
 	// common literals
-    public static final Literal foundWheat  = Literal.parseLiteral("found(wheat)");
+    public static final Literal foundWheat  = Literal.parseLiteral("find(wheat)");
     public static final Literal bakedBread  = Literal.parseLiteral("baked(bread)");
 	
     private FarmModel model;
@@ -69,7 +69,7 @@ public class FarmEnvironment extends Environment {
     	// update publicly known wheat state
     	if (!(model.wheat == null)) {
     		removePerceptsByUnif(Literal.parseLiteral("wheat(X)"));
-    		addPercept(model.wheat.literal());
+    		addPercept(Literal.parseLiteral(model.wheat.literal()));
     	}
     	else {
     		removePerceptsByUnif(Literal.parseLiteral("wheat(X)"));
