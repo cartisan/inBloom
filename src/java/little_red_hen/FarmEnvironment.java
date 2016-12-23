@@ -7,15 +7,11 @@ import jason.environment.Environment;
 public class FarmEnvironment extends Environment {
     
     static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
-    
-	// common literals
-    public static final Literal foundWheat  = Literal.parseLiteral("find(wheat)");
-    public static final Literal bakedBread  = Literal.parseLiteral("baked(bread)");
 	
     private FarmModel model;
 	
 	public FarmEnvironment() {
-		this.model = new FarmModel(this);
+		this.model = new FarmModel();
 		updatePercepts();
 	}
 	
@@ -66,6 +62,13 @@ public class FarmEnvironment extends Environment {
     }
     
     void updatePercepts() {
+    	// create hen's inventory
+    	removePerceptsByUnif("hen", Literal.parseLiteral("has(X)"));
+    	for (String literal : model.hen.createInventoryPercepts()) {
+    		addPercept("hen", Literal.parseLiteral(literal));    		
+    	}
+
+    	
     	// update publicly known wheat state
     	if (!(model.wheat == null)) {
     		removePerceptsByUnif(Literal.parseLiteral("wheat(X)"));
@@ -74,19 +77,8 @@ public class FarmEnvironment extends Environment {
     	else {
     		removePerceptsByUnif(Literal.parseLiteral("wheat(X)"));
     	}
-    	
-    	if (model.hen.hasBread) {
-    		addPercept("hen", bakedBread);
-    	} else {
-    		removePercept("hen", bakedBread);
-    	}
-    	
     }
 
-	public void foundWheat() {
-		addPercept("hen", foundWheat);
-	}
-	
 	public static void main(String[] args) {
         System.out.println("Hello World!"); 
         new FarmEnvironment();

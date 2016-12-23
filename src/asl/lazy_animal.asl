@@ -16,10 +16,6 @@ is_work(bake(_)).
 
 /* Initial rules */
 
-+baked(X) <- +has(X).
-+find(X) <- +has(X).
-+receives(X) <- +has(X).
-
 +has(bread) <- 	
 	.resume(eat(bread)).
 
@@ -40,6 +36,7 @@ is_work(bake(_)).
 	.print("I'll help you ", Name);
 	help(Name).
 
+
 /* Plans */
 +!cazzegiare : is(silence, gold) 
 	<- !cazzegiare.
@@ -59,12 +56,12 @@ is_work(bake(_)).
 	!eat(bread).
 
 	
-+!create_bread : has(wheat) <- 	
-	plant(wheat);
-	tend(wheat);
-	harvest(wheat);
-	grind(wheat);
-	bake(bread).   
++!create_bread : has(wheat(seed)) <- 	
+	!plant(wheat);
+	!tend(wheat);
+	!harvest(wheat);
+	!grind(wheat);
+	!bake(bread).   
 
 +!create_bread : not has(wheat)	<- 
 	.suspend(create_bread).

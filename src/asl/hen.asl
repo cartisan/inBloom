@@ -16,19 +16,17 @@ indignation(0).
 
 /*********** Initial rules ***********/
 
-+baked(X) <- +has(X).
-+find(X) <- 
-	+has(X);
-	-find(X).
-
-+has(wheat) <- 
++has(wheat(seed)) <- 
 	.suspend(make_great_again(farm));
 	.resume(create_bread).
 	
 +has(bread) <- 	
 	.resume(eat(bread)).
 
-+reject_help_request(_) <-
+// TODO: Is ist a good idea to remove this
+//belief after porocessing it into infignation?
+//or rather keep it as memory?
++reject_help_request(Req) <-
 	?indignation(X);
 	-+indignation(X+1).
 	
@@ -53,10 +51,10 @@ indignation(0).
 	!create_bread;
 	!eat(bread).
 
-+!create_bread : not has(wheat)	<- 
++!create_bread : not has(wheat(seed))	<- 
 	.suspend(create_bread).
 	
-+!create_bread : has(wheat) <- 	
++!create_bread : has(wheat(seed)) <- 	
 	!plant(wheat);
 	!tend(wheat);
 	!harvest(wheat);

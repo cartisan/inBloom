@@ -2,13 +2,11 @@ package little_red_hen;
 
 import java.util.LinkedList;
 import java.util.logging.Logger;
-import jason.asSyntax.*;
 
 /* Model class for Farm Environment */
 
 public class FarmModel {
 	private int actionCount;
-	private FarmEnvironment controller;
 
 	public Hen hen;
 	public Wheat wheat;
@@ -16,9 +14,8 @@ public class FarmModel {
 	
     static Logger logger = Logger.getLogger(FarmModel.class.getName());
 	
-	public FarmModel(FarmEnvironment controller) {
+	public FarmModel() {
 		this.actionCount = 0;
-		this.controller = controller;
 		
 		this.hen = new Hen();
 		this.wheat = null;
@@ -30,8 +27,9 @@ public class FarmModel {
 		
 		if (this.actionCount == 3) {
 			this.wheat = new Wheat();
-			this.hen.hasWheat = true;
-			controller.foundWheat();
+			
+			this.hen.addToInventory(this.wheat);
+			
 			logger.info("LOOK! There are some wheat grains on the floor.");
 		}
 		
@@ -39,11 +37,13 @@ public class FarmModel {
 	}
 	
 	boolean plantWheat() {
-		if ((this.wheat.state == WHEAT_STATE.SEED) & (this.hen.hasWheat)){
-			hen.hasWheat = false;
-			this.wheat.state = WHEAT_STATE.GROWING;
-			logger.info("Wheat planted");
-			return true;
+		Wheat wheatItem = (Wheat) this.hen.get(Wheat.class);
+		if (!(wheatItem == null)) {
+				if (wheatItem.state == WHEAT_STATE.SEED) {
+					this.wheat.state = WHEAT_STATE.GROWING;
+					logger.info("Wheat planted");
+					return true;
+				}
 		}
 		
 		return false;
@@ -72,9 +72,6 @@ public class FarmModel {
 	boolean grindWheat() {
 		if ((this.wheat.state == WHEAT_STATE.HARVESTED)){
 			this.wheat.state = WHEAT_STATE.FLOUR;
-			
-			// TODO: Change to new Inventory system
-			this.hen.hasFlour = true;
 			logger.info("Wheat was ground to flour");
 			return true;
 		}
@@ -82,10 +79,15 @@ public class FarmModel {
 	}
 
 	boolean bakeBread() {
-		if(this.hen.hasFlour) {
-			this.hen.hasBread = true;
-			this.hen.hasFlour = false;
+		// TODO: Generalize for non-hen case
+		Wheat wheatIteam = (Wheat) this.hen.get(Wheat.class);
+		
+		if((!(wheat == null)) & (wheat.state == WHEAT_STATE.FLOUR)) {
+			this.hen.addToInventory(new Bread());
+			this.hen.removeFromInventory(wheatIteam);
+			
 			this.wheat = null;
+			
 			logger.info("Baked some bread.");
 			return true;
 		}
@@ -94,12 +96,16 @@ public class FarmModel {
 	}
 	
 	boolean eatBread(String name) {
-		if ((name.equals("hen")) & (hen.hasBread)) {
-			hen.hasBread = false;
-			logger.info(name + " ate some bread.");
-			return true;
-		}
+		if (name.equals("hen")) {
+			Item bread = this.hen.get(Bread.class);
+			
+			if (!(bread == null)) {
+				this.hen.removeFromInventory(bread);
+				logger.info(name + " ate some bread.");
+				return true;
+			}
 		
+		}
 		return false;
 	}
 
@@ -129,6 +135,16 @@ public class FarmModel {
 			}
 
 			return invRepr;
+		}
+		
+		public Item get(Class clsNme) {
+			for (Item item : inventory) {
+				if (item.getClass().equals(clsNme)) {
+					return item;
+				}
+			}
+			
+			return null;
 		}
 	}
 	
