@@ -95,6 +95,7 @@ public class FarmModel {
 		return false;
 	}
 	
+	// TODO: get this in bread class?!
 	boolean eatBread(String name) {
 		if (name.equals("hen")) {
 			Item bread = this.hen.get(Bread.class);

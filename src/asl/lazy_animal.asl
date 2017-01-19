@@ -11,6 +11,8 @@ is_work(harvest(_)).
 is_work(grind(_)).
 is_work(bake(_)).
 
+is_pleasant(eat(_)).
+
 !cazzegiare.
 !eat(bread).
 
@@ -27,15 +29,22 @@ is_work(bake(_)).
 	.suspend(X).
 	
 
+// TODO: I belief this is a misuse of tell!
+// But how do we otherwise inform of such
+// a rejection
 +!help_with(X)[source(Name)]
 	: is_lazy(self) & is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
-	.send(Name, tell, reject_help_request(X)).
+	.send(Name, tell, rejected_help_request(X)).
 
-+!help_with(_)[source(Name)] <-
-	.print("I'll help you ", Name);
++!help_with(X)[source(Name)] <-
+	.print("I'll help you with ", X, ", ", Name);
 	help(Name).
 
++!share_in(X)[source(Name)]
+	: is_pleasant(X) <-
+	.print("I'll gladly join you for ", X, " ", Name);
+	X.
 
 /* Plans */
 +!cazzegiare : is(silence, gold) 

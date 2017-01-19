@@ -45,6 +45,8 @@ public class FarmEnvironment extends Environment {
     		result = model.bakeBread();
     	}
     	
+    	// TODO: make this search inventory and if term is found
+    	// TODO: execute functor on retrieved item
     	if (action.getFunctor().equals("eat")) {
     		result = false;
     		if (action.getTerm(0).toString().equals("bread")) {
