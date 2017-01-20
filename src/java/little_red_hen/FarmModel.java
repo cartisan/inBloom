@@ -8,7 +8,8 @@ import java.util.logging.Logger;
 public class FarmModel {
 	private int actionCount;
 
-	public Hen hen;
+	public Agent hen;
+	public Agent dog;
 	public Wheat wheat;
 	public static enum WHEAT_STATE {SEED, GROWING, RIPE, HARVESTED, FLOUR;}
 	
@@ -17,8 +18,21 @@ public class FarmModel {
 	public FarmModel() {
 		this.actionCount = 0;
 		
-		this.hen = new Hen();
+		this.hen = new Agent();
+		this.dog = new Agent();
 		this.wheat = null;
+	}
+	
+	// TODO: Make this nice!!!
+	Agent getAgent(String name) {
+		if (name.equals("hen")) {
+				return hen;
+		}
+		if (name.equals("dog")) {
+			return dog;
+		}
+		
+		return null; 
 	}
 	
 	boolean randomFarming() {
@@ -95,38 +109,12 @@ public class FarmModel {
 		return false;
 	}
 	
-	// TODO: get this in bread class?!
-	boolean eatBread(String name) {
-		if (name.equals("hen")) {
-			Item bread = this.hen.get(Bread.class);
-			
-			if (!(bread == null)) {
-				this.hen.removeFromInventory(bread);
-				logger.info(name + " ate some bread.");
-				return true;
-			}
-		
-		}
-		return false;
-	}
 
 	
 	/****** helper classes *******/
 	
-	class Hen {
-		public boolean hasWheat = false;
-		public boolean hasFlour = false;
-		public boolean hasBread = false;
-		
+	class Agent {
 		public LinkedList<Item> inventory = new LinkedList<Item>();
-		
-		private void addToInventory(Item item) {
-			inventory.add(item);
-		}
-		
-		private void removeFromInventory(Item item) {
-			inventory.remove(item);
-		}
 		
 		public LinkedList<String> createInventoryPercepts() {
 			LinkedList<String> invRepr = new LinkedList<String>();
@@ -138,6 +126,24 @@ public class FarmModel {
 			return invRepr;
 		}
 		
+		private void addToInventory(Item item) {
+			inventory.add(item);
+		}
+		
+		private void removeFromInventory(Item item) {
+			inventory.remove(item);
+		}
+		
+		public boolean has(Class clsNme) {
+			for (Item item : inventory) {
+				if (item.getClass().equals(clsNme)) {
+					return true;
+				}
+			}
+			
+			return false;
+		}
+		
 		public Item get(Class clsNme) {
 			for (Item item : inventory) {
 				if (item.getClass().equals(clsNme)) {
@@ -146,6 +152,34 @@ public class FarmModel {
 			}
 			
 			return null;
+		}
+		
+		public boolean share(Class<Item> itemType, Agent receiver) {
+			if (this.has(itemType)) {
+				Item item = this.get(itemType);
+				receiver.addToInventory(item);
+				return true;
+			}
+			
+			return false;
+		}
+		
+		public boolean eat(Class itemType) {
+    		if (this.has(itemType)) {
+    			Item item = this.get(itemType);
+    			
+    			if (item.isEdible()) {
+    				this.removeFromInventory(item);
+    				
+    				// in theory: here double dispatch
+    				// so food can affect agent in specific
+    				// way
+    				
+    				return true;
+    			}
+    		}
+    			
+    		return false;
 		}
 	}
 	
@@ -175,13 +209,21 @@ public class FarmModel {
 		
 			return null;
 		}
+		
+		public boolean isEdible() {
+			return false;
+		}
 	}
 	
 	class Bread implements Item {
-
 		public String literal() {
 			return "bread";
 		}
 		
+		public boolean isEdible() {
+			return true;
+		}
+		
 	}
+	
 }

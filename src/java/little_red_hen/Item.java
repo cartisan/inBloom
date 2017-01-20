@@ -4,4 +4,5 @@ import jason.asSyntax.Literal;
 
 public interface Item {
 	public String literal();
+	public boolean isEdible();
 }

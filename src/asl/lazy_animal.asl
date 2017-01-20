@@ -11,15 +11,14 @@ is_work(harvest(_)).
 is_work(grind(_)).
 is_work(bake(_)).
 
-is_pleasant(eat(_)).
+is_pleasant(eat(bread)).
 
 !cazzegiare.
-!eat(bread).
 
 /* Initial rules */
 
 +has(bread) <- 	
-	.resume(eat(bread)).
+	!eat(bread).
 
 
 // lazy agents don't do things that
@@ -56,15 +55,6 @@ is_pleasant(eat(_)).
 	!cazzegiare.
 
 
-+!eat(bread) : has(bread) <- 
-	.my_name(Name);
-	eat(bread, Name).
-	   
-+!eat(bread) : not has(bread) <-
-	!create_bread;
-	!eat(bread).
-
-	
 +!create_bread : has(wheat(seed)) <- 	
 	!plant(wheat);
 	!tend(wheat);
@@ -92,3 +82,10 @@ is_pleasant(eat(_)).
 
 +!bake(bread) <-
 	break(bread).
+	
++!eat(X) : has(X) <- 
+	.my_name(Name);
+	eat(Name, X).
+	
++!eat(X) <- 
+	.suspend(eat(X)).

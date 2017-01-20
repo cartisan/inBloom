@@ -7,7 +7,7 @@ is_work(harvest(_)).
 is_work(grind(_)).
 is_work(bake(_)).
 
-is_pleasant(eat(_)).
+is_pleasant(eat(bread)).
 
 /*********** Self-specifications  ***********/
 indignation(0).
@@ -44,11 +44,17 @@ is_communal(self).
 +has(wheat(seed)) <- 
 	.suspend(make_great_again(farm));
 	!create_bread.
+
+// TODO: How to make Java side find sender on itself? 
+@helpfullness
++has(X) : is_communal(self) & is_pleasant(eat(X)) <-
+	.print("Sharing: ", X, " with the others");
+	.my_name(Name);
+	share(Name, X, dog);
+	!eat(X).
 	
-+has(bread) <- 	
-	!eat(bread).
-
-
++has(X) : is_pleasant(eat(X)) <-
+	!eat(X).
 	
 /*********** Plans ***********/
 
@@ -62,23 +68,19 @@ is_communal(self).
 	!X;
 	-asked(X).
 
-//TODO: What if to execute X her animals need an item? How does hen know she should share it?
-// This would mean the hen needs to simulate the other animals and find out what is missing?
-@helpfullness	
-+!X[_] : is_communal(self) & is_pleasant(X) & not asked(X) <-
-	.print("Offer farm animals to share the activity: ", X)
-	.send(dog, achieve, share_in(X));
+@vindication	
++!X[_] : is_angry(self) & is_pleasant(X) & not asked(X) <-
+	.print("Offering farm animals to: ", X)
+	.send(dog, achieve, X);
+	.print("But not shareing necessary ressources.");
 	+asked(X);
 	!X;
-	-asked(X).	
+	-asked(X).
+	
 
 +!make_great_again(farm) : true	<- 
 	randomFarming;
 	!make_great_again(farm).
-
-+!eat(bread) : not has(bread) <-
-	!create_bread;
-	!eat(bread).
 	
 +!create_bread : not has(wheat(seed)) <- 
 	.suspend(create_bread).
@@ -107,6 +109,6 @@ is_communal(self).
 +!bake(bread) <-
 	bake(bread).
 	
-+!eat(bread) : has(bread) <-
++!eat(X) : has(X) <- 
 	.my_name(Name);
-	eat(bread, Name).
+	eat(Name, X).

@@ -3,11 +3,21 @@ package little_red_hen;
 import java.util.logging.Logger;
 import jason.asSyntax.*;
 import jason.environment.Environment;
+import little_red_hen.FarmModel.Agent;
+import little_red_hen.FarmModel.Bread;
+import little_red_hen.FarmModel.Wheat;
+
+import com.google.common.collect.ImmutableMap;
 
 public class FarmEnvironment extends Environment {
     
     static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
 	
+    ImmutableMap<String, Class> term2JavaMap = ImmutableMap.of(
+    	    "bread", (Class)Bread.class,
+    	    "wheat", (Class)Wheat.class
+    	);
+    
     private FarmModel model;
 	
 	public FarmEnvironment() {
@@ -45,17 +55,30 @@ public class FarmEnvironment extends Environment {
     		result = model.bakeBread();
     	}
     	
-    	// TODO: make this search inventory and if term is found
-    	// TODO: execute functor on retrieved item
     	if (action.getFunctor().equals("eat")) {
-    		result = false;
-    		if (action.getTerm(0).toString().equals("bread")) {
-    			result = model.eatBread(action.getTerm(1).toString());
-    		}
-    	
+    		Agent agent = model.getAgent(action.getTerm(0).toString());
+    		Class itemType = term2JavaMap.get(action.getTerm(1).toString());
+    		boolean success = agent.eat(itemType);
+    		
+    		if (success) {logger.info(action.getTerm(0).toString() + " ate some " + action.getTerm(1).toString());}
+    		return success;
     	}
+
     	if (action.getFunctor().equals("help")) {
     		result = true;
+    	}
+    	
+    	if (action.getFunctor().equals("share")) {
+    		String sender = action.getTerm(0).toString();
+    		String item = action.getTerm(1).toString();
+    		String receiver = action.getTerm(2).toString();
+    		
+    		Agent agent = model.getAgent(sender);
+    		Class<Item> itemType = term2JavaMap.get(item);
+    		Agent patient = model.getAgent(receiver);
+    		boolean success = agent.share(itemType, patient);
+    		
+    		result = success;
     	}
     	
     	
@@ -64,10 +87,15 @@ public class FarmEnvironment extends Environment {
     }
     
     void updatePercepts() {
-    	// create hen's inventory
+    	// create inventories
     	removePerceptsByUnif("hen", Literal.parseLiteral("has(X)"));
     	for (String literal : model.hen.createInventoryPercepts()) {
     		addPercept("hen", Literal.parseLiteral(literal));    		
+    	}
+    	
+    	removePerceptsByUnif("dog", Literal.parseLiteral("has(X)"));
+    	for (String literal : model.dog.createInventoryPercepts()) {
+    		addPercept("dog", Literal.parseLiteral(literal));    		
     	}
 
     	
