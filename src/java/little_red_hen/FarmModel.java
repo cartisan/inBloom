@@ -1,6 +1,6 @@
 package little_red_hen;
 
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 /* Model class for Farm Environment */
@@ -8,50 +8,41 @@ import java.util.logging.Logger;
 public class FarmModel {
 	private int actionCount;
 
-	public Agent hen;
-	public Agent dog;
 	public Wheat wheat;
+	public HashMap<String, Agent> agents;
 	public static enum WHEAT_STATE {SEED, GROWING, RIPE, HARVESTED, FLOUR;}
 	
     static Logger logger = Logger.getLogger(FarmModel.class.getName());
 	
-	public FarmModel() {
+	public FarmModel(HashMap<String, Agent> agents) {
 		this.actionCount = 0;
-		
-		this.hen = new Agent();
-		this.dog = new Agent();
+		this.agents = agents;
 		this.wheat = null;
 	}
 	
-	// TODO: Make this nice!!!
 	Agent getAgent(String name) {
-		if (name.equals("hen")) {
-				return hen;
-		}
-		if (name.equals("dog")) {
-			return dog;
-		}
-		
-		return null; 
+		return this.agents.get(name);
 	}
 	
-	boolean randomFarming() {
+	boolean randomFarming(Agent agent) {
 		this.actionCount += 1;
 		logger.info("Some farming activity was performed");
 		
 		if (this.actionCount == 3) {
 			this.wheat = new Wheat();
 			
-			this.hen.addToInventory(this.wheat);
+			agent.addToInventory(this.wheat);
 			
-			logger.info("LOOK! There are some wheat grains on the floor.");
+			logger.info("LOOK, " +
+						agent.name + 
+						"! There are some wheat grains on the floor.");
 		}
 		
 		return true;
 	}
 	
-	boolean plantWheat() {
-		Wheat wheatItem = (Wheat) this.hen.get(Wheat.class);
+	boolean plantWheat(Agent agent) {
+		Wheat wheatItem = (Wheat) agent.get(Wheat.class);
 		if (!(wheatItem == null)) {
 				if (wheatItem.state == WHEAT_STATE.SEED) {
 					this.wheat.state = WHEAT_STATE.GROWING;
@@ -87,22 +78,19 @@ public class FarmModel {
 		if ((this.wheat.state == WHEAT_STATE.HARVESTED)){
 			this.wheat.state = WHEAT_STATE.FLOUR;
 			logger.info("Wheat was ground to flour");
+			this.wheat = null;
 			return true;
 		}
 		return false;
 	}
 
-	boolean bakeBread() {
-		// TODO: Generalize for non-hen case
-		Wheat wheatIteam = (Wheat) this.hen.get(Wheat.class);
-		
-		if((!(wheat == null)) & (wheat.state == WHEAT_STATE.FLOUR)) {
-			this.hen.addToInventory(new Bread());
-			this.hen.removeFromInventory(wheatIteam);
+	boolean bakeBread(Agent agent) {
+		Wheat wheatItem = (Wheat) agent.get(Wheat.class);
+		if((!(wheatItem == null)) & (wheatItem.state == WHEAT_STATE.FLOUR)) {
+			agent.addToInventory(new Bread());
+			agent.removeFromInventory(wheatItem);
 			
-			this.wheat = null;
-			
-			logger.info("Baked some bread.");
+			logger.info(agent.name + ": baked some bread.");
 			return true;
 		}
 		
@@ -112,76 +100,6 @@ public class FarmModel {
 
 	
 	/****** helper classes *******/
-	
-	class Agent {
-		public LinkedList<Item> inventory = new LinkedList<Item>();
-		
-		public LinkedList<String> createInventoryPercepts() {
-			LinkedList<String> invRepr = new LinkedList<String>();
-			
-			for (Item item : inventory) {
-				invRepr.add("has(" + item.literal() + ")");
-			}
-
-			return invRepr;
-		}
-		
-		private void addToInventory(Item item) {
-			inventory.add(item);
-		}
-		
-		private void removeFromInventory(Item item) {
-			inventory.remove(item);
-		}
-		
-		public boolean has(Class clsNme) {
-			for (Item item : inventory) {
-				if (item.getClass().equals(clsNme)) {
-					return true;
-				}
-			}
-			
-			return false;
-		}
-		
-		public Item get(Class clsNme) {
-			for (Item item : inventory) {
-				if (item.getClass().equals(clsNme)) {
-					return item;
-				}
-			}
-			
-			return null;
-		}
-		
-		public boolean share(Class<Item> itemType, Agent receiver) {
-			if (this.has(itemType)) {
-				Item item = this.get(itemType);
-				receiver.addToInventory(item);
-				return true;
-			}
-			
-			return false;
-		}
-		
-		public boolean eat(Class itemType) {
-    		if (this.has(itemType)) {
-    			Item item = this.get(itemType);
-    			
-    			if (item.isEdible()) {
-    				this.removeFromInventory(item);
-    				
-    				// in theory: here double dispatch
-    				// so food can affect agent in specific
-    				// way
-    				
-    				return true;
-    			}
-    		}
-    			
-    		return false;
-		}
-	}
 	
 	class Wheat implements Item {
 		public WHEAT_STATE state = WHEAT_STATE.SEED;

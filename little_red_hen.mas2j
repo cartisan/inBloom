@@ -4,10 +4,9 @@ MAS little_red_hen {
 
 	agents:
 		hen hen.asl;
-//		test_agent;
 		dog lazy_animal.asl;
-//		cow lazy_animal.asl;
-//		pig lazy_animal.asl;
+		cow lazy_animal.asl;
+		pig lazy_animal.asl;
 
 
 	aslSourcePath:

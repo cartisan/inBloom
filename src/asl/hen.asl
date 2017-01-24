@@ -9,6 +9,8 @@ is_work(bake(_)).
 
 is_pleasant(eat(bread)).
 
+animals([dog, cow, pig]).
+
 /*********** Self-specifications  ***********/
 indignation(0).
 
@@ -18,7 +20,7 @@ is_communal(self).
 
 /*********** Initial rules ***********/
 /* Emotion management 				 */	
-+indignation(X) : X > 1 <-
++indignation(X) : X > 10 <-
 	+is_angry(self)[reason(indignation)].
 
 +indignation(0) : is_angry(self)[reason(indignation)] <-
@@ -49,8 +51,9 @@ is_communal(self).
 @helpfullness
 +has(X) : is_communal(self) & is_pleasant(eat(X)) <-
 	.print("Sharing: ", X, " with the others");
-	.my_name(Name);
-	share(Name, X, dog);
+	.my_name(MyName);
+	?animals(Anims);
+	!share(MyName, X, Anims);
 	!eat(X).
 	
 +has(X) : is_pleasant(eat(X)) <-
@@ -58,20 +61,21 @@ is_communal(self).
 	
 /*********** Plans ***********/
 
-// TODO: Generalize for all animals!
 // TODO: Wait for response before do yourself?
 @communality
 +!X[_] : is_communal(self) & is_work(X) & not asked(X) <-
 	.print("Asking farm animals to help with ", X)
-	.send(dog, achieve, help_with(X));
+	?animals(A);
+	.send(A, achieve, help_with(X));
 	+asked(X);
 	!X;
 	-asked(X).
 
 @vindication	
 +!X[_] : is_angry(self) & is_pleasant(X) & not asked(X) <-
-	.print("Offering farm animals to: ", X)
-	.send(dog, achieve, X);
+	.print("Offering farm animals to: ", X);
+	?animals(A);
+	.send(A, achieve, X);
 	.print("But not shareing necessary ressources.");
 	+asked(X);
 	!X;
@@ -79,11 +83,8 @@ is_communal(self).
 	
 
 +!make_great_again(farm) : true	<- 
-	randomFarming;
+	!randomFarming;
 	!make_great_again(farm).
-	
-+!create_bread : not has(wheat(seed)) <- 
-	.suspend(create_bread).
 	
 +!create_bread : has(wheat(seed)) <- 	
 	!plant(wheat);
@@ -94,8 +95,13 @@ is_communal(self).
 
 
 // action-execution goals
++!randomFarming <-
+	.my_name(MyName);
+	randomFarming(MyName).
+
 +!plant(wheat) <-
-	plant(wheat).
+	.my_name(MyName);
+	plant(MyName, wheat).
 	
 +!tend(wheat) <-
 	tend(wheat).
@@ -107,8 +113,19 @@ is_communal(self).
 	grind(wheat).
 
 +!bake(bread) <-
-	bake(bread).
+	.my_name(MyName);
+	bake(MyName, bread).
 	
 +!eat(X) : has(X) <- 
 	.my_name(Name);
 	eat(Name, X).
+	
++!share(MyName, X, [H|T]) : .length(T) > 0 <-
+	share(MyName, X, H);
+	!share(MyName, X, T).	
+	
++!share(MyName, X, [H|T]) : .length(T) == 0 <-
+	share(MyName, X, H).	
+	
++!share(MyName, X, Anim) <-
+	share(MyName, X, Anim).	

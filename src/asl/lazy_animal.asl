@@ -62,11 +62,6 @@ is_pleasant(eat(bread)).
 	!grind(wheat);
 	!bake(bread).   
 
-+!create_bread : not has(wheat)	<- 
-	.suspend(create_bread).
-	
-
-
 // action-execution goals
 +!plant(wheat) <-
 	plant(wheat).

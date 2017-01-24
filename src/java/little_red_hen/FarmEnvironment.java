@@ -1,13 +1,15 @@
 package little_red_hen;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 import jason.asSyntax.*;
 import jason.environment.Environment;
-import little_red_hen.FarmModel.Agent;
 import little_red_hen.FarmModel.Bread;
 import little_red_hen.FarmModel.Wheat;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 public class FarmEnvironment extends Environment {
     
@@ -21,7 +23,16 @@ public class FarmEnvironment extends Environment {
     private FarmModel model;
 	
 	public FarmEnvironment() {
-		this.model = new FarmModel();
+		HashMap<String, Agent> agents = Maps.newHashMap(
+			ImmutableMap.of(
+						"hen", new Agent("hen"),
+						"dog", new Agent("dog"),
+						"cow", new Agent("cow"),
+						"pig", new Agent("pig")
+					)
+				);
+		
+		this.model = new FarmModel(agents);
 		updatePercepts();
 	}
 	
@@ -32,11 +43,14 @@ public class FarmEnvironment extends Environment {
     	
     	// TODO: this could be done nicer with meta programming!
     	if (action.getFunctor().equals("randomFarming")) {
-    		result = model.randomFarming();
+    		Agent agent = model.getAgent(action.getTerm(0).toString());
+    		result = model.randomFarming(agent);
     	}
     	
-    	if (action.toString().equals("plant(wheat)")) {
-    		result = model.plantWheat();
+    	if (action.getFunctor().equals("plant")) {
+    		// TODO: type checking on wheat
+    		Agent agent = model.getAgent(action.getTerm(0).toString());
+			result = model.plantWheat(agent);
     	}
     	
     	if (action.toString().equals("tend(wheat)")) {
@@ -51,8 +65,10 @@ public class FarmEnvironment extends Environment {
     		result = model.grindWheat();
     	}
     	
-    	if (action.toString().equals("bake(bread)")) {
-    		result = model.bakeBread();
+    	if (action.getFunctor().equals("bake")) {
+    		// TODO: type checking on bread
+    		Agent agent = model.getAgent(action.getTerm(0).toString());
+    		result = model.bakeBread(agent);
     	}
     	
     	if (action.getFunctor().equals("eat")) {
@@ -88,16 +104,12 @@ public class FarmEnvironment extends Environment {
     
     void updatePercepts() {
     	// create inventories
-    	removePerceptsByUnif("hen", Literal.parseLiteral("has(X)"));
-    	for (String literal : model.hen.createInventoryPercepts()) {
-    		addPercept("hen", Literal.parseLiteral(literal));    		
+    	for(String name: this.model.agents.keySet()) {
+        	removePerceptsByUnif(name, Literal.parseLiteral("has(X)"));
+        	for (String literal : this.model.agents.get(name).createInventoryPercepts()) {
+        		addPercept(name, Literal.parseLiteral(literal));    		
+        	}    		
     	}
-    	
-    	removePerceptsByUnif("dog", Literal.parseLiteral("has(X)"));
-    	for (String literal : model.dog.createInventoryPercepts()) {
-    		addPercept("dog", Literal.parseLiteral(literal));    		
-    	}
-
     	
     	// update publicly known wheat state
     	if (!(model.wheat == null)) {
