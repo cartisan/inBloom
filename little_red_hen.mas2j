@@ -3,10 +3,14 @@ MAS little_red_hen {
 	environment: little_red_hen.FarmEnvironment
 
 	agents:
-		hen hen.asl;
-		dog lazy_animal.asl;
-		cow lazy_animal.asl;
-		pig lazy_animal.asl;
+		hen general_animal[beliefs="is_communal(self)", goals="make_great_again(farm)"];
+		dog general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
+		cow general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
+		pig general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
+//		hen hen.asl;
+//		dog lazy_animal.asl;
+//		cow lazy_animal.asl;
+//		pig lazy_animal.asl;
 
 
 	aslSourcePath:
