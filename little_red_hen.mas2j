@@ -7,10 +7,7 @@ MAS little_red_hen {
 		dog general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
 		cow general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
 		pig general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
-//		hen hen.asl;
-//		dog lazy_animal.asl;
-//		cow lazy_animal.asl;
-//		pig lazy_animal.asl;
+
 
 
 	aslSourcePath:

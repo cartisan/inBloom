@@ -32,14 +32,11 @@ indignation(0).
 	.print("I am not angry anymore!");
 	.add_plan(helpfullness).
 
-// TODO: Is it a good idea to remove this
-//belief after processing it into indignation?
-//or rather keep it as memory?
-+rejected_help_request(Req) <-
++rejected_help_request(Name, Req) <-
 	?indignation(X);
-	-rejected_help_request(Req);
-	-+indignation(X+1).
-	
+	-+indignation(X+1);
+	.abolish(rejected_help_request(Name, Req)).
+
 /* Goal management 				 */
 +has(wheat(seed)) <- 
 	.suspend(make_great_again(farm));
@@ -102,7 +99,8 @@ indignation(0).
 +!help_with(X)[source(Name)]
 	: is_lazy(self) & is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
-	.send(Name, tell, rejected_help_request(X)).
+	.my_name(MyName);
+	.send(Name, tell, rejected_help_request(MyName, X)).
 
 +!help_with(X)[source(Name)] <-
 	.print("I'll help you with ", X, ", ", Name);
