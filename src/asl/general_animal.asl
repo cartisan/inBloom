@@ -1,4 +1,4 @@
-// Agent hen in project little_red_hen
+// general agent in project little_red_hen
 
 /*********** General beliefs  ***********/
 is_work(create_bread).

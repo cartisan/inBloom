@@ -1,7 +1,6 @@
 package little_red_hen;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.logging.Logger;
 import jason.asSyntax.*;
 import jason.environment.Environment;
