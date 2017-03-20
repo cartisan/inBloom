@@ -39,8 +39,8 @@ animals([dog, cow, pig]).
 +rejected_help_request(Name, Req) <-
 	?anger(X)[target(L)];
 	.union([Name], L, NewL);
-	+anger(X+1)[target(NewL)];
 	-anger(X)[target(L)];
+	+anger(X+1)[target(NewL)];
 	.abolish(rejected_help_request(Name, Req)).
 
 
@@ -103,12 +103,14 @@ animals([dog, cow, pig]).
 	.print("I'll help you with ", X, ", ", Name);
 	help(Name).
 
-+!cazzegiare : is(silence, gold) 
-	<- !cazzegiare.
++!cazzegiare : is(silence, gold) <-
+	!relax;
+	!cazzegiare.
 
 +!cazzegiare : true	<- 	
 	.print("I'm doing sweet nothing.");
 	+is(silence, gold);
+	!relax;
 	!cazzegiare.
 
 
@@ -116,6 +118,17 @@ animals([dog, cow, pig]).
 /********************************************/
 /*****      Action Execution Goals **********/
 /********************************************/
+// TODO: Perform some type of abstraction with
+//       increasing anger! Same procedure here! 
+@relax[atomic]
++!relax <-
+	.my_name(MyName); 
+	relax(MyName);
+	?happiness(Val)[target(L)];
+	.union([MyName], L, NewL);
+	+happiness(Val+1)[target(NewL)];
+	-happiness(Val)[target(L)].
+	
 +!randomFarming <-
 	.my_name(MyName);
 	randomFarming(MyName).

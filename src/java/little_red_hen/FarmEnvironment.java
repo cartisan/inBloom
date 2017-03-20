@@ -96,6 +96,10 @@ public class FarmEnvironment extends Environment {
     		result = success;
     	}
     	
+    	if (action.getFunctor().equals("relax")) {
+    		Agent agent = model.getAgent(action.getTerm(0).toString());
+			result = agent.relax();
+    	}
     	
     	updatePercepts();
     	return result;

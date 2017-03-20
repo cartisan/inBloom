@@ -79,4 +79,9 @@ public class Agent {
 			
 		return false;
 	}
+	
+	public boolean relax() {
+		//TODO: How to return a positive emotion?
+		return true;
+	}
 }

@@ -20,3 +20,9 @@ is_communal(self).
 
 +!plant(wheat) <-
 	.print("Planting wheat myself").
+
+//+!reset_emotion(Em) : emotion(Em) <-
+//	?Em(Value);
+//	-Em(Value);
+//	+Em(0);
+//	.add_annot(Em, target([]), X).
