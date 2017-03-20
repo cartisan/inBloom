@@ -1,6 +1,7 @@
-// general agent in project little_red_hen
-
-/*********** General beliefs  ***********/
+/********************************************/
+/***** General knowledge  *******************/
+/*****      Common sense beliefs ************/
+/********************************************/
 is_work(create_bread).
 is_work(make_great_again(_)).
 is_work(plant(_)).
@@ -13,43 +14,27 @@ is_pleasant(eat(bread)).
 
 animals([dog, cow, pig]).
 
-/*********** Self-specifications  ***********/
-anger(0)[target([])].
 
-/*********** Initial rules ***********/
-/* Emotion management 				 */	
 
-+anger(10)[target(L)] <-
-	.remove_plan(helpfullness);
-	!punish(L).
-
-// begin declarative goal: punishment for angering
-+!punish(L) : punish(L) <- true.
-@bPlan[atomic]	
-+!punish(L) :has(X) & is_pleasant(eat(X)) <-
-	.send(L, achieve, eat(X));
-	.print("Asking ", L, " to eat ", X, ". But not shareing necessary ressources. xoxo");
-	+punish(L);
-	?punish(L).
-+punish(L) : true <- 
-	!reset_anger;
-	-punish(L);	
-	.succeed_goal(punish(L)).
-
-//     +backtracking goal
--!punish(L) : true <- !!punish(L).
-//	   +blind commitment
-+!punish(L) : true <- !!punish(L).
-//	   + relativised commitment
--anger(X) : ~anger(Y) & Y>9 <- 
-	.succeed_goal(punish(L)).
+/********************************************/
+/*****      Common sense desires ************/
+/********************************************/
++has(X) : is_pleasant(eat(X)) <-
+	!eat(X).
 	
++has(wheat(seed)) <- 
+	.suspend(make_great_again(farm));
+	!create_bread.	
 
-+!reset_anger <-
-	?anger(X)[target(L)];
-	-anger(X)[target(L)];
-	+anger(0)[target([])].
 
+
+/********************************************/
+/***** Self-specifications  *****************/
+/*****      Emotion management **************/
+/********************************************/
+
+{ include("emotions.asl") }
+	
 @aPlan[atomic]
 +rejected_help_request(Name, Req) <-
 	?anger(X)[target(L)];
@@ -59,12 +44,12 @@ anger(0)[target([])].
 	.abolish(rejected_help_request(Name, Req)).
 
 
-/* Goal management 				 */
-+has(wheat(seed)) <- 
-	.suspend(make_great_again(farm));
-	!create_bread.
 
-// TODO: How to make Java side find sender on itself? 
+/********************************************/
+/*****      Personality management **********/
+/********************************************/
+// TODO: How to make Java side find sender on
+// itself? 
 @helpfullness
 +has(X) : is_communal(self) & is_pleasant(eat(X)) <-
 	.print("Sharing: ", X, " with the others");
@@ -72,11 +57,6 @@ anger(0)[target([])].
 	?animals(Anims);
 	!share(MyName, X, Anims);
 	!eat(X).
-	
-+has(X) : is_pleasant(eat(X)) <-
-	!eat(X).
-	
-/*********** Plans ***********/
 
 // TODO: Wait for response before do yourself?
 @communality
@@ -87,21 +67,17 @@ anger(0)[target([])].
 	+asked(X);
 	!X;
 	-asked(X).
-
-@vindication	
-+!X[_] : is_angry(self) & is_pleasant(X) & not asked(X) <-
-	.print("Offering farm animals to: ", X);
-	?animals(A);
-	.send(A, achieve, X);
-	.print("But not shareing necessary ressources.");
-	+asked(X);
-	!X;
-	-asked(X).
 	
 @lazyness
 +!X[_] : is_lazy(self) & is_work(X) <-
 	.print(X, " is too much work for me!");
 	.suspend(X).	
+
+
+
+/********************************************/
+/***** Plans  *******************************/
+/********************************************/
 
 +!make_great_again(farm) : true	<- 
 	!randomFarming;
@@ -113,7 +89,6 @@ anger(0)[target([])].
 	!harvest(wheat);
 	!grind(wheat);
 	!bake(bread).   
-
 
 // TODO: I belief this is a misuse of tell!
 // But how do we otherwise inform of such
@@ -136,7 +111,11 @@ anger(0)[target([])].
 	+is(silence, gold);
 	!cazzegiare.
 
-// action-execution goals
+
+
+/********************************************/
+/*****      Action Execution Goals **********/
+/********************************************/
 +!randomFarming <-
 	.my_name(MyName);
 	randomFarming(MyName).
