@@ -21,16 +21,29 @@ anger(0)[target([])].
 
 +anger(10)[target(L)] <-
 	.remove_plan(helpfullness);
-	!revenge(L).
-	
+	!punish(L).
+
+// begin declarative goal: punishment for angering
++!punish(L) : punish(L) <- true.
 @bPlan[atomic]	
-+!revenge(L) :has(X) & is_pleasant(eat(X)) <-
++!punish(L) :has(X) & is_pleasant(eat(X)) <-
 	.send(L, achieve, eat(X));
-	.print("Asking ", L, " to eat ", X, " But not shareing necessary ressources.");
+	.print("Asking ", L, " to eat ", X, ". But not shareing necessary ressources. xoxo");
+	+punish(L);
+	?punish(L).
++punish(L) : true <- 
 	!reset_anger;
-	.succeed_goal(revenge(L)).
+	-punish(L);	
+	.succeed_goal(punish(L)).
+
+//     +backtracking goal
+-!punish(L) : true <- !!punish(L).
+//	   +blind commitment
++!punish(L) : true <- !!punish(L).
+//	   + relativised commitment
+-anger(X) : ~anger(Y) & Y>9 <- 
+	.succeed_goal(punish(L)).
 	
-+!revenge(L) <- !!revenge(L).
 
 +!reset_anger <-
 	?anger(X)[target(L)];
