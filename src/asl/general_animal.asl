@@ -14,28 +14,37 @@ is_pleasant(eat(bread)).
 animals([dog, cow, pig]).
 
 /*********** Self-specifications  ***********/
-indignation(0).
+anger(0)[target([])].
 
 /*********** Initial rules ***********/
 /* Emotion management 				 */	
-+indignation(X) : X > 10 <-
-	+is_angry(self)[reason(indignation)].
 
-+indignation(0) : is_angry(self)[reason(indignation)] <-
-	-is_angry(self)[reason(indignation)].
++anger(10)[target(L)] <-
+	.remove_plan(helpfullness);
+	!revenge(L).
+	
+@bPlan[atomic]	
++!revenge(L) :has(X) & is_pleasant(eat(X)) <-
+	.send(L, achieve, eat(X));
+	.print("Asking ", L, " to eat ", X, " But not shareing necessary ressources.");
+	!reset_anger;
+	.succeed_goal(revenge(L)).
+	
++!revenge(L) <- !!revenge(L).
 
-+is_angry(self) <-
-	.print("I am angry!");
-	.remove_plan(helpfullness).
++!reset_anger <-
+	?anger(X)[target(L)];
+	-anger(X)[target(L)];
+	+anger(0)[target([])].
 
--is_angry(self) <-
-	.print("I am not angry anymore!");
-	.add_plan(helpfullness).
-
+@aPlan[atomic]
 +rejected_help_request(Name, Req) <-
-	?indignation(X);
-	-+indignation(X+1);
+	?anger(X)[target(L)];
+	.union([Name], L, NewL);
+	+anger(X+1)[target(NewL)];
+	-anger(X)[target(L)];
 	.abolish(rejected_help_request(Name, Req)).
+
 
 /* Goal management 				 */
 +has(wheat(seed)) <- 
