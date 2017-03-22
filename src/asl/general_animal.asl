@@ -55,7 +55,7 @@ animals([dog, cow, pig]).
 	.print("Sharing: ", X, " with the others");
 	.my_name(MyName);
 	?animals(Anims);
-	!share(MyName, X, Anims);
+	!share(X, Anims);
 	!eat(X).
 
 // TODO: Wait for response before do yourself?
@@ -122,20 +122,17 @@ animals([dog, cow, pig]).
 //       increasing anger! Same procedure here! 
 @relax[atomic]
 +!relax <-
-	.my_name(MyName); 
-	relax(MyName);
+	relax;
 	?happiness(Val)[target(L)];
 	.union([MyName], L, NewL);
 	+happiness(Val+1)[target(NewL)];
 	-happiness(Val)[target(L)].
 	
 +!randomFarming <-
-	.my_name(MyName);
-	randomFarming(MyName).
+	randomFarming.
 
 +!plant(wheat) <-
-	.my_name(MyName);
-	plant(MyName, wheat).
+	plant(wheat).
 	
 +!tend(wheat) <-
 	tend(wheat).
@@ -147,23 +144,21 @@ animals([dog, cow, pig]).
 	grind(wheat).
 
 +!bake(bread) <-
-	.my_name(MyName);
-	bake(MyName, bread).
+	bake(bread).
 	
 +!eat(X) : has(X) <- 
-	.my_name(Name);
-	eat(Name, X).
+	eat(X).
 	
 +!eat(X) <- 
 	.print("Can't eat ", X, ", I don't have any! :( ")
 	.suspend(eat(X)).
 	
-+!share(MyName, X, [H|T]) : .length(T) > 0 <-
-	share(MyName, X, H);
-	!share(MyName, X, T).	
++!share(X, [H|T]) : .length(T) > 0 <-
+	share(X, H);
+	!share(X, T).	
 	
-+!share(MyName, X, [H|T]) : .length(T) == 0 <-
-	share(MyName, X, H).	
++!share(X, [H|T]) : .length(T) == 0 <-
+	share(X, H).	
 	
-+!share(MyName, X, Anim) <-
-	share(MyName, X, Anim).	
++!share(X, Anim) <-
+	share(X, Anim).	

@@ -35,19 +35,19 @@ public class FarmEnvironment extends Environment {
 		
 	}
 
+
     @Override
     public boolean executeAction(String ag, Structure action) {
     	boolean result = false;
+    	Agent agent = model.getAgent(ag);
     	
     	// TODO: this could be done nicer with meta programming!
     	if (action.getFunctor().equals("randomFarming")) {
-    		Agent agent = model.getAgent(action.getTerm(0).toString());
     		result = model.randomFarming(agent);
     	}
     	
     	if (action.getFunctor().equals("plant")) {
     		// TODO: type checking on wheat
-    		Agent agent = model.getAgent(action.getTerm(0).toString());
 			result = model.plantWheat(agent);
     	}
     	
@@ -65,16 +65,14 @@ public class FarmEnvironment extends Environment {
     	
     	if (action.getFunctor().equals("bake")) {
     		// TODO: type checking on bread
-    		Agent agent = model.getAgent(action.getTerm(0).toString());
     		result = model.bakeBread(agent);
     	}
     	
     	if (action.getFunctor().equals("eat")) {
-    		Agent agent = model.getAgent(action.getTerm(0).toString());
-    		Class itemType = term2JavaMap.get(action.getTerm(1).toString());
+    		Class itemType = term2JavaMap.get(action.getTerm(0).toString());
     		boolean success = agent.eat(itemType);
     		
-    		if (success) {logger.info(action.getTerm(0).toString() + " ate some " + action.getTerm(1).toString());}
+    		if (success) {logger.info(ag + " ate some " + action.getTerm(0).toString());}
     		return success;
     	}
 
@@ -83,11 +81,9 @@ public class FarmEnvironment extends Environment {
     	}
     	
     	if (action.getFunctor().equals("share")) {
-    		String sender = action.getTerm(0).toString();
     		String item = action.getTerm(1).toString();
     		String receiver = action.getTerm(2).toString();
     		
-    		Agent agent = model.getAgent(sender);
     		Class<Item> itemType = term2JavaMap.get(item);
     		Agent patient = model.getAgent(receiver);
     		boolean success = agent.share(itemType, patient);
@@ -96,7 +92,6 @@ public class FarmEnvironment extends Environment {
     	}
     	
     	if (action.getFunctor().equals("relax")) {
-    		Agent agent = model.getAgent(action.getTerm(0).toString());
 			result = agent.relax();
     	}
     	
