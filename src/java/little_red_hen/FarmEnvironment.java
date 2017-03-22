@@ -21,21 +21,20 @@ public class FarmEnvironment extends Environment {
     
     private FarmModel model;
 	
-	public FarmEnvironment() {
-		HashMap<String, Agent> agents = Maps.newHashMap(
-			ImmutableMap.of(
-						"hen", new Agent("hen"),
-						"dog", new Agent("dog"),
-						"cow", new Agent("cow"),
-						"pig", new Agent("pig")
-					)
-				);
-		
-		this.model = new FarmModel(agents);
+	public FarmModel getModel() {
+		return model;
+	}
+
+	public void setModel(FarmModel model) {
+		this.model = model;
 		updatePercepts();
 	}
-	
-	
+
+
+	public FarmEnvironment() {
+		
+	}
+
     @Override
     public boolean executeAction(String ag, Structure action) {
     	boolean result = false;
@@ -123,10 +122,4 @@ public class FarmEnvironment extends Environment {
     		removePerceptsByUnif(Literal.parseLiteral("wheat(X)"));
     	}
     }
-
-	public static void main(String[] args) {
-        System.out.println("Hello World!"); 
-        new FarmEnvironment();
-        System.out.println("It's alife!"); 
-	}
 }

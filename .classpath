@@ -3,9 +3,9 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry excluding="*.asl" kind="src" path="src/asl"/>
 	<classpathentry kind="src" path="src/java"/>
-	<classpathentry kind="lib" path="D:/personal/Gecode/JaCa/jason-2.0/libs/jason-2.0a.jar"/>
 	<classpathentry kind="lib" path="D:/personal/Gecode/JaCa/jason-2.0/lib/cartago.jar"/>
 	<classpathentry kind="lib" path="D:/personal/Gecode/JaCa/jason-2.0/lib/c4jason.jar" sourcepath="D:/personal/Gecode/JaCa/cartago-2.0.1/src/bridges/jason/c4jason"/>
-	<classpathentry kind="lib" path="D:/personal/Gecode/JARs/guava-21.0.jar"/>
+	<classpathentry kind="lib" path="D:/personal/Gecode/JARs/guava-21.0.jar" sourcepath="C:/Users/Leon/.sourceattacher/guava-21.0-sources.jar"/>
+	<classpathentry kind="lib" path="D:/personal/Gecode/JaCa/jason-2.1/libs/jason-2.1.jar" sourcepath="D:/personal/Gecode/JaCa/jason-2.1/src/main/java"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

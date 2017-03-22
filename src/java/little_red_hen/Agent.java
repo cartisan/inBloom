@@ -1,17 +1,48 @@
 package little_red_hen;
 
+import java.util.Collection;
 import java.util.LinkedList;
+
+import com.google.common.collect.ImmutableList;
 
 public class Agent {
 	public LinkedList<Item> inventory = new LinkedList<Item>();
 	public String name;
+	public String beliefs;
+	public String goals;
 	
-	public Agent(String name) {
-		this.name = name;
-	}
 	
 	public Agent() {
 		this.name = null;
+		this.beliefs = "";
+		this.goals = "";
+	}
+	
+	public Agent(String name) {
+		this.name = name;
+		this.beliefs = "";
+		this.goals = "";
+	}
+
+	public Agent(String name, Collection<String> beliefs, Collection<String> goals) {
+		this.name = name;
+		this.beliefs = createLiteralString(beliefs);
+		this.goals = createLiteralString(goals);
+	}
+	
+	private String createLiteralString(Collection<String> literalList) {
+		String result = "";
+		
+		for (String literal : literalList) {
+			result += literal + ",";
+		}
+		
+		if (result.length() > 0) {
+			// delete last trailing ','
+			result = result.substring(0, result.length()-1);
+		}
+		
+		return result;
 	}
 	
 	public LinkedList<String> createInventoryPercepts() {

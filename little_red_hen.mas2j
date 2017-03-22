@@ -1,5 +1,10 @@
+/* 
+ * WARNING: not used in launcher setup!
+ * 
+ * See --> little_red_hen.Launcher
+ */
+
 MAS little_red_hen {
-//	environment: c4jason.CartagoEnvironment
 	environment: little_red_hen.FarmEnvironment
 
 	agents:
@@ -7,8 +12,6 @@ MAS little_red_hen {
 		dog general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
 		cow general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
 		pig general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
-
-
 
 	aslSourcePath:
 		"src/asl";
