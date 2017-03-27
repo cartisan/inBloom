@@ -1,0 +1,34 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>little_red_hen</groupId>
+  <artifactId>little_red_hen</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <build>
+    <sourceDirectory>src/asl</sourceDirectory>
+    <resources>
+      <resource>
+        <directory>src/asl</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </resource>
+    </resources>
+  </build>
+  <dependencies>
+  	<dependency>
+  		<groupId>com.google.guava</groupId>
+  		<artifactId>guava</artifactId>
+  		<version>21.0</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>net.sf.jung</groupId>
+  		<artifactId>jung-graph-impl</artifactId>
+  		<version>2.0.1</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>net.sf.jung</groupId>
+  		<artifactId>jung-visualization</artifactId>
+  		<version>2.1.1</version>
+  	</dependency>
+  </dependencies>
+</project>

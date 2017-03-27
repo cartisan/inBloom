@@ -8,10 +8,11 @@ MAS little_red_hen {
 	environment: little_red_hen.FarmEnvironment
 
 	agents:
-		hen general_animal[beliefs="is_communal(self)", goals="make_great_again(farm)"];
-		dog general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
-		cow general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
-		pig general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
+		hen test_agent;
+//		hen general_animal[beliefs="is_communal(self)", goals="make_great_again(farm)"];
+//		dog general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
+//		cow general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
+//		pig general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
 
 	aslSourcePath:
 		"src/asl";

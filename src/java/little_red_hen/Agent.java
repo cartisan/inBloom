@@ -3,8 +3,6 @@ package little_red_hen;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import com.google.common.collect.ImmutableList;
-
 public class Agent {
 	public LinkedList<Item> inventory = new LinkedList<Item>();
 	public String name;
@@ -63,7 +61,7 @@ public class Agent {
 		inventory.remove(item);
 	}
 	
-	public boolean has(Class clsNme) {
+	public boolean has(Class<Item> clsNme) {
 		for (Item item : inventory) {
 			if (item.getClass().equals(clsNme)) {
 				return true;
@@ -83,7 +81,7 @@ public class Agent {
 		return null;
 	}
 	
-	public boolean share(Class<Item> itemType, Agent receiver) {
+	public boolean share(Class itemType, Agent receiver) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			receiver.addToInventory(item);
@@ -93,7 +91,7 @@ public class Agent {
 		return false;
 	}
 	
-	public boolean eat(Class itemType) {
+	public boolean eat(Class<Item> itemType) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			

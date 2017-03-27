@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -13,11 +12,13 @@ import com.google.common.collect.ImmutableList;
 import jason.JasonException;
 import jason.infra.centralised.RunCentralisedMAS;
 
+
 public class Launcher extends RunCentralisedMAS {
     
 	protected static Launcher runner = null;
     static Logger logger = Logger.getLogger(Launcher.class.getName());
-    static Class ENV_CLASS = FarmEnvironment.class;
+    static Class<FarmEnvironment> ENV_CLASS = FarmEnvironment.class;
+    
 	
 	private void createMas2j(Collection<Agent> agents) {
 		String fileName = "launcher.mas2j";
@@ -85,6 +86,8 @@ public class Launcher extends RunCentralisedMAS {
 									ImmutableList.of("cazzegiare")
 							)
 						);
+        
+        // TODO: Set up plot graph and save the latest actions somewhere to be able to extend it dynamically
 		
 		runner = new Launcher();
 		runner.createMas2j(agents);

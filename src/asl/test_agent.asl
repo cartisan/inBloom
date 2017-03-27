@@ -1,28 +1,33 @@
 // Agent test_agent in project little_red_hen
 
 /*********** Initial beliefs and goals ***********/
-is_work(plant(_)).
-is_communal(self).
+emotion(anger(_)).
+emotion(happiness(_)).
 
-!plant(wheat).
+anger(0)[target([])].
+happiness(10)[target([bob])].
 
-/*********** Initial rules ***********/
+/* Ideal world */
+!test.
 
-+!X[_] : is_communal(self) & is_work(X) & not asked(X) <-
-	.print("Asking dog to ", X)
-	.send(dog, achieve, help_with(X));
-	+asked(X);
-	!X;
-	-asked(X).
++!test <- !reset_emotion(happiness(_)).
++!reset_emotion(Em) : emotion(Em) <-  
+	-Em;
+	.add_annot(Em,target([]), X);
+	+X(0).
+
+/* Plans 
+!test.
+
++!test <-
+	?happiness(Value);
+	!reset_emotion(happiness(_), happiness(0)).
+
+@reset_emotions[atomic]
++!reset_emotion(Em1, Em2) : emotion(Em1) & emotion(Em2) <-
+	-Em1;
+	+Em2[target([])]. */
+	
 
 
-/* Plans */
 
-+!plant(wheat) <-
-	.print("Planting wheat myself").
-
-//+!reset_emotion(Em) : emotion(Em) <-
-//	?Em(Value);
-//	-Em(Value);
-//	+Em(0);
-//	.add_annot(Em, target([]), X).

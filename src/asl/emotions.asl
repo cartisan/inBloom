@@ -2,19 +2,20 @@
 emo_threshold(10).
 
 // EMOTIONS
-emotion(anger).
-emotion(happiness).
+emotion(anger(_)).
+emotion(happiness(_)).
 
 anger(0)[target([])].
 happiness(0)[target([])].
 
-// HAPPINESS SPECIFIC
 
-// TODO: Abstract to reset_emotion!!!
-+!reset_happiness <-
-	?happiness(X)[target(L)];
-	-happiness(X)[target(L)];
-	+happiness(0)[target([])].
+@reset_emotions[atomic]
++!reset_emotion(Em1, Em2) : emotion(Em1) & emotion(Em2) <-
+	-Em1;
+	+Em2[target([])].
+
+
+// HAPPINESS SPECIFIC
 
 /* happiness causes reward desire */
 +happiness(X)[target(L)] : emo_threshold(X) <-
@@ -27,6 +28,11 @@ happiness(0)[target([])].
 	.send(L, tell, praised(self));
 	+rewarded(L);
 	?rewarded(L).
+	
++rewarded(L) : true <- 
+	!reset_emotion(happiness(_), happiness(0));
+	-rewarded(L);	
+	.succeed_goal(rewarded(L)).
 
 //     +backtracking goal
 -!rewarded(L) : true <- !!rewarded(L).
@@ -39,14 +45,9 @@ happiness(0)[target([])].
 	-rewarded(L);
 	.succeed_goal(rewarded(L)).
 
+
 	
 // ANGER SPECIFIC
-+!reset_anger <-
-	?anger(X)[target(L)];
-	-anger(X)[target(L)];
-	+anger(0)[target([])].
-
-
 /* anger causes punishment desire */
 +anger(X)[target(L)] : emo_threshold(X) <-
 	.remove_plan(helpfullness);
@@ -63,7 +64,7 @@ happiness(0)[target([])].
 	?punished(L).
 
 +punished(L) : true <- 
-	!reset_anger;
+	!reset_emotion(anger(_), anger(0));
 	-punished(L);	
 	.succeed_goal(punished(L)).
 

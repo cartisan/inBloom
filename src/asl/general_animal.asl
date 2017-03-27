@@ -122,6 +122,7 @@ animals([dog, cow, pig]).
 //       increasing anger! Same procedure here! 
 @relax[atomic]
 +!relax <-
+	.my_name(MyName);
 	relax;
 	?happiness(Val)[target(L)];
 	.union([MyName], L, NewL);
