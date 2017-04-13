@@ -1,5 +1,6 @@
 package little_red_hen;
 
+import java.awt.Color;
 import java.awt.Dimension;
 
 import javax.swing.JFrame;
@@ -13,43 +14,16 @@ import edu.uci.ics.jung.graph.Forest;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
+import little_red_hen.graph.Edge;
 import little_red_hen.graph.Transformers;
+import little_red_hen.graph.Vertex;
 
 public class PlotGraph {
 
-	// TODO: find way of automatically numbering nodes and edges on adding them
-
-	public static Graph<String,String> createForest() {
-		// Create Trees for each agent and add the roots
-		DelegateTree<String, String> tree1 = new DelegateTree<String, String>();
-		tree1.addVertex("hen");
-
-		DelegateTree<String, String> tree2 = new DelegateTree<String, String>();
-		tree2.addVertex("dog");
-		
-		DelegateTree<String, String> tree3 = new DelegateTree<String, String>();
-		tree3.addVertex("cow");
-
-		// simulate adding vertices later
-		tree1.addChild("1", "hen", "randomFarming");
-		tree2.addChild("2", "dog", "cazzegiare");
-		tree3.addChild("3", "cow", "cazzegiare2");
-		tree1.addEdge("4", "randomFarming", "cazzegiare");
-		
-		// Set up the forest
-		DelegateForest<String, String> graphForrest = new DelegateForest<String, String>();
-		graphForrest.addTree(tree1);
-		graphForrest.addTree(tree2);
-		graphForrest.addTree(tree3);
-
-		System.out.println("The graphForrest gf= " + graphForrest.toString());
-		
-		return graphForrest;
-	}
-
+	public static Color BGCOLOR = Color.WHITE;
+	
 	public static Graph<String,String> createGraph() {
 		DirectedSparseMultigraph<String, String> graph = new DirectedSparseMultigraph<String, String>();
 		
@@ -72,32 +46,70 @@ public class PlotGraph {
 		
 		return graph;
 	}
-	
-	public static void visualizeGraph(Graph<String, String> g) {
-		// TODO: Change color and starting edge for "root" nodes:
-		// http://stackoverflow.com/questions/21190701/how-change-color-of-specifics-vertex-in-jung
+
+	public static Forest<Vertex, Edge> createForest() {
+		// Create Trees for each agent and add the roots
+		Vertex v1 = new Vertex("hen", Vertex.Type.ROOT); Vertex v2 = new Vertex("dog", Vertex.Type.ROOT); 
+		Vertex v3 = new Vertex("cow", Vertex.Type.ROOT); Vertex v4 = new Vertex("cazzegiare"); 
+		Vertex v5 = new Vertex("cazzegiare"); Vertex v6 = new Vertex("randomFarming");
 		
+		DelegateTree<Vertex, Edge> tree1 = new DelegateTree<Vertex, Edge>();
+		tree1.addVertex(v1);
+
+		DelegateTree<Vertex, Edge> tree2 = new DelegateTree<Vertex, Edge>();
+		tree2.addVertex(v2);
+		
+		DelegateTree<Vertex, Edge> tree3 = new DelegateTree<Vertex, Edge>();
+		tree3.addVertex(v3);
+
+		// simulate adding vertices later
+		
+		tree1.addChild(new Edge(Edge.Type.ROOT), v1, v6);
+		tree2.addChild(new Edge(Edge.Type.ROOT), v2, v4);
+		tree3.addChild(new Edge(Edge.Type.ROOT), v3, v5);
+		tree1.addEdge(new Edge(), v6, v5);
+		
+		// Set up the forest
+		DelegateForest<Vertex, Edge> graphForrest = new DelegateForest<Vertex, Edge>();
+		graphForrest.addTree(tree1);
+		graphForrest.addTree(tree2);
+		graphForrest.addTree(tree3);
+
+		System.out.println("The graphForrest gf= " + graphForrest.toString());
+		
+		return graphForrest;
+	}
+	
+	public static void visualizeGraph(Forest<Vertex, Edge> g) {
 		// TODO: Maybe just implement custom renderer instead of all the transformers?
 		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
 		
+		//Tutorial
+		// http://www.grotto-networking.com/JUNG/JUNG2-Tutorial.pdf
 		
 		// Initialize Layout
-		Layout<String, String> layout = new TreeLayout<String, String>((Forest<String, String>) g, 150);
+		// TODO: Implement custom layout that inherits from tree and draws horizontally
+		Layout<Vertex, Edge> layout = new TreeLayout<Vertex, Edge>(g, 150);
 		
 		// Create a viewing server
-		VisualizationViewer<String, String> vv = new VisualizationViewer<String, String>(layout);
+		VisualizationViewer<Vertex, Edge> vv = new VisualizationViewer<Vertex, Edge>(layout);
 		vv.setPreferredSize(new Dimension(500, 500)); // Sets the viewing area
+//		vv.setOpaque(false);
+		vv.setBackground(BGCOLOR);
 
 		// modify vertices
 		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
 		vv.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
 		vv.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
+		vv.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
+		vv.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
 		vv.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
 		
-		
 		// modify edges
-		vv.getRenderContext().setEdgeShapeTransformer(EdgeShape.line(g));
-		
+		vv.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
+		vv.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vv.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vv.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
 
 		// Start visualization components
 		GraphZoomScrollPane scrollPane= new GraphZoomScrollPane(vv);
@@ -112,10 +124,7 @@ public class PlotGraph {
 	}
 	
 	public static void main(String[] args) {
-		Graph<String, String> forest = createForest();
-//		Graph<String, String> graph = createGraph();
-		
+		Forest<Vertex, Edge> forest = createForest();
 		visualizeGraph(forest);
-//		visualizeGraph(graph);
 	}
 }
