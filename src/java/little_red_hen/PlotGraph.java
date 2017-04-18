@@ -17,6 +17,7 @@ import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import little_red_hen.graph.Edge;
+import little_red_hen.graph.PlotDirectedSparseMultigraph;
 import little_red_hen.graph.Transformers;
 import little_red_hen.graph.Vertex;
 
@@ -24,34 +25,12 @@ public class PlotGraph {
 
 	public static Color BGCOLOR = Color.WHITE;
 	
-	public static Graph<String,String> createGraph() {
-		DirectedSparseMultigraph<String, String> graph = new DirectedSparseMultigraph<String, String>();
-		
-		graph.addVertex("hen");
-		graph.addVertex("dog");
-		graph.addVertex("cow");
-		
-		// simulate first round of action
-		graph.addVertex("randomFarming");
-		graph.addEdge("1", "hen", "randomFarming");
-		
-		graph.addVertex("cazzegiare");
-		graph.addEdge("2", "dog", "cazzegiare");
-		graph.addEdge("3", "randomFarming", "cazzegiare");
-		
-		graph.addVertex("cazzegiare2");
-		graph.addEdge("4", "cow", "cazzegiare2");
-		
-		System.out.println("The graph g= " + graph.toString());
-		
-		return graph;
-	}
-
 	public static Forest<Vertex, Edge> createForest() {
 		// Create Trees for each agent and add the roots
 		Vertex v1 = new Vertex("hen", Vertex.Type.ROOT); Vertex v2 = new Vertex("dog", Vertex.Type.ROOT); 
 		Vertex v3 = new Vertex("cow", Vertex.Type.ROOT); Vertex v4 = new Vertex("cazzegiare"); 
-		Vertex v5 = new Vertex("cazzegiare"); Vertex v6 = new Vertex("randomFarming");
+		Vertex v5 = new Vertex("cazzegiare"); Vertex v6 = new Vertex("askHelp(plant(wheat))");
+		Vertex v7 = new Vertex("plant(wheat)");
 		
 		DelegateTree<Vertex, Edge> tree1 = new DelegateTree<Vertex, Edge>();
 		tree1.addVertex(v1);
@@ -65,12 +44,13 @@ public class PlotGraph {
 		// simulate adding vertices later
 		
 		tree1.addChild(new Edge(Edge.Type.ROOT), v1, v6);
+		tree1.addChild(new Edge(), v6, v7);
 		tree2.addChild(new Edge(Edge.Type.ROOT), v2, v4);
 		tree3.addChild(new Edge(Edge.Type.ROOT), v3, v5);
-		tree1.addEdge(new Edge(), v6, v5);
+		tree1.addEdge(new Edge(Edge.Type.COMMUNICATION), v6, v5);
 		
 		// Set up the forest
-		DelegateForest<Vertex, Edge> graphForrest = new DelegateForest<Vertex, Edge>();
+		DelegateForest<Vertex, Edge> graphForrest = new DelegateForest<Vertex, Edge>(new PlotDirectedSparseMultigraph());
 		graphForrest.addTree(tree1);
 		graphForrest.addTree(tree2);
 		graphForrest.addTree(tree3);
@@ -84,11 +64,9 @@ public class PlotGraph {
 		// TODO: Maybe just implement custom renderer instead of all the transformers?
 		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
 		
-		//Tutorial
+		// Tutorial:
 		// http://www.grotto-networking.com/JUNG/JUNG2-Tutorial.pdf
 		
-		// Initialize Layout
-		// TODO: Implement custom layout that inherits from tree and draws horizontally
 		Layout<Vertex, Edge> layout = new TreeLayout<Vertex, Edge>(g, 150);
 		
 		// Create a viewing server

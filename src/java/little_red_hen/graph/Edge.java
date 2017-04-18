@@ -3,7 +3,7 @@ package little_red_hen.graph;
 import java.util.UUID;
 
 public class Edge {
-	public enum Type { ROOT, TEMPORAL, MOTIVATION }
+	public enum Type { ROOT, TEMPORAL, MOTIVATION, COMMUNICATION }
 	
 	private String id;
 	private Type type;

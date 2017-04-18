@@ -84,7 +84,8 @@ public class Transformers {
         	switch (e.getType()) {
         	case ROOT:
         		return PlotGraph.BGCOLOR;
-//        		return Color.BLACK;
+        	case COMMUNICATION:
+        		return Color.LIGHT_GRAY;
     		default:
     			return Color.BLACK;
         	}
