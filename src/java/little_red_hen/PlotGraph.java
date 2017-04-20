@@ -2,6 +2,9 @@ package little_red_hen;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.logging.Logger;
 
 import javax.swing.JFrame;
 
@@ -9,9 +12,9 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
 import edu.uci.ics.jung.graph.DelegateTree;
-import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import edu.uci.ics.jung.graph.Forest;
-import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.Tree;
+import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
@@ -20,12 +23,79 @@ import little_red_hen.graph.Edge;
 import little_red_hen.graph.PlotDirectedSparseMultigraph;
 import little_red_hen.graph.Transformers;
 import little_red_hen.graph.Vertex;
+import little_red_hen.graph.Vertex.Type;
 
 public class PlotGraph {
+    
+    static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
+	private static PlotGraph plotListener = null;
+	public static boolean isDisplayed = false;
+	
+	public static PlotGraph getPlotListener() {
+		return plotListener;
+	}
+
+	public static void instantiatePlotListener(Collection<Agent> characters) {
+		PlotGraph.plotListener = new PlotGraph(characters);
+	}
 
 	public static Color BGCOLOR = Color.WHITE;
 	
-	public static Forest<Vertex, Edge> createForest() {
+	private HashMap<String, DelegateTree<Vertex, Edge>> charTreeMap;
+	private HashMap<String, Vertex> lastVertexMap;
+	private DelegateForest<Vertex, Edge> graph; 
+	
+	public PlotGraph(Collection<Agent> characters) {
+//		this.graph = new DelegateForest<Vertex, Edge>(new PlotDirectedSparseMultigraph());
+		this.graph = new DelegateForest<Vertex, Edge>();
+	    this.charTreeMap = new HashMap<String, DelegateTree<Vertex, Edge>>();
+	    this.lastVertexMap = new HashMap<String, Vertex>();
+		
+	    // set up a "named" tree for each character
+		for (Agent character : characters) {
+			DelegateTree<Vertex, Edge> tree = new DelegateTree<Vertex, Edge>();
+			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
+			tree.setRoot(root);
+			
+			this.charTreeMap.put(character.name, tree);
+			this.lastVertexMap.put(character.name, root);
+		}
+	}
+	
+	public void addVertex(String character, String label) {
+		this.addVertex(character, label, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
+	}
+
+	public void addVertex(String character, String label, Vertex.Type eventType) {
+		this.addVertex(character, label, eventType, Edge.Type.TEMPORAL);
+	}
+	
+	public void addVertex(String character, String label, Edge.Type linkType) {
+		this.addVertex(character, label, Vertex.Type.EVENT, linkType);
+	}
+	
+	public void addVertex(String character, String label, Vertex.Type eventType, Edge.Type linkType) {
+		DelegateTree<Vertex, Edge> tree = charTreeMap.get(character);
+		Vertex newVertex = new Vertex(label, eventType);
+		Vertex parent = lastVertexMap.get(character);
+		
+		if (parent.getType() == Vertex.Type.ROOT) {
+			linkType = Edge.Type.ROOT;
+		}
+		
+		tree.addChild(new Edge(linkType), parent, newVertex);
+		lastVertexMap.put(character, newVertex);
+	}
+	
+	public void visualizeGraph() {
+		for (Tree<Vertex, Edge> tree : this.charTreeMap.values()) {
+			this.graph.addTree(tree);
+		}
+		
+		PlotGraph.visualizeGraph(this.graph);
+	}
+	
+	private static Forest<Vertex, Edge> createForest() {
 		// Create Trees for each agent and add the roots
 		Vertex v1 = new Vertex("hen", Vertex.Type.ROOT); Vertex v2 = new Vertex("dog", Vertex.Type.ROOT); 
 		Vertex v3 = new Vertex("cow", Vertex.Type.ROOT); Vertex v4 = new Vertex("cazzegiare"); 
@@ -94,11 +164,20 @@ public class PlotGraph {
 
 		String[] name = g.getClass().toString().split("\\.");
 		JFrame frame = new JFrame(name[name.length-1]);
+
+		frame.addWindowListener(new java.awt.event.WindowAdapter() {
+		    @Override
+		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+		        	PlotGraph.isDisplayed = false;
+		        }
+		    }
+		);
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().add(scrollPane);
 		frame.pack();
-		frame.setVisible(true);	
+		frame.setVisible(true);
+		PlotGraph.isDisplayed = true;
 	}
 	
 	public static void main(String[] args) {

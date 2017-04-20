@@ -1,5 +1,7 @@
 package little_red_hen;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
@@ -7,16 +9,20 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
 import jason.infra.centralised.RunCentralisedMAS;
+import jason.runtime.MASConsoleGUI;
 
 
 public class Launcher extends RunCentralisedMAS {
-    
+	static Logger logger = Logger.getLogger(Launcher.class.getName());
 	protected static Launcher runner = null;
-    static Logger logger = Logger.getLogger(Launcher.class.getName());
+    
     static Class<FarmEnvironment> ENV_CLASS = FarmEnvironment.class;
     
 	
@@ -65,6 +71,37 @@ public class Launcher extends RunCentralisedMAS {
         env.setModel(model);
 	}
 	
+	@Override
+	public void finish() {
+		stopAgs();
+		
+		PlotGraph.getPlotListener().visualizeGraph();
+		try {
+			while (PlotGraph.isDisplayed) {
+					Thread.sleep(1500);
+				}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			super.finish();
+		}
+		
+		super.finish();
+	}
+	
+	@Override
+    protected void createStopButton() {
+		logger.info("creating plot aware stop button");
+		// add Button
+        JButton btStop = new JButton("Stop and Draw", new ImageIcon(RunCentralisedMAS.class.getResource("/images/suspend.gif")));
+        btStop.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                MASConsoleGUI.get().setPause(false);
+                runner.finish();
+            }
+        });
+        MASConsoleGUI.get().addButton(btStop);
+    }
+
 	public static void main(String[] args) throws JasonException {
         logger.info("Starting up from Launcher!"); 
         
@@ -88,7 +125,8 @@ public class Launcher extends RunCentralisedMAS {
 						);
         
         // TODO: Set up plot graph and save the latest actions somewhere to be able to extend it dynamically
-		
+        PlotGraph.instantiatePlotListener(agents);
+        
 		runner = new Launcher();
 		runner.createMas2j(agents);
         runner.init(args);
@@ -97,5 +135,6 @@ public class Launcher extends RunCentralisedMAS {
         runner.start();
         runner.waitEnd();
         runner.finish();
+        
 	}
 }

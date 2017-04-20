@@ -36,9 +36,12 @@ public class FarmEnvironment extends Environment {
 
 
     @Override
-    public boolean executeAction(String ag, Structure action) {
+    public boolean executeAction(String agentName, Structure action) {
     	boolean result = false;
-    	Agent agent = model.getAgent(ag);
+    	Agent agent = model.getAgent(agentName);
+    	
+    	// add attempted action to plot graph
+    	PlotGraph.getPlotListener().addVertex(agentName, action.toString());
     	
     	// TODO: this could be done nicer with meta programming!
     	if (action.getFunctor().equals("randomFarming")) {
@@ -71,7 +74,7 @@ public class FarmEnvironment extends Environment {
     		Class<Item> itemType = term2JavaMap.get(action.getTerm(0).toString());
     		boolean success = agent.eat(itemType);
     		
-    		if (success) {logger.info(ag + " ate some " + action.getTerm(0).toString());}
+    		if (success) {logger.info(agentName + " ate some " + action.getTerm(0).toString());}
     		return success;
     	}
 
