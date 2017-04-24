@@ -83,9 +83,9 @@ public class Launcher extends RunCentralisedMAS {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			super.finish();
+		} finally {
+			super.finish();
 		}
-		
-		super.finish();
 	}
 	
 	@Override

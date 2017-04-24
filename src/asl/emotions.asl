@@ -2,17 +2,23 @@
 emo_threshold(10).
 
 // EMOTIONS
-emotion(anger(_)).
-emotion(happiness(_)).
+emotion(angry).
+emotion(happy).
+
+emotion_scale(anger(_)).
+emotion_scale(happiness(_)).
 
 anger(0)[target([])].
 happiness(0)[target([])].
 
 
 @reset_emotions[atomic]
-+!reset_emotion(Em1, Em2) : emotion(Em1) & emotion(Em2) <-
++!reset_emotion(Em1, Em2) : emotion_scale(Em1) & emotion_scale(Em2) <-
 	-Em1;
 	+Em2[target([])].
+	
+//+self(X) : emotion(X) <-
+// 	.plot(emotion, X).
 
 
 // HAPPINESS SPECIFIC

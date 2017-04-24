@@ -26,7 +26,9 @@ animals([dog, cow, pig]).
 	.suspend(make_great_again(farm));
 	!create_bread.	
 
-
++!X : self(relaxing) <-
+	-self(relaxing);
+	!X.
 
 /********************************************/
 /***** Self-specifications  *****************/
@@ -48,12 +50,10 @@ animals([dog, cow, pig]).
 /********************************************/
 /*****      Personality management **********/
 /********************************************/
-// TODO: How to make Java side find sender on
-// itself? 
+
 @helpfullness
 +has(X) : is_communal(self) & is_pleasant(eat(X)) <-
 	.print("Sharing: ", X, " with the others");
-	.my_name(MyName);
 	?animals(Anims);
 	!share(X, Anims);
 	!eat(X).
@@ -103,31 +103,24 @@ animals([dog, cow, pig]).
 	.print("I'll help you with ", X, ", ", Name);
 	help(Name).
 
-+!cazzegiare : is(silence, gold) <-
-	!relax;
-	!cazzegiare.
 
-+!cazzegiare : true	<- 	
-	.print("I'm doing sweet nothing.");
-	+is(silence, gold);
-	!relax;
-	!cazzegiare.
-
-
-
-/********************************************/
-/*****      Action Execution Goals **********/
-/********************************************/
-// TODO: Perform some type of abstraction with
-//       increasing anger! Same procedure here! 
 @relax[atomic]
-+!relax <-
++!cazzegiare <-
+	.print("I'm doing sweet nothing.");
+	!relax;
+	+self(relaxing);
 	.my_name(MyName);
-	relax;
 	?happiness(Val)[target(L)];
 	.union([MyName], L, NewL);
 	+happiness(Val+1)[target(NewL)];
 	-happiness(Val)[target(L)].
+	
+
+/********************************************/
+/*****      Action Execution Goals **********/
+/********************************************/
++!relax <-
+	relax.
 	
 +!randomFarming <-
 	randomFarming.
