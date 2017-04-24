@@ -40,9 +40,12 @@ public class Transformers {
         public Shape apply(Vertex v){
         	VertexShapeFactory<Vertex> factory = new VertexShapeFactory<Vertex>(vertexSizeTransformer,
         																		vertexAspectRatioTransformer);
-        	
-        	Rectangle2D rectangle = factory.getRectangle(v); 
-            return rectangle;
+        	switch (v.getType()) {
+        		case EMOTION:
+        			return factory.getEllipse(v);
+        		default:
+        			return factory.getRectangle(v); 
+        	}	
         }
     };
 

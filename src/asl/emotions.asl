@@ -17,14 +17,18 @@ happiness(0)[target([])].
 	-Em1;
 	+Em2[target([])].
 	
-//+self(X) : emotion(X) <-
-// 	.plot(emotion, X).
++self(X) : emotion(X) <-
+ 	little_red_hen.asl_actions_plot.add_emotion(X).
+ 	
+-self(X) : emotion(X) <-
+ 	little_red_hen.asl_actions_plot.remove_emotion(X).
 
 
 // HAPPINESS SPECIFIC
 
 /* happiness causes reward desire */
 +happiness(X)[target(L)] : emo_threshold(X) <-
+	+self(happy);
 	!rewarded(L).
 	
 /* begin declarative goal  (p. 174; Bordini,2007)*/
@@ -37,7 +41,8 @@ happiness(0)[target([])].
 	
 +rewarded(L) : true <- 
 	!reset_emotion(happiness(_), happiness(0));
-	-rewarded(L);	
+	-rewarded(L);
+	-self(happy);
 	.succeed_goal(rewarded(L)).
 
 //     +backtracking goal
@@ -49,6 +54,7 @@ happiness(0)[target([])].
 //	   +relativised commitment
 -happiness(X) : ~happiness(Y) & Y>9 <- 
 	-rewarded(L);
+	-self(happy);
 	.succeed_goal(rewarded(L)).
 
 
@@ -57,6 +63,7 @@ happiness(0)[target([])].
 /* anger causes punishment desire */
 +anger(X)[target(L)] : emo_threshold(X) <-
 	.remove_plan(helpfullness);
+	+self(angry);
 	!punished(L).
 	
 // begin declarative goal  (p. 174; Bordini,2007)*/
@@ -71,7 +78,9 @@ happiness(0)[target([])].
 
 +punished(L) : true <- 
 	!reset_emotion(anger(_), anger(0));
-	-punished(L);	
+	-punished(L);
+	-self(angry);
+//	.add_plan(helpfullness);		// ASL doesn't support adding plans by label?! -.-
 	.succeed_goal(punished(L)).
 
 //     +backtracking goal
@@ -81,5 +90,7 @@ happiness(0)[target([])].
 +!punished(L) : true <- !!punished(L).
 
 //	   + relativised commitment
--anger(X) : ~anger(Y) & Y>9 <- 
+-anger(X) : ~anger(Y) & Y>9 <-
+	-self(angry);
+	.add_plan(helpfullness);
 	.succeed_goal(punished(L)).
