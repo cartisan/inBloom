@@ -42,7 +42,7 @@ public class FarmModel {
 	}
 	
 	boolean plantWheat(Agent agent) {
-		Wheat wheatItem = (Wheat) agent.get(Wheat.class);
+		Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 		if (!(wheatItem == null)) {
 				if (wheatItem.state == WHEAT_STATE.SEED) {
 					this.wheat.state = WHEAT_STATE.GROWING;
@@ -85,7 +85,7 @@ public class FarmModel {
 	}
 
 	boolean bakeBread(Agent agent) {
-		Wheat wheatItem = (Wheat) agent.get(Wheat.class);
+		Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 		if((!(wheatItem == null)) & (wheatItem.state == WHEAT_STATE.FLOUR)) {
 			agent.addToInventory(new Bread());
 			agent.removeFromInventory(wheatItem);
@@ -101,9 +101,11 @@ public class FarmModel {
 	
 	/****** helper classes *******/
 	
-	class Wheat implements Item {
+	class Wheat extends Item {
+		static final String itemName = "wheat";
 		public WHEAT_STATE state = WHEAT_STATE.SEED;
 		
+		@Override
 		public String literal() {
 			if (state == WHEAT_STATE.SEED) {
 				return "wheat(seed)";
@@ -127,13 +129,21 @@ public class FarmModel {
 		
 			return null;
 		}
-		
-		public boolean isEdible() {
-			return false;
+
+		@Override
+		public String getItemName() {
+			return itemName;
 		}
 	}
 	
-	class Bread implements Item {
+	class Bread extends Item {
+		static final String itemName = "bread";
+		
+		@Override
+		public String getItemName() {
+			return itemName;
+		}
+		
 		public String literal() {
 			return "bread";
 		}

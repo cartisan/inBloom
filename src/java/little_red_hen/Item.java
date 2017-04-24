@@ -1,6 +1,12 @@
 package little_red_hen;
 
-public interface Item {
-	public String literal();
-	public boolean isEdible();
+public abstract class Item {
+	public abstract String getItemName();
+
+	public abstract String literal();
+	
+	public boolean isEdible() {
+		return false;
+	}
+
 }

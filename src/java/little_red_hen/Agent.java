@@ -2,8 +2,11 @@ package little_red_hen;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.logging.Logger;
 
 public class Agent {
+    static Logger logger = Logger.getLogger(Agent.class.getName());
+	
 	public LinkedList<Item> inventory = new LinkedList<Item>();
 	public String name;
 	public String beliefs;
@@ -61,9 +64,9 @@ public class Agent {
 		inventory.remove(item);
 	}
 	
-	public boolean has(Class<Item> clsNme) {
+	public boolean has(String itemType) {
 		for (Item item : inventory) {
-			if (item.getClass().equals(clsNme)) {
+			if (item.getItemName().equals(itemType)) {
 				return true;
 			}
 		}
@@ -71,9 +74,9 @@ public class Agent {
 		return false;
 	}
 	
-	public Item get(Class clsNme) {
+	public Item get(String itemType) {
 		for (Item item : inventory) {
-			if (item.getClass().equals(clsNme)) {
+			if (item.getItemName().equals(itemType)) {
 				return item;
 			}
 		}
@@ -81,7 +84,7 @@ public class Agent {
 		return null;
 	}
 	
-	public boolean share(Class itemType, Agent receiver) {
+	public boolean share(String itemType, Agent receiver) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			receiver.addToInventory(item);
@@ -91,7 +94,7 @@ public class Agent {
 		return false;
 	}
 	
-	public boolean eat(Class<Item> itemType) {
+	public boolean eat(String itemType) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			
@@ -102,6 +105,7 @@ public class Agent {
 				// so food can affect agent in specific
 				// way
 				
+				logger.info(this.name + " ate some " + item.literal() + ".");
 				return true;
 			}
 		}

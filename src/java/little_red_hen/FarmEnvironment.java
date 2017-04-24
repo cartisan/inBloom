@@ -1,22 +1,14 @@
 package little_red_hen;
 
 import java.util.logging.Logger;
-import jason.asSyntax.*;
-import jason.environment.Environment;
-import little_red_hen.FarmModel.Bread;
-import little_red_hen.FarmModel.Wheat;
 
-import com.google.common.collect.ImmutableMap;
+import jason.asSyntax.Literal;
+import jason.asSyntax.Structure;
+import jason.environment.Environment;
 
 public class FarmEnvironment extends Environment {
     
     static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
-	
-    @SuppressWarnings("rawtypes")
-	ImmutableMap<String, Class> term2JavaMap = ImmutableMap.of(
-    	    "bread", (Class)Bread.class,
-    	    "wheat", (Class)Wheat.class
-    	);
     
     private FarmModel model;
 	
@@ -71,11 +63,8 @@ public class FarmEnvironment extends Environment {
     	}
     	
     	if (action.getFunctor().equals("eat")) {
-    		Class<Item> itemType = term2JavaMap.get(action.getTerm(0).toString());
-    		boolean success = agent.eat(itemType);
-    		
-    		if (success) {logger.info(agentName + " ate some " + action.getTerm(0).toString());}
-    		return success;
+    		String item = action.getTerm(0).toString();
+    		result = agent.eat(item);
     	}
 
     	if (action.getFunctor().equals("help")) {
@@ -86,11 +75,8 @@ public class FarmEnvironment extends Environment {
     		String item = action.getTerm(1).toString();
     		String receiver = action.getTerm(2).toString();
     		
-    		Class<Item> itemType = term2JavaMap.get(item);
     		Agent patient = model.getAgent(receiver);
-    		boolean success = agent.share(itemType, patient);
-    		
-    		result = success;
+    		result = agent.share(item, patient);
     	}
     	
     	if (action.getFunctor().equals("relax")) {
