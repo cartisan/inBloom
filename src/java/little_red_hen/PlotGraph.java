@@ -27,7 +27,7 @@ import little_red_hen.graph.Vertex.Type;
 
 public class PlotGraph {
     
-    static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
+    static Logger logger = Logger.getLogger(PlotGraph.class.getName());
 	private static PlotGraph plotListener = null;
 	public static boolean isDisplayed = false;
 	

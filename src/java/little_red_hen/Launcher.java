@@ -107,19 +107,19 @@ public class Launcher extends RunCentralisedMAS {
         
         ImmutableList<Agent> agents = ImmutableList.of(
 							new Agent("hen",
-									ImmutableList.of("is_communal(self)"),
+									ImmutableList.of("self(communal)"),
 									ImmutableList.of("make_great_again(farm)")
 							),
 							new Agent("dog",
-									ImmutableList.of("is_lazy(self)"),
+									ImmutableList.of("self(lazy)"),
 									ImmutableList.of("cazzegiare")
 							),
 							new Agent("cow",
-									ImmutableList.of("is_lazy(self)"),
+									ImmutableList.of("self(lazy)"),
 									ImmutableList.of("cazzegiare")
 							),
 							new Agent("pig",
-									ImmutableList.of("is_lazy(self)"),
+									ImmutableList.of("self(lazy)"),
 									ImmutableList.of("cazzegiare")
 							)
 						);
