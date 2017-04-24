@@ -51,8 +51,10 @@ animals([dog, cow, pig]).
 /*****      Personality management **********/
 /********************************************/
 
+{ include("personality.asl") }
+
 @helpfullness
-+has(X) : is_communal(self) & is_pleasant(eat(X)) <-
++has(X) : self(communal) & is_pleasant(eat(X)) <-
 	.print("Sharing: ", X, " with the others");
 	?animals(Anims);
 	!share(X, Anims);
@@ -60,7 +62,7 @@ animals([dog, cow, pig]).
 
 // TODO: Wait for response before do yourself?
 @communality
-+!X[_] : is_communal(self) & is_work(X) & not asked(X) <-
++!X[_] : self(communal) & is_work(X) & not asked(X) <-
 	.print("Asking farm animals to help with ", X)
 	?animals(A);
 	.send(A, achieve, help_with(X));
@@ -69,7 +71,7 @@ animals([dog, cow, pig]).
 	-asked(X).
 	
 @lazyness
-+!X[_] : is_lazy(self) & is_work(X) <-
++!X[_] : self(lazy) & is_work(X) <-
 	.print(X, " is too much work for me!");
 	.suspend(X).	
 
@@ -94,7 +96,7 @@ animals([dog, cow, pig]).
 // But how do we otherwise inform of such
 // a rejection
 +!help_with(X)[source(Name)]
-	: is_lazy(self) & is_work(X) <-
+	: self(lazy) & is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
 	.my_name(MyName);
 	.send(Name, tell, rejected_help_request(MyName, X)).
