@@ -17,6 +17,8 @@ import com.google.common.collect.ImmutableList;
 import jason.JasonException;
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
+import little_red_hen.jason.FarmEnvironment;
+import little_red_hen.jason.PlotAwareAgArch;
 
 
 public class Launcher extends RunCentralisedMAS {
@@ -24,6 +26,7 @@ public class Launcher extends RunCentralisedMAS {
 	protected static Launcher runner = null;
     
     static Class<FarmEnvironment> ENV_CLASS = FarmEnvironment.class;
+    static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
     
 	
 	private void createMas2j(Collection<Agent> agents) {
@@ -39,9 +42,10 @@ public class Launcher extends RunCentralisedMAS {
 		    
 		    for (Agent agent : agents) {
 		    	String line = "		" + agent.name + 
-		    			MessageFormat.format(" general_animal[beliefs=\"{0}\", goals=\"{1}\"];",
+		    			MessageFormat.format(" general_animal[beliefs=\"{0}\", goals=\"{1}\"]",
 		    								 agent.beliefs,
-		    								 agent.goals);
+		    								 agent.goals) +
+		    	" agentArchClass " + AG_ARCH_CLASS.getName() + ";";   
 		    	writer.println(line);
 		    }
 		    

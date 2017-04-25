@@ -20,11 +20,11 @@ public class FarmModel {
 		this.wheat = null;
 	}
 	
-	Agent getAgent(String name) {
+	public Agent getAgent(String name) {
 		return this.agents.get(name);
 	}
 	
-	boolean randomFarming(Agent agent) {
+	public boolean randomFarming(Agent agent) {
 		this.actionCount += 1;
 		logger.info("Some farming activity was performed");
 		
@@ -41,7 +41,7 @@ public class FarmModel {
 		return true;
 	}
 	
-	boolean plantWheat(Agent agent) {
+	public boolean plantWheat(Agent agent) {
 		Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 		if (!(wheatItem == null)) {
 				if (wheatItem.state == WHEAT_STATE.SEED) {
@@ -54,7 +54,7 @@ public class FarmModel {
 		return false;
 	}
 	
-	boolean tendWheat() {
+	public boolean tendWheat() {
 		if ((this.wheat.state == WHEAT_STATE.GROWING)){
 			this.wheat.state = WHEAT_STATE.RIPE;
 			logger.info("Wheat has grown and is ripe now");
@@ -64,7 +64,7 @@ public class FarmModel {
 		return false;
 	}
 	
-	boolean harvestWheat() {
+	public boolean harvestWheat() {
 		if ((this.wheat.state == WHEAT_STATE.RIPE)){
 			this.wheat.state = WHEAT_STATE.HARVESTED;
 			logger.info("Wheat was harvested");
@@ -74,7 +74,7 @@ public class FarmModel {
 		return false;
 	}
 	
-	boolean grindWheat() {
+	public boolean grindWheat() {
 		if ((this.wheat.state == WHEAT_STATE.HARVESTED)){
 			this.wheat.state = WHEAT_STATE.FLOUR;
 			logger.info("Wheat was ground to flour");
@@ -84,7 +84,7 @@ public class FarmModel {
 		return false;
 	}
 
-	boolean bakeBread(Agent agent) {
+	public boolean bakeBread(Agent agent) {
 		Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 		if((!(wheatItem == null)) & (wheatItem.state == WHEAT_STATE.FLOUR)) {
 			agent.addToInventory(new Bread());
@@ -101,7 +101,7 @@ public class FarmModel {
 	
 	/****** helper classes *******/
 	
-	class Wheat extends Item {
+	public class Wheat extends Item {
 		static final String itemName = "wheat";
 		public WHEAT_STATE state = WHEAT_STATE.SEED;
 		

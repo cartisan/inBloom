@@ -12,7 +12,7 @@ public class remove_emotion extends DefaultInternalAction {
 	
 	@Override
     public Object execute(TransitionSystem ts, Unifier un, Term[] args) throws Exception {
-		PlotGraph.getPlotListener().addVertex(ts.getUserAgArch().getAgName(), "-" + args[0].toString(), Vertex.Type.EMOTION);
+		PlotGraph.getPlotListener().addEvent(ts.getUserAgArch().getAgName(), "-" + args[0].toString(), Vertex.Type.EMOTION);
         return true;
     }
 

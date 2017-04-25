@@ -62,21 +62,21 @@ public class PlotGraph {
 		}
 	}
 	
-	public void addVertex(String character, String label) {
-		this.addVertex(character, label, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
+	public void addEvent(String character, String event) {
+		this.addEvent(character, event, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
 	}
 
-	public void addVertex(String character, String label, Vertex.Type eventType) {
-		this.addVertex(character, label, eventType, Edge.Type.TEMPORAL);
+	public void addEvent(String character, String event, Vertex.Type eventType) {
+		this.addEvent(character, event, eventType, Edge.Type.TEMPORAL);
 	}
 	
-	public void addVertex(String character, String label, Edge.Type linkType) {
-		this.addVertex(character, label, Vertex.Type.EVENT, linkType);
+	public void addEvent(String character, String event, Edge.Type linkType) {
+		this.addEvent(character, event, Vertex.Type.EVENT, linkType);
 	}
 	
-	public void addVertex(String character, String label, Vertex.Type eventType, Edge.Type linkType) {
+	public void addEvent(String character, String event, Vertex.Type eventType, Edge.Type linkType) {
 		DelegateTree<Vertex, Edge> tree = charTreeMap.get(character);
-		Vertex newVertex = new Vertex(label, eventType);
+		Vertex newVertex = new Vertex(event, eventType);
 		Vertex parent = lastVertexMap.get(character);
 		
 		if (parent.getType() == Vertex.Type.ROOT) {
@@ -85,6 +85,22 @@ public class PlotGraph {
 		
 		tree.addChild(new Edge(linkType), parent, newVertex);
 		lastVertexMap.put(character, newVertex);
+	}
+	
+	public void addRequest(String sender, String receiver, String message) {
+		// add sender-side part of event
+		addEvent(sender, message);
+		
+		// add edge linking to receiver
+		DelegateTree<Vertex, Edge> treeRec = charTreeMap.get(receiver);
+		Vertex receiverParentVertex = lastVertexMap.get(receiver);
+		Vertex receiverNewVertex = new Vertex("", Vertex.Type.EVENT);
+		treeRec.addChild(new Edge(Edge.Type.TEMPORAL), receiverParentVertex, receiverNewVertex);
+		
+		DelegateTree<Vertex, Edge> treeSend = charTreeMap.get(sender);
+		Vertex senderVertex = lastVertexMap.get(sender);
+		
+		treeSend.addEdge(new Edge(Edge.Type.COMMUNICATION), senderVertex, receiverNewVertex);
 	}
 	
 	public void visualizeGraph() {

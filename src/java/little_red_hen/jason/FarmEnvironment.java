@@ -1,10 +1,13 @@
-package little_red_hen;
+package little_red_hen.jason;
 
 import java.util.logging.Logger;
 
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.environment.Environment;
+import little_red_hen.Agent;
+import little_red_hen.FarmModel;
+import little_red_hen.PlotGraph;
 
 public class FarmEnvironment extends Environment {
     
@@ -33,7 +36,7 @@ public class FarmEnvironment extends Environment {
     	Agent agent = model.getAgent(agentName);
     	
     	// add attempted action to plot graph
-    	PlotGraph.getPlotListener().addVertex(agentName, action.toString());
+    	PlotGraph.getPlotListener().addEvent(agentName, action.toString());
     	
     	// TODO: this could be done nicer with meta programming!
     	if (action.getFunctor().equals("randomFarming")) {
