@@ -19,7 +19,7 @@ public class Transformers {
 	static private Font FONT = new Font("Courier New", Font.PLAIN, 12);
 	static private int HEIGHT = 20;
 	
-	static private Function<Vertex, Integer> vertexSizeTransformer = new Function<Vertex,Integer>(){
+	static public Function<Vertex, Integer> vertexSizeTransformer = new Function<Vertex,Integer>(){
         public Integer apply(Vertex v){
         	// arcane hack to get width of our string given our font
         	int width = (int) FONT.getStringBounds(v.toString(), 
@@ -29,7 +29,7 @@ public class Transformers {
         }
     };
     
-    static private Function<Vertex, Float> vertexAspectRatioTransformer = new Function<Vertex,Float>(){
+    static public Function<Vertex, Float> vertexAspectRatioTransformer = new Function<Vertex,Float>(){
     	public Float apply(Vertex v){
     		float aspectRatio = (HEIGHT / (float) vertexSizeTransformer.apply(v)); 
     		return aspectRatio;

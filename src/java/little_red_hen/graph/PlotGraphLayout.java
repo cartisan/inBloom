@@ -5,102 +5,84 @@ import java.awt.Point;
 import java.util.Collection;
 
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
-import edu.uci.ics.jung.algorithms.layout.TreeLayout;
-import edu.uci.ics.jung.algorithms.layout.util.RandomLocationTransformer;
-import edu.uci.ics.jung.graph.Forest;
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.util.TreeUtils;
 
-@Deprecated
-public class PlotGraphLayout<V,E> extends TreeLayout<V, E> {
+public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 
-    public PlotGraphLayout(Forest<V, E> graph)  {
+	protected PlotDirectedSparseGraph graph;
+	
+    // The horizontal/vertical vertex spacing.
+    protected int distX = 50;
+    protected int distY = 50;
+	
+    protected transient Point m_currentPoint = new Point();
+    
+    public PlotGraphLayout(PlotDirectedSparseGraph graph)  {
         super(graph);
+        this.size = new Dimension(600,600);
+    	this.graph = graph;
+        this.buildGraph();
     }
     
+	public void initialize() {
+		// Intentionally empty
+	}
 
-    public PlotGraphLayout(Forest<V, E> graph, int distx)  {
-        super(graph, distx);
-    }
-
-
-    @Override
-    protected void buildTree() {
-        this.m_currentPoint = new Point(20, 20);
-        Collection<V> roots = TreeUtils.getRoots(graph);
+	public void reset() {
+		// Intentionally empty
+		
+	}
+    
+    protected void buildGraph() {
+        this.m_currentPoint = new Point(200, 0);
+        Collection<Vertex> roots = graph.getRoots();
+        
         if (roots.size() > 0 && graph != null) {
-        	this.m_currentPoint.x += this.distX;
-        	this.m_currentPoint.y += this.distY;
-        	
-        	
-        	
-       		calculateDimensionX(roots);
-       		for(V v : roots) {
-        		m_currentPoint.x += this.basePositions.get(v)/2 + this.distX;
-        		buildTree(v, this.m_currentPoint.x);
+        	// build each column
+       		for(Vertex v : roots) {
+        		buildGraph(v);
+        		
+        		// the next root should start after longest vertex in this column
+        		this.distX = calculateDimensionX(v);
+        		m_currentPoint.x += this.distX + 50;
         	}
         }
     }
 
-    @Override
-    protected void buildTree(V v, int x) {
+    protected void buildGraph(Vertex v) {
+        //go one level further down
+        this.m_currentPoint.y += this.distY;
+    	
+        // adopt size if current point outgrows it
+    	if(this.m_currentPoint.x > size.width - distX) 
+    		this.size.width = this.m_currentPoint.x + distX;
+    	
+    	if(this.m_currentPoint.y > size.height - distY) 
+    		this.size.height = this.m_currentPoint.y + distY;
 
-        if (alreadyDone.add(v)) {
-            //go one level further down
-            this.m_currentPoint.y += this.distY;
-            this.m_currentPoint.x = x;
+    	// save vertex location
+    	locations.getUnchecked(v).setLocation(m_currentPoint);
 
-            this.setCurrentPositionFor(v);
-
-            int sizeXofCurrent = basePositions.get(v);
-
-            int lastX = x - sizeXofCurrent / 2;
-
-            int sizeXofChild;
-            int startXofChild;
-
-            for (V element : graph.getSuccessors(v)) {
-                sizeXofChild = this.basePositions.get(element);
-                startXofChild = lastX + sizeXofChild / 2;
-                buildTree(element, startXofChild);
-                lastX = lastX + sizeXofChild + distX;
-            }
-            this.m_currentPoint.y -= this.distY;
+    	// compute position for child
+        for (Vertex child : graph.getCharSuccessors(v)) {
+            buildGraph(child);
         }
+        
+        this.m_currentPoint.y -= this.distY;
     }
     
-    private int calculateDimensionX(V v) {
+    private int calculateDimensionX(Vertex vertex) {
+    	int width = Transformers.vertexSizeTransformer.apply(vertex);
 
-        int size = 0;
-        int childrenNum = graph.getSuccessors(v).size();
-
-        if (childrenNum != 0) {
-            for (V element : graph.getSuccessors(v)) {
-                size += calculateDimensionX(element) + distX;
-            }
-        }
-        size = Math.max(0, size - distX);
-        basePositions.put(v, size);
-
-        return size;
-    }
-
-    private int calculateDimensionX(Collection<V> roots) {
-
-    	int size = 0;
-    	for(V v : roots) {
-    		int childrenNum = graph.getSuccessors(v).size();
-
-    		if (childrenNum != 0) {
-    			for (V element : graph.getSuccessors(v)) {
-    				size += calculateDimensionX(element) + distX;
-    			}
+    	for (Vertex v : graph.getSuccessors(vertex)) {
+    		int new_width = calculateDimensionX(v);
+    		if (new_width > width) {
+    			width = new_width;
     		}
-    		size = Math.max(0, size - distX);
-    		basePositions.put(v, size);
     	}
-
-    	return size;
+    	
+    	if (distX > width) {
+    		return distX;
+    	}
+    	return width;
     }
-
 }

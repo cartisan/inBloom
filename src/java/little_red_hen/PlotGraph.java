@@ -12,18 +12,18 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.TreeLayout;
 import edu.uci.ics.jung.graph.DelegateForest;
 import edu.uci.ics.jung.graph.DelegateTree;
+import edu.uci.ics.jung.graph.DirectedSparseGraph;
 import edu.uci.ics.jung.graph.Forest;
 import edu.uci.ics.jung.graph.Tree;
-import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import little_red_hen.graph.Edge;
-import little_red_hen.graph.PlotDirectedSparseMultigraph;
+import little_red_hen.graph.PlotDirectedSparseGraph;
+import little_red_hen.graph.PlotGraphLayout;
 import little_red_hen.graph.Transformers;
 import little_red_hen.graph.Vertex;
-import little_red_hen.graph.Vertex.Type;
 
 public class PlotGraph {
     
@@ -41,23 +41,18 @@ public class PlotGraph {
 
 	public static Color BGCOLOR = Color.WHITE;
 	
-	private HashMap<String, DelegateTree<Vertex, Edge>> charTreeMap;
 	private HashMap<String, Vertex> lastVertexMap;
-	private DelegateForest<Vertex, Edge> graph; 
+	private PlotDirectedSparseGraph graph; 
 	
 	public PlotGraph(Collection<Agent> characters) {
-//		this.graph = new DelegateForest<Vertex, Edge>(new PlotDirectedSparseMultigraph());
-		this.graph = new DelegateForest<Vertex, Edge>();
-	    this.charTreeMap = new HashMap<String, DelegateTree<Vertex, Edge>>();
+		this.graph = new PlotDirectedSparseGraph();
 	    this.lastVertexMap = new HashMap<String, Vertex>();
 		
 	    // set up a "named" tree for each character
 		for (Agent character : characters) {
-			DelegateTree<Vertex, Edge> tree = new DelegateTree<Vertex, Edge>();
 			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
-			tree.setRoot(root);
+			graph.addRoot(root);
 			
-			this.charTreeMap.put(character.name, tree);
 			this.lastVertexMap.put(character.name, root);
 		}
 	}
@@ -75,7 +70,6 @@ public class PlotGraph {
 	}
 	
 	public void addEvent(String character, String event, Vertex.Type eventType, Edge.Type linkType) {
-		DelegateTree<Vertex, Edge> tree = charTreeMap.get(character);
 		Vertex newVertex = new Vertex(event, eventType);
 		Vertex parent = lastVertexMap.get(character);
 		
@@ -83,7 +77,7 @@ public class PlotGraph {
 			linkType = Edge.Type.ROOT;
 		}
 		
-		tree.addChild(new Edge(linkType), parent, newVertex);
+		graph.addEdge(new Edge(linkType), parent, newVertex);
 		lastVertexMap.put(character, newVertex);
 	}
 	
@@ -91,73 +85,31 @@ public class PlotGraph {
 		// add sender-side part of event
 		addEvent(sender, message);
 		
-		// add edge linking to receiver
-		DelegateTree<Vertex, Edge> treeRec = charTreeMap.get(receiver);
-		Vertex receiverParentVertex = lastVertexMap.get(receiver);
-		Vertex receiverNewVertex = new Vertex("", Vertex.Type.EVENT);
-		treeRec.addChild(new Edge(Edge.Type.TEMPORAL), receiverParentVertex, receiverNewVertex);
+		// add receiver vertex linking to last top
+		addEvent(receiver, "");
 		
-		DelegateTree<Vertex, Edge> treeSend = charTreeMap.get(sender);
 		Vertex senderVertex = lastVertexMap.get(sender);
-		
-		treeSend.addEdge(new Edge(Edge.Type.COMMUNICATION), senderVertex, receiverNewVertex);
+		Vertex receiverVertex = lastVertexMap.get(receiver);
+		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), senderVertex, receiverVertex);
 	}
 	
 	public void visualizeGraph() {
-		for (Tree<Vertex, Edge> tree : this.charTreeMap.values()) {
-			this.graph.addTree(tree);
-		}
-		
 		PlotGraph.visualizeGraph(this.graph);
 	}
 	
-	private static Forest<Vertex, Edge> createForest() {
-		// Create Trees for each agent and add the roots
-		Vertex v1 = new Vertex("hen", Vertex.Type.ROOT); Vertex v2 = new Vertex("dog", Vertex.Type.ROOT); 
-		Vertex v3 = new Vertex("cow", Vertex.Type.ROOT); Vertex v4 = new Vertex("cazzegiare"); 
-		Vertex v5 = new Vertex("cazzegiare"); Vertex v6 = new Vertex("askHelp(plant(wheat))");
-		Vertex v7 = new Vertex("plant(wheat)");
-		
-		DelegateTree<Vertex, Edge> tree1 = new DelegateTree<Vertex, Edge>();
-		tree1.addVertex(v1);
-
-		DelegateTree<Vertex, Edge> tree2 = new DelegateTree<Vertex, Edge>();
-		tree2.addVertex(v2);
-		
-		DelegateTree<Vertex, Edge> tree3 = new DelegateTree<Vertex, Edge>();
-		tree3.addVertex(v3);
-
-		// simulate adding vertices later
-		
-		tree1.addChild(new Edge(Edge.Type.ROOT), v1, v6);
-		tree1.addChild(new Edge(), v6, v7);
-		tree2.addChild(new Edge(Edge.Type.ROOT), v2, v4);
-		tree3.addChild(new Edge(Edge.Type.ROOT), v3, v5);
-		tree1.addEdge(new Edge(Edge.Type.COMMUNICATION), v6, v5);
-		
-		// Set up the forest
-		DelegateForest<Vertex, Edge> graphForrest = new DelegateForest<Vertex, Edge>(new PlotDirectedSparseMultigraph());
-		graphForrest.addTree(tree1);
-		graphForrest.addTree(tree2);
-		graphForrest.addTree(tree3);
-
-		System.out.println("The graphForrest gf= " + graphForrest.toString());
-		
-		return graphForrest;
-	}
-	
-	public static void visualizeGraph(Forest<Vertex, Edge> g) {
-		// TODO: Maybe just implement custom renderer instead of all the transformers?
+	public static void visualizeGraph(PlotDirectedSparseGraph g) {
+		// Maybe just implement custom renderer instead of all the transformers?
 		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
 		
 		// Tutorial:
 		// http://www.grotto-networking.com/JUNG/JUNG2-Tutorial.pdf
 		
-		Layout<Vertex, Edge> layout = new TreeLayout<Vertex, Edge>(g, 150);
+//		Layout<Vertex, Edge> layout = new TreeLayout<Vertex, Edge>(g, 150);
+		Layout<Vertex, Edge> layout = new PlotGraphLayout(g);
 		
 		// Create a viewing server
 		VisualizationViewer<Vertex, Edge> vv = new VisualizationViewer<Vertex, Edge>(layout);
-		vv.setPreferredSize(new Dimension(500, 500)); // Sets the viewing area
+		vv.setPreferredSize(new Dimension(600, 600)); // Sets the viewing area
 //		vv.setOpaque(false);
 		vv.setBackground(BGCOLOR);
 
@@ -196,8 +148,31 @@ public class PlotGraph {
 		PlotGraph.isDisplayed = true;
 	}
 	
+	private static PlotDirectedSparseGraph createTestGraph() {
+		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
+		
+		// Create Trees for each agent and add the roots
+		Vertex v1 = new Vertex("hen", Vertex.Type.ROOT); Vertex v2 = new Vertex("dog", Vertex.Type.ROOT); 
+		Vertex v3 = new Vertex("cow", Vertex.Type.ROOT); Vertex v4 = new Vertex("cazzegiare"); 
+		Vertex v5 = new Vertex("cazzegiare"); Vertex v6 = new Vertex("askHelp(plant(wheat))");
+		Vertex v7 = new Vertex("plant(wheat)");
+		
+		graph.addRoot(v1);
+		graph.addRoot(v2);
+		graph.addRoot(v3);
+		
+		// simulate adding vertices later
+		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v6);
+		graph.addEdge(new Edge(), v6, v7);
+		graph.addEdge(new Edge(Edge.Type.ROOT), v2, v4);
+		graph.addEdge(new Edge(Edge.Type.ROOT), v3, v5);
+		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), v6, v5);
+		
+		return graph;
+	}
+	
 	public static void main(String[] args) {
-		Forest<Vertex, Edge> forest = createForest();
+		PlotDirectedSparseGraph forest = createTestGraph();
 		visualizeGraph(forest);
 	}
 }
