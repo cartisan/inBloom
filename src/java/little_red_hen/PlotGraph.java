@@ -82,11 +82,18 @@ public class PlotGraph {
 	}
 	
 	public void addRequest(String sender, String receiver, String message) {
-		// add sender-side part of event
-		addEvent(sender, message);
+		if (!(lastVertexMap.get(sender).getLabel().equals(message))) {
+			// this message is different from content of last event,
+			// means was not send to another receiver, too
+			addEvent(sender, message);
+		}
+		// same message was send before to another recipient 
+		// no need to add a new vertex, just reuse the last one
 		
-		// add receiver vertex linking to last top
-		addEvent(receiver, "");
+		// add receiver vertex linking to last top, same procedure as with sender
+		if (!(lastVertexMap.get(receiver).getLabel().equals(""))) {
+			addEvent(receiver, "");
+		}
 		
 		Vertex senderVertex = lastVertexMap.get(sender);
 		Vertex receiverVertex = lastVertexMap.get(receiver);
