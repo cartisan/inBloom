@@ -3,7 +3,7 @@ package little_red_hen.graph;
 import java.util.UUID;
 
 public class Vertex {
-	public enum Type { ROOT, EVENT, EMOTION }
+	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT }
 
 	private String id;
 	private String label;

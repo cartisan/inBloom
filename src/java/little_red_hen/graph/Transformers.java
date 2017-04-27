@@ -41,6 +41,8 @@ public class Transformers {
         	VertexShapeFactory<Vertex> factory = new VertexShapeFactory<Vertex>(vertexSizeTransformer,
         																		vertexAspectRatioTransformer);
         	switch (v.getType()) {
+        		case SPEECHACT:
+        			return factory.getRoundRectangle(v);
         		case EMOTION:
         			return factory.getEllipse(v);
         		default:
@@ -60,6 +62,8 @@ public class Transformers {
         	switch (v.getType()) {
 	        	case ROOT:
 	        		return PlotGraph.BGCOLOR;
+	        	case SPEECHACT:
+	        		return Color.getHSBColor(Float.valueOf("0"), Float.valueOf("0"), Float.valueOf("0.95"));
         		default:
         			return Color.LIGHT_GRAY;
         	}
