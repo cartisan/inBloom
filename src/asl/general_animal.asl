@@ -2,8 +2,7 @@
 /***** General knowledge  *******************/
 /*****      Common sense beliefs ************/
 /********************************************/
-is_work(create_bread).
-is_work(make_great_again(_)).
+
 is_work(plant(_)).
 is_work(tend(_)).
 is_work(harvest(_)).
@@ -23,12 +22,9 @@ animals([dog, cow, pig]).
 	!eat(X).
 	
 +has(wheat(seed)) <- 
-	.suspend(make_great_again(farm));
-	!create_bread.	
-
-+!X : self(relaxing) <-
-	-self(relaxing);
-	!X.
+	+self(has_purpose);
+	!create_bread;
+	-self(has_purpose).	
 
 /********************************************/
 /***** Self-specifications  *****************/
@@ -37,12 +33,8 @@ animals([dog, cow, pig]).
 
 { include("emotions.asl") }
 	
-@aPlan[atomic]
 +rejected_help_request(Name, Req) <-
-	?anger(X)[target(L)];
-	.union([Name], L, NewL);
-	-anger(X)[target(L)];
-	+anger(X+1)[target(NewL)];
+	!!increment_anger(Name);
 	.abolish(rejected_help_request(Name, Req)).
 
 
@@ -73,7 +65,7 @@ animals([dog, cow, pig]).
 @lazyness
 +!X[_] : self(lazy) & is_work(X) <-
 	.print(X, " is too much work for me!");
-	.suspend(X).	
+	.fail(X).	
 
 
 
@@ -81,9 +73,18 @@ animals([dog, cow, pig]).
 /***** Plans  *******************************/
 /********************************************/
 
-+!make_great_again(farm) : true	<- 
-	!randomFarming;
-	!make_great_again(farm).
+//TODO: how to change this to not have to suspend intention?
++!farm_work <- 
+	!random_farming;
+	!farm_work.
+
++self(has_purpose) <-
+	.print("Life has a meaning!");
+	.suspend(farm_work).
+
+-self(has_purpose) <-
+	.print("...aaaaaaand it's gone.");
+	!farm_work.
 	
 +!create_bread : has(wheat(seed)) <- 	
 	!plant(wheat);
@@ -106,17 +107,13 @@ animals([dog, cow, pig]).
 	help(Name).
 
 
-@relax[atomic]
 +!cazzegiare <-
 	.print("I'm doing sweet nothing.");
-	!relax;
-	+self(relaxing);
 	.my_name(MyName);
-	?happiness(Val)[target(L)];
-	.union([MyName], L, NewL);
-	+happiness(Val+1)[target(NewL)];
-	-happiness(Val)[target(L)].
-	
+	!!increment_happiness(MyName);
+	!relax;
+	!cazzegiare.
+
 
 /********************************************/
 /*****      Action Execution Goals **********/
@@ -124,8 +121,8 @@ animals([dog, cow, pig]).
 +!relax <-
 	relax.
 	
-+!randomFarming <-
-	randomFarming.
++!random_farming <-
+	random_farming.
 
 +!plant(wheat) <-
 	plant(wheat).

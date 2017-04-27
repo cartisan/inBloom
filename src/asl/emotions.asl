@@ -17,6 +17,20 @@ happiness(0)[target([])].
 	-Em1;
 	+Em2[target([])].
 	
+@increment_happiness[atomic]
++!increment_happiness(Name) <-
+	?happiness(Val)[target(L)];
+	.union([Name], L, NewL);
+	+happiness(Val+1)[target(NewL)];
+	-happiness(Val)[target(L)].
+
+@increment_anger[atomic]
++!increment_anger(Name) <-
+	?anger(Val)[target(L)];
+	.union([Name], L, NewL);
+	-anger(Val)[target(L)];
+	+anger(Val+1)[target(NewL)].
+	
 +self(X) : emotion(X) <-
  	little_red_hen.asl_actions_plot.add_emotion(X).
  	
