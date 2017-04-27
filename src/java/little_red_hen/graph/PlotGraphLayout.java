@@ -70,7 +70,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     private int calculateDimensionX(Vertex vertex) {
     	int width = Transformers.vertexSizeTransformer.apply(vertex);
 
-    	for (Vertex v : this.graph.getSuccessors(vertex)) {
+    	for (Vertex v : ((PlotDirectedSparseGraph) this.graph).getCharSuccessors(vertex)) {
     		int new_width = calculateDimensionX(v);
     		if (new_width > width) {
     			width = new_width;
