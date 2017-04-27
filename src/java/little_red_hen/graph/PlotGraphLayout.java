@@ -8,8 +8,6 @@ import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 
 public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 
-	protected PlotDirectedSparseGraph graph;
-	
     // The horizontal/vertical vertex spacing.
     protected int distX = 50;
     protected int distY = 50;
@@ -19,7 +17,6 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     public PlotGraphLayout(PlotDirectedSparseGraph graph)  {
         super(graph);
         this.size = new Dimension(600,600);
-    	this.graph = graph;
         this.buildGraph();
     }
     
@@ -34,9 +31,9 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     
     protected void buildGraph() {
         this.m_currentPoint = new Point(200, 0);
-        Collection<Vertex> roots = graph.getRoots();
+        Collection<Vertex> roots = ((PlotDirectedSparseGraph) this.graph).getRoots();
         
-        if (roots.size() > 0 && graph != null) {
+        if (roots.size() > 0 && this.graph != null) {
         	// build each column
        		for(Vertex v : roots) {
         		buildGraph(v);
@@ -63,7 +60,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     	locations.getUnchecked(v).setLocation(m_currentPoint);
 
     	// compute position for child
-        for (Vertex child : graph.getCharSuccessors(v)) {
+        for (Vertex child : ((PlotDirectedSparseGraph) this.graph).getCharSuccessors(v)) {
             buildGraph(child);
         }
         
@@ -73,7 +70,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     private int calculateDimensionX(Vertex vertex) {
     	int width = Transformers.vertexSizeTransformer.apply(vertex);
 
-    	for (Vertex v : graph.getSuccessors(vertex)) {
+    	for (Vertex v : this.graph.getSuccessors(vertex)) {
     		int new_width = calculateDimensionX(v);
     		if (new_width > width) {
     			width = new_width;
