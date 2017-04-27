@@ -1,12 +1,16 @@
 package little_red_hen.jason;
 
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.environment.Environment;
+import jason.runtime.MASConsoleGUI;
+import jason.util.Pair;
 import little_red_hen.Agent;
 import little_red_hen.FarmModel;
+import little_red_hen.Launcher;
 import little_red_hen.PlotGraph;
 
 public class FarmEnvironment extends Environment {
@@ -14,7 +18,17 @@ public class FarmEnvironment extends Environment {
     static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
     
     private FarmModel model;
+    private HashMap<String, Pair<String, Integer>> agentActionCount;
+
 	
+	public HashMap<String, Pair<String, Integer>> getAgentActionCount() {
+		return agentActionCount;
+	}
+
+	public void setAgentActionCount(HashMap<String, Pair<String, Integer>> agentActionCount) {
+		this.agentActionCount = agentActionCount;
+	}
+
 	public FarmModel getModel() {
 		return model;
 	}
@@ -23,7 +37,6 @@ public class FarmEnvironment extends Environment {
 		this.model = model;
 		updatePercepts();
 	}
-
 
 	public FarmEnvironment() {
 		
@@ -39,7 +52,7 @@ public class FarmEnvironment extends Environment {
     	PlotGraph.getPlotListener().addEvent(agentName, action.toString());
     	
     	// TODO: this could be done nicer with meta programming!
-    	if (action.getFunctor().equals("randomFarming")) {
+    	if (action.getFunctor().equals("random_farming")) {
     		result = model.randomFarming(agent);
     	}
     	
@@ -87,8 +100,42 @@ public class FarmEnvironment extends Environment {
     	}
     	
     	updatePercepts();
+    	
+    	pauseOnRepeat(agentName, action);
     	return result;
     }
+
+    private boolean allAgentsRepeating() {
+    	for (Pair<String, Integer> actionCountPair : agentActionCount.values()) {
+    		if (actionCountPair.getSecond() < 4) {
+    			return false;
+    		}
+    	}
+    	// all agents counts are > 4
+    	return true;
+    }
+	private void pauseOnRepeat(String agentName, Structure action) {
+		Pair<String, Integer> actionCountPair = agentActionCount.get(agentName);
+		
+		// same action was repeated 5 times by an agent:
+//		if (actionCountPair.getSecond() > 5) {
+    	if (allAgentsRepeating()) {
+    		// reset counter
+    		agentActionCount.put(agentName, new Pair<String, Integer>(action.toString(), 1));
+    		Launcher.runner.pauseExecution();
+//    		return;    		
+    	}
+    	
+    	// new action is same as last action
+    	if (actionCountPair.getFirst().equals(action.toString())) {
+    		agentActionCount.put(agentName, new Pair<String, Integer>(action.toString(),
+    																  actionCountPair.getSecond()+1));
+    	} 
+    	// new action different from last action
+    	else {
+    		agentActionCount.put(agentName, new Pair<String, Integer>(action.toString(), 1));
+    	}
+	}
     
     void updatePercepts() {
     	// create inventories

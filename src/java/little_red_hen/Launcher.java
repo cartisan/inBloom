@@ -17,16 +17,18 @@ import com.google.common.collect.ImmutableList;
 import jason.JasonException;
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
+import jason.util.Pair;
 import little_red_hen.jason.FarmEnvironment;
 import little_red_hen.jason.PlotAwareAgArch;
 
 
 public class Launcher extends RunCentralisedMAS {
 	static Logger logger = Logger.getLogger(Launcher.class.getName());
-	protected static Launcher runner = null;
+	public static Launcher runner = null;
     
     static Class<FarmEnvironment> ENV_CLASS = FarmEnvironment.class;
     static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
+	private JButton pauseButton;
     
 	
 	private void createMas2j(Collection<Agent> agents) {
@@ -62,27 +64,43 @@ public class Launcher extends RunCentralisedMAS {
 		}
 	}
 	
+	public void pauseExecution() {
+        MASConsoleGUI.get().setPause(true);
+        this.pauseButton.setText("Continue");
+	}
+	
+	
+	public void continueExecution() {
+		this.pauseButton.setText("Pause");
+        MASConsoleGUI.get().setPause(false);
+	}
+	
 	private void setUpEnvironment(ImmutableList<Agent> agents) {
 		FarmEnvironment env = (FarmEnvironment) runner.env.getUserEnvironment();
 
 		// set up environment with agent-aware model
         HashMap<String, Agent> nameAgentMap = new HashMap<String, Agent>();
+        HashMap<String, Pair<String, Integer>> agentActionCount = new HashMap<>();
+        
         for (Agent agent : agents) {
         	nameAgentMap.put(agent.name, agent);
+        	agentActionCount.put(agent.name, new Pair<String, Integer>("", 1));
         }
         FarmModel model = new FarmModel(nameAgentMap);
         		
         env.setModel(model);
+        env.setAgentActionCount(agentActionCount);
 	}
 	
 	@Override
 	public void finish() {
-		stopAgs();
+		pauseExecution();
 		
-		PlotGraph.getPlotListener().visualizeGraph();
+//		PlotGraph.getPlotListener().visualizeGraph();
+
 		try {
 			while (PlotGraph.isDisplayed) {
-					Thread.sleep(1500);
+					Thread.sleep(500);
 				}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -93,17 +111,51 @@ public class Launcher extends RunCentralisedMAS {
 	}
 	
 	@Override
+	protected void createButtons() {
+		createDrawButton();
+		super.createButtons();
+	}
+	
+	protected void createDrawButton() {
+		JButton btDraw = new JButton("Draw Plot");
+		btDraw.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				PlotGraph.getPlotListener().visualizeGraph();
+			}
+		});
+		MASConsoleGUI.get().addButton(btDraw);
+	}
+	
+	@Override
     protected void createStopButton() {
 		logger.info("creating plot aware stop button");
 		// add Button
-        JButton btStop = new JButton("Stop and Draw", new ImageIcon(RunCentralisedMAS.class.getResource("/images/suspend.gif")));
+        JButton btStop = new JButton("Stop", new ImageIcon(RunCentralisedMAS.class.getResource("/images/suspend.gif")));
         btStop.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                MASConsoleGUI.get().setPause(false);
                 runner.finish();
             }
         });
         MASConsoleGUI.get().addButton(btStop);
+    }
+	
+	@Override
+    protected void createPauseButton() {
+        final JButton btPause = new JButton("Pause", new ImageIcon(RunCentralisedMAS.class.getResource("/images/resume_co.gif")));
+        btPause.addActionListener(
+        	new ActionListener() {
+	            public void actionPerformed(ActionEvent evt) {
+	                if (MASConsoleGUI.get().isPause()) {
+	                    runner.pauseExecution();
+	                } else {
+	                    runner.continueExecution();
+	                }
+
+            }
+        });
+        
+        MASConsoleGUI.get().addButton(btPause);
+        this.pauseButton = btPause;
     }
 
 	public static void main(String[] args) throws JasonException {
@@ -112,7 +164,7 @@ public class Launcher extends RunCentralisedMAS {
         ImmutableList<Agent> agents = ImmutableList.of(
 							new Agent("hen",
 									ImmutableList.of("self(communal)"),
-									ImmutableList.of("make_great_again(farm)")
+									ImmutableList.of("farm_work")
 							),
 							new Agent("dog",
 									ImmutableList.of("self(lazy)"),
@@ -128,7 +180,6 @@ public class Launcher extends RunCentralisedMAS {
 							)
 						);
         
-        // TODO: Set up plot graph and save the latest actions somewhere to be able to extend it dynamically
         PlotGraph.instantiatePlotListener(agents);
         
 		runner = new Launcher();

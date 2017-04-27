@@ -40,6 +40,7 @@ public class PlotGraph {
 	}
 
 	public static Color BGCOLOR = Color.WHITE;
+	private static JFrame frame;
 	
 	private HashMap<String, Vertex> lastVertexMap;
 	private PlotDirectedSparseGraph graph; 
@@ -82,17 +83,18 @@ public class PlotGraph {
 	}
 	
 	public void addRequest(String sender, String receiver, String message) {
+		message = "SPEECH:" + message;
 		if (!(lastVertexMap.get(sender).getLabel().equals(message))) {
 			// this message is different from content of last event,
 			// means was not send to another receiver, too
-			addEvent(sender, message);
+			addEvent(sender, message, Vertex.Type.SPEECHACT);
 		}
 		// same message was send before to another recipient 
 		// no need to add a new vertex, just reuse the last one
 		
 		// add receiver vertex linking to last top, same procedure as with sender
 		if (!(lastVertexMap.get(receiver).getLabel().equals(""))) {
-			addEvent(receiver, "");
+			addEvent(receiver, "", Vertex.Type.SPEECHACT);
 		}
 		
 		Vertex senderVertex = lastVertexMap.get(sender);
@@ -111,13 +113,11 @@ public class PlotGraph {
 		// Tutorial:
 		// http://www.grotto-networking.com/JUNG/JUNG2-Tutorial.pdf
 		
-//		Layout<Vertex, Edge> layout = new TreeLayout<Vertex, Edge>(g, 150);
 		Layout<Vertex, Edge> layout = new PlotGraphLayout(g);
 		
 		// Create a viewing server
 		VisualizationViewer<Vertex, Edge> vv = new VisualizationViewer<Vertex, Edge>(layout);
 		vv.setPreferredSize(new Dimension(600, 600)); // Sets the viewing area
-//		vv.setOpaque(false);
 		vv.setBackground(BGCOLOR);
 
 		// modify vertices
@@ -138,17 +138,18 @@ public class PlotGraph {
 		GraphZoomScrollPane scrollPane= new GraphZoomScrollPane(vv);
 
 		String[] name = g.getClass().toString().split("\\.");
-		JFrame frame = new JFrame(name[name.length-1]);
+		PlotGraph.frame = new JFrame(name[name.length-1]);
 
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
 		        	PlotGraph.isDisplayed = false;
+		        	PlotGraph.frame.dispose();
+		        	PlotGraph.frame = null;
 		        }
 		    }
 		);
 		
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().add(scrollPane);
 		frame.pack();
 		frame.setVisible(true);
