@@ -13,10 +13,13 @@ is_pleasant(eat(bread)).
 
 animals([dog, cow, pig]).
 
+default_activity(cazzegiare).
+default_activity(farm_work).
+
 
 
 /********************************************/
-/*****      Common sense desires ************/
+/*****      Common sense reasoning ************/
 /********************************************/
 +has(X) : is_pleasant(eat(X)) <-
 	!eat(X).
@@ -24,7 +27,18 @@ animals([dog, cow, pig]).
 +has(wheat(seed)) <- 
 	+self(has_purpose);
 	!create_bread;
-	-self(has_purpose).	
+	-self(has_purpose).
+
++self(has_purpose) <-
+	for (default_activity(X) ) {
+		+suspended(X);
+		.suspend(X);
+	}.
+
+-self(has_purpose) <-
+	for (suspended(X) ) {
+		.resume(X);
+	}.
 
 /********************************************/
 /***** Self-specifications  *****************/
@@ -65,7 +79,7 @@ animals([dog, cow, pig]).
 @lazyness
 +!X[_] : self(lazy) & is_work(X) <-
 	.print(X, " is too much work for me!");
-	.fail(X).	
+	.abolish(X).	
 
 
 
@@ -73,19 +87,10 @@ animals([dog, cow, pig]).
 /***** Plans  *******************************/
 /********************************************/
 
-//TODO: how to change this to not have to suspend intention?
 +!farm_work <- 
 	!random_farming;
 	!farm_work.
 
-+self(has_purpose) <-
-	.print("Life has a meaning!");
-	.suspend(farm_work).
-
--self(has_purpose) <-
-	.print("...aaaaaaand it's gone.");
-	!farm_work.
-	
 +!create_bread : has(wheat(seed)) <- 	
 	!plant(wheat);
 	!tend(wheat);
