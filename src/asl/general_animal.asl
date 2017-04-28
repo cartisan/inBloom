@@ -47,8 +47,19 @@ default_activity(farm_work).
 	
 +rejected_help_request(Req)[source(Name)] <-
 	!!increment_anger(Name);
-	.abolish(rejected_help_request(Req)).
-
+	.abolish(rejected_help_request(Req));
+	-asking(Req, Name);
+	if(not asking(Req, _)) {
+		.resume(Req);
+	}.
+	
++accepted_help_request(Req)[source(Name)] <-
+	!!increment_happiness(Name);
+	.abolish(accepted_help_request(Req));
+	-asking(Req, Name);
+	if(not asking(Req, _)) {
+		.resume(Req);
+	}.
 
 
 /********************************************/
@@ -66,13 +77,17 @@ default_activity(farm_work).
 
 // TODO: Wait for response before do yourself?
 @communality
-+!X[_] : self(communal) & is_work(X) & not asked(X) <-
-	.print("Asking farm animals to help with ", X)
-	?animals(A);
-	.send(A, achieve, help_with(X));
-	+asked(X);
-	!X;
-	-asked(X).
++!X[_] : self(communal) & is_work(X) & not already_asked(X) <-
+	?animals(Animals);
+	for (.member(Animal, Animals)) {
+		.print("Asking ", Animal, " to help with ", X)
+		.send(Animal, achieve, help_with(X));
+		+asking(X, Animal);
+	}
+	+already_asked(X);
+	.suspend(X);
+	!X.
+
 	
 @lazyness
 +!X[_] : self(lazy) & is_work(X) <-
@@ -104,11 +119,11 @@ default_activity(farm_work).
 +!help_with(X)[source(Name)]
 	: self(lazy) & is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
-	.my_name(MyName);
 	.send(Name, tell, rejected_help_request(X)).
 
 +!help_with(X)[source(Name)] <-
 	.print("I'll help you with ", X, ", ", Name);
+	.send(Name, tell, accepted_help_request(X));
 	help(Name).
 
 
