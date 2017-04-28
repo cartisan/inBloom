@@ -25,9 +25,7 @@ default_activity(farm_work).
 	!eat(X).
 	
 +has(wheat(seed)) <- 
-	+self(has_purpose);
-	!create_bread;
-	-self(has_purpose).
+	!create_bread.
 
 +self(has_purpose) <-
 	for (default_activity(X) ) {
@@ -47,9 +45,9 @@ default_activity(farm_work).
 
 { include("emotions.asl") }
 	
-+rejected_help_request(Name, Req) <-
++rejected_help_request(Req)[source(Name)] <-
 	!!increment_anger(Name);
-	.abolish(rejected_help_request(Name, Req)).
+	.abolish(rejected_help_request(Req)).
 
 
 
@@ -91,12 +89,14 @@ default_activity(farm_work).
 	!random_farming;
 	!farm_work.
 
-+!create_bread : has(wheat(seed)) <- 	
++!create_bread : has(wheat(seed)) <-
+	+self(has_purpose);
 	!plant(wheat);
 	!tend(wheat);
 	!harvest(wheat);
 	!grind(wheat);
-	!bake(bread).   
+	!bake(bread);
+	-self(has_purpose). 	
 
 // TODO: I belief this is a misuse of tell!
 // But how do we otherwise inform of such
@@ -105,7 +105,7 @@ default_activity(farm_work).
 	: self(lazy) & is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
 	.my_name(MyName);
-	.send(Name, tell, rejected_help_request(MyName, X)).
+	.send(Name, tell, rejected_help_request(X)).
 
 +!help_with(X)[source(Name)] <-
 	.print("I'll help you with ", X, ", ", Name);
