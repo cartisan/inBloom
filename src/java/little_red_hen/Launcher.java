@@ -26,6 +26,7 @@ public class Launcher extends RunCentralisedMAS {
 	static Logger logger = Logger.getLogger(Launcher.class.getName());
 	public static Launcher runner = null;
     
+	public static final Integer MAX_REPEATE_NUM = 10;
     static Class<FarmEnvironment> ENV_CLASS = FarmEnvironment.class;
     static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
 	private JButton pauseButton;
@@ -120,6 +121,7 @@ public class Launcher extends RunCentralisedMAS {
 		JButton btDraw = new JButton("Draw Plot");
 		btDraw.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
+				runner.pauseExecution();
 				PlotGraph.getPlotListener().visualizeGraph();
 			}
 		});
@@ -145,10 +147,10 @@ public class Launcher extends RunCentralisedMAS {
         btPause.addActionListener(
         	new ActionListener() {
 	            public void actionPerformed(ActionEvent evt) {
-	                if (MASConsoleGUI.get().isPause()) {
-	                    runner.pauseExecution();
-	                } else {
+	            	if (MASConsoleGUI.get().isPause()) {
 	                    runner.continueExecution();
+	                } else {
+	                	runner.pauseExecution();
 	                }
 
             }

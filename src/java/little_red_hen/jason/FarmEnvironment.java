@@ -28,6 +28,12 @@ public class FarmEnvironment extends Environment {
 	public void setAgentActionCount(HashMap<String, Pair<String, Integer>> agentActionCount) {
 		this.agentActionCount = agentActionCount;
 	}
+    
+    public void resetAllAgentActionCounts() {
+    	for (String agent : agentActionCount.keySet()) {
+    		agentActionCount.put(agent, new Pair<String, Integer>("", 1));
+    	}
+    }
 
 	public FarmModel getModel() {
 		return model;
@@ -107,23 +113,22 @@ public class FarmEnvironment extends Environment {
 
     private boolean allAgentsRepeating() {
     	for (Pair<String, Integer> actionCountPair : agentActionCount.values()) {
-    		if (actionCountPair.getSecond() < 4) {
+    		if (actionCountPair.getSecond() < Launcher.MAX_REPEATE_NUM) {
     			return false;
     		}
     	}
     	// all agents counts are > 4
     	return true;
     }
+    
 	private void pauseOnRepeat(String agentName, Structure action) {
 		Pair<String, Integer> actionCountPair = agentActionCount.get(agentName);
 		
-		// same action was repeated 5 times by an agent:
-//		if (actionCountPair.getSecond() > 5) {
+		// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
     	if (allAgentsRepeating()) {
     		// reset counter
-    		agentActionCount.put(agentName, new Pair<String, Integer>(action.toString(), 1));
     		Launcher.runner.pauseExecution();
-//    		return;    		
+    		resetAllAgentActionCounts();
     	}
     	
     	// new action is same as last action
