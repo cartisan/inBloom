@@ -5,15 +5,14 @@ import java.util.logging.Logger;
 
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
-import jason.environment.Environment;
-import jason.runtime.MASConsoleGUI;
+import jason.environment.TimeSteppedEnvironment;
 import jason.util.Pair;
 import little_red_hen.Agent;
 import little_red_hen.FarmModel;
 import little_red_hen.Launcher;
 import little_red_hen.PlotGraph;
 
-public class FarmEnvironment extends Environment {
+public class FarmEnvironment extends TimeSteppedEnvironment {
     
     static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
     

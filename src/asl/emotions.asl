@@ -66,7 +66,7 @@ happiness(0)[target([])].
 +!rewarded(L) : true <- !!rewarded(L).
 
 //	   +relativised commitment
--happiness(X) : ~happiness(Y) & Y>9 <- 
+-happiness(X) : happiness(Y) & em_threshold(Z) & Y<=Z <- 
 	-rewarded(L);
 	-self(happy);
 	.succeed_goal(rewarded(L)).
@@ -104,7 +104,7 @@ happiness(0)[target([])].
 +!punished(L) : true <- !!punished(L).
 
 //	   + relativised commitment
--anger(X) : ~anger(Y) & Y>9 <-
+-anger(X) : anger(Y) & em_threshold(Z) & Y<=Z <-
 	-self(angry);
 	.add_plan(helpfullness);
 	.succeed_goal(punished(L)).

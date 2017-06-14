@@ -79,12 +79,12 @@ default_activity(farm_work).
 @communality
 +!X[_] : self(communal) & is_work(X) & not already_asked(X) <-
 	?animals(Animals);
+	+already_asked(X);
 	for (.member(Animal, Animals)) {
 		.print("Asking ", Animal, " to help with ", X)
 		.send(Animal, achieve, help_with(X));
 		+asking(X, Animal);
 	}
-	+already_asked(X);
 	.suspend(X);
 	!X.
 
