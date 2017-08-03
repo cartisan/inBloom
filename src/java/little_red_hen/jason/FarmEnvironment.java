@@ -1,10 +1,14 @@
 package little_red_hen.jason;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
+import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
+import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
 import jason.util.Pair;
 import little_red_hen.Agent;
@@ -17,7 +21,10 @@ public class FarmEnvironment extends TimeSteppedEnvironment {
     static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
     
     private FarmModel model;
-    private HashMap<String, Pair<String, Integer>> agentActionCount;
+    private HashMap<String, Pair<String, Integer>> agentActionCount;  // agentName -> (action, #subsequent repeats)
+    
+    private HashMap<String,List<String>> uniqueEventsAdd = new HashMap<>();  // {agentName -> List(events)}
+    private HashMap<Pair<Integer,String>, List<Literal>> uniqueEventsRem = new HashMap<>();  // {(stepNum,agentName} -> List(events)
 
 	
 	public HashMap<String, Pair<String, Integer>> getAgentActionCount() {
@@ -43,12 +50,7 @@ public class FarmEnvironment extends TimeSteppedEnvironment {
 		updatePercepts();
 	}
 
-	public FarmEnvironment() {
-		
-	}
-
-
-    @Override
+	@Override
     public boolean executeAction(String agentName, Structure action) {
     	boolean result = false;
     	Agent agent = model.getAgent(agentName);
@@ -141,22 +143,92 @@ public class FarmEnvironment extends TimeSteppedEnvironment {
     	}
 	}
     
-    void updatePercepts() {
-    	// create inventories
-    	for(String name: this.model.agents.keySet()) {
-        	removePerceptsByUnif(name, Literal.parseLiteral("has(X)"));
-        	for (String literal : this.model.agents.get(name).createInventoryPercepts()) {
-        		addPercept(name, Literal.parseLiteral(literal));    		
-        	}    		
-    	}
-    	
+	public void updatePercepts() {
+		for(String name: this.model.agents.keySet()) {
+			updatePercepts(name);
+		}
+	}
+	
+    public void updatePercepts(String agentName) {
+		// create inventories
+    	removePerceptsByUnif(agentName, Literal.parseLiteral("has(X)"));
+    	for (String literal : this.model.agents.get(agentName).createInventoryPercepts()) {
+    		addPercept(agentName, Literal.parseLiteral(literal));    		
+    	}    		
+
     	// update publicly known wheat state
     	if (!(model.wheat == null)) {
-    		removePerceptsByUnif(Literal.parseLiteral("wheat(X)"));
-    		addPercept(Literal.parseLiteral(model.wheat.literal()));
+    		removePerceptsByUnif(agentName, Literal.parseLiteral("wheat(X)"));
+    		addPercept(agentName, Literal.parseLiteral(model.wheat.literal()));
     	}
     	else {
-    		removePerceptsByUnif(Literal.parseLiteral("wheat(X)"));
+    		removePerceptsByUnif(agentName, Literal.parseLiteral("wheat(X)"));
     	}
+
+    	deleteOldUniqueEvents(agentName);
+    	addNewUniqueEvents(agentName);
     }
+
+    /*
+     * Removes mental notes of events that happened last cycle from agent's BB.
+     */
+	private void deleteOldUniqueEvents(String agentName) {
+    	// 1. get list of unique events for agent agentName, scheduled for deletion this cycle
+    	List<Literal> eventList =getListRemEvents(this.getStep(), agentName);
+    	
+    	// 2. delete respective percepts from agent agentName
+    	for(Literal event : eventList) {
+			removePercept(agentName, event);
+    	}
+    	// clean up Map for this step to free up space
+    	this.uniqueEventsRem.remove(new Pair<>(this.getStep(), agentName));
+	}
+	
+	/*
+	 * Adds events that happened this cycle as mental notes to agent's BB.
+	 */
+	private void addNewUniqueEvents(String agentName) {
+    	for( String event : this.getListCurrentEvents(agentName) ) {
+    		try {
+    			Literal percept = ASSyntax.parseLiteral(event);
+				addPercept(agentName, percept);
+				
+				//get list of events to be removed next cycle
+				List<Literal> remList = getListRemEvents(this.getStep()+1, agentName);
+				
+				// add percept to this list and put new list back into storing map 
+				remList.add(percept);
+				this.uniqueEventsRem.put(new Pair<>(this.getStep()+1, agentName), remList);
+				
+			} catch (ParseException e) {
+				logger.severe(e.getMessage());
+			}
+    	}
+    	this.uniqueEventsAdd.remove(agentName);
+	}
+	
+	/*
+	 * Returns the list of events that need to be added to agents BB this reasoning step.
+	 */	
+	private List<String> getListCurrentEvents(String agentName) {
+		return this.uniqueEventsAdd.getOrDefault(agentName, new LinkedList<String>());
+	}
+
+	/*
+	 * Adds the event to the list of events that need to be added to agents BB this reasoning step.
+	 */	
+	public void addToListCurrentEvents(String agentName, String event) {
+		List<String> eventList = this.getListCurrentEvents(agentName);		
+		eventList.add(event);
+		this.uniqueEventsAdd.put(agentName, eventList);
+	}	
+	
+	/*
+	 * Returns the list of events that need to be deleted from agents BB at reasoning step step.
+	 */
+	private List<Literal> getListRemEvents(int step, String agentName) {
+    	Pair<Integer,String> stepAgentTup = new Pair<>(step, agentName);
+		return this.uniqueEventsRem.getOrDefault(stepAgentTup, new LinkedList<Literal>());
+	}
+
 }

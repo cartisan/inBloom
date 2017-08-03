@@ -48,7 +48,9 @@ public class Launcher extends RunCentralisedMAS {
 		    			MessageFormat.format(" general_animal[beliefs=\"{0}\", goals=\"{1}\"]",
 		    								 agent.beliefs,
 		    								 agent.goals) +
-		    	" agentArchClass " + AG_ARCH_CLASS.getName() + ";";   
+		    	" agentArchClass " + AG_ARCH_CLASS.getName() + 
+		    	" agentClass jason.asSemantics.AffectiveAgent" +
+		    	";";   
 		    	writer.println(line);
 		    }
 		    
@@ -87,7 +89,7 @@ public class Launcher extends RunCentralisedMAS {
         	nameAgentMap.put(agent.name, agent);
         	agentActionCount.put(agent.name, new Pair<String, Integer>("", 1));
         }
-        FarmModel model = new FarmModel(nameAgentMap);
+        FarmModel model = new FarmModel(nameAgentMap, env);
         		
         env.setModel(model);
         env.setAgentActionCount(agentActionCount);
@@ -188,6 +190,7 @@ public class Launcher extends RunCentralisedMAS {
 		runner.createMas2j(agents);
         runner.init(args);
         runner.create();
+        // TODO: Agents get created with no personality, initialize personalities here
         runner.setUpEnvironment(agents);
         runner.start();
         runner.waitEnd();

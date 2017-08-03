@@ -1,23 +1,28 @@
 package little_red_hen;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
+
+import little_red_hen.jason.FarmEnvironment;
 
 /* Model class for Farm Environment */
 
 public class FarmModel {
-	private int actionCount;
+	public static enum WHEAT_STATE {SEED, GROWING, RIPE, HARVESTED, FLOUR;}
+	static Logger logger = Logger.getLogger(FarmModel.class.getName());
 
 	public Wheat wheat;
 	public HashMap<String, Agent> agents;
-	public static enum WHEAT_STATE {SEED, GROWING, RIPE, HARVESTED, FLOUR;}
+	private int actionCount;
+	private FarmEnvironment environment;
 	
-    static Logger logger = Logger.getLogger(FarmModel.class.getName());
 	
-	public FarmModel(HashMap<String, Agent> agents) {
+	public FarmModel(HashMap<String, Agent> agents, FarmEnvironment env) {
 		this.actionCount = 0;
 		this.agents = agents;
 		this.wheat = null;
+		this.environment = env;
 	}
 	
 	public Agent getAgent(String name) {
@@ -30,12 +35,10 @@ public class FarmModel {
 		
 		if (this.actionCount == 3) {
 			this.wheat = new Wheat();
+			agent.addToInventory(this.wheat);					//also: [emotion(joy),emotion(gratitude)]
+			this.environment.addToListCurrentEvents(agent.name, " found(wheat)[emotion(joy)]");  
 			
-			agent.addToInventory(this.wheat);
-			
-			logger.info("LOOK, " +
-						agent.name + 
-						"! There are some wheat grains on the floor.");
+			logger.info(agent.name + "found wheat grains");
 		}
 		
 		return true;
