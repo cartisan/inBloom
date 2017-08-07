@@ -1,7 +1,6 @@
 package little_red_hen;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.logging.Logger;
 
 import little_red_hen.jason.FarmEnvironment;
@@ -36,9 +35,9 @@ public class FarmModel {
 		if (this.actionCount == 3) {
 			this.wheat = new Wheat();
 			agent.addToInventory(this.wheat);					//also: [emotion(joy),emotion(gratitude)]
-			this.environment.addToListCurrentEvents(agent.name, " found(wheat)[emotion(joy)]");  
+			this.environment.addToListCurrentEvents(agent.name, "found(wheat)[emotion(joy)]");  
 			
-			logger.info(agent.name + "found wheat grains");
+			logger.info(agent.name + " found wheat grains");
 		}
 		
 		return true;
