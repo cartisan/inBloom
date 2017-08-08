@@ -15,6 +15,9 @@ import javax.swing.JButton;
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
+import jason.asSemantics.Personality;
+import jason.asSemantics.AffectiveAgent;
+import jason.asSemantics.AffectiveTransitionSystem;
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
 import jason.util.Pair;
@@ -32,7 +35,7 @@ public class Launcher extends RunCentralisedMAS {
 	private JButton pauseButton;
     
 	
-	private void createMas2j(Collection<Agent> agents) {
+	private void createMas2j(Collection<AgentModel> agents) {
 		String fileName = "launcher.mas2j";
 
 		try{
@@ -43,7 +46,7 @@ public class Launcher extends RunCentralisedMAS {
 		    writer.println("");
 		    writer.println("	agents:");
 		    
-		    for (Agent agent : agents) {
+		    for (AgentModel agent : agents) {
 		    	String line = "		" + agent.name + 
 		    			MessageFormat.format(" general_animal[beliefs=\"{0}\", goals=\"{1}\"]",
 		    								 agent.beliefs,
@@ -78,14 +81,26 @@ public class Launcher extends RunCentralisedMAS {
         MASConsoleGUI.get().setPause(false);
 	}
 	
-	private void setUpEnvironment(ImmutableList<Agent> agents) {
+
+	private void initializeAgents(ImmutableList<AgentModel> agents) {
+		// initialize personalities
+		for (AgentModel ag: agents) {
+			if(ag.personality != null) {
+				AffectiveAgent affAg = ((AffectiveTransitionSystem) this.getAg(ag.name).getTS()).getAffectiveAg();
+				affAg.initializePersonality(ag.personality);
+			}
+		}
+		
+	}
+	
+	private void initzializeEnvironment(ImmutableList<AgentModel> agents) {
 		FarmEnvironment env = (FarmEnvironment) runner.env.getUserEnvironment();
 
 		// set up environment with agent-aware model
-        HashMap<String, Agent> nameAgentMap = new HashMap<String, Agent>();
+        HashMap<String, AgentModel> nameAgentMap = new HashMap<String, AgentModel>();
         HashMap<String, Pair<String, Integer>> agentActionCount = new HashMap<>();
         
-        for (Agent agent : agents) {
+        for (AgentModel agent : agents) {
         	nameAgentMap.put(agent.name, agent);
         	agentActionCount.put(agent.name, new Pair<String, Integer>("", 1));
         }
@@ -165,22 +180,26 @@ public class Launcher extends RunCentralisedMAS {
 	public static void main(String[] args) throws JasonException {
         logger.info("Starting up from Launcher!"); 
         
-        ImmutableList<Agent> agents = ImmutableList.of(
-							new Agent("hen",
+        ImmutableList<AgentModel> agents = ImmutableList.of(
+							new AgentModel("hen",
 									ImmutableList.of("self(communal)"),
-									ImmutableList.of("farm_work")
+									ImmutableList.of("farm_work"),
+									new Personality(0, 1, 1, 0.5, 1)
 							),
-							new Agent("dog",
+							new AgentModel("dog",
 									ImmutableList.of("self(lazy)"),
-									ImmutableList.of("cazzegiare")
+									ImmutableList.of("cazzegiare"),
+									new Personality(0, -1, 0, 0, 0)
 							),
-							new Agent("cow",
+							new AgentModel("cow",
 									ImmutableList.of("self(lazy)"),
-									ImmutableList.of("cazzegiare")
+									ImmutableList.of("cazzegiare"),
+									new Personality(0, -1, 0, 0, 0)
 							),
-							new Agent("pig",
+							new AgentModel("pig",
 									ImmutableList.of("self(lazy)"),
-									ImmutableList.of("cazzegiare")
+									ImmutableList.of("cazzegiare"),
+									new Personality(0, -1, 0, 0, 0)
 							)
 						);
         
@@ -190,8 +209,10 @@ public class Launcher extends RunCentralisedMAS {
 		runner.createMas2j(agents);
         runner.init(args);
         runner.create();
-        // TODO: Agents get created with no personality, initialize personalities here
-        runner.setUpEnvironment(agents);
+        
+        runner.initializeAgents(agents);
+        runner.initzializeEnvironment(agents);
+        
         runner.start();
         runner.waitEnd();
         runner.finish();

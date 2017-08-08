@@ -12,7 +12,7 @@ import jason.asSyntax.Structure;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
 import jason.util.Pair;
-import little_red_hen.Agent;
+import little_red_hen.AgentModel;
 import little_red_hen.FarmModel;
 import little_red_hen.Launcher;
 import little_red_hen.PlotGraph;
@@ -45,7 +45,7 @@ public class FarmEnvironment extends TimeSteppedEnvironment {
 	@Override
     public boolean executeAction(String agentName, Structure action) {
     	boolean result = false;
-    	Agent agent = model.getAgent(agentName);
+    	AgentModel agent = model.getAgent(agentName);
     	
     	// add attempted action to plot graph
     	PlotGraph.getPlotListener().addEvent(agentName, action.toString());
@@ -90,7 +90,7 @@ public class FarmEnvironment extends TimeSteppedEnvironment {
     		String item = action.getTerm(1).toString();
     		String receiver = action.getTerm(2).toString();
     		
-    		Agent patient = model.getAgent(receiver);
+    		AgentModel patient = model.getAgent(receiver);
     		result = agent.share(item, patient);
     	}
     	

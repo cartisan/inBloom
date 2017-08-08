@@ -4,31 +4,45 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
-public class Agent {
-    static Logger logger = Logger.getLogger(Agent.class.getName());
+import jason.asSemantics.Personality;
+
+
+public class AgentModel {
+    static Logger logger = Logger.getLogger(AgentModel.class.getName());
 	
 	public LinkedList<Item> inventory = new LinkedList<Item>();
 	public String name;
 	public String beliefs;
 	public String goals;
+
+	public Personality personality;
 	
 	
-	public Agent() {
+	public AgentModel() {
 		this.name = null;
 		this.beliefs = "";
 		this.goals = "";
 	}
 	
-	public Agent(String name) {
+	public AgentModel(String name) {
 		this.name = name;
 		this.beliefs = "";
 		this.goals = "";
+		this.personality = null;
 	}
 
-	public Agent(String name, Collection<String> beliefs, Collection<String> goals) {
+	public AgentModel(String name, Collection<String> beliefs, Collection<String> goals) {
 		this.name = name;
 		this.beliefs = createLiteralString(beliefs);
 		this.goals = createLiteralString(goals);
+		this.personality = null;
+	}
+	
+	public AgentModel(String name, Collection<String> beliefs, Collection<String> goals, Personality personality) {
+		this.name = name;
+		this.beliefs = createLiteralString(beliefs);
+		this.goals = createLiteralString(goals);
+		this.personality = personality;
 	}
 	
 	private String createLiteralString(Collection<String> literalList) {
@@ -84,7 +98,7 @@ public class Agent {
 		return null;
 	}
 	
-	public boolean share(String itemType, Agent receiver) {
+	public boolean share(String itemType, AgentModel receiver) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			receiver.addToInventory(item);

@@ -12,23 +12,23 @@ public class FarmModel {
 	static Logger logger = Logger.getLogger(FarmModel.class.getName());
 
 	public Wheat wheat;
-	public HashMap<String, Agent> agents;
+	public HashMap<String, AgentModel> agents;
 	private int actionCount;
 	private FarmEnvironment environment;
 	
 	
-	public FarmModel(HashMap<String, Agent> agents, FarmEnvironment env) {
+	public FarmModel(HashMap<String, AgentModel> agents, FarmEnvironment env) {
 		this.actionCount = 0;
 		this.agents = agents;
 		this.wheat = null;
 		this.environment = env;
 	}
 	
-	public Agent getAgent(String name) {
+	public AgentModel getAgent(String name) {
 		return this.agents.get(name);
 	}
 	
-	public boolean randomFarming(Agent agent) {
+	public boolean randomFarming(AgentModel agent) {
 		this.actionCount += 1;
 		logger.info("Some farming activity was performed");
 		
@@ -43,7 +43,7 @@ public class FarmModel {
 		return true;
 	}
 	
-	public boolean plantWheat(Agent agent) {
+	public boolean plantWheat(AgentModel agent) {
 		Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 		if (!(wheatItem == null)) {
 				if (wheatItem.state == WHEAT_STATE.SEED) {
@@ -86,7 +86,7 @@ public class FarmModel {
 		return false;
 	}
 
-	public boolean bakeBread(Agent agent) {
+	public boolean bakeBread(AgentModel agent) {
 		Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 		if((!(wheatItem == null)) & (wheatItem.state == WHEAT_STATE.FLOUR)) {
 			agent.addToInventory(new Bread());

@@ -35,7 +35,7 @@ public class PlotGraph {
 		return plotListener;
 	}
 
-	public static void instantiatePlotListener(Collection<Agent> characters) {
+	public static void instantiatePlotListener(Collection<AgentModel> characters) {
 		PlotGraph.plotListener = new PlotGraph(characters);
 	}
 
@@ -45,12 +45,12 @@ public class PlotGraph {
 	private HashMap<String, Vertex> lastVertexMap;
 	private PlotDirectedSparseGraph graph; 
 	
-	public PlotGraph(Collection<Agent> characters) {
+	public PlotGraph(Collection<AgentModel> characters) {
 		this.graph = new PlotDirectedSparseGraph();
 	    this.lastVertexMap = new HashMap<String, Vertex>();
 		
 	    // set up a "named" tree for each character
-		for (Agent character : characters) {
+		for (AgentModel character : characters) {
 			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
 			graph.addRoot(root);
 			
