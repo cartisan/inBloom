@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import jason.asSemantics.Personality;
+import little_red_hen.jason.FarmEnvironment;
 
 
 public class AgentModel {
@@ -14,6 +15,7 @@ public class AgentModel {
 	public String name;
 	public String beliefs;
 	public String goals;
+	private FarmEnvironment environment;
 
 	public Personality personality;
 	
@@ -101,19 +103,33 @@ public class AgentModel {
 	public boolean share(String itemType, AgentModel receiver) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
-			receiver.addToInventory(item);
+			receiver.receive(item);
+			this.environment.addToListCurrentEvents(name,
+					String.format("shared(%s,%s)[emotion(pride)]", item.literal(), receiver.name));
 			return true;
 		}
 		
 		return false;
 	}
 	
+	public boolean receive(Item item) {
+		this.addToInventory(item);
+		
+		// TODO: this emotion might depend on properties of object, in which case its deliberative and should go
+		// into ASL side?
+		this.environment.addToListCurrentEvents(name,
+												String.format("received(%s)[emotion(joy)]", item.literal()));
+		return true;
+	}
+
 	public boolean eat(String itemType) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			
 			if (item.isEdible()) {
 				this.removeFromInventory(item);
+				this.environment.addToListCurrentEvents(name, 
+														String.format("ate(%s)[emotion(satisfaction)]", item.literal()));
 				
 				// in theory: here double dispatch
 				// so food can affect agent in specific
@@ -128,7 +144,11 @@ public class AgentModel {
 	}
 	
 	public boolean relax() {
-		//TODO: How to return a positive emotion?
+		this.environment.addToListCurrentEvents(name, "relaxed[emotion(joy)]");
 		return true;
+	}
+
+	public void setEnvironment(FarmEnvironment environment) {
+		this.environment = environment;
 	}
 }

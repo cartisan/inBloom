@@ -21,6 +21,7 @@ import jason.asSemantics.AffectiveTransitionSystem;
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
 import jason.util.Pair;
+
 import little_red_hen.jason.FarmEnvironment;
 import little_red_hen.jason.PlotAwareAgArch;
 
@@ -103,6 +104,7 @@ public class Launcher extends RunCentralisedMAS {
         for (AgentModel agent : agents) {
         	nameAgentMap.put(agent.name, agent);
         	agentActionCount.put(agent.name, new Pair<String, Integer>("", 1));
+        	agent.setEnvironment(env);
         }
         FarmModel model = new FarmModel(nameAgentMap, env);
         		

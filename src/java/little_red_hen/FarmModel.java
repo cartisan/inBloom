@@ -48,6 +48,7 @@ public class FarmModel {
 		if (!(wheatItem == null)) {
 				if (wheatItem.state == WHEAT_STATE.SEED) {
 					this.wheat.state = WHEAT_STATE.GROWING;
+					this.environment.addToListCurrentEvents(agent.name, "planted(wheat)[emotion(pride)]");
 					logger.info("Wheat planted");
 					return true;
 				}
@@ -56,31 +57,34 @@ public class FarmModel {
 		return false;
 	}
 	
-	public boolean tendWheat() {
+	public boolean tendWheat(AgentModel agent) {
 		if ((this.wheat.state == WHEAT_STATE.GROWING)){
 			this.wheat.state = WHEAT_STATE.RIPE;
 			logger.info("Wheat has grown and is ripe now");
+			this.environment.addToListCurrentEvents(agent.name, "tended(wheat)[emotion(pride)]");
 			return true;
 		}
 		
 		return false;
 	}
 	
-	public boolean harvestWheat() {
+	public boolean harvestWheat(AgentModel agent) {
 		if ((this.wheat.state == WHEAT_STATE.RIPE)){
 			this.wheat.state = WHEAT_STATE.HARVESTED;
 			logger.info("Wheat was harvested");
+			this.environment.addToListCurrentEvents(agent.name, "harvested(wheat)[emotion(pride)]");
 			return true;
 		}
 		
 		return false;
 	}
 	
-	public boolean grindWheat() {
+	public boolean grindWheat(AgentModel agent) {
 		if ((this.wheat.state == WHEAT_STATE.HARVESTED)){
 			this.wheat.state = WHEAT_STATE.FLOUR;
 			logger.info("Wheat was ground to flour");
 			this.wheat = null;
+			this.environment.addToListCurrentEvents(agent.name, "ground(wheat)[emotion(pride)]");
 			return true;
 		}
 		return false;
@@ -93,6 +97,7 @@ public class FarmModel {
 			agent.removeFromInventory(wheatItem);
 			
 			logger.info(agent.name + ": baked some bread.");
+			this.environment.addToListCurrentEvents(agent.name, "baked(bread)[emotion(pride),emotion(joy)]");
 			return true;
 		}
 		

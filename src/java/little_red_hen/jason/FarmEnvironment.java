@@ -61,15 +61,15 @@ public class FarmEnvironment extends TimeSteppedEnvironment {
     	}
     	
     	if (action.toString().equals("tend(wheat)")) {
-    		result = model.tendWheat();
+    		result = model.tendWheat(agent);
     	}
     	
     	if (action.toString().equals("harvest(wheat)")) {
-    		result = model.harvestWheat();
+    		result = model.harvestWheat(agent);
     	}
     	
     	if (action.toString().equals("grind(wheat)")) {
-    		result = model.grindWheat();
+    		result = model.grindWheat(agent);
     	}
     	
     	if (action.getFunctor().equals("bake")) {
