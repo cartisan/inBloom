@@ -43,10 +43,11 @@ default_activity(farm_work).
 /*****      Emotion management **************/
 /********************************************/
 
-{ include("emotions.asl") }
++emotion(X) <-
+ 	little_red_hen.asl_actions_plot.add_emotion(X).
 	
 +rejected_help_request(Req)[source(Name)] <-
-	!!increment_anger(Name);
+	.appraise_emotion(anger);
 	.abolish(rejected_help_request(Req));
 	-asking(Req, Name);
 	if(not asking(Req, _)) {
@@ -54,7 +55,7 @@ default_activity(farm_work).
 	}.
 	
 +accepted_help_request(Req)[source(Name)] <-
-	!!increment_happiness(Name);
+	.appraise_emotion(gratitude);
 	.abolish(accepted_help_request(Req));
 	-asking(Req, Name);
 	if(not asking(Req, _)) {
@@ -130,7 +131,6 @@ default_activity(farm_work).
 +!cazzegiare <-
 	.print("I'm doing sweet nothing.");
 	.my_name(MyName);
-	!!increment_happiness(MyName);
 	!relax;
 	!cazzegiare.
 
