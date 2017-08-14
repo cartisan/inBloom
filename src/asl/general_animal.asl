@@ -22,10 +22,10 @@ default_activity(farm_work).
 /*****      Common sense reasoning ************/
 /********************************************/
 +has(X) : is_pleasant(eat(X)) <-
-	!eat(X).
+	!!eat(X).
 	
 +has(wheat(seed)) <- 
-	!create_bread.
+	!!create_bread.
 
 +self(has_purpose) <-
 	for (default_activity(X) ) {
@@ -43,9 +43,6 @@ default_activity(farm_work).
 /*****      Emotion management **************/
 /********************************************/
 
-+emotion(X) <-
- 	little_red_hen.asl_actions_plot.add_emotion(X).
-	
 +rejected_help_request(Req)[source(Name)] <-
 	.appraise_emotion(anger);
 	.abolish(rejected_help_request(Req));
@@ -76,7 +73,6 @@ default_activity(farm_work).
 	!share(X, Anims);
 	!eat(X).
 
-// TODO: Wait for response before do yourself?
 @communality
 +!X[_] : self(communal) & is_work(X) & not already_asked(X) <-
 	?animals(Animals);
@@ -96,6 +92,36 @@ default_activity(farm_work).
 	.abolish(X).	
 
 
+
+/********************************************/
+/****** Mood  *******************************/
+/********************************************/
++mood(hostile) <-
+	?animals(Anims);
+	// TODO: punish only targets of mood!
+	!!punished(Anims).
+
+//	   + relativised commitment
+-mood(hostile) <-
+	?animals(Anims);
+	.succeed_goal(punished(Anims)).
+
+// begin declarative goal  (p. 174; Bordini,2007)*/
++!punished(L) : punished(L) <- true.
+
+// insert all actual punishment plans	
+@punished_plan[atomic]	
++!punished(L) : mood(hostile) & has(X) & is_pleasant(eat(X)) <-
+	.send(L, achieve, eat(X));
+	.print("Asking ", L, " to eat ", X, ". But not shareing necessary ressources. xoxo");
+	+punished(L).
+	
+//	   +blind commitment
++!punished(L) : true <- !!punished(L).
+
++punished(L) : true <- 
+	-punished(L);
+	.succeed_goal(punished(L)).
 
 /********************************************/
 /***** Plans  *******************************/
@@ -163,7 +189,8 @@ default_activity(farm_work).
 	eat(X).
 	
 +!eat(X) <- 
-	.print("Can't eat ", X, ", I don't have any! :( ")
+	.print("Can't eat ", X, ", I don't have any! :( ");
+	.appraise_emotion(disappointment);
 	.suspend(eat(X)).
 	
 +!share(X, [H|T]) : .length(T) > 0 <-
