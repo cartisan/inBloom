@@ -15,14 +15,14 @@ import javax.swing.JButton;
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
-import jason.asSemantics.Personality;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.AffectiveTransitionSystem;
+import jason.asSemantics.Personality;
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
 import jason.util.Pair;
-
 import little_red_hen.jason.FarmEnvironment;
+import little_red_hen.jason.PlotAwareAg;
 import little_red_hen.jason.PlotAwareAgArch;
 
 
@@ -33,6 +33,7 @@ public class Launcher extends RunCentralisedMAS {
 	public static final Integer MAX_REPEATE_NUM = 10;
     static Class<FarmEnvironment> ENV_CLASS = FarmEnvironment.class;
     static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
+    static Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
 	private JButton pauseButton;
     
 	
@@ -53,7 +54,7 @@ public class Launcher extends RunCentralisedMAS {
 		    								 agent.beliefs,
 		    								 agent.goals) +
 		    	" agentArchClass " + AG_ARCH_CLASS.getName() + 
-		    	" agentClass jason.asSemantics.AffectiveAgent" +
+		    	" agentClass "+ AG_CLASS.getName() +
 		    	";";   
 		    	writer.println(line);
 		    }
@@ -88,7 +89,12 @@ public class Launcher extends RunCentralisedMAS {
 		for (AgentModel ag: agents) {
 			if(ag.personality != null) {
 				AffectiveAgent affAg = ((AffectiveTransitionSystem) this.getAg(ag.name).getTS()).getAffectiveAg();
-				affAg.initializePersonality(ag.personality);
+				try {
+					affAg.initializePersonality(ag.personality);
+				} catch (JasonException e) {
+					logger.severe("Failed to initialize mood based on personality: " + ag.personality);
+					e.printStackTrace();
+				}
 			}
 		}
 		
@@ -186,7 +192,7 @@ public class Launcher extends RunCentralisedMAS {
 							new AgentModel("hen",
 									ImmutableList.of("self(communal)"),
 									ImmutableList.of("farm_work"),
-									new Personality(0, 1, 1, 0.5, 1)
+									new Personality(0, 1, 0.7, 0.3, 1)
 							),
 							new AgentModel("dog",
 									ImmutableList.of("self(lazy)"),
