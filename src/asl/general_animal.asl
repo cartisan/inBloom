@@ -73,8 +73,8 @@ default_activity(farm_work).
 	!share(X, Anims);
 	!eat(X).
 
-@communality
-+!X[_] : self(communal) & is_work(X) & not already_asked(X) <-
+@general_help_acquisition_plan[personality(extraversion, high)]
++!X[_] : is_work(X) & not already_asked(X) <-
 	?animals(Animals);
 	+already_asked(X);
 	for (.member(Animal, Animals)) {
@@ -84,14 +84,6 @@ default_activity(farm_work).
 	}
 	.suspend(X);
 	!X.
-
-	
-@lazyness
-+!X[_] : self(lazy) & is_work(X) <-
-	.print(X, " is too much work for me!");
-	.abolish(X).	
-
-
 
 /********************************************/
 /****** Mood  *******************************/
@@ -143,8 +135,8 @@ default_activity(farm_work).
 // TODO: I belief this is a misuse of tell!
 // But how do we otherwise inform of such
 // a rejection
-+!help_with(X)[source(Name)]
-	: self(lazy) & is_work(X) <-
+@help_with_plan[personality(conscientiousness,low)]
++!help_with(X)[source(Name)] : is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
 	.send(Name, tell, rejected_help_request(X)).
 
@@ -152,11 +144,9 @@ default_activity(farm_work).
 	.print("I'll help you with ", X, ", ", Name);
 	.send(Name, tell, accepted_help_request(X));
 	help(Name).
-
-
+	
 +!cazzegiare <-
 	.print("I'm doing sweet nothing.");
-	.my_name(MyName);
 	!relax;
 	!cazzegiare.
 
