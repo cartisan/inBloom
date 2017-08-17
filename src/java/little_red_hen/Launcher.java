@@ -190,8 +190,11 @@ public class Launcher extends RunCentralisedMAS {
         
         ImmutableList<AgentModel> agents = ImmutableList.of(
 							new AgentModel("hen",
-									new Personality(0, 1, 0.7, 0.2, 0.3)   //punishment
+//									new Personality(0, 1, 0.7, 0.2, 0.3)   //punishment
 //									new Personality(0, 1, 0.7, 0.7, 0.3)   //sharing
+//									new Personality(0, -1, 0.7, 0.7, 0.3)  //no plot (graph making brakes?!)
+//									new Personality(0, 1, 0, 0.2, 0.3)     //no help requests, no sharing
+									new Personality(0, 1, 0, 0.7, 0.3)     //no help requests, sharing
 							),
 							new AgentModel("dog",
 									new Personality(0, -1, 0, -0.7, -0.8)
