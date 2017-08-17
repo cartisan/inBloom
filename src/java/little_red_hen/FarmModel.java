@@ -28,7 +28,7 @@ public class FarmModel {
 		return this.agents.get(name);
 	}
 	
-	public boolean randomFarming(AgentModel agent) {
+	public boolean farmWork(AgentModel agent) {
 		this.actionCount += 1;
 		logger.info("Some farming activity was performed");
 		

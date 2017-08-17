@@ -35,11 +35,11 @@ public class AgentModel {
 		this.personality = null;
 	}
 
-	public AgentModel(String name, Collection<String> beliefs, Collection<String> goals) {
+	public AgentModel(String name, Personality personality) {
 		this.name = name;
-		this.beliefs = createLiteralString(beliefs);
-		this.goals = createLiteralString(goals);
-		this.personality = null;
+		this.beliefs = "";
+		this.goals = "";
+		this.personality = personality;
 	}
 	
 	public AgentModel(String name, Collection<String> beliefs, Collection<String> goals, Personality personality) {
@@ -125,6 +125,8 @@ public class AgentModel {
 			String recList = receivers.stream().map(rec -> rec.name).collect(Collectors.joining(",", "[", "]")).toString();
 			this.environment.addToListCurrentEvents(name,
 					String.format("shared(%s,%s)[emotion(pride)]", item.literal(), recList));
+			logger.info(this.name + " shared some " + item.literal() + ".");
+			
 			
 			return true;
 		}
@@ -139,6 +141,7 @@ public class AgentModel {
 		// into ASL side?
 		this.environment.addToListCurrentEvents(name,
 												String.format("received(%s)[emotion(joy)]", item.literal()));
+		logger.info(this.name + " received some " + item.literal() + ".");
 		return true;
 	}
 

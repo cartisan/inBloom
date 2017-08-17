@@ -53,8 +53,8 @@ public class FarmEnvironment extends TimeSteppedEnvironment {
     	PlotGraph.getPlotListener().addEvent(agentName, action.toString());
     	
     	// TODO: this could be done nicer with meta programming!
-    	if (action.getFunctor().equals("random_farming")) {
-    		result = model.randomFarming(agent);
+    	if (action.getFunctor().equals("farm_work")) {
+    		result = model.farmWork(agent);
     	}
     	
     	if (action.getFunctor().equals("plant")) {

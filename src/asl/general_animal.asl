@@ -2,6 +2,7 @@
 /***** General knowledge  *******************/
 /*****      Common sense beliefs ************/
 /********************************************/
+animals([dog, cow, pig]).
 
 is_work(plant(_)).
 is_work(tend(_)).
@@ -11,39 +12,35 @@ is_work(bake(_)).
 
 is_pleasant(eat(bread)).
 
-animals([dog, cow, pig]).
+//default_activity(cazzegiare).
+//default_activity(random_farming).
 
-default_activity(cazzegiare).
-default_activity(farm_work).
+obligation(farm_work).
 
-
+!default_activity.
 
 /********************************************/
 /*****      Common sense reasoning ************/
 /********************************************/
+@share_food_plan[atomic, affect(personality(agreeableness,high), mood(pleasure,positive))]
 +has(X) : is_pleasant(eat(X)) <-
-	!eat(X).
-
-@share_food_plan[affect(personality(agreeableness,medium), mood(pleasure,positive))]
-+has(X) : has(X) & is_pleasant(eat(X)) <-
 	.print("Sharing: ", X, " with the others");
 	?animals(Anims);
 	!share(X, Anims);
+	!eat(X).
+
++has(X) : is_pleasant(eat(X)) <-
 	!eat(X).
 	
 +has(wheat(seed)) <- 
 	!!create_bread.
 
 +self(has_purpose) <-
-	for (default_activity(X) ) {
-		+suspended(X);
-		.suspend(X);
-	}.
+	.suspend(default_activity).
 
 -self(has_purpose) <-
-	for (suspended(X) ) {
-		.resume(X);
-	}.
+	.resume(default_activity).
+
 
 /********************************************/
 /***** Self-specifications  *****************/
@@ -68,7 +65,7 @@ default_activity(farm_work).
 
 
 /********************************************/
-/*****      Personality management **********/
+/*****      Personality *********************/
 /********************************************/
 
 @general_help_acquisition_plan[affect(personality(extraversion, high))]
@@ -82,6 +79,17 @@ default_activity(farm_work).
 	}
 	.suspend(X);
 	!X.
+
+@default_activity_1[affect(personality(conscientiousness,high))]
++!default_activity <-
+	?obligation(X);
+	!X;
+	!default_activity.
+	
+@default_activity_2[affect(personality(conscientiousness,low))]
++!default_activity <-
+	!relax;
+	!default_activity.
 
 /********************************************/
 /****** Mood  *******************************/
@@ -118,10 +126,6 @@ default_activity(farm_work).
 /***** Plans  *******************************/
 /********************************************/
 
-+!farm_work <- 
-	!random_farming;
-	!farm_work.
-
 +!create_bread : has(wheat(seed)) <-
 	+self(has_purpose);
 	!plant(wheat);
@@ -144,11 +148,6 @@ default_activity(farm_work).
 	.send(Name, tell, accepted_help_request(X));
 	help(Name).
 	
-+!cazzegiare <-
-	.print("I'm doing sweet nothing.");
-	!relax;
-	!cazzegiare.
-
 
 /********************************************/
 /*****      Action Execution Goals **********/
@@ -156,8 +155,8 @@ default_activity(farm_work).
 +!relax <-
 	relax.
 	
-+!random_farming <-
-	random_farming.
++!farm_work <-
+	farm_work.
 
 +!plant(wheat) <-
 	plant(wheat).
