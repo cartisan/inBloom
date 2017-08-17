@@ -2,7 +2,9 @@ package little_red_hen;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import jason.asSemantics.Personality;
 import little_red_hen.jason.FarmEnvironment;
@@ -106,6 +108,24 @@ public class AgentModel {
 			receiver.receive(item);
 			this.environment.addToListCurrentEvents(name,
 					String.format("shared(%s,%s)[emotion(pride)]", item.literal(), receiver.name));
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean share(String itemType, List<AgentModel> receivers) {
+		if (this.has(itemType)) {
+			Item item = this.get(itemType);
+			
+			for(AgentModel receiver : receivers) {
+				receiver.receive(item);
+			}
+			
+			String recList = receivers.stream().map(rec -> rec.name).collect(Collectors.joining(",", "[", "]")).toString();
+			this.environment.addToListCurrentEvents(name,
+					String.format("shared(%s,%s)[emotion(pride)]", item.literal(), recList));
+			
 			return true;
 		}
 		

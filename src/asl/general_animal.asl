@@ -22,7 +22,14 @@ default_activity(farm_work).
 /*****      Common sense reasoning ************/
 /********************************************/
 +has(X) : is_pleasant(eat(X)) <-
-	!!eat(X).
+	!eat(X).
+
+@share_food_plan[affect(personality(agreeableness,medium), mood(pleasure,positive))]
++has(X) : has(X) & is_pleasant(eat(X)) <-
+	.print("Sharing: ", X, " with the others");
+	?animals(Anims);
+	!share(X, Anims);
+	!eat(X).
 	
 +has(wheat(seed)) <- 
 	!!create_bread.
@@ -64,16 +71,7 @@ default_activity(farm_work).
 /*****      Personality management **********/
 /********************************************/
 
-{ include("personality.asl") }
-
-@helpfullness
-+has(X) : self(communal) & is_pleasant(eat(X)) <-
-	.print("Sharing: ", X, " with the others");
-	?animals(Anims);
-	!share(X, Anims);
-	!eat(X).
-
-@general_help_acquisition_plan[personality(extraversion, high)]
+@general_help_acquisition_plan[affect(personality(extraversion, high))]
 +!X[_] : is_work(X) & not already_asked(X) <-
 	?animals(Animals);
 	+already_asked(X);
@@ -104,8 +102,9 @@ default_activity(farm_work).
 // insert all actual punishment plans	
 @punished_plan[atomic]	
 +!punished(L) : mood(hostile) & has(X) & is_pleasant(eat(X)) <-
-	.send(L, achieve, eat(X));
 	.print("Asking ", L, " to eat ", X, ". But not shareing necessary ressources. xoxo");
+	.send(L, achieve, eat(X));
+	!eat(X);
 	+punished(L).
 	
 //	   +blind commitment
@@ -135,7 +134,7 @@ default_activity(farm_work).
 // TODO: I belief this is a misuse of tell!
 // But how do we otherwise inform of such
 // a rejection
-@help_with_plan[personality(conscientiousness,low)]
+@help_with_plan[affect(personality(conscientiousness,low))]
 +!help_with(X)[source(Name)] : is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
 	.send(Name, tell, rejected_help_request(X)).
@@ -183,12 +182,5 @@ default_activity(farm_work).
 	.appraise_emotion(disappointment);
 	.suspend(eat(X)).
 	
-+!share(X, [H|T]) : .length(T) > 0 <-
-	share(X, H);
-	!share(X, T).	
-	
-+!share(X, [H|T]) : .length(T) == 0 <-
-	share(X, H).	
-	
-+!share(X, Anim) <-
-	share(X, Anim).	
++!share(X, Anims) <-
+	share(X, Anims).	

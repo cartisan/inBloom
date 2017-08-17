@@ -192,7 +192,8 @@ public class Launcher extends RunCentralisedMAS {
 							new AgentModel("hen",
 									ImmutableList.of("self(communal)"),
 									ImmutableList.of("farm_work"),
-									new Personality(0, 1, 0.7, 0.3, 1)
+//									new Personality(0, 1, 0.7, 0.3, 1)
+									new Personality(0, 1, 0.7, 0.3, -1)  // TODO: Why is the hen sharing and no punishing?
 							),
 							new AgentModel("dog",
 									ImmutableList.of("self(lazy)"),

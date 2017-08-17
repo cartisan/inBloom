@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import jason.asSyntax.ASSyntax;
+import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
+import jason.asSyntax.Term;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
 import jason.util.Pair;
@@ -87,11 +89,19 @@ public class FarmEnvironment extends TimeSteppedEnvironment {
     	}
     	
     	if (action.getFunctor().equals("share")) {
-    		String item = action.getTerm(1).toString();
-    		String receiver = action.getTerm(2).toString();
+    		String item = action.getTerm(0).toString();
+    		Term receiverTerm = action.getTerm(1);
     		
-    		AgentModel patient = model.getAgent(receiver);
-    		result = agent.share(item, patient);
+    		if (receiverTerm.isList()) {
+    			List<AgentModel> receivers = new LinkedList<>();
+    			for (Term rec: (ListTermImpl) receiverTerm) {
+        			receivers.add(model.getAgent(rec.toString()));
+    			}
+    			result = agent.share(item, receivers);
+    		} else {
+    			AgentModel patient = model.getAgent(receiverTerm.toString());
+    			result = agent.share(item, patient);
+    		}
     	}
     	
     	if (action.getFunctor().equals("relax")) {
