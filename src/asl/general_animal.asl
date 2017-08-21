@@ -104,28 +104,29 @@ obligation(farm_work).
 /****** Mood  *******************************/
 /********************************************/
 +mood(hostile) <-
-	?animals(Anims);
-	// TODO: punish only targets of mood!
+	?affect_target(Anims);
 	!!punished(Anims).
 
 //	   + relativised commitment
 -mood(hostile) <-
-	?animals(Anims);
-	.succeed_goal(punished(Anims)).
+	.succeed_goal(punished(_)).
 
 // begin declarative goal  (p. 174; Bordini,2007)*/
 +!punished(L) : punished(L) <- true.
 
 // insert all actual punishment plans	
 @punished_plan[atomic]	
-+!punished(L) : mood(hostile) & has(X) & is_pleasant(eat(X)) <-
-	.print("Asking ", L, " to eat ", X, ". But not shareing necessary ressources. xoxo");
-	.send(L, achieve, eat(X));
++!punished(_) : mood(hostile) & has(X) & is_pleasant(eat(X)) <-
+	?affect_target(Anims);	
+	.print("Asking ", Anims, " to eat ", X, ". But not shareing necessary ressources. xoxo");
+	.send(Anims, achieve, eat(X));
 	!eat(X);
-	+punished(L).
+	+punished(Anims).
 	
 //	   +blind commitment
-+!punished(L) : true <- !!punished(L).
++!punished(_) : true <- 
+	?affect_target(Anims);	
+	!!punished(Anims).
 
 +punished(L) : true <- 
 	-punished(L);
