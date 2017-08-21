@@ -107,7 +107,7 @@ public class AgentModel {
 			Item item = this.get(itemType);
 			receiver.receive(item);
 			this.environment.addToListCurrentEvents(name,
-					String.format("shared(%s,%s)[emotion(pride)]", item.literal(), receiver.name));
+					String.format("shared(%s,%s)[emotion(pride, self)]", item.literal(), receiver.name));
 			return true;
 		}
 		
@@ -124,7 +124,7 @@ public class AgentModel {
 			
 			String recList = receivers.stream().map(rec -> rec.name).collect(Collectors.joining(",", "[", "]")).toString();
 			this.environment.addToListCurrentEvents(name,
-					String.format("shared(%s,%s)[emotion(pride)]", item.literal(), recList));
+					String.format("shared(%s,%s)[emotion(pride, self)]", item.literal(), recList));
 			logger.info(this.name + " shared some " + item.literal() + ".");
 			
 			
