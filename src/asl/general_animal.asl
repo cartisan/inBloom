@@ -2,7 +2,6 @@
 /***** General knowledge  *******************/
 /*****      Common sense beliefs ************/
 /********************************************/
-animals([dog, cow, pig]).
 
 is_work(plant(_)).
 is_work(tend(_)).
@@ -48,7 +47,7 @@ obligation(farm_work).
 /********************************************/
 
 +rejected_help_request(Req)[source(Name)] <-
-	.appraise_emotion(anger);
+	.appraise_emotion(anger, Name);
 	.abolish(rejected_help_request(Req));
 	-asking(Req, Name);
 	if(not asking(Req, _)) {
@@ -56,7 +55,7 @@ obligation(farm_work).
 	}.
 	
 +accepted_help_request(Req)[source(Name)] <-
-	.appraise_emotion(gratitude);
+	.appraise_emotion(gratitude, Name);
 	.abolish(accepted_help_request(Req));
 	-asking(Req, Name);
 	if(not asking(Req, _)) {
@@ -90,6 +89,16 @@ obligation(farm_work).
 +!default_activity <-
 	!relax;
 	!default_activity.
+
++!default_activity <-
+	.random(R);
+	if(R>0.5) {
+		!relax;
+	} else {
+		?obligation(X);
+		!X;
+	}
+	!default_activity.	
 
 /********************************************/
 /****** Mood  *******************************/

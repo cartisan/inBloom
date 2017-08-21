@@ -2,9 +2,12 @@ package little_red_hen.jason;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.ListTermImpl;
@@ -130,6 +133,13 @@ public class FarmEnvironment extends TimeSteppedEnvironment {
      * States relate to percepts that are maintained over time.
      */
     private void updateStatePercepts(String agentName) {
+    	// update list of present animals (excluding self)
+    	removePerceptsByUnif(Literal.parseLiteral("animals(X)"));
+    	Set<String> presentAnimals = new HashSet<>(this.model.agents.keySet());
+    	presentAnimals.remove(agentName);
+    	List<Term> animList = presentAnimals.stream().map(ASSyntax::createAtom).collect(Collectors.toList());
+    	addPercept(agentName, ASSyntax.createLiteral("animals", ASSyntax.createList(animList)));
+    	
     	// create inventories
     	removePerceptsByUnif(agentName, Literal.parseLiteral("has(X)"));
     	for (String literal : this.model.agents.get(agentName).createInventoryPercepts()) {
