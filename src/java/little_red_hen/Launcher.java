@@ -190,17 +190,19 @@ public class Launcher extends RunCentralisedMAS {
         
         ImmutableList<AgentModel> agents = ImmutableList.of(
 							new AgentModel("hen",							// works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
-									new Personality(0, 1, 0.7, 0.2, 0.3)   //punishment
-//									new Personality(0, 1, 0.7, 0.7, 0.3)   //sharing
-//									new Personality(0, -1, 0.7, 0.7, 0.3)  //no plot (graph making brakes?!)
-//									new Personality(0, 1, 0, 0.2, 0.3)     //no help requests, no sharing
-//									new Personality(0, 1, 0, 0.7, 0.3)     //no help requests, sharing
+									new Personality(0,  1, 0.7, -0.6, 0.7)    //punishment
+//									new Personality(0,  1, 0.7,  0.7, 0.7)    //sharing
+//									new Personality(0, -1, 0.7,  0.7, 0.7)    //no plot (graph making brakes?!)
+//									new Personality(0,  1, 0,   -0.6, 0.7)    //no help requests, no sharing, no punishment
+//									new Personality(0,  1, 0,    0.7, 0.7)    //no help requests, sharing
 							),
 							new AgentModel("dog",
 									new Personality(0, -1, 0, -0.7, -0.8)
+//									new Personality(0, 1, 0, -0.7, -0.8)	// doggie helps hen
 							),
 							new AgentModel("cow",
 									new Personality(0, -1, 0, -0.7, -0.8)
+//									new Personality(0, 1, 0, -0.7, -0.8)	// cow helps hen
 							),
 							new AgentModel("pig",
 									new Personality(0, -1, 0, -0.7, -0.8)

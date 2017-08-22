@@ -15,6 +15,7 @@ public class FarmModel {
 	public HashMap<String, AgentModel> agents;
 	private int actionCount;
 	private FarmEnvironment environment;
+	private boolean wheatFound;
 	
 	
 	public FarmModel(HashMap<String, AgentModel> agents, FarmEnvironment env) {
@@ -22,6 +23,7 @@ public class FarmModel {
 		this.agents = agents;
 		this.wheat = null;
 		this.environment = env;
+		this.wheatFound = false;
 	}
 	
 	public AgentModel getAgent(String name) {
@@ -32,11 +34,11 @@ public class FarmModel {
 		this.actionCount += 1;
 		logger.info("Some farming activity was performed");
 		
-		if (this.actionCount == 3) {
+		if ((!wheatFound) && (this.actionCount >= 3) && (agent.name == "hen")) {
 			this.wheat = new Wheat();
 			agent.addToInventory(this.wheat);					//also: [emotion(joy),emotion(gratitude)]
 			this.environment.addToListCurrentEvents(agent.name, "found(wheat)[emotion(joy)]");  
-			
+			this.wheatFound = true;
 			logger.info(agent.name + " found wheat grains");
 		}
 		
@@ -140,6 +142,10 @@ public class FarmModel {
 		@Override
 		public String getItemName() {
 			return itemName;
+		}
+		
+		public String toString() {
+			return literal();
 		}
 	}
 	

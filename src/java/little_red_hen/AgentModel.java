@@ -174,4 +174,8 @@ public class AgentModel {
 	public void setEnvironment(FarmEnvironment environment) {
 		this.environment = environment;
 	}
+	
+	public String toString() {
+		return this.name + "-agent_model";
+	}
 }
