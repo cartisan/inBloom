@@ -24,6 +24,13 @@ obligation(farm_work).
 	!share(X, Anims);
 	.print("Shared: ", X, " with the others");
 	!eat(X).
+	
+@share_food_plan2[atomic, affect(personality(agreeableness,high), mood(pleasure,positive))]
++has(X) : is_pleasant(eat(X)) & has(X) <- 			// still has X when event selected
+	?animals(Anims);
+	!share(X, Anims);
+	.print("Shared: ", X, " with the others");
+	!eat(X).
 
 +has(X) : is_pleasant(eat(X)) & has(X)  <-			// still has X when event selected 
 	!eat(X).
@@ -114,7 +121,8 @@ obligation(farm_work).
 // insert all actual punishment plans	
 @punished_plan[atomic]	
 +!punished(_) : mood(hostile) & has(X) & is_pleasant(eat(X)) <-
-	?affect_target(Anims);	
+	?affect_target(Anims);
+	not .empty(Anims);
 	.print("Asking ", Anims, " to eat ", X, ". But not shareing necessary ressources. xoxo");
 	.send(Anims, achieve, eat(X));
 	!eat(X);
