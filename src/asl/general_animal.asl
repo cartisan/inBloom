@@ -11,9 +11,6 @@ is_work(bake(_)).
 
 is_pleasant(eat(bread)).
 
-//default_activity(cazzegiare).
-//default_activity(random_farming).
-
 obligation(farm_work).
 
 !default_activity.
@@ -21,14 +18,14 @@ obligation(farm_work).
 /********************************************/
 /*****      Common sense reasoning ************/
 /********************************************/
-@share_food_plan[atomic, affect(personality(agreeableness,high), mood(pleasure,positive))]
-+has(X) : is_pleasant(eat(X)) <-
-	.print("Sharing: ", X, " with the others");
+@share_food_plan[atomic, affect(personality(agreeableness,medium), mood(pleasure,positive))]
++has(X) : is_pleasant(eat(X)) & has(X) <- 			// still has X when event selected
 	?animals(Anims);
 	!share(X, Anims);
+	.print("Shared: ", X, " with the others");
 	!eat(X).
 
-+has(X) : is_pleasant(eat(X)) <-
++has(X) : is_pleasant(eat(X)) & has(X)  <-			// still has X when event selected 
 	!eat(X).
 	
 +has(wheat(seed)) <- 
@@ -184,7 +181,9 @@ obligation(farm_work).
 	bake(bread).
 	
 +!eat(X) : has(X) <- 
-	eat(X).
+	eat(X);
+	-has(X);
+	.succeed_goal(eat(X)).
 	
 +!eat(X) <- 
 	.print("Can't eat ", X, ", I don't have any! :( ");
