@@ -101,14 +101,14 @@ public class PlotEnvironment extends TimeSteppedEnvironment {
      * @see plotmas.little_red_hen.FarmEnvironment#updateStatePercepts(java.lang.String)
      */
     protected void updateStatePercepts(String agentName) {
-    	// update list of present animals (excluding self)
-    	removePerceptsByUnif(Literal.parseLiteral("animals(X)"));
+    	// update list of present agents (excluding self)
+    	removePerceptsByUnif(Literal.parseLiteral("agents(X)"));
     	Set<String> presentAnimals = new HashSet<>(this.model.agents.keySet());
     	presentAnimals.remove(agentName);
     	List<Term> animList = presentAnimals.stream().map(ASSyntax::createAtom).collect(Collectors.toList());
-    	addPercept(agentName, ASSyntax.createLiteral("animals", ASSyntax.createList(animList)));
+    	addPercept(agentName, ASSyntax.createLiteral("agents", ASSyntax.createList(animList)));
     	
-    	// create inventories
+    	// update inventory state for each agents
     	removePerceptsByUnif(agentName, Literal.parseLiteral("has(X)"));
     	for (String literal : this.model.agents.get(agentName).createInventoryPercepts()) {
     		addPercept(agentName, Literal.parseLiteral(literal));    		

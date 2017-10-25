@@ -18,16 +18,16 @@ obligation(farm_work).
 /********************************************/
 /*****      Common sense reasoning ************/
 /********************************************/
-@share_food_plan[atomic, affect(personality(agreeableness,medium), mood(pleasure,positive))]
+@share_food_plan[atomic, affect(personality(agreeableness,medium), mood(pleasure,high))]
 +has(X) : is_pleasant(eat(X)) & has(X) <- 			// still has X when event selected
-	?animals(Anims);
+	?agents(Anims);
 	!share(X, Anims);
 	.print("Shared: ", X, " with the others");
 	!eat(X).
 	
 @share_food_plan2[atomic, affect(personality(agreeableness,high), mood(pleasure,positive))]
 +has(X) : is_pleasant(eat(X)) & has(X) <- 			// still has X when event selected
-	?animals(Anims);
+	?agents(Anims);
 	!share(X, Anims);
 	.print("Shared: ", X, " with the others");
 	!eat(X).
@@ -73,7 +73,7 @@ obligation(farm_work).
 
 @general_help_acquisition_plan[affect(personality(extraversion, high))]
 +!X[_] : is_work(X) & not already_asked(X) <-
-	?animals(Animals);
+	?agents(Animals);
 	+already_asked(X);
 	for (.member(Animal, Animals)) {
 		.print("Asking ", Animal, " to help with ", X)
@@ -118,15 +118,20 @@ obligation(farm_work).
 // begin declarative goal  (p. 174; Bordini,2007)*/
 +!punished(L) : punished(L) <- true.
 
-// insert all actual punishment plans	
+// insert all actual punishment plans
+//TODO: why is mood not in annotation?
 @punished_plan[atomic]	
 +!punished(_) : mood(hostile) & has(X) & is_pleasant(eat(X)) <-
 	?affect_target(Anims);
-	not .empty(Anims);
-	.print("Asking ", Anims, " to eat ", X, ". But not shareing necessary ressources. xoxo");
-	.send(Anims, achieve, eat(X));
-	!eat(X);
-	+punished(Anims).
+	if (.empty(Anims)) {
+		!eat(X);
+		+punished(Anims);		
+	} else {
+		.send(Anims, achieve, eat(X));
+		.print("Asked ", Anims, " to eat ", X, ". But not shareing necessary ressources. xoxo");
+		!eat(X);
+		+punished(Anims)
+	}.
 	
 //	   +blind commitment
 +!punished(_) : true <- 
@@ -135,7 +140,7 @@ obligation(farm_work).
 
 +punished(L) : true <- 
 	-punished(L);
-	.succeed_goal(punished(L)).
+	.succeed_goal(punished(_)).
 
 /********************************************/
 /***** Plans  *******************************/
