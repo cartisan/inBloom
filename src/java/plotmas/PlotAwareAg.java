@@ -1,4 +1,4 @@
-package little_red_hen.jason;
+package plotmas;
 
 import java.util.logging.Logger;
 
@@ -6,8 +6,8 @@ import jason.JasonException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Mood;
-import little_red_hen.PlotGraph;
-import little_red_hen.graph.Vertex;
+import plotmas.graph.PlotGraph;
+import plotmas.graph.Vertex;
 
 public class PlotAwareAg extends AffectiveAgent {
 	static Logger logger = Logger.getLogger(AffectiveAgent.class.getName());

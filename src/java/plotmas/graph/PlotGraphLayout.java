@@ -1,4 +1,4 @@
-package little_red_hen.graph;
+package plotmas.graph;
 
 import java.awt.Dimension;
 import java.awt.Point;

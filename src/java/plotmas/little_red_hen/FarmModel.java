@@ -1,13 +1,15 @@
-package little_red_hen;
+package plotmas.little_red_hen;
 
 import java.util.List;
 import java.util.logging.Logger;
 
-import little_red_hen.jason.FarmEnvironment;
+import plotmas.storyworld.Item;
+import plotmas.storyworld.Model;
+import plotmas.storyworld.StoryworldAgent;
 
 /* Model class for Farm Environment */
 
-public class FarmModel extends PlotModel{
+public class FarmModel extends Model{
 	public static enum WHEAT_STATE {SEED, GROWING, RIPE, HARVESTED, FLOUR;}
 	static Logger logger = Logger.getLogger(FarmModel.class.getName());
 
@@ -17,7 +19,7 @@ public class FarmModel extends PlotModel{
 		private boolean wheatFound;
 	
 	
-	public FarmModel(List<AgentModel> agents, FarmEnvironment env) {
+	public FarmModel(List<StoryworldAgent> agents, FarmEnvironment env) {
 		super(agents, env);
 
 		this.actionCount = 0;
@@ -26,7 +28,7 @@ public class FarmModel extends PlotModel{
 	}
 
 	
-	public boolean farmWork(AgentModel agent) {
+	public boolean farmWork(StoryworldAgent agent) {
 		this.actionCount += 1;
 		logger.info("Some farming activity was performed");
 		
@@ -41,7 +43,7 @@ public class FarmModel extends PlotModel{
 		return true;
 	}
 	
-	public boolean plantWheat(AgentModel agent) {
+	public boolean plantWheat(StoryworldAgent agent) {
 		Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 		if (!(wheatItem == null)) {
 				if (wheatItem.state == WHEAT_STATE.SEED) {
@@ -55,7 +57,7 @@ public class FarmModel extends PlotModel{
 		return false;
 	}
 	
-	public boolean tendWheat(AgentModel agent) {
+	public boolean tendWheat(StoryworldAgent agent) {
 		if ((this.wheat.state == WHEAT_STATE.GROWING)){
 			this.wheat.state = WHEAT_STATE.RIPE;
 			logger.info("Wheat has grown and is ripe now");
@@ -66,7 +68,7 @@ public class FarmModel extends PlotModel{
 		return false;
 	}
 	
-	public boolean harvestWheat(AgentModel agent) {
+	public boolean harvestWheat(StoryworldAgent agent) {
 		if ((this.wheat.state == WHEAT_STATE.RIPE)){
 			this.wheat.state = WHEAT_STATE.HARVESTED;
 			logger.info("Wheat was harvested");
@@ -77,7 +79,7 @@ public class FarmModel extends PlotModel{
 		return false;
 	}
 	
-	public boolean grindWheat(AgentModel agent) {
+	public boolean grindWheat(StoryworldAgent agent) {
 		if ((this.wheat.state == WHEAT_STATE.HARVESTED)){
 			this.wheat.state = WHEAT_STATE.FLOUR;
 			logger.info("Wheat was ground to flour");
@@ -88,7 +90,7 @@ public class FarmModel extends PlotModel{
 		return false;
 	}
 
-	public boolean bakeBread(AgentModel agent) {
+	public boolean bakeBread(StoryworldAgent agent) {
 		Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 		if((!(wheatItem == null)) & (wheatItem.state == WHEAT_STATE.FLOUR)) {
 			agent.addToInventory(new Bread());

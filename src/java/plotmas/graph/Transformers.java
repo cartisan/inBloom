@@ -1,4 +1,4 @@
-package little_red_hen.graph;
+package plotmas.graph;
 
 import java.awt.Font;
 import java.awt.Paint;
@@ -12,7 +12,6 @@ import com.google.common.base.Function;
 
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
-import little_red_hen.PlotGraph;
 
 public class Transformers {
 	

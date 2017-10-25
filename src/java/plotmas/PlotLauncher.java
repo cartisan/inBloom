@@ -1,4 +1,4 @@
-package little_red_hen;
+package plotmas;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,9 +18,10 @@ import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.AffectiveTransitionSystem;
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
-import little_red_hen.jason.FarmEnvironment;
-import little_red_hen.jason.PlotAwareAg;
-import little_red_hen.jason.PlotAwareAgArch;
+import plotmas.graph.PlotGraph;
+import plotmas.little_red_hen.FarmEnvironment;
+import plotmas.little_red_hen.RedHenLauncher;
+import plotmas.storyworld.StoryworldAgent;
 
 public class PlotLauncher extends RunCentralisedMAS {
 	protected static Logger logger = Logger.getLogger(RedHenLauncher.class.getName());
@@ -109,7 +110,7 @@ public class PlotLauncher extends RunCentralisedMAS {
     }
 	
 	
-	protected void createMas2j(Collection<AgentModel> agents) {
+	protected void createMas2j(Collection<StoryworldAgent> agents) {
 		String fileName = "launcher.mas2j";
 
 		try{
@@ -120,7 +121,7 @@ public class PlotLauncher extends RunCentralisedMAS {
 		    writer.println("");
 		    writer.println("	agents:");
 		    
-		    for (AgentModel agent : agents) {
+		    for (StoryworldAgent agent : agents) {
 		    	String line = "		" + agent.name + 
 		    			MessageFormat.format(" general_animal[beliefs=\"{0}\", goals=\"{1}\"]",
 		    								 agent.beliefs,
@@ -144,9 +145,9 @@ public class PlotLauncher extends RunCentralisedMAS {
 		}
 	}
 	
-	protected void initializeAgents(ImmutableList<AgentModel> agents) {
+	protected void initializeAgents(ImmutableList<StoryworldAgent> agents) {
 		// initialize personalities
-		for (AgentModel ag: agents) {
+		for (StoryworldAgent ag: agents) {
 			if(ag.personality != null) {
 				AffectiveAgent affAg = ((AffectiveTransitionSystem) this.getAg(ag.name).getTS()).getAffectiveAg();
 				try {
@@ -160,7 +161,7 @@ public class PlotLauncher extends RunCentralisedMAS {
 		
 	}
 	
-	protected void initzializeEnvironment(ImmutableList<AgentModel> agents) {
+	protected void initzializeEnvironment(ImmutableList<StoryworldAgent> agents) {
 		FarmEnvironment env = (FarmEnvironment) runner.env.getUserEnvironment();
 		env.initialize(agents);
 	}

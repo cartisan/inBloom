@@ -1,4 +1,4 @@
-package little_red_hen.jason;
+package plotmas.little_red_hen;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -8,15 +8,14 @@ import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
-import little_red_hen.AgentModel;
-import little_red_hen.FarmModel;
-import little_red_hen.PlotEnvironment;
+import plotmas.PlotEnvironment;
+import plotmas.storyworld.StoryworldAgent;
 
 public class FarmEnvironment extends PlotEnvironment {
     static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
     
     @Override
-    public void initialize(List<AgentModel> agents) {
+    public void initialize(List<StoryworldAgent> agents) {
     	super.initialize(agents);
         FarmModel model = new FarmModel(agents, this);
         this.setModel(model);
@@ -40,7 +39,7 @@ public class FarmEnvironment extends PlotEnvironment {
     public boolean executeAction(String agentName, Structure action) {
 		// let the PlotEnvironment update the plot graph, initializes result as false
 		boolean result = super.executeAction(agentName, action);
-    	AgentModel agent = getModel().getAgent(agentName);
+    	StoryworldAgent agent = getModel().getAgent(agentName);
     	
     	// TODO: this could be done nicer with meta programming!
     	if (action.getFunctor().equals("farm_work")) {
@@ -83,13 +82,13 @@ public class FarmEnvironment extends PlotEnvironment {
     		Term receiverTerm = action.getTerm(1);
     		
     		if (receiverTerm.isList()) {
-    			List<AgentModel> receivers = new LinkedList<>();
+    			List<StoryworldAgent> receivers = new LinkedList<>();
     			for (Term rec: (ListTermImpl) receiverTerm) {
         			receivers.add(getModel().getAgent(rec.toString()));
     			}
     			result = agent.share(item, receivers);
     		} else {
-    			AgentModel patient = getModel().getAgent(receiverTerm.toString());
+    			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
     			result = agent.share(item, patient);
     		}
     	}

@@ -1,4 +1,4 @@
-package little_red_hen;
+package plotmas.little_red_hen;
 
 import com.google.common.collect.ImmutableList;
 
@@ -6,7 +6,9 @@ import jason.JasonException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.AffectiveTransitionSystem;
 import jason.asSemantics.Personality;
-import little_red_hen.jason.FarmEnvironment;
+import plotmas.PlotLauncher;
+import plotmas.graph.PlotGraph;
+import plotmas.storyworld.StoryworldAgent;
 
 
 public class RedHenLauncher extends PlotLauncher {
@@ -14,8 +16,8 @@ public class RedHenLauncher extends PlotLauncher {
 	public static void main(String[] args) throws JasonException {
         logger.info("Starting up from Launcher!"); 
         
-        ImmutableList<AgentModel> agents = ImmutableList.of(
-							new AgentModel("hen",							  // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
+        ImmutableList<StoryworldAgent> agents = ImmutableList.of(
+							new StoryworldAgent("hen",							  // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
 									new Personality(0,  1, 0.7,  0.3, 0.0)    //punishment
 //									new Personality(0,  1, 0.7,  0.3,  -1)    //low neurot --> no punishment
 //									new Personality(0,  1, 0.7,  0.7,  -1)    //high aggrea --> sharing
@@ -24,15 +26,15 @@ public class RedHenLauncher extends PlotLauncher {
 									
 //									new Personality(0,  1, 0,    0.7, 0.0)    //low extra --> no help requests, no punishment
 							),
-							new AgentModel("dog",
+							new StoryworldAgent("dog",
 									new Personality(0, -1, 0, -0.7, -0.8)
 //									new Personality(0, 1, 0, -0.7, -0.8)	// doggie helps hen v1
 							),
-							new AgentModel("cow",
+							new StoryworldAgent("cow",
 									new Personality(0, -1, 0, -0.7, -0.8)
 //									new Personality(0, 1, 0, -0.7, -0.8)	// cow helps hen v1
 							),
-							new AgentModel("pig",
+							new StoryworldAgent("pig",
 									new Personality(0, -1, 0, -0.7, -0.8)
 							)
 						);

@@ -1,4 +1,4 @@
-package little_red_hen;
+package plotmas.storyworld;
 
 public abstract class Item {
 	public abstract String getItemName();

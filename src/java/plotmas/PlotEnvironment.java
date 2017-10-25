@@ -1,4 +1,4 @@
-package little_red_hen;
+package plotmas;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,12 +16,16 @@ import jason.asSyntax.Term;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
 import jason.util.Pair;
+import plotmas.graph.PlotGraph;
+import plotmas.little_red_hen.RedHenLauncher;
+import plotmas.storyworld.Model;
+import plotmas.storyworld.StoryworldAgent;
 
 public class PlotEnvironment extends TimeSteppedEnvironment {
 	public static final Integer MAX_REPEATE_NUM = 10;
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
     
-    protected PlotModel model;
+    protected Model model;
     
     /**
      * Stores a mapping from agentName to a (String actionName, Integer count) tuple, which stores how many
@@ -46,7 +50,7 @@ public class PlotEnvironment extends TimeSteppedEnvironment {
     private HashMap<String, List<Literal>> perceivedEventsMap = new HashMap<>();
 
     
-    public void initialize(List<AgentModel> agents) {
+    public void initialize(List<StoryworldAgent> agents) {
     	initializeActionCounting(agents);
     }
     
@@ -94,7 +98,7 @@ public class PlotEnvironment extends TimeSteppedEnvironment {
      * Subclass this method to add domain-specific states to the percepts, don't forget to
      * first call `super.updateStatePercepts(agentName);`
      * 
-     * @see little_red_hen.jason.FarmEnvironment#updateStatePercepts(java.lang.String)
+     * @see plotmas.little_red_hen.FarmEnvironment#updateStatePercepts(java.lang.String)
      */
     protected void updateStatePercepts(String agentName) {
     	// update list of present animals (excluding self)
@@ -187,11 +191,11 @@ public class PlotEnvironment extends TimeSteppedEnvironment {
     /********************** Methods for pausing the execution after nothing happens **************************
     * checks if all agents executed the same action for the last MAX_REPEATE_NUM of times, if yes, pauses the simu.
     */
-    protected void initializeActionCounting(List<AgentModel> agents) {
+    protected void initializeActionCounting(List<StoryworldAgent> agents) {
         HashMap<String, Pair<String, Integer>> agentActionCount = new HashMap<>();
         
         // set up connections between agents, model and environment
-        for (AgentModel agent : agents) {
+        for (StoryworldAgent agent : agents) {
         	agentActionCount.put(agent.name, new Pair<String, Integer>("", 1));
         }
         this.agentActionCount = agentActionCount;

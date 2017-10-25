@@ -1,4 +1,4 @@
-package little_red_hen;
+package plotmas.graph;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -19,11 +19,7 @@ import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
-import little_red_hen.graph.Edge;
-import little_red_hen.graph.PlotDirectedSparseGraph;
-import little_red_hen.graph.PlotGraphLayout;
-import little_red_hen.graph.Transformers;
-import little_red_hen.graph.Vertex;
+import plotmas.storyworld.StoryworldAgent;
 
 public class PlotGraph {
     
@@ -35,7 +31,7 @@ public class PlotGraph {
 		return plotListener;
 	}
 
-	public static void instantiatePlotListener(Collection<AgentModel> characters) {
+	public static void instantiatePlotListener(Collection<StoryworldAgent> characters) {
 		PlotGraph.plotListener = new PlotGraph(characters);
 	}
 
@@ -45,12 +41,12 @@ public class PlotGraph {
 	private HashMap<String, Vertex> lastVertexMap;
 	private PlotDirectedSparseGraph graph; 
 	
-	public PlotGraph(Collection<AgentModel> characters) {
+	public PlotGraph(Collection<StoryworldAgent> characters) {
 		this.graph = new PlotDirectedSparseGraph();
 	    this.lastVertexMap = new HashMap<String, Vertex>();
 		
 	    // set up a "named" tree for each character
-		for (AgentModel character : characters) {
+		for (StoryworldAgent character : characters) {
 			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
 			graph.addRoot(root);
 			

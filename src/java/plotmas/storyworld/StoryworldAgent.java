@@ -1,4 +1,4 @@
-package little_red_hen;
+package plotmas.storyworld;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -7,10 +7,11 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import jason.asSemantics.Personality;
+import plotmas.PlotEnvironment;
 
 
-public class AgentModel {
-    static Logger logger = Logger.getLogger(AgentModel.class.getName());
+public class StoryworldAgent {
+    static Logger logger = Logger.getLogger(StoryworldAgent.class.getName());
 	
 	public LinkedList<Item> inventory = new LinkedList<Item>();
 	public String name;
@@ -21,27 +22,27 @@ public class AgentModel {
 	public Personality personality;
 	
 	
-	public AgentModel() {
+	public StoryworldAgent() {
 		this.name = null;
 		this.beliefs = "";
 		this.goals = "";
 	}
 	
-	public AgentModel(String name) {
+	public StoryworldAgent(String name) {
 		this.name = name;
 		this.beliefs = "";
 		this.goals = "";
 		this.personality = null;
 	}
 
-	public AgentModel(String name, Personality personality) {
+	public StoryworldAgent(String name, Personality personality) {
 		this.name = name;
 		this.beliefs = "";
 		this.goals = "";
 		this.personality = personality;
 	}
 	
-	public AgentModel(String name, Collection<String> beliefs, Collection<String> goals, Personality personality) {
+	public StoryworldAgent(String name, Collection<String> beliefs, Collection<String> goals, Personality personality) {
 		this.name = name;
 		this.beliefs = createLiteralString(beliefs);
 		this.goals = createLiteralString(goals);
@@ -101,7 +102,7 @@ public class AgentModel {
 		return null;
 	}
 	
-	public boolean share(String itemType, AgentModel receiver) {
+	public boolean share(String itemType, StoryworldAgent receiver) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			receiver.receive(item);
@@ -113,11 +114,11 @@ public class AgentModel {
 		return false;
 	}
 	
-	public boolean share(String itemType, List<AgentModel> receivers) {
+	public boolean share(String itemType, List<StoryworldAgent> receivers) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			
-			for(AgentModel receiver : receivers) {
+			for(StoryworldAgent receiver : receivers) {
 				receiver.receive(item);
 			}
 			

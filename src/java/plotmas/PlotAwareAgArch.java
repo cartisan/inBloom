@@ -1,8 +1,8 @@
-package little_red_hen.jason;
+package plotmas;
 
 import jason.architecture.AgArch;
 import jason.asSemantics.Message;
-import little_red_hen.PlotGraph;
+import plotmas.graph.PlotGraph;
 
 public class PlotAwareAgArch extends AgArch {
 
