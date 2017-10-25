@@ -1,34 +1,30 @@
 package little_red_hen;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
 
 import little_red_hen.jason.FarmEnvironment;
 
 /* Model class for Farm Environment */
 
-public class FarmModel {
+public class FarmModel extends PlotModel{
 	public static enum WHEAT_STATE {SEED, GROWING, RIPE, HARVESTED, FLOUR;}
 	static Logger logger = Logger.getLogger(FarmModel.class.getName());
 
 	public Wheat wheat;
-	public HashMap<String, AgentModel> agents;
+
 	private int actionCount;
-	private FarmEnvironment environment;
-	private boolean wheatFound;
+		private boolean wheatFound;
 	
 	
-	public FarmModel(HashMap<String, AgentModel> agents, FarmEnvironment env) {
+	public FarmModel(List<AgentModel> agents, FarmEnvironment env) {
+		super(agents, env);
+
 		this.actionCount = 0;
-		this.agents = agents;
 		this.wheat = null;
-		this.environment = env;
 		this.wheatFound = false;
 	}
-	
-	public AgentModel getAgent(String name) {
-		return this.agents.get(name);
-	}
+
 	
 	public boolean farmWork(AgentModel agent) {
 		this.actionCount += 1;
@@ -37,7 +33,7 @@ public class FarmModel {
 		if ((!wheatFound) && (this.actionCount >= 3) && (agent.name == "hen")) {
 			this.wheat = new Wheat();
 			agent.addToInventory(this.wheat);					//also: [emotion(joy),emotion(gratitude)]
-			this.environment.addToListCurrentEvents(agent.name, "found(wheat)[emotion(joy)]");  
+			this.environment.addEventPerception(agent.name, "found(wheat)[emotion(joy)]");  
 			this.wheatFound = true;
 			logger.info(agent.name + " found wheat grains");
 		}
@@ -50,7 +46,7 @@ public class FarmModel {
 		if (!(wheatItem == null)) {
 				if (wheatItem.state == WHEAT_STATE.SEED) {
 					this.wheat.state = WHEAT_STATE.GROWING;
-					this.environment.addToListCurrentEvents(agent.name, "planted(wheat)[emotion(pride)]");
+					this.environment.addEventPerception(agent.name, "planted(wheat)[emotion(pride)]");
 					logger.info("Wheat planted");
 					return true;
 				}
@@ -63,7 +59,7 @@ public class FarmModel {
 		if ((this.wheat.state == WHEAT_STATE.GROWING)){
 			this.wheat.state = WHEAT_STATE.RIPE;
 			logger.info("Wheat has grown and is ripe now");
-			this.environment.addToListCurrentEvents(agent.name, "tended(wheat)[emotion(pride)]");
+			this.environment.addEventPerception(agent.name, "tended(wheat)[emotion(pride)]");
 			return true;
 		}
 		
@@ -74,7 +70,7 @@ public class FarmModel {
 		if ((this.wheat.state == WHEAT_STATE.RIPE)){
 			this.wheat.state = WHEAT_STATE.HARVESTED;
 			logger.info("Wheat was harvested");
-			this.environment.addToListCurrentEvents(agent.name, "harvested(wheat)[emotion(pride)]");
+			this.environment.addEventPerception(agent.name, "harvested(wheat)[emotion(pride)]");
 			return true;
 		}
 		
@@ -86,7 +82,7 @@ public class FarmModel {
 			this.wheat.state = WHEAT_STATE.FLOUR;
 			logger.info("Wheat was ground to flour");
 			this.wheat = null;
-			this.environment.addToListCurrentEvents(agent.name, "ground(wheat)[emotion(pride)]");
+			this.environment.addEventPerception(agent.name, "ground(wheat)[emotion(pride)]");
 			return true;
 		}
 		return false;
@@ -99,7 +95,7 @@ public class FarmModel {
 			agent.removeFromInventory(wheatItem);
 			
 			logger.info(agent.name + ": baked some bread.");
-			this.environment.addToListCurrentEvents(agent.name, "baked(bread)[emotion(pride),emotion(joy)]");
+			this.environment.addEventPerception(agent.name, "baked(bread)[emotion(pride),emotion(joy)]");
 			return true;
 		}
 		
@@ -143,10 +139,7 @@ public class FarmModel {
 		public String getItemName() {
 			return itemName;
 		}
-		
-		public String toString() {
-			return literal();
-		}
+
 	}
 	
 	class Bread extends Item {

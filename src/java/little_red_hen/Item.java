@@ -9,4 +9,7 @@ public abstract class Item {
 		return false;
 	}
 
+	public String toString() {
+		return literal();
+	}
 }

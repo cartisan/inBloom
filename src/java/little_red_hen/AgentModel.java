@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import jason.asSemantics.Personality;
-import little_red_hen.jason.FarmEnvironment;
 
 
 public class AgentModel {
@@ -17,7 +16,7 @@ public class AgentModel {
 	public String name;
 	public String beliefs;
 	public String goals;
-	private FarmEnvironment environment;
+	private PlotEnvironment environment;
 
 	public Personality personality;
 	
@@ -106,7 +105,7 @@ public class AgentModel {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			receiver.receive(item);
-			this.environment.addToListCurrentEvents(name,
+			this.environment.addEventPerception(name,
 					String.format("shared(%s,%s)[emotion(pride, self)]", item.literal(), receiver.name));
 			return true;
 		}
@@ -123,7 +122,7 @@ public class AgentModel {
 			}
 			
 			String recList = receivers.stream().map(rec -> rec.name).collect(Collectors.joining(",", "[", "]")).toString();
-			this.environment.addToListCurrentEvents(name,
+			this.environment.addEventPerception(name,
 					String.format("shared(%s,%s)[emotion(pride, self)]", item.literal(), recList));
 			logger.info(this.name + " shared some " + item.literal() + ".");
 			
@@ -139,7 +138,7 @@ public class AgentModel {
 		
 		// TODO: this emotion might depend on properties of object, in which case its deliberative and should go
 		// into ASL side?
-		this.environment.addToListCurrentEvents(name,
+		this.environment.addEventPerception(name,
 												String.format("received(%s)[emotion(joy)]", item.literal()));
 		logger.info(this.name + " received some " + item.literal() + ".");
 		return true;
@@ -151,7 +150,7 @@ public class AgentModel {
 			
 			if (item.isEdible()) {
 				this.removeFromInventory(item);
-				this.environment.addToListCurrentEvents(name, 
+				this.environment.addEventPerception(name, 
 														String.format("ate(%s)[emotion(satisfaction)]", item.literal()));
 				
 				// in theory: here double dispatch
@@ -167,11 +166,11 @@ public class AgentModel {
 	}
 	
 	public boolean relax() {
-		this.environment.addToListCurrentEvents(name, "relaxed[emotion(joy)]");
+		this.environment.addEventPerception(name, "relaxed[emotion(joy)]");
 		return true;
 	}
 
-	public void setEnvironment(FarmEnvironment environment) {
+	public void setEnvironment(PlotEnvironment environment) {
 		this.environment = environment;
 	}
 	
