@@ -23,6 +23,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Leon/eclipse-workspace/jason/build/libs/jason-o3a-1.0.jar" sourcepath="/jason/src/main/java"/>
+	<classpathentry kind="lib" path="lib/jason-o3a-1.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
