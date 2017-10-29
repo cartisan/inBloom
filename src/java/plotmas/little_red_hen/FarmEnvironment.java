@@ -9,13 +9,14 @@ import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import plotmas.PlotEnvironment;
+import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.storyworld.StoryworldAgent;
 
 public class FarmEnvironment extends PlotEnvironment {
     static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
     
     @Override
-    public void initialize(List<StoryworldAgent> agents) {
+    public void initialize(List<LauncherAgent> agents) {
     	super.initialize(agents);
         FarmModel model = new FarmModel(agents, this);
         this.setModel(model);

@@ -10,6 +10,13 @@ import jason.asSemantics.Personality;
 import plotmas.PlotEnvironment;
 
 
+/**
+ * Responsible for modeling the state of an agent/character in the storyworld. Manages the agent's
+ * inventory that consists of {@link Item item subclasses} by offering methods to modify it. <br> 
+ * Subclasses should implement further, domain-specific methods that execute character behavior and
+ * modify a character's state.
+ * @author Leonid Berov
+ */
 public class StoryworldAgent {
     static Logger logger = Logger.getLogger(StoryworldAgent.class.getName());
 	
@@ -64,6 +71,11 @@ public class StoryworldAgent {
 		return result;
 	}
 	
+	/**
+	 * Creates a list of {@link jason.asSyntax.Literal literal-}perceptions that represent the complete state of an 
+	 * agent's inventory, which can be used to generate ASL agent perceptions.
+	 * @return
+	 */
 	public LinkedList<String> createInventoryPercepts() {
 		LinkedList<String> invRepr = new LinkedList<String>();
 		

@@ -3,6 +3,7 @@ package plotmas.little_red_hen;
 import java.util.List;
 import java.util.logging.Logger;
 
+import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.storyworld.Item;
 import plotmas.storyworld.Model;
 import plotmas.storyworld.StoryworldAgent;
@@ -19,7 +20,7 @@ public class FarmModel extends Model{
 		private boolean wheatFound;
 	
 	
-	public FarmModel(List<StoryworldAgent> agents, FarmEnvironment env) {
+	public FarmModel(List<LauncherAgent> agents, FarmEnvironment env) {
 		super(agents, env);
 
 		this.actionCount = 0;

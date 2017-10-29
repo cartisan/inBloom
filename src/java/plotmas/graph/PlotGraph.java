@@ -9,17 +9,11 @@ import java.util.logging.Logger;
 import javax.swing.JFrame;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.TreeLayout;
-import edu.uci.ics.jung.graph.DelegateForest;
-import edu.uci.ics.jung.graph.DelegateTree;
-import edu.uci.ics.jung.graph.DirectedSparseGraph;
-import edu.uci.ics.jung.graph.Forest;
-import edu.uci.ics.jung.graph.Tree;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
-import plotmas.storyworld.StoryworldAgent;
+import plotmas.PlotLauncher.LauncherAgent;
 
 public class PlotGraph {
     
@@ -31,7 +25,7 @@ public class PlotGraph {
 		return plotListener;
 	}
 
-	public static void instantiatePlotListener(Collection<StoryworldAgent> characters) {
+	public static void instantiatePlotListener(Collection<LauncherAgent> characters) {
 		PlotGraph.plotListener = new PlotGraph(characters);
 	}
 
@@ -41,12 +35,12 @@ public class PlotGraph {
 	private HashMap<String, Vertex> lastVertexMap;
 	private PlotDirectedSparseGraph graph; 
 	
-	public PlotGraph(Collection<StoryworldAgent> characters) {
+	public PlotGraph(Collection<LauncherAgent> characters) {
 		this.graph = new PlotDirectedSparseGraph();
 	    this.lastVertexMap = new HashMap<String, Vertex>();
 		
 	    // set up a "named" tree for each character
-		for (StoryworldAgent character : characters) {
+		for (LauncherAgent character : characters) {
 			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
 			graph.addRoot(root);
 			
