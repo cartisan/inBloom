@@ -1,26 +1,26 @@
 package plotmas;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.time.Instant;
 
-import jason.asSemantics.Mood;
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
-import jason.infra.centralised.CentralisedRuntimeServices;
 import jason.util.Pair;
+
+
 import plotmas.PlotLauncher.LauncherAgent;
-import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotGraph;
 import plotmas.storyworld.Model;
 
@@ -40,6 +40,7 @@ import plotmas.storyworld.Model;
 public abstract class PlotEnvironment extends TimeSteppedEnvironment {
 	public static final Integer MAX_REPEATE_NUM = 10;
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
+    public static Instant startTime = null;
     
     protected Model model;
     
@@ -67,6 +68,7 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
 
     
     public void initialize(List<LauncherAgent> agents) {
+    	PlotEnvironment.startTime = Instant.now();
     	initializeActionCounting(agents);
     }
     
@@ -85,16 +87,6 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
 		return false;
 	}
 	
-//	@Override
-//    protected void stepStarted(int step) {
-//		// TODO: implement in jason's interface and jade, too? Or create and AffectiveRuntime?
-//		Map<String, Mood> moodMap = ((CentralisedRuntimeServices) getEnvironmentInfraTier().getRuntimeServices()).getAffectiveAgentMoods();
-//		
-//		for(String agName : moodMap.keySet()) {
-//			MoodGraph.getMoodListener().addMoodPoint(moodMap.get(agName).getP(), this.getStep(), agName);
-//		}
-//    }
-    
     /********************** Methods for updating agent percepts **************************
     * - distinguishes between:
     *   - perceptions of model states, things that are constantly there but might have different values

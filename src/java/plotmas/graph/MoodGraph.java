@@ -58,7 +58,7 @@ public class MoodGraph extends ApplicationFrame {
 		this.setVisible(true);
 	}
 	
-	public void addMoodPoint(Double value, Integer time, String agName) {
+	public void addMoodPoint(Double value, Long time, String agName) {
 		this.moodData.addValue(value, agName, time);
 	}
 	

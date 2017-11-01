@@ -1,5 +1,6 @@
 package plotmas;
 
+import java.time.Instant;
 import java.util.logging.Logger;
 
 import jason.JasonException;
@@ -29,8 +30,9 @@ public class PlotAwareAg extends AffectiveAgent {
 	
 	@Override
 	public void updateMoodValue(Mood newMood, int cycleNumber) {
+		Long tst = Instant.now().toEpochMilli() - PlotEnvironment.startTime.toEpochMilli();
 		MoodGraph.getMoodListener().addMoodPoint(newMood.getP(),
-												 cycleNumber,
+												 tst / 50,
 												 ts.getUserAgArch().getAgName());
 	}
 }
