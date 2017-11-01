@@ -8,6 +8,8 @@ import java.util.logging.Logger;
 
 import javax.swing.JFrame;
 
+import org.jfree.ui.RefineryUtilities;
+
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
@@ -20,18 +22,9 @@ public class PlotGraph {
     static Logger logger = Logger.getLogger(PlotGraph.class.getName());
 	private static PlotGraph plotListener = null;
 	public static boolean isDisplayed = false;
-	
-	public static PlotGraph getPlotListener() {
-		return plotListener;
-	}
-
-	public static void instantiatePlotListener(Collection<LauncherAgent> characters) {
-		PlotGraph.plotListener = new PlotGraph(characters);
-	}
-
 	public static Color BGCOLOR = Color.WHITE;
 	private static JFrame frame;
-	
+
 	private HashMap<String, Vertex> lastVertexMap;
 	private PlotDirectedSparseGraph graph; 
 	
@@ -96,6 +89,14 @@ public class PlotGraph {
 		PlotGraph.visualizeGraph(this.graph);
 	}
 	
+	public static PlotGraph getPlotListener() {
+		return plotListener;
+	}
+
+	public static void instantiatePlotListener(Collection<LauncherAgent> characters) {
+		PlotGraph.plotListener = new PlotGraph(characters);
+	}
+	
 	public static void visualizeGraph(PlotDirectedSparseGraph g) {
 		// Maybe just implement custom renderer instead of all the transformers?
 		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
@@ -142,6 +143,9 @@ public class PlotGraph {
 		
 		frame.getContentPane().add(scrollPane);
 		frame.pack();
+		
+		RefineryUtilities.positionFrameOnScreen(frame, 0.0, 0.2);
+		
 		frame.setVisible(true);
 		PlotGraph.isDisplayed = true;
 	}

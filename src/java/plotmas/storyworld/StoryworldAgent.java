@@ -22,53 +22,16 @@ public class StoryworldAgent {
 	
 	public LinkedList<Item> inventory = new LinkedList<Item>();
 	public String name;
-	public String beliefs;
-	public String goals;
 	private PlotEnvironment environment;
 
-	public Personality personality;
 	
 	
 	public StoryworldAgent() {
 		this.name = null;
-		this.beliefs = "";
-		this.goals = "";
 	}
 	
 	public StoryworldAgent(String name) {
 		this.name = name;
-		this.beliefs = "";
-		this.goals = "";
-		this.personality = null;
-	}
-
-	public StoryworldAgent(String name, Personality personality) {
-		this.name = name;
-		this.beliefs = "";
-		this.goals = "";
-		this.personality = personality;
-	}
-	
-	public StoryworldAgent(String name, Collection<String> beliefs, Collection<String> goals, Personality personality) {
-		this.name = name;
-		this.beliefs = createLiteralString(beliefs);
-		this.goals = createLiteralString(goals);
-		this.personality = personality;
-	}
-	
-	private String createLiteralString(Collection<String> literalList) {
-		String result = "";
-		
-		for (String literal : literalList) {
-			result += literal + ",";
-		}
-		
-		if (result.length() > 0) {
-			// delete last trailing ','
-			result = result.substring(0, result.length()-1);
-		}
-		
-		return result;
 	}
 	
 	/**

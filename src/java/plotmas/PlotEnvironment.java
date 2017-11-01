@@ -5,19 +5,22 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import jason.asSemantics.Mood;
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
+import jason.infra.centralised.CentralisedRuntimeServices;
 import jason.util.Pair;
-
 import plotmas.PlotLauncher.LauncherAgent;
+import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotGraph;
 import plotmas.storyworld.Model;
 
@@ -81,6 +84,16 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
 		
 		return false;
 	}
+	
+	@Override
+    protected void stepStarted(int step) {
+		// TODO: implement in jason's interface and jade, too? Or create and AffectiveRuntime?
+		Map<String, Mood> moodMap = ((CentralisedRuntimeServices) getEnvironmentInfraTier().getRuntimeServices()).getAffectiveAgentMoods();
+		
+		for(String agName : moodMap.keySet()) {
+			MoodGraph.getMoodListener().addMoodPoint(moodMap.get(agName).getP(), this.getStep(), agName);
+		}
+    }
     
     /********************** Methods for updating agent percepts **************************
     * - distinguishes between:

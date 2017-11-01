@@ -19,6 +19,7 @@ import jason.asSemantics.AffectiveTransitionSystem;
 import jason.asSemantics.Personality;
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
+import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotGraph;
 
 /**
@@ -87,6 +88,7 @@ public class PlotLauncher extends RunCentralisedMAS {
 			public void actionPerformed(ActionEvent evt) {
 				runner.pauseExecution();
 				PlotGraph.getPlotListener().visualizeGraph();
+				MoodGraph.getMoodListener().visualizeGraph();
 			}
 		});
 		MASConsoleGUI.get().addButton(btDraw);
