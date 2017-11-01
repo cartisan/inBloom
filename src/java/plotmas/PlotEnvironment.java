@@ -85,15 +85,15 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
 		return false;
 	}
 	
-	@Override
-    protected void stepStarted(int step) {
-		// TODO: implement in jason's interface and jade, too? Or create and AffectiveRuntime?
-		Map<String, Mood> moodMap = ((CentralisedRuntimeServices) getEnvironmentInfraTier().getRuntimeServices()).getAffectiveAgentMoods();
-		
-		for(String agName : moodMap.keySet()) {
-			MoodGraph.getMoodListener().addMoodPoint(moodMap.get(agName).getP(), this.getStep(), agName);
-		}
-    }
+//	@Override
+//    protected void stepStarted(int step) {
+//		// TODO: implement in jason's interface and jade, too? Or create and AffectiveRuntime?
+//		Map<String, Mood> moodMap = ((CentralisedRuntimeServices) getEnvironmentInfraTier().getRuntimeServices()).getAffectiveAgentMoods();
+//		
+//		for(String agName : moodMap.keySet()) {
+//			MoodGraph.getMoodListener().addMoodPoint(moodMap.get(agName).getP(), this.getStep(), agName);
+//		}
+//    }
     
     /********************** Methods for updating agent percepts **************************
     * - distinguishes between:

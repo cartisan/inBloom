@@ -6,6 +6,7 @@ import jason.JasonException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Mood;
+import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotGraph;
 import plotmas.graph.Vertex;
 
@@ -26,4 +27,10 @@ public class PlotAwareAg extends AffectiveAgent {
 		logger.info(this.getTS().getUserAgArch().getAgName() + "'s new mood: " + newMood.getType());
 	}
 	
+	@Override
+	public void updateMoodValue(Mood newMood, int cycleNumber) {
+		MoodGraph.getMoodListener().addMoodPoint(newMood.getP(),
+												 cycleNumber,
+												 ts.getUserAgArch().getAgName());
+	}
 }
