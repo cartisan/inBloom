@@ -1,6 +1,7 @@
 package plotmas;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 import jason.JasonException;
@@ -13,6 +14,7 @@ import plotmas.graph.Vertex;
 
 public class PlotAwareAg extends AffectiveAgent {
 	static Logger logger = Logger.getLogger(AffectiveAgent.class.getName());
+	public static HashMap<String, Double> moodMap = new HashMap<>();
 	
 	@Override
     public void addEmotion(Emotion emotion, String type) throws JasonException {
@@ -30,9 +32,6 @@ public class PlotAwareAg extends AffectiveAgent {
 	
 	@Override
 	public void updateMoodValue(Mood newMood, int cycleNumber) {
-		Long tst = Instant.now().toEpochMilli() - PlotEnvironment.startTime.toEpochMilli();
-		MoodGraph.getMoodListener().addMoodPoint(newMood.getP(),
-												 tst / 50,
-												 ts.getUserAgArch().getAgName());
+		PlotAwareAg.moodMap.put(ts.getUserAgArch().getAgName(), newMood.getP());
 	}
 }

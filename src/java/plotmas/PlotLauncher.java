@@ -5,7 +5,12 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
@@ -47,17 +52,22 @@ public class PlotLauncher extends RunCentralisedMAS {
     static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
     static Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
 	private JButton pauseButton;
+	
+	private ScheduledExecutorService moodPollingService = Executors.newSingleThreadScheduledExecutor();
+	private static long POLLING_RATE = 5;
     
 	
 	public void pauseExecution() {
         MASConsoleGUI.get().setPause(true);
         this.pauseButton.setText("Continue");
+        this.moodPollingService.shutdown();
 	}
 	
 	
 	public void continueExecution() {
 		this.pauseButton.setText("Pause");
         MASConsoleGUI.get().setPause(false);
+        this.moodPollingService.scheduleAtFixedRate(createPollingService(), 0, POLLING_RATE, TimeUnit.MILLISECONDS);
 	}
 	
 	@Override
@@ -88,7 +98,8 @@ public class PlotLauncher extends RunCentralisedMAS {
 			public void actionPerformed(ActionEvent evt) {
 				runner.pauseExecution();
 				PlotGraph.getPlotListener().visualizeGraph();
-				MoodGraph.getMoodListener().visualizeGraph();
+				MoodGraph.getMoodListener_percepts().visualizeGraph();
+				MoodGraph.getMoodListener_timer().visualizeGraph();
 			}
 		});
 		MASConsoleGUI.get().addButton(btDraw);
@@ -213,10 +224,30 @@ public class PlotLauncher extends RunCentralisedMAS {
         
 		this.initializeAffectiveAgents(agents);
 		this.initzializeEnvironment(agents);
+		
+		//start polling the mood of all agents for mood graph
+		this.moodPollingService.scheduleAtFixedRate(createPollingService(), 25, POLLING_RATE, TimeUnit.MILLISECONDS);
         
 		this.start();
 		this.waitEnd();
 		this.finish();
+	}
+
+
+	private Runnable createPollingService() {
+		return new Runnable() {
+			@Override
+			public void run() {
+				Long plotTime = Instant.now().toEpochMilli() - PlotEnvironment.startTime.toEpochMilli();
+				HashMap<String, Double> snapshot = (HashMap<String, Double>) PlotAwareAg.moodMap.clone();
+
+				for (String name : snapshot.keySet()) {
+					MoodGraph.getMoodListener_timer().addMoodPoint(PlotAwareAg.moodMap.get(name),
+							plotTime,
+							name);
+				}
+			}
+		};
 	}
 	
 	/**

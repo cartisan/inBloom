@@ -16,7 +16,8 @@ import jason.asSemantics.Mood;
 @SuppressWarnings("serial")
 public class MoodGraph extends ApplicationFrame {
 	protected static Logger logger = Logger.getLogger(MoodGraph.class.getName());
-	private static MoodGraph moodListener = null;
+	private static MoodGraph moodListener1 = null;
+	private static MoodGraph moodListener2 = null;
 	private DefaultCategoryDataset moodData = null;
 
 	public MoodGraph() {
@@ -24,8 +25,12 @@ public class MoodGraph extends ApplicationFrame {
 		moodData = new DefaultCategoryDataset();
 	}
 	
+	public MoodGraph(String title) {
+		super("Mood Graph " + title);
+		moodData = new DefaultCategoryDataset();
+	}
+	
 	public void visualizeGraph() {
-		
 		this.visualizeGraph(this.moodData);
 	}
 	
@@ -36,7 +41,7 @@ public class MoodGraph extends ApplicationFrame {
 		
 		JFreeChart lineChart = ChartFactory.createLineChart(
 				title,
-				"Reasoning Cycle", "Pleasure",
+				"plot time in ms", "Pleasure",
 				data,
 				PlotOrientation.VERTICAL,
 				true,true,false);
@@ -48,7 +53,7 @@ public class MoodGraph extends ApplicationFrame {
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		        	MoodGraph.getMoodListener().dispose();
+		        	MoodGraph.getMoodListener_timer().dispose();
 		        }
 		    }
 		);
@@ -62,11 +67,19 @@ public class MoodGraph extends ApplicationFrame {
 		this.moodData.addValue(value, agName, time);
 	}
 	
-	public static MoodGraph getMoodListener() {
-		if (MoodGraph.moodListener==null) {
-			MoodGraph.moodListener = new MoodGraph();
+	public static MoodGraph getMoodListener_timer() {
+		if (MoodGraph.moodListener1==null) {
+			MoodGraph.moodListener1 = new MoodGraph("Timer");
 		};
-		return MoodGraph.moodListener;
+		return MoodGraph.moodListener1;
+	}
+	
+	
+	public static MoodGraph getMoodListener_percepts() {
+		if (MoodGraph.moodListener2==null) {
+			MoodGraph.moodListener2 = new MoodGraph("Percepts");
+		};
+		return MoodGraph.moodListener2;
 	}
 
 

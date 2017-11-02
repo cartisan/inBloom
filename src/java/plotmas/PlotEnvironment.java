@@ -21,6 +21,7 @@ import jason.util.Pair;
 
 
 import plotmas.PlotLauncher.LauncherAgent;
+import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotGraph;
 import plotmas.storyworld.Model;
 
@@ -100,8 +101,21 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
 	 */
 	@Override
 	public Collection<Literal> getPercepts(String agName) {
+		pollMood();
 		this.updatePercepts(agName);
 		return super.getPercepts(agName);
+	}
+
+	private void pollMood() {
+		// TODO: Hacky McHackface, find a timer-like solutione
+		Long tst = Instant.now().toEpochMilli() - PlotEnvironment.startTime.toEpochMilli();
+		HashMap<String, Double> snapshot = (HashMap<String, Double>) PlotAwareAg.moodMap.clone();
+		
+		for (String name : snapshot.keySet()) {
+		MoodGraph.getMoodListener_percepts().addMoodPoint(PlotAwareAg.moodMap.get(name),
+												 tst,
+												 name);
+		}
 	}
     
 	public void updatePercepts() {
