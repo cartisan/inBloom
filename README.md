@@ -84,4 +84,4 @@ At the moment no documentation has been provided, see the exhaustive example in 
 <<< Add details on how ASL agents have access to their current emotional state and how they can use this for reasoning >>>
 
 ## Architecture
-![UML class diagram] (https://github.com/cartisan/plotmas/blob/master/overview_class-diagram.jpg)
+![UML class diagram] (/overview_class-diagram.jpg)
