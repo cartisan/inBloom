@@ -115,7 +115,7 @@ public class StoryworldAgent {
 		// TODO: this emotion might depend on properties of object, in which case its deliberative and should go
 		// into ASL side?
 		this.environment.addEventPerception(name,
-												String.format("received(%s)[emotion(joy)]", item.literal()));
+												String.format("received(%s)[emotion(joy, self)]", item.literal()));
 		logger.info(this.name + " received some " + item.literal() + ".");
 		return true;
 	}

@@ -8,10 +8,15 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -24,6 +29,7 @@ import jason.asSemantics.AffectiveTransitionSystem;
 import jason.asSemantics.Personality;
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
+import jason.util.Pair;
 import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotGraph;
 
@@ -97,9 +103,33 @@ public class PlotLauncher extends RunCentralisedMAS {
 		btDraw.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				runner.pauseExecution();
-				PlotGraph.getPlotListener().visualizeGraph();
+				
+//				PlotGraph.getPlotListener().visualizeGraph();
 				MoodGraph.getMoodListener_percepts().visualizeGraph();
 				MoodGraph.getMoodListener_timer().visualizeGraph();
+				
+				// TODO: Document the heck out of this if it works
+				for(String agName: PlotAwareAg.timedMoodMap.keySet()) {
+					//find time of last entry
+					List<Pair<Long, Double>> timeMoodList = PlotAwareAg.timedMoodMap.get(agName);
+					Long endTime = timeMoodList.stream().mapToLong(pair -> pair.getFirst()).max().getAsLong();
+					
+					// for every 10ms until end time put the appropriate mood into dataset
+//					Iterator<Long> it = LongStream.iterate(0, n -> n+10).limit(endTime).iterator();
+					Iterator<Long> it = LongStream.iterate(0, n -> n+10).limit(endTime / 10 + 1).iterator();
+					while(it.hasNext()) {
+						Long step = it.next();
+						Optional<Pair<Long, Double>> timeMoodPairOpt = timeMoodList.stream().filter(x -> x.getFirst() <= step).max( (x1, x2) -> Long.compare(x1.getFirst(), x2.getFirst()) );
+						if(timeMoodPairOpt.isPresent()) {
+							Pair<Long, Double> timeMoodPair = timeMoodPairOpt.get();
+							
+							MoodGraph.getMoodListener_agents().addMoodPoint(timeMoodPair.getSecond(), step, agName);
+						}
+					}
+					String test = it.toString();
+				}
+				MoodGraph.getMoodListener_agents().visualizeGraph();
+				
 			}
 		});
 		MASConsoleGUI.get().addButton(btDraw);
@@ -138,7 +168,7 @@ public class PlotLauncher extends RunCentralisedMAS {
     }
 	
 	
-	protected void createMas2j(Collection<LauncherAgent> agents) {
+	protected void createMas2j(Collection<LauncherAgent> agents, String agentFileName) {
 		String fileName = "launcher.mas2j";
 
 		try{
@@ -151,7 +181,7 @@ public class PlotLauncher extends RunCentralisedMAS {
 		    
 		    for (LauncherAgent agent : agents) {
 		    	String line = "		" + agent.name + 
-		    			MessageFormat.format(" general_animal[beliefs=\"{0}\", goals=\"{1}\"]",
+		    			MessageFormat.format(" " + agentFileName + "[beliefs=\"{0}\", goals=\"{1}\"]",
 		    								 agent.beliefs,
 		    								 agent.goals) +
 		    	" agentArchClass " + AG_ARCH_CLASS.getName() + 
@@ -210,7 +240,7 @@ public class PlotLauncher extends RunCentralisedMAS {
 	 * @param agents a list of agent parameters used to initialize mas2j, environment and model
 	 * @throws JasonException
 	 */
-	public void run (String[] args, ImmutableList<LauncherAgent> agents) throws JasonException  {
+	public void run (String[] args, ImmutableList<LauncherAgent> agents, String agentFileName) throws JasonException  {
         if (ENV_CLASS == null) {
         	throw new RuntimeException("PlotLauncher.ENV_CLASS must be set to the class of your custom"
         			+ " environment before executing this method");
@@ -218,7 +248,7 @@ public class PlotLauncher extends RunCentralisedMAS {
 		
 		PlotGraph.instantiatePlotListener(agents);
         
-		this.createMas2j(agents);
+		this.createMas2j(agents, agentFileName);
 		this.init(args);
 		this.create();
         

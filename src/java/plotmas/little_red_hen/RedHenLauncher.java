@@ -38,6 +38,6 @@ public class RedHenLauncher extends PlotLauncher {
 							)
 						);
         
-		runner.run(args, agents);
+		runner.run(args, agents, "agent");
 	}
 }

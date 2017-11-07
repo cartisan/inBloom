@@ -18,6 +18,7 @@ public class MoodGraph extends ApplicationFrame {
 	protected static Logger logger = Logger.getLogger(MoodGraph.class.getName());
 	private static MoodGraph moodListener1 = null;
 	private static MoodGraph moodListener2 = null;
+	private static MoodGraph moodListener3 = null;
 	private DefaultCategoryDataset moodData = null;
 
 	public MoodGraph() {
@@ -82,7 +83,13 @@ public class MoodGraph extends ApplicationFrame {
 		return MoodGraph.moodListener2;
 	}
 
-
+	public static MoodGraph getMoodListener_agents() {
+		if (MoodGraph.moodListener3==null) {
+			MoodGraph.moodListener3 = new MoodGraph("Agents");
+		};
+		return MoodGraph.moodListener3;
+	}
+	
 	public static void main( String[ ] args ) {
 		MoodGraph chart = new MoodGraph();
 
