@@ -10,15 +10,11 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
-import jason.asSemantics.Mood;
-
 
 @SuppressWarnings("serial")
 public class MoodGraph extends ApplicationFrame {
 	protected static Logger logger = Logger.getLogger(MoodGraph.class.getName());
-	private static MoodGraph moodListener1 = null;
-	private static MoodGraph moodListener2 = null;
-	private static MoodGraph moodListener3 = null;
+	private static MoodGraph moodListener = null;
 	private DefaultCategoryDataset moodData = null;
 
 	public MoodGraph() {
@@ -54,7 +50,7 @@ public class MoodGraph extends ApplicationFrame {
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		        	MoodGraph.getMoodListener_timer().dispose();
+		        	MoodGraph.getMoodListener().dispose();
 		        }
 		    }
 		);
@@ -67,27 +63,12 @@ public class MoodGraph extends ApplicationFrame {
 	public void addMoodPoint(Double value, Long time, String agName) {
 		this.moodData.addValue(value, agName, time);
 	}
-	
-	public static MoodGraph getMoodListener_timer() {
-		if (MoodGraph.moodListener1==null) {
-			MoodGraph.moodListener1 = new MoodGraph("Timer");
-		};
-		return MoodGraph.moodListener1;
-	}
-	
-	
-	public static MoodGraph getMoodListener_percepts() {
-		if (MoodGraph.moodListener2==null) {
-			MoodGraph.moodListener2 = new MoodGraph("Percepts");
-		};
-		return MoodGraph.moodListener2;
-	}
 
-	public static MoodGraph getMoodListener_agents() {
-		if (MoodGraph.moodListener3==null) {
-			MoodGraph.moodListener3 = new MoodGraph("Agents");
+	public static MoodGraph getMoodListener() {
+		if (MoodGraph.moodListener==null) {
+			MoodGraph.moodListener = new MoodGraph("Agents");
 		};
-		return MoodGraph.moodListener3;
+		return MoodGraph.moodListener;
 	}
 	
 	public static void main( String[ ] args ) {

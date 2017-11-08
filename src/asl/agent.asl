@@ -119,7 +119,6 @@ obligation(farm_work).
 +!punished(L) : punished(L) <- true.
 
 // insert all actual punishment plans
-//TODO: why is mood not in annotation?
 @punished_plan[atomic]	
 +!punished(_) : mood(hostile) & has(X) & is_pleasant(eat(X)) <-
 	?affect_target(Anims);
@@ -155,9 +154,6 @@ obligation(farm_work).
 	!bake(bread);
 	-self(has_purpose). 	
 
-// TODO: I belief this is a misuse of tell!
-// But how do we otherwise inform of such
-// a rejection
 @help_with_plan[affect(personality(conscientiousness,low))]
 +!help_with(X)[source(Name)] : is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");

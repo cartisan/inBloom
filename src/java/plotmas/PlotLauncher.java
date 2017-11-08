@@ -15,7 +15,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import javax.swing.ImageIcon;
@@ -73,7 +72,6 @@ public class PlotLauncher extends RunCentralisedMAS {
 	public void continueExecution() {
 		this.pauseButton.setText("Pause");
         MASConsoleGUI.get().setPause(false);
-        this.moodPollingService.scheduleAtFixedRate(createPollingService(), 0, POLLING_RATE, TimeUnit.MILLISECONDS);
 	}
 	
 	@Override
@@ -104,9 +102,7 @@ public class PlotLauncher extends RunCentralisedMAS {
 			public void actionPerformed(ActionEvent evt) {
 				runner.pauseExecution();
 				
-//				PlotGraph.getPlotListener().visualizeGraph();
-				MoodGraph.getMoodListener_percepts().visualizeGraph();
-				MoodGraph.getMoodListener_timer().visualizeGraph();
+				PlotGraph.getPlotListener().visualizeGraph();
 				
 				// TODO: Document the heck out of this if it works
 				for(String agName: PlotAwareAg.timedMoodMap.keySet()) {
@@ -123,12 +119,11 @@ public class PlotLauncher extends RunCentralisedMAS {
 						if(timeMoodPairOpt.isPresent()) {
 							Pair<Long, Double> timeMoodPair = timeMoodPairOpt.get();
 							
-							MoodGraph.getMoodListener_agents().addMoodPoint(timeMoodPair.getSecond(), step, agName);
+							MoodGraph.getMoodListener().addMoodPoint(timeMoodPair.getSecond(), step, agName);
 						}
 					}
-					String test = it.toString();
 				}
-				MoodGraph.getMoodListener_agents().visualizeGraph();
+				MoodGraph.getMoodListener().visualizeGraph();
 				
 			}
 		});
@@ -255,31 +250,11 @@ public class PlotLauncher extends RunCentralisedMAS {
 		this.initializeAffectiveAgents(agents);
 		this.initzializeEnvironment(agents);
 		
-		//start polling the mood of all agents for mood graph
-		this.moodPollingService.scheduleAtFixedRate(createPollingService(), 25, POLLING_RATE, TimeUnit.MILLISECONDS);
-        
 		this.start();
 		this.waitEnd();
 		this.finish();
 	}
 
-
-	private Runnable createPollingService() {
-		return new Runnable() {
-			@Override
-			public void run() {
-				Long plotTime = Instant.now().toEpochMilli() - PlotEnvironment.startTime.toEpochMilli();
-				HashMap<String, Double> snapshot = (HashMap<String, Double>) PlotAwareAg.moodMap.clone();
-
-				for (String name : snapshot.keySet()) {
-					MoodGraph.getMoodListener_timer().addMoodPoint(PlotAwareAg.moodMap.get(name),
-							plotTime,
-							name);
-				}
-			}
-		};
-	}
-	
 	/**
 	 * Helper class used to encapsulate all parameters needed to initialise ASL Agents from java code.
 	 * This parameters will be used to create a mas2j file required to start a Jason multi agent system. 

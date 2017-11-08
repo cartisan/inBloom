@@ -42,13 +42,11 @@ public class FarmEnvironment extends PlotEnvironment {
 		boolean result = super.executeAction(agentName, action);
     	StoryworldAgent agent = getModel().getAgent(agentName);
     	
-    	// TODO: this could be done nicer with meta programming!
     	if (action.getFunctor().equals("farm_work")) {
     		result = getModel().farmWork(agent);
     	}
     	
     	if (action.getFunctor().equals("plant")) {
-    		// TODO: type checking on wheat
 			result = getModel().plantWheat(agent);
     	}
     	
@@ -65,7 +63,6 @@ public class FarmEnvironment extends PlotEnvironment {
     	}
     	
     	if (action.getFunctor().equals("bake")) {
-    		// TODO: type checking on bread
     		result = getModel().bakeBread(agent);
     	}
     	
