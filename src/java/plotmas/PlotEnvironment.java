@@ -107,7 +107,7 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
 	}
 
 	private void pollMood() {
-		// TODO: Hacky McHackface, find a timer-like solutione
+		// see the timer-like solution
 		Long tst = Instant.now().toEpochMilli() - PlotEnvironment.startTime.toEpochMilli();
 		HashMap<String, Double> snapshot = (HashMap<String, Double>) PlotAwareAg.moodMap.clone();
 		

@@ -115,7 +115,6 @@ public class PlotLauncher extends RunCentralisedMAS {
 					Long endTime = timeMoodList.stream().mapToLong(pair -> pair.getFirst()).max().getAsLong();
 					
 					// for every 10ms until end time put the appropriate mood into dataset
-//					Iterator<Long> it = LongStream.iterate(0, n -> n+10).limit(endTime).iterator();
 					Iterator<Long> it = LongStream.iterate(0, n -> n+10).limit(endTime / 10 + 1).iterator();
 					while(it.hasNext()) {
 						Long step = it.next();
