@@ -5,17 +5,8 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
-import java.time.Instant;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import java.util.stream.LongStream;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -28,7 +19,6 @@ import jason.asSemantics.AffectiveTransitionSystem;
 import jason.asSemantics.Personality;
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
-import jason.util.Pair;
 import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotGraph;
 
@@ -58,14 +48,9 @@ public class PlotLauncher extends RunCentralisedMAS {
     static Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
 	private JButton pauseButton;
 	
-	private ScheduledExecutorService moodPollingService = Executors.newSingleThreadScheduledExecutor();
-	private static long POLLING_RATE = 5;
-    
-	
 	public void pauseExecution() {
         MASConsoleGUI.get().setPause(true);
         this.pauseButton.setText("Continue");
-        this.moodPollingService.shutdown();
 	}
 	
 	
@@ -102,29 +87,12 @@ public class PlotLauncher extends RunCentralisedMAS {
 			public void actionPerformed(ActionEvent evt) {
 				runner.pauseExecution();
 				
+				// create and visualize plot graph
 				PlotGraph.getPlotListener().visualizeGraph();
 				
-				// TODO: Document the heck out of this if it works
-				for(String agName: PlotAwareAg.timedMoodMap.keySet()) {
-					//find time of last entry
-					List<Pair<Long, Double>> timeMoodList = PlotAwareAg.timedMoodMap.get(agName);
-					Long endTime = timeMoodList.stream().mapToLong(pair -> pair.getFirst()).max().getAsLong();
-					
-					// for every 10ms until end time put the appropriate mood into dataset
-//					Iterator<Long> it = LongStream.iterate(0, n -> n+10).limit(endTime).iterator();
-					Iterator<Long> it = LongStream.iterate(0, n -> n+10).limit(endTime / 10 + 1).iterator();
-					while(it.hasNext()) {
-						Long step = it.next();
-						Optional<Pair<Long, Double>> timeMoodPairOpt = timeMoodList.stream().filter(x -> x.getFirst() <= step).max( (x1, x2) -> Long.compare(x1.getFirst(), x2.getFirst()) );
-						if(timeMoodPairOpt.isPresent()) {
-							Pair<Long, Double> timeMoodPair = timeMoodPairOpt.get();
-							
-							MoodGraph.getMoodListener().addMoodPoint(timeMoodPair.getSecond(), step, agName);
-						}
-					}
-				}
+				// create and visualize mood graph
+				MoodGraph.getMoodListener().createGraph();
 				MoodGraph.getMoodListener().visualizeGraph();
-				
 			}
 		});
 		MASConsoleGUI.get().addButton(btDraw);
@@ -250,6 +218,9 @@ public class PlotLauncher extends RunCentralisedMAS {
 		this.initializeAffectiveAgents(agents);
 		this.initzializeEnvironment(agents);
 		
+		//start polling the mood of all agents for mood graph
+//		this.moodPollingService.scheduleAtFixedRate(createPollingService(), 25, POLLING_RATE, TimeUnit.MILLISECONDS);
+        
 		this.start();
 		this.waitEnd();
 		this.finish();

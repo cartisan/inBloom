@@ -1,18 +1,23 @@
 package plotmas.graph;
 
+import java.util.Iterator;
 import java.util.logging.Logger;
+import java.util.stream.LongStream;
+
+import javax.swing.JFrame;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
+
+import plotmas.PlotAwareAg;
 
 
 @SuppressWarnings("serial")
-public class MoodGraph extends ApplicationFrame {
+public class MoodGraph extends JFrame {
 	protected static Logger logger = Logger.getLogger(MoodGraph.class.getName());
 	private static MoodGraph moodListener = null;
 	private DefaultCategoryDataset moodData = null;
@@ -25,6 +30,29 @@ public class MoodGraph extends ApplicationFrame {
 	public MoodGraph(String title) {
 		super("Mood Graph " + title);
 		moodData = new DefaultCategoryDataset();
+	}
+	
+	public void createGraph() {
+		this.deleteGraphData();
+		
+		Long startTime = PlotAwareAg.moodMapper.latestStartTime();
+		startTime = startTime - (startTime % 10) + 10;		// round up start time to next multiple of 10
+				
+		for(String agName: PlotAwareAg.moodMapper.mappedAgents()) {
+			Long endTime = PlotAwareAg.moodMapper.latestMoodEntry(agName);
+			
+			// for every 10ms from start time until end time sample mood and put it into the graph
+			Iterator<Long> it = LongStream.iterate(startTime, n -> n+10).limit(endTime / 10 + 1).iterator();
+			while(it.hasNext()) {
+				Long x_val = it.next();
+				Double sampledMood = PlotAwareAg.moodMapper.sampleMood(agName, x_val);
+				this.addMoodPoint(sampledMood, x_val, agName);
+			}
+		}
+	}
+	
+	public void deleteGraphData() {
+		this.moodData.clear();
 	}
 	
 	public void visualizeGraph() {
@@ -66,7 +94,7 @@ public class MoodGraph extends ApplicationFrame {
 
 	public static MoodGraph getMoodListener() {
 		if (MoodGraph.moodListener==null) {
-			MoodGraph.moodListener = new MoodGraph("Agents");
+			MoodGraph.moodListener = new MoodGraph();
 		};
 		return MoodGraph.moodListener;
 	}

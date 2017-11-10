@@ -37,7 +37,7 @@ import plotmas.storyworld.Model;
 public abstract class PlotEnvironment extends TimeSteppedEnvironment {
 	public static final Integer MAX_REPEATE_NUM = 10;
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
-    public static Instant startTime = null;
+    public static Long startTime = null;
     
     protected Model model;
     
@@ -65,7 +65,7 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
 
     
     public void initialize(List<LauncherAgent> agents) {
-    	PlotEnvironment.startTime = Instant.now();
+    	PlotEnvironment.startTime = System.nanoTime();
     	initializeActionCounting(agents);
     }
     
