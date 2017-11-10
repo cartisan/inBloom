@@ -4,19 +4,20 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.stream.LongStream;
 
+import javax.swing.JFrame;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
 import plotmas.PlotAwareAg;
 
 
 @SuppressWarnings("serial")
-public class MoodGraph extends ApplicationFrame {
+public class MoodGraph extends JFrame {
 	protected static Logger logger = Logger.getLogger(MoodGraph.class.getName());
 	private static MoodGraph moodListener = null;
 	private DefaultCategoryDataset moodData = null;
@@ -32,6 +33,8 @@ public class MoodGraph extends ApplicationFrame {
 	}
 	
 	public void createGraph() {
+		this.deleteGraphData();
+		
 		Long startTime = PlotAwareAg.moodMapper.latestStartTime();
 		startTime = startTime - (startTime % 10) + 10;		// round up start time to next multiple of 10
 				
@@ -49,7 +52,7 @@ public class MoodGraph extends ApplicationFrame {
 	}
 	
 	public void deleteGraphData() {
-		this.moodData = new DefaultCategoryDataset(); 
+		this.moodData.clear();
 	}
 	
 	public void visualizeGraph() {
