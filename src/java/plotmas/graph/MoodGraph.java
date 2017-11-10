@@ -1,6 +1,8 @@
 package plotmas.graph;
 
+import java.util.Iterator;
 import java.util.logging.Logger;
+import java.util.stream.LongStream;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -10,15 +12,13 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
 
-import jason.asSemantics.Mood;
+import plotmas.PlotAwareAg;
 
 
 @SuppressWarnings("serial")
 public class MoodGraph extends ApplicationFrame {
 	protected static Logger logger = Logger.getLogger(MoodGraph.class.getName());
-	private static MoodGraph moodListener1 = null;
-	private static MoodGraph moodListener2 = null;
-	private static MoodGraph moodListener3 = null;
+	private static MoodGraph moodListener = null;
 	private DefaultCategoryDataset moodData = null;
 
 	public MoodGraph() {
@@ -29,6 +29,27 @@ public class MoodGraph extends ApplicationFrame {
 	public MoodGraph(String title) {
 		super("Mood Graph " + title);
 		moodData = new DefaultCategoryDataset();
+	}
+	
+	public void createGraph() {
+		Long startTime = PlotAwareAg.moodMapper.latestStartTime();
+		startTime = startTime - (startTime % 10) + 10;		// round up start time to next multiple of 10
+				
+		for(String agName: PlotAwareAg.moodMapper.mappedAgents()) {
+			Long endTime = PlotAwareAg.moodMapper.latestMoodEntry(agName);
+			
+			// for every 10ms from start time until end time sample mood and put it into the graph
+			Iterator<Long> it = LongStream.iterate(startTime, n -> n+10).limit(endTime / 10 + 1).iterator();
+			while(it.hasNext()) {
+				Long x_val = it.next();
+				Double sampledMood = PlotAwareAg.moodMapper.sampleMood(agName, x_val);
+				this.addMoodPoint(sampledMood, x_val, agName);
+			}
+		}
+	}
+	
+	public void deleteGraphData() {
+		this.moodData = new DefaultCategoryDataset(); 
 	}
 	
 	public void visualizeGraph() {
@@ -54,7 +75,7 @@ public class MoodGraph extends ApplicationFrame {
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		        	MoodGraph.getMoodListener_timer().dispose();
+		        	MoodGraph.getMoodListener().dispose();
 		        }
 		    }
 		);
@@ -68,26 +89,11 @@ public class MoodGraph extends ApplicationFrame {
 		this.moodData.addValue(value, agName, time);
 	}
 	
-	public static MoodGraph getMoodListener_timer() {
-		if (MoodGraph.moodListener1==null) {
-			MoodGraph.moodListener1 = new MoodGraph("Timer");
+	public static MoodGraph getMoodListener() {
+		if (MoodGraph.moodListener==null) {
+			MoodGraph.moodListener = new MoodGraph();
 		};
-		return MoodGraph.moodListener1;
-	}
-	
-	
-	public static MoodGraph getMoodListener_percepts() {
-		if (MoodGraph.moodListener2==null) {
-			MoodGraph.moodListener2 = new MoodGraph("Percepts");
-		};
-		return MoodGraph.moodListener2;
-	}
-
-	public static MoodGraph getMoodListener_agents() {
-		if (MoodGraph.moodListener3==null) {
-			MoodGraph.moodListener3 = new MoodGraph("Agents");
-		};
-		return MoodGraph.moodListener3;
+		return MoodGraph.moodListener;
 	}
 	
 	public static void main( String[ ] args ) {

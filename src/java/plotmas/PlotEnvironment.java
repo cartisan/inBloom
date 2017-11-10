@@ -41,7 +41,7 @@ import plotmas.storyworld.Model;
 public abstract class PlotEnvironment extends TimeSteppedEnvironment {
 	public static final Integer MAX_REPEATE_NUM = 10;
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
-    public static Instant startTime = null;
+    public static Long startTime = null;
     
     protected Model model;
     
@@ -69,7 +69,7 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
 
     
     public void initialize(List<LauncherAgent> agents) {
-    	PlotEnvironment.startTime = Instant.now();
+    	PlotEnvironment.startTime = System.nanoTime();
     	initializeActionCounting(agents);
     }
     
@@ -101,23 +101,10 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
 	 */
 	@Override
 	public Collection<Literal> getPercepts(String agName) {
-		pollMood();
 		this.updatePercepts(agName);
 		return super.getPercepts(agName);
 	}
 
-	private void pollMood() {
-		// see the timer-like solution
-		Long tst = Instant.now().toEpochMilli() - PlotEnvironment.startTime.toEpochMilli();
-		HashMap<String, Double> snapshot = (HashMap<String, Double>) PlotAwareAg.moodMap.clone();
-		
-		for (String name : snapshot.keySet()) {
-		MoodGraph.getMoodListener_percepts().addMoodPoint(PlotAwareAg.moodMap.get(name),
-												 tst,
-												 name);
-		}
-	}
-    
 	public void updatePercepts() {
 		for(String name: this.model.agents.keySet()) {
 			updatePercepts(name);
