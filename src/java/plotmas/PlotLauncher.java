@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
@@ -21,6 +23,7 @@ import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
 import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotGraph;
+import plotmas.helper.PlotFormatter;
 
 /**
  * Used to perform a Java-side setup and execution of a Jason MAS. <br>
@@ -193,6 +196,20 @@ public class PlotLauncher extends RunCentralisedMAS {
 	}
 	
 	/**
+	 * Has to be executed after initialization is complete because it depends
+	 * on PlotEnvironment being already initialized with a plotStartTime.
+	 */
+	public synchronized void setupPlotLogger() {
+        Handler[] hs = Logger.getLogger("").getHandlers(); 
+        for (int i = 0; i < hs.length; i++) { 
+            Logger.getLogger("").removeHandler(hs[i]); 
+        }
+        Handler h = PlotFormatter.handler();
+        Logger.getLogger("").addHandler(h);
+        Logger.getLogger("").setLevel(Level.INFO);		
+	}
+	
+	/**
 	 * Creates a mas2j file to prepare execution of the MAS, sets up agents, environment and model and finally starts
 	 * the execution of the MAS. The execution is paused if all agents repeat the same action
 	 * {@link PlotEnvironment.MAX_REPEATE_NUM} number of times.
@@ -213,14 +230,13 @@ public class PlotLauncher extends RunCentralisedMAS {
         
 		this.createMas2j(agents, agentFileName);
 		this.init(args);
+		this.setupPlotLogger();
+    	
 		this.create();
         
 		this.initializeAffectiveAgents(agents);
 		this.initzializeEnvironment(agents);
 		
-		//start polling the mood of all agents for mood graph
-//		this.moodPollingService.scheduleAtFixedRate(createPollingService(), 25, POLLING_RATE, TimeUnit.MILLISECONDS);
-        
 		this.start();
 		this.waitEnd();
 		this.finish();
