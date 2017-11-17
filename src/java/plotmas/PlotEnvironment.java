@@ -1,6 +1,5 @@
 package plotmas;
 
-import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.time.Instant;
 
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
@@ -18,10 +16,7 @@ import jason.asSyntax.Term;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
 import jason.util.Pair;
-
-
 import plotmas.PlotLauncher.LauncherAgent;
-import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotGraph;
 import plotmas.storyworld.Model;
 
@@ -39,7 +34,7 @@ import plotmas.storyworld.Model;
  * @author Leonid Berov
  */
 public abstract class PlotEnvironment extends TimeSteppedEnvironment {
-	public static final Integer MAX_REPEATE_NUM = 10;
+	public static final Integer MAX_REPEATE_NUM = 7;
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
     public static Long startTime = null;
     
@@ -84,6 +79,7 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
     public boolean executeAction(String agentName, Structure action) {
     	// add attempted action to plot graph
     	PlotGraph.getPlotListener().addEvent(agentName, action.toString());
+    	logger.info(String.format("%s performed %s", agentName, action.toString()));
 		
 		return false;
 	}

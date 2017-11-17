@@ -230,12 +230,11 @@ public class PlotLauncher extends RunCentralisedMAS {
         
 		this.createMas2j(agents, agentFileName);
 		this.init(args);
-		this.setupPlotLogger();
-    	
 		this.create();
         
 		this.initializeAffectiveAgents(agents);
 		this.initzializeEnvironment(agents);
+		this.setupPlotLogger();
 		
 		this.start();
 		this.waitEnd();
