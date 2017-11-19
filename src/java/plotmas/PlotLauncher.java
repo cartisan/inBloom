@@ -206,7 +206,8 @@ public class PlotLauncher extends RunCentralisedMAS {
         }
         Handler h = PlotFormatter.handler();
         Logger.getLogger("").addHandler(h);
-        Logger.getLogger("").setLevel(Level.INFO);		
+        Logger.getLogger("").setLevel(Level.INFO);
+//        Logger.getLogger("").setLevel(Level.FINE);
 	}
 	
 	/**

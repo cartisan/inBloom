@@ -42,7 +42,7 @@ public class MoodGraph extends JFrame {
 			Long endTime = PlotAwareAg.moodMapper.latestMoodEntry(agName);
 			
 			// for every 10ms from start time until end time sample mood and put it into the graph
-			Iterator<Long> it = LongStream.iterate(startTime, n -> n+10).limit(endTime / 10 + 1).iterator();
+			Iterator<Long> it = LongStream.iterate(startTime, n -> n+1).limit(endTime / 1 + 1).iterator();
 			while(it.hasNext()) {
 				Long x_val = it.next();
 				Double sampledMood = PlotAwareAg.moodMapper.sampleMood(agName, x_val);

@@ -43,6 +43,6 @@ public class PlotAwareAg extends AffectiveAgent {
 		Long plotTime = (System.nanoTime() - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
 
 		moodMapper.addMood(agName, plotTime, mood.getP());
-//		logger.info("mapping " + this.getTS().getUserAgArch().getAgName() + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
+		logger.fine("mapping " + this.getTS().getUserAgArch().getAgName() + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
 	}
 }
