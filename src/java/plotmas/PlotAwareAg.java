@@ -30,10 +30,19 @@ public class PlotAwareAg extends AffectiveAgent {
 	}
 	
 	@Override
-	public void updateMoodValue(Mood newMood, int cycleNumber) {
+	public void updateMoodValue(Mood newMood) {
+		this.mapMood(newMood);
+	}
+	
+	public void initializeMoodMapper() {
+		this.mapMood(this.getPersonality().defaultMood());
+	}
+	
+	private void mapMood(Mood mood) {
 		String agName = ts.getUserAgArch().getAgName();
 		Long plotTime = (System.nanoTime() - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
 
-		moodMapper.addMood(agName, plotTime, newMood.getP());
+		moodMapper.addMood(agName, plotTime, mood.getP());
+//		logger.info("mapping " + this.getTS().getUserAgArch().getAgName() + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
 	}
 }

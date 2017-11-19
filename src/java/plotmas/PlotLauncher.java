@@ -174,23 +174,23 @@ public class PlotLauncher extends RunCentralisedMAS {
 	 * we can initialize personality from mas2j files.
 	 * @param agents
 	 */
-	protected void initializeAffectiveAgents(ImmutableList<LauncherAgent> agents) {
+	protected void initializePlotAgents(ImmutableList<LauncherAgent> agents) {
 		// initialize personalities
 		for (LauncherAgent ag: agents) {
 			if(ag.personality != null) {
-				AffectiveAgent affAg = ((AffectiveTransitionSystem) this.getAg(ag.name).getTS()).getAffectiveAg();
+				PlotAwareAg plotAg = (PlotAwareAg) this.getAg(ag.name).getTS().getAg();
 				try {
-					affAg.initializePersonality(ag.personality);
+					plotAg.initializePersonality(ag.personality);
 				} catch (JasonException e) {
 					logger.severe("Failed to initialize mood based on personality: " + ag.personality);
 					e.printStackTrace();
 				}
+				plotAg.initializeMoodMapper();
 			}
 		}
-		
 	}
 	
-	protected void initzializeEnvironment(ImmutableList<LauncherAgent> agents) {
+	protected void initzializePlotEnvironment(ImmutableList<LauncherAgent> agents) {
 		PlotEnvironment env = (PlotEnvironment) runner.env.getUserEnvironment();
 		env.initialize(agents);
 	}
@@ -232,9 +232,9 @@ public class PlotLauncher extends RunCentralisedMAS {
 		this.init(args);
 		this.create();
         
-		this.initializeAffectiveAgents(agents);
-		this.initzializeEnvironment(agents);
+		this.initzializePlotEnvironment(agents);
 		this.setupPlotLogger();
+		this.initializePlotAgents(agents);
 		
 		this.start();
 		this.waitEnd();
