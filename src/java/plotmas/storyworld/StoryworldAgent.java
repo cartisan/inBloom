@@ -80,7 +80,7 @@ public class StoryworldAgent {
 	public boolean share(String itemType, StoryworldAgent receiver) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
-			receiver.receive(item);
+			receiver.receive(item, this);
 			this.environment.addEventPerception(name,
 					String.format("shared(%s,%s)[emotion(pride, self)]", item.literal(), receiver.name));
 			return true;
@@ -94,7 +94,7 @@ public class StoryworldAgent {
 			Item item = this.get(itemType);
 			
 			for(StoryworldAgent receiver : receivers) {
-				receiver.receive(item);
+				receiver.receive(item, this);
 			}
 			
 			String recList = receivers.stream().map(rec -> rec.name).collect(Collectors.joining(",", "[", "]")).toString();
@@ -109,13 +109,13 @@ public class StoryworldAgent {
 		return false;
 	}
 	
-	public boolean receive(Item item) {
+	public boolean receive(Item item, StoryworldAgent from) {
 		this.addToInventory(item);
 		
 		// TODO: this emotion might depend on properties of object, in which case its deliberative and should go
 		// into ASL side?
 		this.environment.addEventPerception(name,
-												String.format("received(%s)[emotion(joy, self)]", item.literal()));
+												String.format("received(%s)[emotion(gratitude, %s)]", item.literal(), this.name));
 		logger.info(this.name + " received some " + item.literal() + ".");
 		return true;
 	}

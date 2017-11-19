@@ -20,7 +20,7 @@ public class MoodMapper {
 
 			List<Pair<Long, Double>> moodList = new LinkedList<>();
 			moodList.add(new Pair<>(time, pleasure));				
-			timedMoodMap.put(agName, new LinkedList<>());
+			timedMoodMap.put(agName, moodList);
 		}
 	}
 	

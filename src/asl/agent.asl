@@ -188,7 +188,8 @@ obligation(farm_work).
 
 +!bake(bread) <-
 	bake(bread).
-	
+
+@eat1_plan[atomic]	
 +!eat(X) : has(X) <- 
 	eat(X);
 	-has(X);

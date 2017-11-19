@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
@@ -21,6 +23,7 @@ import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
 import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotGraph;
+import plotmas.helper.PlotFormatter;
 
 /**
  * Used to perform a Java-side setup and execution of a Jason MAS. <br>
@@ -171,25 +174,40 @@ public class PlotLauncher extends RunCentralisedMAS {
 	 * we can initialize personality from mas2j files.
 	 * @param agents
 	 */
-	protected void initializeAffectiveAgents(ImmutableList<LauncherAgent> agents) {
+	protected void initializePlotAgents(ImmutableList<LauncherAgent> agents) {
 		// initialize personalities
 		for (LauncherAgent ag: agents) {
 			if(ag.personality != null) {
-				AffectiveAgent affAg = ((AffectiveTransitionSystem) this.getAg(ag.name).getTS()).getAffectiveAg();
+				PlotAwareAg plotAg = (PlotAwareAg) this.getAg(ag.name).getTS().getAg();
 				try {
-					affAg.initializePersonality(ag.personality);
+					plotAg.initializePersonality(ag.personality);
 				} catch (JasonException e) {
 					logger.severe("Failed to initialize mood based on personality: " + ag.personality);
 					e.printStackTrace();
 				}
+				plotAg.initializeMoodMapper();
 			}
 		}
-		
 	}
 	
-	protected void initzializeEnvironment(ImmutableList<LauncherAgent> agents) {
+	protected void initzializePlotEnvironment(ImmutableList<LauncherAgent> agents) {
 		PlotEnvironment env = (PlotEnvironment) runner.env.getUserEnvironment();
 		env.initialize(agents);
+	}
+	
+	/**
+	 * Has to be executed after initialization is complete because it depends
+	 * on PlotEnvironment being already initialized with a plotStartTime.
+	 */
+	public synchronized void setupPlotLogger() {
+        Handler[] hs = Logger.getLogger("").getHandlers(); 
+        for (int i = 0; i < hs.length; i++) { 
+            Logger.getLogger("").removeHandler(hs[i]); 
+        }
+        Handler h = PlotFormatter.handler();
+        Logger.getLogger("").addHandler(h);
+        Logger.getLogger("").setLevel(Level.INFO);
+//        Logger.getLogger("").setLevel(Level.FINE);
 	}
 	
 	/**
@@ -215,12 +233,10 @@ public class PlotLauncher extends RunCentralisedMAS {
 		this.init(args);
 		this.create();
         
-		this.initializeAffectiveAgents(agents);
-		this.initzializeEnvironment(agents);
+		this.initzializePlotEnvironment(agents);
+		this.setupPlotLogger();
+		this.initializePlotAgents(agents);
 		
-		//start polling the mood of all agents for mood graph
-//		this.moodPollingService.scheduleAtFixedRate(createPollingService(), 25, POLLING_RATE, TimeUnit.MILLISECONDS);
-        
 		this.start();
 		this.waitEnd();
 		this.finish();
