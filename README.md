@@ -65,7 +65,7 @@ Plotmas uses the affective reasoning capabilities of a custom [extension of Jaso
 ### Personality
 Each agent has a personality represented on the Big-5 Personality traits scale. To set up an agents personality, define it in your custom Launcher using the `LauncherAgent` class:
 `runner.new LauncherAgent("hen", new Personality(0,  1, 0.7,  0.3, 0.0))`. The traits are commonly abbreviated as OCEAN: Openness (to Experience), Conscientiousness, Extraversion, Agreeableness, Neuroticism.
-These traits are defined on a floating point scale: [-1.0, 1.0]. An agents personality is used to compute its default mood.
+These traits are defined on a floating point scale: [-1.0, 1.0]. An agents personality is used to compute its default mood. The value of its N trait also determines how strongly it is affected by emotions.
 
 ### Emotions
 Emotions are used to appraise perceived events, their only effect is that they change an agent's current mood. Emotions are represented using the 22 emotions from the OCC catalog. You can find a current list of implemented emotions in `jason.asSemantics.Emotion`.
@@ -77,7 +77,13 @@ Emotions here are added as ASL Annotations to a perception literal. They are rep
 Secondary emotions are deliberative and thus have to be implemented on the ASL side as part of planning. For this, the internal action `appraise_emotion` is provided. For instance: `.appraise_emotion(anger, Name);` The syntax is again of the form `.appraise_emotion(EMNAME, TARGET);`
 
 ### Mood
-Mood can be seen an aggregated subjective representation of context. <<< Add details on mood representations >>>
+Mood can be seen as an aggregated subjective representation of context, and its interaction with an agent's pre-dispositions. A mood is represented as a point in a 3-dimensional space with the axis: Pleasure-Arousal-Dominance (PAD) on a floating point scale: [-1.0, 1.0]. The default mood of a characters can be calculated from its personality traits, e.g. $P = 0.21*E + 0.59*A - 0.19*N$ according to Gebhard (2005). You can find the other equations in `jason.asSemantics.Personality.defaultMood()`.
+
+Emotions affect the current mood. Each reasoning cycle all emotions that are active in an agent are collected, transfered into the PAD space according to a mapping suggested by Gebhard. The centroid of the emotion cluster is computed, and the current mood gets updated using this centroid. For this, the location of the default mood on each axis moves further towards the maximum of the octant in which the centroid is located on the respective axis (see `jason.asSemantics.Mood.updateMood(List<Emotion> emotions, Personality personality)`.
+The length of the update step is dependent on two factors. One is a constant length (atm the defined in such a way that 5 update steps in the same direction are required in order to cover the maximal possible distance in PAD space). The other is the agent's value on the neuroticism scale, according to its personality. The higher the N value, the bigger the step, the more volatile the agent's mood.
+
+Each reasoning cycle that doesn't have any active emotions, the current mood decays in the direction of the default mood. The length of the decay step is dependent on two factors. A constant length that is defined in such a way that 50 update steps in the same direction are required in order to cover the maximal possible distance in PAD space, and the agent's value on the neuroticism scale. The higher N, the slower the mood returns to normal.
+
 
 ### Reasoning using affect
 At the moment no documentation has been provided, see the exhaustive example in `agent.asl`.
