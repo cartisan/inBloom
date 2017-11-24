@@ -16,8 +16,6 @@ import javax.swing.JButton;
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
-import jason.asSemantics.AffectiveAgent;
-import jason.asSemantics.AffectiveTransitionSystem;
 import jason.asSemantics.Personality;
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
@@ -39,6 +37,7 @@ import plotmas.helper.PlotFormatter;
  */
 public class PlotLauncher extends RunCentralisedMAS {
 	protected static Logger logger = Logger.getLogger(PlotLauncher.class.getName());
+	public static String DEAULT_FILE_NAME = "launcher.mas2j";
 	public static PlotLauncher runner = null;
     
     /** 
@@ -135,10 +134,8 @@ public class PlotLauncher extends RunCentralisedMAS {
 	
 	
 	protected void createMas2j(Collection<LauncherAgent> agents, String agentFileName) {
-		String fileName = "launcher.mas2j";
-
 		try{
-		    PrintWriter writer = new PrintWriter(fileName, "UTF-8");
+		    PrintWriter writer = new PrintWriter(DEAULT_FILE_NAME, "UTF-8");
 		    
 		    writer.println("MAS launcher {");
 		    writer.println("	environment: " + ENV_CLASS.getName());
@@ -162,7 +159,7 @@ public class PlotLauncher extends RunCentralisedMAS {
 		    writer.println("}");
 		    writer.close();
 		    
-		    logger.info("Generated project config: " + fileName);
+		    logger.info("Generated project config: " + DEAULT_FILE_NAME);
 		    
 		} catch (IOException e) {
 			logger.severe("Couldn't create mas2j file");
@@ -222,15 +219,25 @@ public class PlotLauncher extends RunCentralisedMAS {
 	 * @throws JasonException
 	 */
 	public void run (String[] args, ImmutableList<LauncherAgent> agents, String agentFileName) throws JasonException  {
-        if (ENV_CLASS == null) {
+		String defArgs[];
+		if (ENV_CLASS == null) {
         	throw new RuntimeException("PlotLauncher.ENV_CLASS must be set to the class of your custom"
         			+ " environment before executing this method");
         }
-		
+        
+        if (args.length < 1) {
+        	defArgs = new String[] {PlotLauncher.DEAULT_FILE_NAME};
+        }
+        else {
+        	assert args[0] == "-debug";
+        	defArgs = new String[] {PlotLauncher.DEAULT_FILE_NAME, "-debug"};
+        }
+        
+        
 		PlotGraph.instantiatePlotListener(agents);
         
 		this.createMas2j(agents, agentFileName);
-		this.init(args);
+		this.init(defArgs);
 		this.create();
         
 		this.initzializePlotEnvironment(agents);
