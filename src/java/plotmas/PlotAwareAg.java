@@ -1,14 +1,11 @@
 package plotmas;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 import jason.JasonException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Mood;
-import jason.asSemantics.Option;
-import jason.asSyntax.Pred;
 import plotmas.graph.PlotGraph;
 import plotmas.graph.Vertex;
 import plotmas.helper.MoodMapper;
@@ -51,7 +48,7 @@ public class PlotAwareAg extends AffectiveAgent {
 	}
 	
 	private void mapMood(Mood mood) {
-		Long plotTime = (System.nanoTime() - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
+		Long plotTime = PlotEnvironment.getPlotTimeNow();
 
 		moodMapper.addMood(this.name, plotTime, mood.getP());
 		logger.fine("mapping " + this.name + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());

@@ -1,16 +1,19 @@
 package plotmas.helper;
 
-import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
 import jason.runtime.MASConsoleLogFormatter;
 import jason.runtime.MASConsoleLogHandler;
 import plotmas.PlotEnvironment;
 
+/**
+ * Custom log formatter that prepends the plot time to log statements
+ * @author Leonid Berov
+ */
 public class PlotFormatter extends MASConsoleLogFormatter {
 
     public String format(LogRecord record) {
-    	long currentTime = (System.nanoTime() - PlotEnvironment.startTime) / 1000000;
+    	Long currentTime = 	PlotEnvironment.getPlotTimeNow();;
     	
         StringBuilder builder = new StringBuilder(1000);
         builder.append("[").append(MASConsoleLogFormatter.getAgName(record));
@@ -20,14 +23,6 @@ public class PlotFormatter extends MASConsoleLogFormatter {
         return builder.toString();
     }
 
-    public String getHead(Handler h) {
-        return super.getHead(h);
-    }
-
-    public String getTail(Handler h) {
-        return super.getTail(h);
-    }
-    
     public static MASConsoleLogHandler handler() {
         PlotFormatter formatter = new PlotFormatter();
         MASConsoleLogHandler handler = new MASConsoleLogHandler();

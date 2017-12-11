@@ -38,6 +38,15 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
     public static Long startTime = null;
     
+    /**
+     * Returns the current plot time in ms, i.e. the time that has passed since simulation was started
+     * @return time in ms (Long)
+     */
+    public static Long getPlotTimeNow() {
+    	return (System.nanoTime() - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
+    }
+    
+    
     protected Model model;
     
     /**
@@ -61,7 +70,6 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
      * <i>updateEventPercepts/1</i>. 
      */
     private HashMap<String, List<Literal>> perceivedEventsMap = new HashMap<>();
-
     
     public void initialize(List<LauncherAgent> agents) {
     	PlotEnvironment.startTime = System.nanoTime();
