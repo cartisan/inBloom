@@ -154,12 +154,12 @@ obligation(farm_work).
 	!bake(bread);
 	-self(has_purpose). 	
 
-@reject_request[affect(personality(conscientiousness,low)),isIntention]
+@reject_request[affect(personality(conscientiousness,low))]
 +!help_with(X)[source(Name)] : is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
 	.send(Name, tell, rejected_help_request(X)).
 
-@accept_request[isIntention]
+@accept_request
 +!help_with(X)[source(Name)] <-
 	.print("I'll help you with ", X, ", ", Name);
 	.send(Name, tell, accepted_help_request(X));

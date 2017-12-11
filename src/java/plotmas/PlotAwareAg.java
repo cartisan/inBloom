@@ -46,20 +46,6 @@ public class PlotAwareAg extends AffectiveAgent {
 		this.mapMood(newMood);
 	}
 	
-	@Override
-    public Option selectOption(List<Option> options) {
-		Option opt = super.selectOption(options);
-		if(!(opt == null) & (!(null == opt.getPlan().getLabel()))) {
-			Pred label = opt.getPlan().getLabel();
-			if(!(label.getAnnots("isIntention").isEmpty())) {
-				PlotGraph.getPlotListener().addEvent(this.name, label.getFunctor(), Vertex.Type.EVENT);
-				logger.info(this.name + " added plan: " + label.getFunctor());
-			}
-		}
-		
-		return opt;
-	}
-	
 	public void initializeMoodMapper() {
 		this.mapMood(this.getPersonality().defaultMood());
 	}
