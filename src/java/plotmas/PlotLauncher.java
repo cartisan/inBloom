@@ -1,7 +1,5 @@
 package plotmas;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
@@ -10,16 +8,10 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
 import jason.asSemantics.Personality;
-import jason.infra.centralised.RunCentralisedMAS;
-import jason.runtime.MASConsoleGUI;
-import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotGraph;
 import plotmas.helper.PlotFormatter;
 
@@ -35,10 +27,10 @@ import plotmas.helper.PlotFormatter;
  * @see plotmas.little_red_hen.RedHenLauncher
  * @author Leonid Berov
  */
-public class PlotLauncher extends RunCentralisedMAS {
+public class PlotLauncher extends PlotControlsLauncher {
 	protected static Logger logger = Logger.getLogger(PlotLauncher.class.getName());
 	public static String DEAULT_FILE_NAME = "launcher.mas2j";
-	public static PlotLauncher runner = null;
+
     
     /** 
      * Subclasses need to set ENV_CLASS to the class of their PlotEnvironment implementation, e.g.
@@ -48,91 +40,7 @@ public class PlotLauncher extends RunCentralisedMAS {
 	protected static Class ENV_CLASS;
     static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
     static Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
-	private JButton pauseButton;
-	
-	public void pauseExecution() {
-        MASConsoleGUI.get().setPause(true);
-        this.pauseButton.setText("Continue");
-	}
-	
-	
-	public void continueExecution() {
-		this.pauseButton.setText("Pause");
-        MASConsoleGUI.get().setPause(false);
-	}
-	
-	@Override
-	public void finish() {
-		pauseExecution();
-		
-		try {
-			while (PlotGraph.isDisplayed) {
-					Thread.sleep(500);
-				}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			super.finish();
-		} finally {
-			super.finish();
-		}
-	}
-	
-	@Override
-	protected void createButtons() {
-		createDrawButton();
-		super.createButtons();
-	}
-	
-	protected void createDrawButton() {
-		JButton btDraw = new JButton("Draw Plot");
-		btDraw.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				runner.pauseExecution();
-				
-				// create and visualize plot graph
-				PlotGraph.getPlotListener().visualizeGraph();
-				
-				// create and visualize mood graph
-				MoodGraph.getMoodListener().createGraph();
-				MoodGraph.getMoodListener().visualizeGraph();
-			}
-		});
-		MASConsoleGUI.get().addButton(btDraw);
-	}
-	
-	@Override
-    protected void createStopButton() {
-		logger.info("creating plot aware stop button");
-		// add Button
-        JButton btStop = new JButton("Stop", new ImageIcon(RunCentralisedMAS.class.getResource("/images/suspend.gif")));
-        btStop.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                runner.finish();
-            }
-        });
-        MASConsoleGUI.get().addButton(btStop);
-    }
-	
-	@Override
-    protected void createPauseButton() {
-        final JButton btPause = new JButton("Pause", new ImageIcon(RunCentralisedMAS.class.getResource("/images/resume_co.gif")));
-        btPause.addActionListener(
-        	new ActionListener() {
-	            public void actionPerformed(ActionEvent evt) {
-	            	if (MASConsoleGUI.get().isPause()) {
-	                    runner.continueExecution();
-	                } else {
-	                	runner.pauseExecution();
-	                }
-
-            }
-        });
-        
-        MASConsoleGUI.get().addButton(btPause);
-        this.pauseButton = btPause;
-    }
-	
-	
+    
 	protected void createMas2j(Collection<LauncherAgent> agents, String agentFileName) {
 		try{
 		    PrintWriter writer = new PrintWriter(DEAULT_FILE_NAME, "UTF-8");
@@ -188,7 +96,7 @@ public class PlotLauncher extends RunCentralisedMAS {
 	}
 	
 	protected void initzializePlotEnvironment(ImmutableList<LauncherAgent> agents) {
-		PlotEnvironment env = (PlotEnvironment) runner.env.getUserEnvironment();
+		PlotEnvironment env = (PlotEnvironment) this.env.getUserEnvironment();
 		env.initialize(agents);
 	}
 	

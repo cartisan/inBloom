@@ -27,7 +27,6 @@ public class PlotGraph {
     
     static Logger logger = Logger.getLogger(PlotGraph.class.getName());
 	private static PlotGraph plotListener = null;
-	public static boolean isDisplayed = false;
 	public static Color BGCOLOR = Color.WHITE;
 	private static JFrame frame;
 
@@ -43,7 +42,7 @@ public class PlotGraph {
 		PlotGraph.plotListener = new PlotGraph(characters);
 	}
 	
-	public static void visualizeGraph(PlotDirectedSparseGraph g) {
+	public static JFrame visualizeGraph(PlotDirectedSparseGraph g) {
 		// Maybe just implement custom renderer instead of all the transformers?
 		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
 		
@@ -80,7 +79,6 @@ public class PlotGraph {
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		        	PlotGraph.isDisplayed = false;
 		        	PlotGraph.frame.dispose();
 		        	PlotGraph.frame = null;
 		        }
@@ -93,7 +91,8 @@ public class PlotGraph {
 		RefineryUtilities.positionFrameOnScreen(frame, 0.0, 0.2);
 		
 		frame.setVisible(true);
-		PlotGraph.isDisplayed = true;
+		
+		return PlotGraph.frame;
 	}
 	
 	public PlotGraph(Collection<LauncherAgent> characters) {
@@ -153,8 +152,8 @@ public class PlotGraph {
 		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), senderVertex, receiverVertex);
 	}
 	
-	public void visualizeGraph() {
-		PlotGraph.visualizeGraph(this.graph);
+	public JFrame visualizeGraph() {
+		return PlotGraph.visualizeGraph(this.graph);
 	}
 	
 	

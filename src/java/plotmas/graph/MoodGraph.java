@@ -70,11 +70,11 @@ public class MoodGraph extends JFrame {
 		this.moodData.clear();
 	}
 	
-	public void visualizeGraph() {
-		this.visualizeGraph(this.moodData);
+	public JFrame visualizeGraph() {
+		return this.visualizeGraph(this.moodData);
 	}
 	
-	public void visualizeGraph(DefaultCategoryDataset data) {
+	public JFrame visualizeGraph(DefaultCategoryDataset data) {
 		String title = "Pleasure development over time"; 
 		if (data.getRowCount() == 0)
 			title = "No mood points have been reported to MoodGraph";
@@ -101,6 +101,8 @@ public class MoodGraph extends JFrame {
 		this.pack( );
 		RefineryUtilities.positionFrameOnScreen(this, 0.8, 0.1);
 		this.setVisible(true);
+		
+		return this;
 	}
 	
 	private void addMoodPoint(Double value, Long time, String agName) {
