@@ -26,9 +26,10 @@ public class RedHenLauncher extends PlotLauncher {
 //									new Personality(0,  1, 0.7,  0.3,  -1)    //low neurot --> no punishment
 //									new Personality(0,  1, 0.7,  0.7,  -1)    //high aggrea --> sharing
 									
-//									new Personality(0, -1, 0.7,  0.3, 0.0)    //low consc --> no plot
+//									new Personality(0, -1, 0.7,  0.3, 0.15)    //low consc --> no plot
 									
-//									new Personality(0,  1, 0,    0.7, 0.0)    //low extra --> no help requests, no punishment --> graph making breaks?
+//									new Personality(0,  1, 0,    0.3, 0.15)    //low extra --> no help requests, no punishment, no sharing <-- not after update!
+//									new Personality(0,  1, 0,    0.7, 0.15)    //low extra, high aggrea --> no help requests, no punishment, sharing
 							),
 							runner.new LauncherAgent("dog",
 									new Personality(0, -1, 0, -0.7, -0.8)
