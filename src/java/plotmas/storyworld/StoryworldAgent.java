@@ -1,12 +1,10 @@
 package plotmas.storyworld;
 
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import jason.asSemantics.Personality;
 import plotmas.PlotEnvironment;
 
 

@@ -17,6 +17,12 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import plotmas.PlotLauncher.LauncherAgent;
 
+/**
+ * Responsible for maintaining and visualizing the graph that represents the emergent plot of the narrative universe.
+ * Class provides an instance: <i>plotListener</i>, which is accessible throughout plotmas for saving plot-relevant
+ * events. 
+ * @author Leonid Berov
+ */
 public class PlotGraph {
     
     static Logger logger = Logger.getLogger(PlotGraph.class.getName());
@@ -28,66 +34,6 @@ public class PlotGraph {
 	private HashMap<String, Vertex> lastVertexMap;
 	private PlotDirectedSparseGraph graph; 
 	
-	public PlotGraph(Collection<LauncherAgent> characters) {
-		this.graph = new PlotDirectedSparseGraph();
-	    this.lastVertexMap = new HashMap<String, Vertex>();
-		
-	    // set up a "named" tree for each character
-		for (LauncherAgent character : characters) {
-			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
-			graph.addRoot(root);
-			
-			this.lastVertexMap.put(character.name, root);
-		}
-	}
-	
-	public void addEvent(String character, String event) {
-		this.addEvent(character, event, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
-	}
-
-	public void addEvent(String character, String event, Vertex.Type eventType) {
-		this.addEvent(character, event, eventType, Edge.Type.TEMPORAL);
-	}
-	
-	public void addEvent(String character, String event, Edge.Type linkType) {
-		this.addEvent(character, event, Vertex.Type.EVENT, linkType);
-	}
-	
-	public void addEvent(String character, String event, Vertex.Type eventType, Edge.Type linkType) {
-		Vertex newVertex = new Vertex(event, eventType);
-		Vertex parent = lastVertexMap.get(character);
-		
-		if (parent.getType() == Vertex.Type.ROOT) {
-			linkType = Edge.Type.ROOT;
-		}
-		
-		graph.addEdge(new Edge(linkType), parent, newVertex);
-		lastVertexMap.put(character, newVertex);
-	}
-	
-	public void addRequest(String sender, String receiver, String message) {
-		message = "SPEECH:" + message;
-		if (!(lastVertexMap.get(sender).getLabel().equals(message))) {
-			// this message is different from content of last event,
-			// means was not send to another receiver, too
-			addEvent(sender, message, Vertex.Type.SPEECHACT);
-		}
-		// same message was send before to another recipient 
-		// no need to add a new vertex, just reuse the last one
-		
-		// add receiver vertex linking to last top, same procedure as with sender
-		if (!(lastVertexMap.get(receiver).getLabel().equals(""))) {
-			addEvent(receiver, "", Vertex.Type.SPEECHACT);
-		}
-		
-		Vertex senderVertex = lastVertexMap.get(sender);
-		Vertex receiverVertex = lastVertexMap.get(receiver);
-		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), senderVertex, receiverVertex);
-	}
-	
-	public void visualizeGraph() {
-		PlotGraph.visualizeGraph(this.graph);
-	}
 	
 	public static PlotGraph getPlotListener() {
 		return plotListener;
@@ -150,6 +96,69 @@ public class PlotGraph {
 		PlotGraph.isDisplayed = true;
 	}
 	
+	public PlotGraph(Collection<LauncherAgent> characters) {
+		this.graph = new PlotDirectedSparseGraph();
+		this.lastVertexMap = new HashMap<String, Vertex>();
+		
+		// set up a "named" tree for each character
+		for (LauncherAgent character : characters) {
+			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
+			graph.addRoot(root);
+			
+			this.lastVertexMap.put(character.name, root);
+		}
+	}
+	
+	public void addEvent(String character, String event) {
+		this.addEvent(character, event, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
+	}
+	
+	public void addEvent(String character, String event, Vertex.Type eventType) {
+		this.addEvent(character, event, eventType, Edge.Type.TEMPORAL);
+	}
+	
+	public void addEvent(String character, String event, Edge.Type linkType) {
+		this.addEvent(character, event, Vertex.Type.EVENT, linkType);
+	}
+	
+	public void addEvent(String character, String event, Vertex.Type eventType, Edge.Type linkType) {
+		Vertex newVertex = new Vertex(event, eventType);
+		Vertex parent = lastVertexMap.get(character);
+		
+		if (parent.getType() == Vertex.Type.ROOT) {
+			linkType = Edge.Type.ROOT;
+		}
+		
+		graph.addEdge(new Edge(linkType), parent, newVertex);
+		lastVertexMap.put(character, newVertex);
+	}
+	
+	public void addRequest(String sender, String receiver, String message) {
+		message = "SPEECH:" + message;
+		if (!(lastVertexMap.get(sender).getLabel().equals(message))) {
+			// this message is different from content of last event,
+			// means was not send to another receiver, too
+			addEvent(sender, message, Vertex.Type.SPEECHACT);
+		}
+		// same message was send before to another recipient 
+		// no need to add a new vertex, just reuse the last one
+		
+		// add receiver vertex linking to last top, same procedure as with sender
+		if (!(lastVertexMap.get(receiver).getLabel().equals(""))) {
+			addEvent(receiver, "", Vertex.Type.SPEECHACT);
+		}
+		
+		Vertex senderVertex = lastVertexMap.get(sender);
+		Vertex receiverVertex = lastVertexMap.get(receiver);
+		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), senderVertex, receiverVertex);
+	}
+	
+	public void visualizeGraph() {
+		PlotGraph.visualizeGraph(this.graph);
+	}
+	
+	
+	/*************************** for testing purposes ***********************************/
 	private static PlotDirectedSparseGraph createTestGraph() {
 		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
 		

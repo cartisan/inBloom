@@ -10,7 +10,14 @@ import plotmas.graph.PlotGraph;
 import plotmas.graph.Vertex;
 import plotmas.helper.MoodMapper;
 
+/**
+ * A type of affective agent that is responsible for maintaining the data that is relevant for plotmas. It decides which
+ * agent events need to be logged in the console, displayed in the plot graph and maintains a table of agent's mood 
+ * changes for later analysis, as e.g. by the mood graph.
+ * @author Leonid Berov
+ */
 public class PlotAwareAg extends AffectiveAgent {
+	
 	static Logger logger = Logger.getLogger(AffectiveAgent.class.getName());
 	public static MoodMapper moodMapper = new MoodMapper();
 	private String name;

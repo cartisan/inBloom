@@ -12,6 +12,10 @@ import plotmas.PlotEnvironment;
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.storyworld.StoryworldAgent;
 
+/**
+ * Custom controller for the "Tale of the Little Red Hen", managed by {@link RedHenLauncher}.
+ * @author Leonid Berov
+ */
 public class FarmEnvironment extends PlotEnvironment {
     static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
     

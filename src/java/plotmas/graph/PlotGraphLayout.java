@@ -6,6 +6,11 @@ import java.util.Collection;
 
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 
+/**
+ * Responsible for building the visual representation of the plot graph, especially maintaining correct spatial
+ * relations between vertices.
+ * @author Leonid Berov
+ */
 public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 
     // The horizontal/vertical vertex spacing.

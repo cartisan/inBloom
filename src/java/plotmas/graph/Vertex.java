@@ -2,7 +2,12 @@ package plotmas.graph;
 
 import java.util.UUID;
 
+/**
+ * Represents a typed node in the plot graph.
+ * @author Leonid Berov
+ */
 public class Vertex {
+	
 	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT }
 
 	private String id;

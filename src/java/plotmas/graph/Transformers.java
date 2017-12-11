@@ -1,18 +1,22 @@
 package plotmas.graph;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Shape;
-import java.awt.Color;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
 
 import com.google.common.base.Function;
 
-import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
 
+/**
+ * Maintains a number of functions that transform the visual appearance of nodes and vertices based on their type.
+ * Is employed by {@link PlotGraph} during {@link PlotGraph#visualizeGraph() visualizeGraph()} in order to set up its 
+ * {@link edu.uci.ics.jung.visualization.VisualizationViewer VisualizationViewer} instance.
+ * @author Leonid Berov
+ */
 public class Transformers {
 	
 	static private Font FONT = new Font("Courier New", Font.PLAIN, 12);

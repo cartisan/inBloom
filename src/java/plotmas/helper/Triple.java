@@ -1,5 +1,13 @@
 package plotmas.helper;
 
+/**
+ * Generic triple container, works equivalently to {@link jason.util.Pair}. 
+ *
+ * @author Leonid Berov
+ * @param <T>
+ * @param <U>
+ * @param <V>
+ */
 public class Triple<T, U, V> {
 
     private final T first;

@@ -1,5 +1,9 @@
 package plotmas.storyworld;
 
+/**
+ * Abstract superclass for domain-specific items. Each item should have a name on the conceptual level (e.g. bread).
+ * @author Leonid Berov
+ */
 public abstract class Item {
 	
 	/**

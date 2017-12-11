@@ -2,7 +2,12 @@ package plotmas.graph;
 
 import java.util.UUID;
 
+/**
+ * Represents a typed edge in the plot graph.
+ * @author Leonid Berov
+ */
 public class Edge {
+	
 	public enum Type { ROOT, TEMPORAL, MOTIVATION, COMMUNICATION }
 	
 	private String id;

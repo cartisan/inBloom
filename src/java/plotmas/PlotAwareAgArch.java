@@ -4,6 +4,11 @@ import jason.architecture.AgArch;
 import jason.asSemantics.Message;
 import plotmas.graph.PlotGraph;
 
+/**
+ * A type of affective agent archtecture that is responsible for maintaining the data that is relevant for plotmas. 
+ * It relays the speechacts of the agents to the plot graph to provide intercharacter edges. 
+ * @author Leonid Berov
+ */
 public class PlotAwareAgArch extends AgArch {
 
 	static int DECAY_RATE = 1;

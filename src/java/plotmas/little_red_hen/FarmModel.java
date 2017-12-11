@@ -8,9 +8,13 @@ import plotmas.storyworld.Item;
 import plotmas.storyworld.Model;
 import plotmas.storyworld.StoryworldAgent;
 
-/* Model class for Farm Environment */
 
+/**
+ * Custom model of the story-world of the "Tale of the Little Red Hen".
+ * @author Leonid Berov
+ */
 public class FarmModel extends Model{
+	
 	public static enum WHEAT_STATE {SEED, GROWING, RIPE, HARVESTED, FLOUR;}
 	static Logger logger = Logger.getLogger(FarmModel.class.getName());
 

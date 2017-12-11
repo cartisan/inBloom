@@ -16,12 +16,27 @@ import org.jfree.ui.RefineryUtilities;
 import plotmas.PlotAwareAg;
 
 
+/**
+ * Responsible for creating and visualizing the graph the represents the development of the pleasure value of all
+ * characters during the development of the plot.
+ * Class provides a singleton instance: <i>moodListener</i>, which is accessible throughout plotmas for creating
+ * mood graphs. 
+ * @author Leonid Berov
+ */
 @SuppressWarnings("serial")
 public class MoodGraph extends JFrame {
+
 	protected static Logger logger = Logger.getLogger(MoodGraph.class.getName());
 	private static MoodGraph moodListener = null;
 	private DefaultCategoryDataset moodData = null;
 
+	public static MoodGraph getMoodListener() {
+		if (MoodGraph.moodListener==null) {
+			MoodGraph.moodListener = new MoodGraph();
+		};
+		return MoodGraph.moodListener;
+	}
+	
 	public MoodGraph() {
 		super("Mood Graph");
 		moodData = new DefaultCategoryDataset();
@@ -88,17 +103,11 @@ public class MoodGraph extends JFrame {
 		this.setVisible(true);
 	}
 	
-	public void addMoodPoint(Double value, Long time, String agName) {
+	private void addMoodPoint(Double value, Long time, String agName) {
 		this.moodData.addValue(value, agName, time);
 	}
 
-	public static MoodGraph getMoodListener() {
-		if (MoodGraph.moodListener==null) {
-			MoodGraph.moodListener = new MoodGraph();
-		};
-		return MoodGraph.moodListener;
-	}
-	
+	/*************************** for testing purposes ***********************************/	
 	public static void main( String[ ] args ) {
 		MoodGraph chart = new MoodGraph();
 
