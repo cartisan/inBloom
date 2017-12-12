@@ -9,7 +9,7 @@ Plotmas is a system for generating narratives, which is using an extended versio
 1. You can also test running Jason's debug mode by passing `RedHenLauncher` the parameter `"-debug"`. In Eclipse: Create a new "Run Configuration" (called e.g. "Red Hen [debug]") and under the tab "Arguments" enter the parameter under "Program arguments".
 
 ## Implementing your own story
-To implement your own story and explore it using plotmas you need to extend several classes and implement custom agent reasoning. An example story can be found in the `plotmas.little_red_hen` package. It is advisable to be familiar with the basics of Jason programming, as for instance this [getting started guide](http://jason.sourceforge.net/mini-tutorial/eclipse-plugin/) or [this tutorial](http://jason.sourceforge.net/Jason.pdf).
+To implement your own story and explore it using plotmas you need to extend several classes and implement custom agent reasoning. An example story can be found in the `plotmas.little_red_hen` package. It is advisable to be familiar with the basics of Jason programming, as for instance this [getting started guide](http://jason.sourceforge.net/mini-tutorial/getting-started/#_an_example_with_environment) or [this tutorial](http://jason.sourceforge.net/Jason.pdf).
 1. Implement a your custom AgentSpeak reasoning code in a custom `src/asl/agentXYZ.asl`
 1. Create a new sub-package `plotmas.XYZ` under `src/java` for your story, all your Java classes should be located here
 1. Subclass `Model` to create a custom representation of the story world
@@ -18,26 +18,26 @@ To implement your own story and explore it using plotmas you need to extend seve
    1. Override `initialize(List<LauncherAgent> agents)` and at least execute the super-class initializer and set instance variable `Model model` to an instance of your custom model class
    1. Override `public boolean executeAction(String agentName, Structure action)` to implement which ASL actions are handled by which model method. For example:
 	
-	```java
-		public class YourEnvironment extends PlotEnvironment<YourModel> {
-			@Override
-			public void initialize(List<LauncherAgent> agents) {
-			  super.initialize(agents);
-			    YourModel model = new YourModel(agents, this);
-			    this.setModel(model);
-			}
-	        @Override
-	        public boolean executeAction(String agentName, Structure action) {
-	          boolean result = super.executeAction(agentName, action);
-	          StoryworldAgent agent = getModel().getAgent(agentName);
-	
-	          if (action.getFunctor().equals("farm_work")) {
-	            result = getModel().farmWork(agent);
-	          }
-	          pauseOnRepeat(agentName, action);
-	          return result;
-	        }
-	    }
+    ```java
+    public class YourEnvironment extends PlotEnvironment<YourModel> {
+        @Override
+        public void initialize(List<LauncherAgent> agents) {
+          super.initialize(agents);
+            YourModel model = new YourModel(agents, this);
+            this.setModel(model);
+        }
+        @Override
+        public boolean executeAction(String agentName, Structure action) {
+          boolean result = super.executeAction(agentName, action);
+          StoryworldAgent agent = getModel().getAgent(agentName);
+
+          if (action.getFunctor().equals("farm_work")) {
+            result = getModel().farmWork(agent);
+          }
+          pauseOnRepeat(agentName, action);
+          return result;
+        }
+    }
     ```
     
 1. Subclass `PlotLauncher` to create a custom class responsible for setting up and starting your simulation. Implement a static main method, which needs to do several things:
@@ -46,22 +46,22 @@ To implement your own story and explore it using plotmas you need to extend seve
    1. Create a list of `LauncherAgent`s that can contain personality definitions, initial beliefs and goals for each agent of your simulation
    1. `run` the launcher using your custom `agentXYZ` agent implementation. For example:
    
-    ```java
-      public static void main(String[] args) throws JasonException {
-        ENV_CLASS = YourEnvironment.class;
-        runner = new YourLauncher();
+	```java
+	public static void main(String[] args) throws JasonException {
+    	ENV_CLASS = YourEnvironment.class;
+    	runner = new YourLauncher();
 
-        ImmutableList<LauncherAgent> agents = ImmutableList.of(
-          runner.new LauncherAgent("hen",
-            new Personality(0,  1, 0.7,  0.3, 0.0)
-          ),
-          runner.new LauncherAgent("dog",
-            new Personality(0, -1, 0, -0.7, -0.8)
-          )
-        );
+		ImmutableList<LauncherAgent> agents = ImmutableList.of(
+      		runner.new LauncherAgent("hen",
+        		new Personality(0,  1, 0.7,  0.3, 0.0)
+      		),
+      		runner.new LauncherAgent("dog",
+        		new Personality(0, -1, 0, -0.7, -0.8)
+      		)
+    	);
 
-        runner.run(args, agents, "agentXYZ");
-      }
+		runner.run(args, agents, "agentXYZ");
+	}
     ```
     
 ## Affective reasoning
