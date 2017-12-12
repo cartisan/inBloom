@@ -3,13 +3,16 @@ Plotmas is a system for generating narratives, which is using an extended versio
 
 ## Setup
 1. Make sure to have [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) (be sure to pick the right 32/64bit version) or later, and preferably [Eclipse](http://www.eclipse.org/), installed
-1. Check out this repository (see: [checking out git repositories using eclipse](https://github.com/collab-uniba/socialcde4eclipse/wiki/How-to-import-a-GitHub-project-into-Eclipse))
+1. Check out this repository (see: [checking out git repositories using Eclipse](https://github.com/collab-uniba/socialcde4eclipse/wiki/How-to-import-a-GitHub-project-into-Eclipse))
 1. Import the plotmas project in Eclipse
 1. Test that the system is running properly by executing the example simulation, that is, execute the main method of `RedHenLauncher`
-1. You can also test running Jason's debug mode by passing `RedHenLauncher` the parameter `"-debug"`. In Eclipse: Create a new "Run Configuration" (called e.g. "Red Hen [debug]") and under the tab "Arguments" enter the parameter under "Program arguments".
+1. You can also test running Jason's debug mode by passing `RedHenLauncher` the parameter `"-debug"`. 
+In Eclipse: Create a new "Run Configuration" (called e.g. "Red Hen [debug]") `Run -> Run Configurations... -> Java Applications -> right click -> New`, under the tab "Arguments" you can enter the parameter `"-debug"` under "Program arguments".
 
-## Implementing your own story
-To implement your own story and explore it using plotmas you need to extend several classes and implement custom agent reasoning. An example story can be found in the `plotmas.little_red_hen` package. It is advisable to be familiar with the basics of Jason programming, as for instance this [getting started guide](http://jason.sourceforge.net/mini-tutorial/getting-started/#_an_example_with_environment) or [this tutorial](http://jason.sourceforge.net/Jason.pdf).
+## Implementing your own story 
+To implement your own story and explore it using plotmas you need to extend several classes and implement custom agent reasoning. An example story can be found in the `plotmas.little_red_hen` package.<br>
+<i>Note: It is advisable to first get familiar with the basics of Jason programming, using for instance this [getting started guide](http://jason.sourceforge.net/mini-tutorial/getting-started/#_an_example_with_environment) or [this tutorial](http://jason.sourceforge.net/Jason.pdf). You can play around with the tutorials in the `lab_rotations` branch. To check out this branch in Eclipse: `Right-click on plotmas -> Team -> Switch To -> Lab Rotation`. </i>
+
 1. Implement a your custom AgentSpeak reasoning code in a custom `src/asl/agentXYZ.asl`
 1. Create a new sub-package `plotmas.XYZ` under `src/java` for your story, all your Java classes should be located here
 1. Subclass `Model` to create a custom representation of the story world
