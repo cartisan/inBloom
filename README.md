@@ -17,35 +17,39 @@ To implement your own story and explore it using plotmas you need to extend seve
 1. Subclass `PlotEnvironment` to create a custom environment responsible for managing the communication between agents and model
    1. Override `initialize(List<LauncherAgent> agents)` and at least execute the super-class initializer and set instance variable `Model model` to an instance of your custom model class
    1. Override `public boolean executeAction(String agentName, Structure action)` to implement which ASL actions are handled by which model method. For example:
-    ```java
-        @Override
-        public void initialize(List<LauncherAgent> agents) {
-          super.initialize(agents);
-            FarmModel model = new FarmModel(agents, this);
-            this.setModel(model);
-        }
-
-        @Override
-        public boolean executeAction(String agentName, Structure action) {
-          boolean result = super.executeAction(agentName, action);
-          StoryworldAgent agent = getModel().getAgent(agentName);
-
-          if (action.getFunctor().equals("farm_work")) {
-            result = getModel().farmWork(agent);
-          }
-          pauseOnRepeat(agentName, action);
-          return result;
-        }
+	
+	```java
+		public class YourEnvironment extends PlotEnvironment<YourModel> {
+			@Override
+			public void initialize(List<LauncherAgent> agents) {
+			  super.initialize(agents);
+			    YourModel model = new YourModel(agents, this);
+			    this.setModel(model);
+			}
+	        @Override
+	        public boolean executeAction(String agentName, Structure action) {
+	          boolean result = super.executeAction(agentName, action);
+	          StoryworldAgent agent = getModel().getAgent(agentName);
+	
+	          if (action.getFunctor().equals("farm_work")) {
+	            result = getModel().farmWork(agent);
+	          }
+	          pauseOnRepeat(agentName, action);
+	          return result;
+	        }
+	    }
     ```
+    
 1. Subclass `PlotLauncher` to create a custom class responsible for setting up and starting your simulation. Implement a static main method, which needs to do several things:
    1. Set the static variable `ENV_CLASS` to the class of your custom environment implementation
    1. Instantiate the launcher
    1. Create a list of `LauncherAgent`s that can contain personality definitions, initial beliefs and goals for each agent of your simulation
    1. `run` the launcher using your custom `agentXYZ` agent implementation. For example:
+   
     ```java
       public static void main(String[] args) throws JasonException {
-        ENV_CLASS = FarmEnvironment.class;
-        runner = new RedHenLauncher();
+        ENV_CLASS = YourEnvironment.class;
+        runner = new YourLauncher();
 
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
           runner.new LauncherAgent("hen",

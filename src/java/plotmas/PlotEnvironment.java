@@ -33,7 +33,7 @@ import plotmas.storyworld.Model;
  * @see plotmas.little_red_hen.FarmEnvironment
  * @author Leonid Berov
  */
-public abstract class PlotEnvironment extends TimeSteppedEnvironment {
+public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSteppedEnvironment {
 	public static final Integer MAX_REPEATE_NUM = 7;
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
     public static Long startTime = null;
@@ -47,7 +47,7 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
     }
     
     
-    protected Model model;
+    protected DomainModel model;
     
     /**
      * Stores a mapping from agentName to a (String actionName, Integer count) tuple, which stores how many
@@ -90,6 +90,15 @@ public abstract class PlotEnvironment extends TimeSteppedEnvironment {
     	logger.info(String.format("%s performed %s", agentName, action.toString()));
 		
 		return false;
+	}
+	
+	public void setModel(DomainModel model) {
+		this.model = model;
+		updatePercepts();
+	}
+	
+	public DomainModel getModel() {
+		return this.model;
 	}
 	
     /********************** Methods for updating agent percepts **************************

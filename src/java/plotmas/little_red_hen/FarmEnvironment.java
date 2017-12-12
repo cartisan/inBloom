@@ -16,7 +16,7 @@ import plotmas.storyworld.StoryworldAgent;
  * Custom controller for the "Tale of the Little Red Hen", managed by {@link RedHenLauncher}.
  * @author Leonid Berov
  */
-public class FarmEnvironment extends PlotEnvironment {
+public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
     
     @Override
@@ -102,13 +102,4 @@ public class FarmEnvironment extends PlotEnvironment {
     	pauseOnRepeat(agentName, action);
     	return result;
     }
-    
-	public FarmModel getModel() {
-		return (FarmModel) super.model;
-	}
-
-	public void setModel(FarmModel model) {
-		this.model = model;
-		updatePercepts();
-	}
 }
