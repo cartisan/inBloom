@@ -2,8 +2,8 @@
 Plotmas is a system for generating narratives, which is using an extended version of the [Jason multi-agent framework](https://github.com/cartisan/jason/tree/o3a).
 
 ## Setup
-1. Make sure to have Java 1.8 (be sure to pick the right 32/64bit version) or later (and preferably Eclipse) installed
-1. Check out the repository
+1. Make sure to have [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) (be sure to pick the right 32/64bit version) or later, and preferably [Eclipse](http://www.eclipse.org/), installed
+1. Check out this repository (see: [checking out git repositories using eclipse](https://github.com/collab-uniba/socialcde4eclipse/wiki/How-to-import-a-GitHub-project-into-Eclipse))
 1. Import the plotmas project in Eclipse
 1. Test that the system is running properly by executing the example simulation, that is, execute the main method of `RedHenLauncher`
 1. You can also test running Jason's debug mode by passing `RedHenLauncher` the parameter `"-debug"`. In Eclipse: Create a new "Run Configuration" (called e.g. "Red Hen [debug]") and under the tab "Arguments" enter the parameter under "Program arguments".
