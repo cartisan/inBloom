@@ -1,7 +1,6 @@
 package plotmas.little_red_hen;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.storyworld.Item;
@@ -16,7 +15,6 @@ import plotmas.storyworld.StoryworldAgent;
 public class FarmModel extends Model{
 	
 	public static enum WHEAT_STATE {SEED, GROWING, RIPE, HARVESTED, FLOUR;}
-	static Logger logger = Logger.getLogger(FarmModel.class.getName());
 
 	public Wheat wheat;
 

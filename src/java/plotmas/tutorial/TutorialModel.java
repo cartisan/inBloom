@@ -2,15 +2,11 @@ package plotmas.tutorial;
 
 import java.util.List;
 
-import java.util.logging.Logger;
-
 import plotmas.PlotEnvironment;
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.storyworld.Model;
 
 public class TutorialModel extends Model {
-	
-	static Logger logger = Logger.getLogger(TutorialModel.class.getName());
 	
 	public TutorialModel(List<LauncherAgent> agentList, PlotEnvironment<TutorialModel> env) {
 		super(agentList, env);
@@ -23,7 +19,7 @@ public class TutorialModel extends Model {
 	
 	public void suck(){
 		if (state[position] == true){
-			state[position] = false;}  //true heißt dreckig, false heißt sauber! 
+			state[position] = false;}  //true heiï¿½t dreckig, false heiï¿½t sauber! 
 			logger.info("position " + String.valueOf(position) + " is clean");
 		}
 	

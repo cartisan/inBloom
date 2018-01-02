@@ -2,6 +2,7 @@ package plotmas.storyworld;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
 import plotmas.PlotEnvironment;
 import plotmas.PlotLauncher.LauncherAgent;
@@ -21,9 +22,10 @@ import plotmas.PlotLauncher.LauncherAgent;
  */
 public abstract class Model {
 	public HashMap<String, StoryworldAgent> agents;
-	protected PlotEnvironment environment;
+	protected PlotEnvironment<?> environment;
+	protected static Logger logger = Logger.getLogger(Model.class.getName());
 	
-	public Model(List<LauncherAgent> agentList, PlotEnvironment env) {
+	public Model(List<LauncherAgent> agentList, PlotEnvironment<?> env) {
 		this.environment = env;
 		
         agents = new HashMap<String, StoryworldAgent>();
