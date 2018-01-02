@@ -246,6 +246,8 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 		// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
     	if (allAgentsRepeating()) {
     		// reset counter
+    		logger.severe("Auto-paused execution of simulation because all agents repeated their last action for " +
+    				String.valueOf(MAX_REPEATE_NUM) + " of times.");
     		PlotLauncher.runner.pauseExecution();
     		resetAllAgentActionCounts();
     	}
