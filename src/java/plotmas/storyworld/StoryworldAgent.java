@@ -20,7 +20,7 @@ public class StoryworldAgent {
 	
 	public LinkedList<Item> inventory = new LinkedList<Item>();
 	public String name;
-	private PlotEnvironment environment;
+	private PlotEnvironment<?> environment;
 
 	
 	
@@ -144,7 +144,7 @@ public class StoryworldAgent {
 		return true;
 	}
 
-	public void setEnvironment(PlotEnvironment environment) {
+	public void setEnvironment(PlotEnvironment<?> environment) {
 		this.environment = environment;
 	}
 	
