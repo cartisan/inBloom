@@ -3,11 +3,9 @@ package plotmas;
 import java.util.logging.Logger;
 
 import jason.JasonException;
-import jason.RevisionFailedException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Mood;
-import jason.asSyntax.Literal;
 import plotmas.graph.PlotGraph;
 import plotmas.graph.Vertex;
 import plotmas.helper.MoodMapper;

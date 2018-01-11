@@ -1,5 +1,6 @@
 package plotmas.graph;
 
+import java.util.LinkedList;
 import java.util.UUID;
 
 /**
@@ -8,11 +9,12 @@ import java.util.UUID;
  */
 public class Vertex {
 	
-	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT }
+	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, PERCEPT }
 
 	private String id;
 	private String label;
 	private Type type;
+	private LinkedList<String> emotions = new LinkedList<>();
 	
 
 	public void setType(Type type) {
@@ -49,7 +51,29 @@ public class Vertex {
 		return type;
 	}
 
-	public String toString() {
-		return this.label;
+	public String getFunctor() {
+		String removedAnnots = getLabel().split("\\[")[0];
+		String removedTerms = removedAnnots.split("\\(")[0];
+		
+		return removedTerms;
 	}
+	
+	public String toString() {
+		String result = this.getLabel();
+		
+		if(!this.emotions.isEmpty()) {
+			result += this.emotions.toString();
+		}
+		
+		if(this.type == Type.PERCEPT) {
+			result = "+" + result;
+		}
+		
+		return result;
+	}
+	
+	public void addEmotion(String emo) {
+		this.emotions.add(emo);
+	}
+	
 }

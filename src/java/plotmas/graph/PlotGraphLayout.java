@@ -65,8 +65,9 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     	locations.getUnchecked(v).setLocation(m_currentPoint);
 
     	// compute position for child
-        for (Vertex child : ((PlotDirectedSparseGraph) this.graph).getCharSuccessors(v)) {
-            buildGraph(child);
+        Vertex child = ((PlotDirectedSparseGraph) this.graph).getCharSuccessor(v);
+        if(!(child == null)) {
+        	buildGraph(child);
         }
         
         this.m_currentPoint.y -= this.distY;
@@ -75,16 +76,12 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     private int calculateDimensionX(Vertex vertex) {
     	int width = Transformers.vertexSizeTransformer.apply(vertex);
 
-    	for (Vertex v : ((PlotDirectedSparseGraph) this.graph).getCharSuccessors(vertex)) {
-    		int new_width = calculateDimensionX(v);
-    		if (new_width > width) {
-    			width = new_width;
-    		}
-    	}
-    	
-    	if (distX > width) {
-    		return distX;
-    	}
-    	return width;
+    	Vertex successor = ((PlotDirectedSparseGraph) this.graph).getCharSuccessor(vertex); 
+		if(successor == null) {
+			return (this.distX > width ? distX : width);
+		}
+		
+    	int max_width = calculateDimensionX(successor);
+    	return (width > max_width ? width : max_width);
     }
 }

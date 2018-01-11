@@ -3,7 +3,7 @@ package plotmas.graph;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import javax.swing.JFrame;
@@ -30,7 +30,7 @@ public class PlotGraph {
 	public static Color BGCOLOR = Color.WHITE;
 	private static JFrame frame;
 
-	private HashMap<String, Vertex> lastVertexMap;
+
 	private PlotDirectedSparseGraph graph; 
 	
 	
@@ -97,66 +97,90 @@ public class PlotGraph {
 	
 	public PlotGraph(Collection<LauncherAgent> characters) {
 		this.graph = new PlotDirectedSparseGraph();
-		this.lastVertexMap = new HashMap<String, Vertex>();
 		
 		// set up a "named" tree for each character
 		for (LauncherAgent character : characters) {
 			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
 			graph.addRoot(root);
-			
-			this.lastVertexMap.put(character.name, root);
 		}
 	}
 	
 	public void addEvent(String character, String event) {
-		this.addEvent(character, event, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
+		this.graph.addEvent(character, event, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
 	}
 	
 	public void addEvent(String character, String event, Vertex.Type eventType) {
-		this.addEvent(character, event, eventType, Edge.Type.TEMPORAL);
+		this.graph.addEvent(character, event, eventType, Edge.Type.TEMPORAL);
 	}
 	
 	public void addEvent(String character, String event, Edge.Type linkType) {
-		this.addEvent(character, event, Vertex.Type.EVENT, linkType);
-	}
-	
-	public void addEvent(String character, String event, Vertex.Type eventType, Edge.Type linkType) {
-		Vertex newVertex = new Vertex(event, eventType);
-		Vertex parent = lastVertexMap.get(character);
-		
-		if (parent.getType() == Vertex.Type.ROOT) {
-			linkType = Edge.Type.ROOT;
-		}
-		
-		graph.addEdge(new Edge(linkType), parent, newVertex);
-		lastVertexMap.put(character, newVertex);
+		this.graph.addEvent(character, event, Vertex.Type.EVENT, linkType);
 	}
 	
 	public void addRequest(String sender, String receiver, String message) {
-		message = "SPEECH:" + message;
-		if (!(lastVertexMap.get(sender).getLabel().equals(message))) {
-			// this message is different from content of last event,
-			// means was not send to another receiver, too
-			addEvent(sender, message, Vertex.Type.SPEECHACT);
-		}
-		// same message was send before to another recipient 
-		// no need to add a new vertex, just reuse the last one
+		this.graph.addRequest(sender, receiver, message);
+	}
+	
+	private PlotDirectedSparseGraph postProcessThisGraph() {
+		// For each subgraph, conflate action->perception->emotion vertices into one vertex
+		PlotDirectedSparseGraph cleanG = this.graph.clone();
 		
-		// add receiver vertex linking to last top, same procedure as with sender
-		if (!(lastVertexMap.get(receiver).getLabel().equals(""))) {
-			addEvent(receiver, "", Vertex.Type.SPEECHACT);
+		for(Vertex root : this.graph.getRoots()) {
+			Optional<Vertex> lastV = Optional.ofNullable(null);
+			boolean removing = false;
+			
+			for(Vertex v : this.graph.getCharSubgraph(root)){
+				switch(v.getType()) {
+					case PERCEPT: {
+						// if we were removing and encountered a new percept, finish up removal by adding edge to this
+						if(removing) {
+							cleanG.addEdge(new Edge(Edge.Type.TEMPORAL), lastV.get(), v);
+							removing = false;
+							lastV = Optional.of(v);
+							continue;
+						}
+						
+						//if this perception is just the result of a previous action, remove it and start removal process
+						if(lastV.isPresent() &
+								(lastV.get().getType() == Vertex.Type.EVENT) &
+									lastV.get().getFunctor().equals(v.getFunctor())) {
+							cleanG.removeVertex(v);
+							removing = true;
+							
+						// otherwise keep it and continue
+						} else {
+							lastV = Optional.of(v);
+						}
+					} 
+					case EMOTION: {
+						if(removing) {
+							//don't show post-percept emotion vertices in clean graph, add them to last vertex
+							cleanG.removeVertex(v);
+							lastV.get().addEmotion(v.getLabel());
+						} else {
+							lastV = Optional.of(v);
+						}
+					}
+					default: {
+						if(removing) {
+							cleanG.addEdge(new Edge(Edge.Type.TEMPORAL), lastV.get(), v);
+							removing = false;
+						}
+						lastV = Optional.of(v);
+					}
+				}
+			}
 		}
 		
-		Vertex senderVertex = lastVertexMap.get(sender);
-		Vertex receiverVertex = lastVertexMap.get(receiver);
-		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), senderVertex, receiverVertex);
+		return cleanG;
 	}
 	
 	public JFrame visualizeGraph() {
+//		return PlotGraph.visualizeGraph(this.postProcessThisGraph());
 		return PlotGraph.visualizeGraph(this.graph);
 	}
 	
-	
+
 	/*************************** for testing purposes ***********************************/
 	private static PlotDirectedSparseGraph createTestGraph() {
 		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
