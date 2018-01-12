@@ -151,7 +151,7 @@ public class PlotGraph {
 						} else {
 							lastV = Optional.of(v);
 						}
-					} 
+					}; break; 
 					case EMOTION: {
 						if(removing) {
 							//don't show post-percept emotion vertices in clean graph, add them to last vertex
@@ -160,7 +160,7 @@ public class PlotGraph {
 						} else {
 							lastV = Optional.of(v);
 						}
-					}
+					}; break;
 					default: {
 						if(removing) {
 							cleanG.addEdge(new Edge(Edge.Type.TEMPORAL), lastV.get(), v);
@@ -176,8 +176,8 @@ public class PlotGraph {
 	}
 	
 	public JFrame visualizeGraph() {
-//		return PlotGraph.visualizeGraph(this.postProcessThisGraph());
-		return PlotGraph.visualizeGraph(this.graph);
+		return PlotGraph.visualizeGraph(this.postProcessThisGraph());
+//		return PlotGraph.visualizeGraph(this.graph);
 	}
 	
 
