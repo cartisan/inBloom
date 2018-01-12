@@ -113,7 +113,7 @@ public class StoryworldAgent {
 		// TODO: this emotion might depend on properties of object, in which case its deliberative and should go
 		// into ASL side?
 		this.environment.addEventPerception(name,
-												String.format("received(%s)[emotion(gratitude, %s)]", item.literal(), this.name));
+												String.format("receive(%s)[emotion(gratitude, %s)]", item.literal(), this.name));
 		logger.info(this.name + " received some " + item.literal() + ".");
 		return true;
 	}
@@ -125,7 +125,7 @@ public class StoryworldAgent {
 			if (item.isEdible()) {
 				this.removeFromInventory(item);
 				this.environment.addEventPerception(name, 
-														String.format("ate(%s)[emotion(satisfaction)]", item.literal()));
+														String.format("eat(%s)[emotion(satisfaction)]", item.literal()));
 				
 				// in theory: here double dispatch
 				// so food can affect agent in specific
@@ -140,7 +140,7 @@ public class StoryworldAgent {
 	}
 	
 	public boolean relax() {
-		this.environment.addEventPerception(name, "relaxed[emotion(joy)]");
+		this.environment.addEventPerception(name, "relax[emotion(joy)]");
 		return true;
 	}
 

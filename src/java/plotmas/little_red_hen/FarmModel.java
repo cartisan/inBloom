@@ -53,7 +53,7 @@ public class FarmModel extends Model{
 		if (!(wheatItem == null)) {
 				if (wheatItem.state == WHEAT_STATE.SEED) {
 					this.wheat.state = WHEAT_STATE.GROWING;
-					this.environment.addEventPerception(agent.name, "planted(wheat)[emotion(pride)]");
+					this.environment.addEventPerception(agent.name, "plant(wheat)[emotion(pride)]");
 					logger.info("Wheat planted");
 					return true;
 				}
@@ -66,7 +66,7 @@ public class FarmModel extends Model{
 		if ((this.wheat.state == WHEAT_STATE.GROWING)){
 			this.wheat.state = WHEAT_STATE.RIPE;
 			logger.info("Wheat has grown and is ripe now");
-			this.environment.addEventPerception(agent.name, "tended(wheat)[emotion(pride)]");
+			this.environment.addEventPerception(agent.name, "tend(wheat)[emotion(pride)]");
 			return true;
 		}
 		
@@ -77,7 +77,7 @@ public class FarmModel extends Model{
 		if ((this.wheat.state == WHEAT_STATE.RIPE)){
 			this.wheat.state = WHEAT_STATE.HARVESTED;
 			logger.info("Wheat was harvested");
-			this.environment.addEventPerception(agent.name, "harvested(wheat)[emotion(pride)]");
+			this.environment.addEventPerception(agent.name, "harvest(wheat)[emotion(pride)]");
 			return true;
 		}
 		
@@ -89,7 +89,7 @@ public class FarmModel extends Model{
 			this.wheat.state = WHEAT_STATE.FLOUR;
 			logger.info("Wheat was ground to flour");
 			this.wheat = null;
-			this.environment.addEventPerception(agent.name, "ground(wheat)[emotion(pride)]");
+			this.environment.addEventPerception(agent.name, "grind(wheat)[emotion(pride)]");
 			return true;
 		}
 		return false;
@@ -102,7 +102,7 @@ public class FarmModel extends Model{
 			agent.removeFromInventory(wheatItem);
 			
 			logger.info(agent.name + ": baked some bread.");
-			this.environment.addEventPerception(agent.name, "baked(bread)[emotion(pride),emotion(joy)]");
+			this.environment.addEventPerception(agent.name, "bake(bread)[emotion(pride),emotion(joy)]");
 			return true;
 		}
 		

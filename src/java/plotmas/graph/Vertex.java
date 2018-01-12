@@ -2,6 +2,9 @@ package plotmas.graph;
 
 import java.util.LinkedList;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import jason.asSemantics.Emotion;
 
 /**
  * Represents a typed node in the plot graph.
@@ -61,13 +64,21 @@ public class Vertex {
 	public String toString() {
 		String result = this.getLabel();
 		
-		if(!this.emotions.isEmpty()) {
-			result += this.emotions.toString();
+		switch(this.type) {
+		case PERCEPT: 	result = "+" + result;
+						break;
+		case EMOTION: 	result = result + String.format("(%s)", 
+													  (Emotion.getEmotion(result).getP()  > 0 ? "+" : "-"));
+						break;
+		default: 		if(!this.emotions.isEmpty()) {
+							result += this.emotions.stream().map(em -> em + "(" + (Emotion.getEmotion(em).getP()  > 0 ? "+" : "-") + ")")
+															.collect(Collectors.toList())
+															.toString();
+						};
+		
 		}
 		
-		if(this.type == Type.PERCEPT) {
-			result = "+" + result;
-		}
+
 		
 		return result;
 	}
