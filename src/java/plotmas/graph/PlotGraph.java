@@ -15,6 +15,7 @@ import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
+import jason.asSemantics.Message;
 import jason.asSyntax.Literal;
 import plotmas.PlotLauncher.LauncherAgent;
 
@@ -118,8 +119,8 @@ public class PlotGraph {
 		this.graph.addEvent(character, event, Vertex.Type.EVENT, linkType);
 	}
 	
-	public void addRequest(String sender, String receiver, String message) {
-		this.graph.addRequest(sender, receiver, message);
+	public void addRequest(Message m) {
+		this.graph.addRequest(m.getSender(), m.getReceiver(), m.getPropCont().toString());
 	}
 	
 	private PlotDirectedSparseGraph postProcessThisGraph() {

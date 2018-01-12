@@ -3,6 +3,7 @@ package plotmas.graph;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.Lists;
 
@@ -18,7 +19,8 @@ import edu.uci.ics.jung.graph.DirectedSparseGraph;
 public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> {
   
 	private List<Vertex> roots = Lists.newArrayList();
-	private HashMap<String, Vertex> lastVertexMap = new HashMap<String, Vertex>();;
+	private HashMap<String, Vertex> lastVertexMap = new HashMap<>();
+	private HashMap<String, Map<String, Vertex>> senderMap = new HashMap<>(); 	//form: agentName -> (message -> vertex)
 
     public List<Vertex> getRoots() {
 		if (roots.size() > 0) {
@@ -35,11 +37,12 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> {
     	}
     	
     	this.lastVertexMap.put(vertex.getLabel(), vertex);
+    	this.senderMap.put(vertex.getLabel(), new HashMap<>());
     	
     	return result;
     }
 	
-	public void addEvent(String root, String event, Vertex.Type eventType, Edge.Type linkType) {
+	public Vertex addEvent(String root, String event, Vertex.Type eventType, Edge.Type linkType) {
 		Vertex newVertex = new Vertex(event, eventType);
 		Vertex parent = lastVertexMap.get(root);
 		
@@ -49,28 +52,25 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> {
 		
 		this.addEdge(new Edge(linkType), parent, newVertex);
 		lastVertexMap.put(root, newVertex);
+		
+		return newVertex;
 	}
 	
 	public void addRequest(String sender, String receiver, String message) {
-		if (!(lastVertexMap.get(sender).getLabel().equals(message))) {
-			// this message is different from content of last event,
-			// means was not send to another receiver, too
-			addEvent(sender, message, Vertex.Type.SPEECHACT, Edge.Type.TEMPORAL);
+		Vertex sendV;
+		// if same message was already send before, use old vertex
+		// helps reusing vertex when multiple recipients
+		if(senderMap.get(sender).containsKey(message)) {
+			sendV = senderMap.get(sender).get(message);
+		} else {
+			sendV = addEvent(sender, message, Vertex.Type.SPEECHACT, Edge.Type.TEMPORAL);
+			senderMap.get(sender).put(message, sendV);
 		}
-		// same message was send before to another recipient 
-		// no need to add a new vertex, just reuse the last one
-		
-		// add receiver vertex linking to last top, same procedure as with sender
-		if (!(lastVertexMap.get(receiver).getLabel().equals(""))) {
-			addEvent(receiver, message, Vertex.Type.LISTEN,  Edge.Type.TEMPORAL);
-		}
-		
-		Vertex senderVertex = lastVertexMap.get(sender);
-		Vertex receiverVertex = lastVertexMap.get(receiver);
-		this.addEdge(new Edge(Edge.Type.COMMUNICATION), senderVertex, receiverVertex);
+
+		Vertex recV = addEvent(receiver, message, Vertex.Type.LISTEN,  Edge.Type.TEMPORAL);
+		this.addEdge(new Edge(Edge.Type.COMMUNICATION), sendV, recV);
 	}
-
-
+	
 	/**
 	 * Returns vertice, that is successors in a plot sense,
 	 * i.e. vertices that pertain to the same character column.This excludes

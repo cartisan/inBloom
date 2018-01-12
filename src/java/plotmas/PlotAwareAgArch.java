@@ -23,10 +23,10 @@ public class PlotAwareAgArch extends AgArch {
 	@Override
     public void sendMsg(Message m) throws Exception {
         // actually send the message
-		getNextAgArch().sendMsg(m);
+		super.sendMsg(m);
 		
 		// plot it in the graph
-		PlotGraph.getPlotListener().addRequest(m.getSender(), m.getReceiver(), m.getPropCont().toString());
+		PlotGraph.getPlotListener().addRequest(m);
 	}
 	
 	@Override
