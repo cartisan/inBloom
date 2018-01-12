@@ -52,7 +52,6 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> {
 	}
 	
 	public void addRequest(String sender, String receiver, String message) {
-		message = "SPEECH:" + message;
 		if (!(lastVertexMap.get(sender).getLabel().equals(message))) {
 			// this message is different from content of last event,
 			// means was not send to another receiver, too
@@ -63,7 +62,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> {
 		
 		// add receiver vertex linking to last top, same procedure as with sender
 		if (!(lastVertexMap.get(receiver).getLabel().equals(""))) {
-			addEvent(receiver, "", Vertex.Type.SPEECHACT,  Edge.Type.TEMPORAL);
+			addEvent(receiver, message, Vertex.Type.LISTEN,  Edge.Type.TEMPORAL);
 		}
 		
 		Vertex senderVertex = lastVertexMap.get(sender);

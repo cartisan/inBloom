@@ -46,6 +46,8 @@ public class Transformers {
         	switch (v.getType()) {
         		case SPEECHACT:
         			return factory.getRoundRectangle(v);
+        		case LISTEN:
+        			return factory.getRoundRectangle(v);
         		case EMOTION:
         			return factory.getEllipse(v);
         		default:
@@ -66,6 +68,8 @@ public class Transformers {
 	        	case ROOT:
 	        		return PlotGraph.BGCOLOR;
 	        	case SPEECHACT:
+	        		return Color.getHSBColor(Float.valueOf("0"), Float.valueOf("0"), Float.valueOf("0.95"));
+	        	case LISTEN:
 	        		return Color.getHSBColor(Float.valueOf("0"), Float.valueOf("0"), Float.valueOf("0.95"));
         		default:
         			return Color.LIGHT_GRAY;

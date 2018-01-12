@@ -12,11 +12,12 @@ import jason.asSemantics.Emotion;
  */
 public class Vertex {
 	
-	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, PERCEPT }
+	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, LISTEN, PERCEPT }
 
 	private String id;
 	private String label;
 	private Type type;
+	
 	private LinkedList<String> emotions = new LinkedList<>();
 	
 
@@ -69,6 +70,10 @@ public class Vertex {
 						break;
 		case EMOTION: 	result = result + String.format("(%s)", 
 													  (Emotion.getEmotion(result).getP()  > 0 ? "+" : "-"));
+						break;
+		case SPEECHACT:	result = "SPEECH>>" + result;
+						break;
+		case LISTEN:	result = "LISTEN<<" + result;
 						break;
 		default: 		if(!this.emotions.isEmpty()) {
 							result += this.emotions.stream().map(em -> em + "(" + (Emotion.getEmotion(em).getP()  > 0 ? "+" : "-") + ")")
