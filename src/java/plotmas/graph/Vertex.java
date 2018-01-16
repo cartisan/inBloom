@@ -10,7 +10,7 @@ import jason.asSemantics.Emotion;
  * Represents a typed node in the plot graph.
  * @author Leonid Berov
  */
-public class Vertex {
+public class Vertex implements Cloneable {
 	
 	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, LISTEN, PERCEPT }
 
@@ -90,6 +90,11 @@ public class Vertex {
 	
 	public void addEmotion(String emo) {
 		this.emotions.add(emo);
+	}
+	
+	@Override
+	public Vertex clone() {
+		return new Vertex(this.label, this.type);
 	}
 	
 }

@@ -127,12 +127,12 @@ public class PlotGraph {
 		// For each subgraph, conflate action->perception->emotion vertices into one vertex
 		PlotDirectedSparseGraph cleanG = this.graph.clone();
 		
-		for(Vertex root : this.graph.getRoots()) {
+		for(Vertex root : cleanG.getRoots()) {
 			Optional<Vertex> lastV = Optional.ofNullable(null);
 			int removing = 0;
 			Vertex targetEvent = null;
 			
-			for(Vertex v : this.graph.getCharSubgraph(root)){
+			for(Vertex v : cleanG.getCharSubgraph(root)){
 				
 				// if last emotion we searched was removed, patch the hole produced in cleanG by removing
 				if ((removing==0) & !(targetEvent==null)) {
