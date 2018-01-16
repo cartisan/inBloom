@@ -97,7 +97,7 @@ public class StoryworldAgent {
 			
 			String recList = receivers.stream().map(rec -> rec.name).collect(Collectors.joining(",", "[", "]")).toString();
 			this.environment.addEventPerception(name,
-					String.format("shared(%s,%s)[emotion(pride, self)]", item.literal(), recList));
+					String.format("share(%s,%s)[emotion(pride, self)]", item.literal(), recList));
 			logger.info(this.name + " shared some " + item.literal() + ".");
 			
 			
