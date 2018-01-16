@@ -17,6 +17,7 @@ public class RedHenLauncher extends PlotLauncher {
 	public static void main(String[] args) throws JasonException {
         logger.info("Starting up from Launcher!");
         ENV_CLASS = FarmEnvironment.class;
+        COMPRESS_GRAPH = true;
         
         runner = new RedHenLauncher();
         

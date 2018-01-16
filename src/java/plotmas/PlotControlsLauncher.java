@@ -19,6 +19,7 @@ import plotmas.graph.PlotGraph;
  */
 public class PlotControlsLauncher extends RunCentralisedMAS {
 	public static PlotLauncher runner = null;
+	protected static boolean COMPRESS_GRAPH = false;	// used to determine if PlotGraph should compressed before drawing
 	
 	private JButton pauseButton;
 	private JButton drawButton;
@@ -41,7 +42,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 		this.pauseExecution();
 		
 		// create and visualize plot graph
-		this.plotGraph = PlotGraph.getPlotListener().visualizeGraph();
+		this.plotGraph = PlotGraph.getPlotListener().visualizeGraph(COMPRESS_GRAPH);
 		
 		// create and visualize mood graph
 		MoodGraph.getMoodListener().createGraph();

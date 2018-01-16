@@ -119,8 +119,14 @@ public class PlotGraph {
 		this.graph.addEvent(character, event, Vertex.Type.EVENT, linkType);
 	}
 	
-	public void addRequest(Message m) {
-		this.graph.addRequest(m.getSender(), m.getReceiver(), m.getPropCont().toString());
+	public Vertex addMsgSend(Message m) {
+		Vertex senderV = this.graph.addMsgSend(m.getSender(), m.getPropCont().toString());
+		return senderV;
+	}
+
+	public Vertex addMsgReceive(Message m, Vertex senderV) {
+		Vertex recV = this.graph.addMsgReceive(m.getReceiver(), m.getPropCont().toString(), senderV);
+		return recV;
 	}
 	
 	private PlotDirectedSparseGraph postProcessThisGraph() {
@@ -188,9 +194,11 @@ public class PlotGraph {
 		return cleanG;
 	}
 	
-	public JFrame visualizeGraph() {
-		return PlotGraph.visualizeGraph(this.postProcessThisGraph());
-//		return PlotGraph.visualizeGraph(this.graph);
+	public JFrame visualizeGraph(boolean compress) {
+		if(compress)
+			return PlotGraph.visualizeGraph(this.postProcessThisGraph());
+		else 
+			return PlotGraph.visualizeGraph(this.graph);
 	}
 	
 

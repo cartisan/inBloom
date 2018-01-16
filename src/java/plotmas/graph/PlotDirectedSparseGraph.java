@@ -62,7 +62,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> i
 		return newVertex;
 	}
 	
-	public void addRequest(String sender, String receiver, String message) {
+	public Vertex addMsgSend(String sender, String message) {
 		Vertex sendV;
 		// if same message was already send before, use old vertex
 		// helps reusing vertex when multiple recipients
@@ -72,9 +72,15 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> i
 			sendV = addEvent(sender, message, Vertex.Type.SPEECHACT, Edge.Type.TEMPORAL);
 			senderMap.put(sender, message, sendV);
 		}
-
+		
+		return sendV;
+	}
+	
+	public Vertex addMsgReceive(String receiver, String message, Vertex sendV) {
 		Vertex recV = addEvent(receiver, message, Vertex.Type.LISTEN,  Edge.Type.TEMPORAL);
 		this.addEdge(new Edge(Edge.Type.COMMUNICATION), sendV, recV);
+		
+		return recV;
 	}
 	
 	/**
