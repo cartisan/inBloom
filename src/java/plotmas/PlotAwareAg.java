@@ -35,9 +35,8 @@ public class PlotAwareAg extends AffectiveAgent {
         super.addEmotion(emotion, type);
         
         // add emotion to plot graph
-        // TODO: Add source of emotion
-        PlotGraph.getPlotListener().addEvent(this.name, emotion.getName(), Vertex.Type.EMOTION);
-        logger.info(this.name + " - appraised emotion: " + emotion.getName());
+        PlotGraph.getPlotListener().addEvent(this.name, emotion.toLiteral().toString(), Vertex.Type.EMOTION);
+        logger.info(this.name + " - appraised emotion: " + emotion.toLiteral().toString());
     }
 	
 	@Override

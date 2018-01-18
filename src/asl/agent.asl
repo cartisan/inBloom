@@ -55,7 +55,8 @@ wish(relax).
 /********************************************/
 
 +rejected_help_request(Req)[source(Name)] <-
-	.appraise_emotion(anger, Name);
+	.concat("rejected_help_request(", Req, ")", Src);
+	.appraise_emotion(anger, Name, Src);
 	.abolish(rejected_help_request(Req));
 	-asking(Req, Name);
 	if(not asking(Req, _)) {
@@ -63,7 +64,8 @@ wish(relax).
 	}.
 	
 +accepted_help_request(Req)[source(Name)] <-
-	.appraise_emotion(gratitude, Name);
+	.concat(accepted_help_request, Req, ")", Src);
+	.appraise_emotion(gratitude, Name, Src);
 	.abolish(accepted_help_request(Req));
 	-asking(Req, Name);
 	if(not asking(Req, _)) {
@@ -221,7 +223,8 @@ wish(relax).
 @eat_2
 +!eat(X) <- 
 	.print("Can't eat ", X, ", I don't have any! :( ");
-	.appraise_emotion(disappointment);
+	.concat("eat(",X,")", Src)		
+	.appraise_emotion(disappointment,"",Src);
 	.suspend(eat(X)).
 	
 +!share(X, Anims) <-

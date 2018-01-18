@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import jason.asSemantics.Emotion;
+import jason.asSyntax.parser.ParseException;
 
 /**
  * Represents a typed node in the plot graph.
@@ -62,14 +63,22 @@ public class Vertex implements Cloneable {
 		return removedTerms;
 	}
 	
+	@Override
 	public String toString() {
 		String result = this.getLabel();
 		
 		switch(this.type) {
 		case PERCEPT: 	result = "+" + result;
 						break;
-		case EMOTION: 	result = result + String.format("(%s)", 
-													  (Emotion.getEmotion(result).getP()  > 0 ? "+" : "-"));
+		case EMOTION: 	{
+				try {
+					Emotion em = Emotion.parseString(result);
+					result = em.getName() + String.format("(%s)", (em.getP()  > 0 ? "+" : "-"));
+				} catch (ParseException e) {
+					e.printStackTrace();
+					return null;
+				}
+		}
 						break;
 		case SPEECHACT:	result = "SPEECH>>" + result;
 						break;
