@@ -49,9 +49,11 @@ public class Transformers {
         		case LISTEN:
         			return factory.getRoundRectangle(v);
         		case EMOTION:
-        			return factory.getEllipse(v);
+        			return factory.getRectangle(v);
+        		case PERCEPT:
+        			return factory.getRectangle(v);
         		default:
-        			return factory.getRectangle(v); 
+        			return factory.getEllipse(v);
         	}	
         }
     };

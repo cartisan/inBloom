@@ -73,7 +73,7 @@ public class Vertex implements Cloneable {
 		case EMOTION: 	{
 				try {
 					Emotion em = Emotion.parseString(result);
-					result = em.getName() + String.format("(%s)", (em.getP()  > 0 ? "+" : "-"));
+					result = em.toString();
 				} catch (ParseException e) {
 					e.printStackTrace();
 					return null;
