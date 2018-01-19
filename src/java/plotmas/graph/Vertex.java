@@ -81,19 +81,27 @@ public class Vertex implements Cloneable {
 		}
 						break;
 		case SPEECHACT:	result = "SPEECH>>" + result;
+						result = appendEmotions(result);
 						break;
 		case LISTEN:	result = "LISTEN<<" + result;
+						result = appendEmotions(result);
 						break;
-		default: 		if(!this.emotions.isEmpty()) {
-							result += this.emotions.stream().map(em -> em + "(" + (Emotion.getEmotion(em).getP()  > 0 ? "+" : "-") + ")")
-															.collect(Collectors.toList())
-															.toString();
-						};
+		default: 		result = appendEmotions(result);
+						break;
 		
 		}
 		
 
 		
+		return result;
+	}
+
+	private String appendEmotions(String result) {
+		if(!this.emotions.isEmpty()) {
+							result += this.emotions.stream().map(em -> em + "(" + (Emotion.getEmotion(em).getP()  > 0 ? "+" : "-") + ")")
+															.collect(Collectors.toList())
+															.toString();
+						};
 		return result;
 	}
 	
@@ -104,6 +112,10 @@ public class Vertex implements Cloneable {
 	@Override
 	public Vertex clone() {
 		return new Vertex(this.label, this.type);
+	}
+
+	public boolean hasEmotion(String emo) {
+		return this.emotions.contains(emo);
 	}
 	
 }

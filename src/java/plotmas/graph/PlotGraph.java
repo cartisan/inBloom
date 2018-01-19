@@ -3,6 +3,8 @@ package plotmas.graph;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -15,8 +17,9 @@ import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
+import jason.asSemantics.Emotion;
 import jason.asSemantics.Message;
-import jason.asSyntax.Literal;
+import jason.asSyntax.parser.ParseException;
 import plotmas.PlotLauncher.LauncherAgent;
 
 /**
@@ -135,57 +138,49 @@ public class PlotGraph {
 		
 		for(Vertex root : cleanG.getRoots()) {
 			Optional<Vertex> lastV = Optional.ofNullable(null);
-			int removing = 0;
-			Vertex targetEvent = null;
+			List<Vertex> eventList = new LinkedList<>();
 			
 			for(Vertex v : cleanG.getCharSubgraph(root)){
-				
-				// if last emotion we searched was removed, patch the hole produced in cleanG by removing
-				if ((removing==0) & !(targetEvent==null)) {
-					cleanG.addEdge(new Edge(Edge.Type.TEMPORAL), targetEvent, v);
-					targetEvent = null;
-				}
-				
 				switch(v.getType()) {
 					case PERCEPT: {
-						if(removing>0) {
-							throw new RuntimeException(
-									"Two perceptions which report the result of actions appeared "
-									+ "consequitively, not sure how to compres graph. Culprit: " + v.toString()
-									);
-						}
-						
 						//if this perception is just the result of a previous action, remove it and start removal process
 						//format: relax(.*)[emotion(.+)+]
 						if(lastV.isPresent() &
 								(lastV.get().getType() == Vertex.Type.EVENT) &
 									lastV.get().getFunctor().equals(v.getFunctor())) {
 							
-							// find out how many emotions are following
-							int emNum = Literal.parseLiteral(v.getLabel()).getAnnots("emotion").size();
-							removing = emNum;
-							targetEvent = lastV.get();
-							
-							// remove perception
-							cleanG.removeVertex(v);
+							// remove perception from graph
+							cleanG.removeVertexAndPatchGraph(v, lastV.get());
 							
 						// otherwise keep it and continue
 						} else {
 							lastV = Optional.of(v);
+							eventList.add(0, v);
 						}
 					}; break; 
 					case EMOTION: {
-						if(removing > 0) {
-							//don't show post-percept emotion vertices in clean graph, add them to last vertex
-							cleanG.removeVertex(v);
-							targetEvent.addEmotion(v.getLabel());
-							removing -= 1;
-						} else {
-							lastV = Optional.of(v);
-						}
+							//don't show emotion vertices in clean graph, add them to last causing vertex
+							Emotion em;
+							try {
+								em = Emotion.parseString(v.getLabel());
+							} catch (ParseException e) {
+								break;
+							}
+							
+							for(Vertex targetEvent:eventList) {
+								if((targetEvent.getFunctor().equals(em.getCause())) & !(targetEvent.hasEmotion(em.getName()))) {
+									// safe emotion in corresponding action
+									targetEvent.addEmotion(em.getName());
+									
+									// remove emotion vertex
+									cleanG.removeVertexAndPatchGraph(v, lastV.get());
+									break;
+								}
+							}
 					}; break;
 					default: {
 						lastV = Optional.of(v);
+						eventList.add(0, v);
 					}
 				}
 			}

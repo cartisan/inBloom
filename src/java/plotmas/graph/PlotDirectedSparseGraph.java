@@ -145,4 +145,15 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> i
 	    
 	    return dest;
 	}
+	
+	public void removeVertexAndPatchGraph(Vertex toRemove, Vertex lastV) {
+		// patch up hole from removal
+		Vertex nextV = this.getCharSuccessor(toRemove);
+		if(nextV != null) {
+			this.addEdge(new Edge(Edge.Type.TEMPORAL), lastV, nextV);
+		}
+		
+		// remove perception
+		this.removeVertex(toRemove);
+	}
 }
