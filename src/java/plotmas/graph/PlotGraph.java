@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
 import java.util.logging.Logger;
 
 import javax.swing.JFrame;
@@ -132,30 +130,38 @@ public class PlotGraph {
 		return recV;
 	}
 	
+	/**
+	 * Clones this.graph and conflates the copy to reduce redundant information. 
+	 * Removes from the graph: 
+	 *   - perceptions that are reporting the results of an agent action
+ 	 *   - emotions that are caused by actions or perceptions
+ 	 * The removed emotions are incorporated into the vertex of causing
+ 	 * 
+	 * @return a clone of this.graph with removed redundant vertices
+	 */
 	private PlotDirectedSparseGraph postProcessThisGraph() {
 		// For each subgraph, conflate action->perception->emotion vertices into one vertex
 		PlotDirectedSparseGraph cleanG = this.graph.clone();
 		
 		for(Vertex root : cleanG.getRoots()) {
-			Optional<Vertex> lastV = Optional.ofNullable(null);
-			List<Vertex> eventList = new LinkedList<>();
+			LinkedList<Vertex> eventList = new LinkedList<>();
 			
 			for(Vertex v : cleanG.getCharSubgraph(root)){
 				switch(v.getType()) {
 					case PERCEPT: {
 						//if this perception is just the result of a previous action, remove it and start removal process
 						//format: relax(.*)[emotion(.+)+]
-						if(lastV.isPresent() &
-								(lastV.get().getType() == Vertex.Type.EVENT) &
-									lastV.get().getFunctor().equals(v.getFunctor())) {
+						if(!eventList.isEmpty() &&
+								(eventList.getFirst().getType() == Vertex.Type.EVENT) &&
+									eventList.getFirst().getFunctor().equals(v.getFunctor())) {
 							
 							// remove perception from graph
-							cleanG.removeVertexAndPatchGraph(v, lastV.get());
+							Vertex lastV = eventList.isEmpty() ? root : eventList.getFirst();
+							cleanG.removeVertexAndPatchGraph(v, lastV);
 							
 						// otherwise keep it and continue
 						} else {
-							lastV = Optional.of(v);
-							eventList.add(0, v);
+							eventList.addFirst(v);
 						}
 					}; break; 
 					case EMOTION: {
@@ -173,14 +179,14 @@ public class PlotGraph {
 									targetEvent.addEmotion(em.getName());
 									
 									// remove emotion vertex
-									cleanG.removeVertexAndPatchGraph(v, lastV.get());
+									Vertex lastV = eventList.isEmpty() ? root : eventList.getFirst();
+									cleanG.removeVertexAndPatchGraph(v, lastV);
 									break;
 								}
 							}
 					}; break;
 					default: {
-						lastV = Optional.of(v);
-						eventList.add(0, v);
+						eventList.addFirst(v);;
 					}
 				}
 			}

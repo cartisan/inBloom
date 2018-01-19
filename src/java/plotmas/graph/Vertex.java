@@ -2,6 +2,8 @@ package plotmas.graph;
 
 import java.util.LinkedList;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jason.asSemantics.Emotion;
@@ -12,6 +14,8 @@ import jason.asSyntax.parser.ParseException;
  * @author Leonid Berov
  */
 public class Vertex implements Cloneable {
+
+	public static Pattern NO_ANNOT_PATTERN = Pattern.compile("(.+?\\(.+?\\))");
 	
 	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, LISTEN, PERCEPT }
 
@@ -68,25 +72,25 @@ public class Vertex implements Cloneable {
 		String result = this.getLabel();
 		
 		switch(this.type) {
-		case PERCEPT: 	result = "+" + result.split("\\[")[0];
-						result = appendEmotions(result);
-						break;
 		case SPEECHACT:	result = "SPEECH>>" + result;
 						result = appendEmotions(result);
 						break;
 		case LISTEN:	result = "LISTEN<<" + result;
 						result = appendEmotions(result);
 						break;
-		case EMOTION: 	{
-							try {
-								Emotion em = Emotion.parseString(result);
-								result = em.toString();
-							} catch (ParseException e) {
-								e.printStackTrace();
-								return null;
-							}
-							break;
-		}
+		case PERCEPT: 	Matcher m = NO_ANNOT_PATTERN.matcher(result);
+				        if (m.find())
+				            result = "+" + m.group(1);
+						result = appendEmotions(result);
+						break;
+		case EMOTION: 	try {
+							Emotion em = Emotion.parseString(result);
+							result = em.toString();
+						} catch (ParseException e) {
+							e.printStackTrace();
+							return null;
+						}
+						break;
 		default: 		result = appendEmotions(result);
 						break;
 		
