@@ -57,7 +57,7 @@ public class PlotAwareAg extends AffectiveAgent {
 	private void mapMood(Mood mood) {
 		Long plotTime = PlotEnvironment.getPlotTimeNow();
 
-		moodMapper.addMood(this.name, plotTime, mood.getP());
+		moodMapper.addMood(this.name, plotTime, mood);
 		logger.fine("mapping " + this.name + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
 	}
 }
