@@ -121,7 +121,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> i
 	
 	@Override
 	public PlotDirectedSparseGraph clone() {
-		// FIXME: lastVertexMap is not cloned, the returned graph is not useable for continuing plotting 
+		// BEWARE: lastVertexMap is not cloned, the returned graph is not useable for continuing plotting 
 		PlotDirectedSparseGraph dest = new PlotDirectedSparseGraph();
 		
 		// clone vertices and add them to cloned graph
