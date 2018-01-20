@@ -1,5 +1,6 @@
 package plotmas.graph;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
@@ -12,6 +13,7 @@ import javax.swing.JFrame;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.RefineryUtilities;
@@ -35,6 +37,7 @@ public class MoodGraph extends JFrame {
 	
 	private DefaultCategoryDataset moodData = null;
 	private String selectedMoodDimension = null;
+	private JFreeChart chart = null;
 
 	public static MoodGraph getMoodListener() {
 		if (MoodGraph.moodListener==null) {
@@ -55,7 +58,7 @@ public class MoodGraph extends JFrame {
 		this.selectedMoodDimension = MOOD_DIMS[0];
 	}
 	
-	public void createGraph() {
+	public void createData() {
 		this.deleteGraphData();
 		
 		Long startTime = PlotAwareAg.moodMapper.latestStartTime();
@@ -74,6 +77,21 @@ public class MoodGraph extends JFrame {
 		}
 	}
 	
+	private void createChart(DefaultCategoryDataset data) {
+		String title = "Mood Development Over Time"; 
+		if (data.getRowCount() == 0)
+			title = "No mood points have been reported to MoodGraph";
+		
+		JFreeChart lineChart = ChartFactory.createLineChart(
+				title,
+				"plot time in ms", this.selectedMoodDimension,
+				data,
+				PlotOrientation.VERTICAL,
+				true,true,false);
+		
+		this.chart = lineChart;
+	}
+	
 	public void deleteGraphData() {
 		this.moodData.clear();
 	}
@@ -83,11 +101,10 @@ public class MoodGraph extends JFrame {
 	}
 	
 	public JFrame visualizeGraph(DefaultCategoryDataset data) {
-		JFreeChart lineChart = createChart(data);
-		
-		ChartPanel chartPanel = new ChartPanel(lineChart);
+		// create line chart
+		this.createChart(data);
+		ChartPanel chartPanel = new ChartPanel(this.chart);
 		chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ));
-		this.setContentPane(chartPanel);
 		
 		// create dropdown to select modd dimension
 		JComboBox<String> moodDimensionList = new JComboBox<>(MOOD_DIMS);
@@ -99,12 +116,18 @@ public class MoodGraph extends JFrame {
 				String selectedDimension = (String) combo.getSelectedItem();
 				
 				MoodGraph.getMoodListener().selectedMoodDimension = selectedDimension;
-				MoodGraph.getMoodListener().setContentPane(new ChartPanel(MoodGraph.getMoodListener().createChart(data)));
-				MoodGraph.getMoodListener().pack();
+				MoodGraph.getMoodListener().createData();
+				
+				((CategoryPlot) MoodGraph.getMoodListener().chart.getPlot()).getRangeAxis().setLabel(
+						MoodGraph.getMoodListener().selectedMoodDimension
+				);
+				
+				MoodGraph.getMoodListener().repaint();
 			}
 		});
 		
-		this.add(moodDimensionList);
+		this.add(chartPanel, BorderLayout.CENTER);
+		this.add(moodDimensionList, BorderLayout.SOUTH);
 		
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
@@ -121,20 +144,6 @@ public class MoodGraph extends JFrame {
 		return this;
 	}
 
-	private JFreeChart createChart(DefaultCategoryDataset data) {
-		String title = this.selectedMoodDimension + " development over time"; 
-		if (data.getRowCount() == 0)
-			title = "No mood points have been reported to MoodGraph";
-		
-		JFreeChart lineChart = ChartFactory.createLineChart(
-				title,
-				"plot time in ms", this.selectedMoodDimension,
-				data,
-				PlotOrientation.VERTICAL,
-				true,true,false);
-		
-		return lineChart;
-	}
 	
 	private void addMoodPoint(Double value, Long time, String agName) {
 		this.moodData.addValue(value, agName, time);
