@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
+import jason.asSyntax.Term;
 import plotmas.PlotEnvironment;
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.little_red_hen.FarmEnvironment;
@@ -43,8 +44,10 @@ public class CrowEnvironment extends PlotEnvironment<CrowModel> {
      }
      
      if (action.getFunctor().equals("flatter")) {
-    	 StoryworldAgent agent2 = getModel().getAgent(agentName);
-    	 result = getModel().flatter(agent, agent2);
+    	 Term receiverTerm = action.getTerm(0);
+    	 
+    	 StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
+    	 result = getModel().flatter(agent, patient); 
      }
      
      if (action.getFunctor().equals("pickUpCheese")) {

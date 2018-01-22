@@ -52,7 +52,7 @@ public class CrowModel extends Model {
 		
 		if(flatterer.has ("Cheese")) {
 		Cheese cheeseItem = (Cheese) flatterer.get(Cheese.itemName);
-		flatterer.removeFromInventory(this.cheese);
+		flatterer.removeFromInventory(cheeseItem);
 		this.environment.addEventPerception(flatterer.name, "wasFlattered[emotion(shame)]");
 		logger.info(flatterer.name + "lost cheese");
 		}
@@ -113,7 +113,7 @@ public class CrowModel extends Model {
 		@Override
 		public String literal() {
 			// TODO Auto-generated method stub
-			return null;
+			return null; 
 		}
 	}
 	}

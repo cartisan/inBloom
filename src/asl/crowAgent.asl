@@ -40,9 +40,7 @@ wish(sitAround).
 +has(X) : is_pleasant(eat(X)) & has(X)  <-			// still has X when event selected 
 	!eat(X).
 	
-+has(wheat(seed)) <- 
-	!!create_bread.
-
+ 
 +self(has_purpose) <-
 	.suspend(default_activity).
 
@@ -97,7 +95,7 @@ wish(sitAround).
 /***** Plans  *******************************/
 /********************************************/
 
-+!get_cheese : (cheeseSeen) <-
++!get_cheese : cheeseSeen <-
 	+self(has_purpose);
 	!flatter(crow);
 	!pickUpCheese(cheese);
@@ -113,8 +111,8 @@ wish(sitAround).
 +!walkAround <-
 	walkAround. 
 	
-+!flatter (Anims) <-
-	flatter (Anims).
++!flatter(Anims) <-
+	flatter(Anims).
 	
 +!sing <-
 	sing.

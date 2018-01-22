@@ -18,12 +18,12 @@ public class CrowLauncher extends PlotLauncher {
 		        new Personality(0, -1, 0, 0, 0)
 		      ),
 		      runner.new LauncherAgent("fox",
-				        new Personality(0, 1, 0, 0, 0)
+				        new Personality(0, 0.9, 0, 0, 0)
 				      )
 		      
 		    );
 
-		    runner.run(args, agents, "crowAgent");
+		    runner.run(args, agents, "crowAgent"); 
 		  }
     
 }
