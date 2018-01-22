@@ -34,9 +34,10 @@ public class CrowModel extends Model {
 			this.environment.addEventPerception(agent.name, "seen(cheese)[emotion(desire)]");
 			logger.info(agent.name + "saw cheese");
 		}
+		return true; 
 	}
 	
-	public boolean SitAround(StoryworldAgent agent) {
+	public boolean sitAround(StoryworldAgent agent) {
 		
 		logger.info(agent.name + "sat around");
 		return agent.relax();
@@ -55,6 +56,7 @@ public class CrowModel extends Model {
 		this.environment.addEventPerception(flatterer.name, "wasFlattered[emotion(shame)]");
 		logger.info(flatterer.name + "lost cheese");
 		}
+		return true;
 	}
 	
 	public boolean pickUpCheese(StoryworldAgent picker) {
@@ -90,7 +92,7 @@ public class CrowModel extends Model {
 			this.environment.addEventPerception(singer.name, "lostCheese[emotion(shame)]");
 			logger.info(singer.name + "lost cheese");
 		}
-		
+		return true;
 	
 	}
 	
