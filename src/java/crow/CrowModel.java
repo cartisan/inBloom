@@ -23,7 +23,9 @@ public class CrowModel extends Model {
 		// this.cheesePosition = 0; //in the beak of the crow
 	}
 	
-	
+	public boolean hasSeenCheese() {
+		return cheeseSeen;
+	}
 	
 	public boolean walkAround(StoryworldAgent agent){
 		this.actionCount +=1;
@@ -31,9 +33,10 @@ public class CrowModel extends Model {
 		
 		if((!cheeseSeen) && (this.actionCount >= 3) && (agent.name == "fox")) {
 			this.cheeseSeen = true;
-			this.environment.addEventPerception(agent.name, "seen(cheese)[emotion(desire)]");
-			logger.info(agent.name + "saw cheese");
+			this.environment.addEventPerception(agent.name, "seen(cheese)");
+			logger.info(agent.name + " saw cheese");
 		}
+		
 		return true; 
 	}
 	

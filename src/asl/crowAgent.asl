@@ -95,7 +95,7 @@ wish(sitAround).
 /***** Plans  *******************************/
 /********************************************/
 
-+!get_cheese : cheeseSeen <-
++!get_cheese : hasSeenCheese() <-
 	+self(has_purpose);
 	!flatter(crow);
 	!pickUpCheese(cheese);
