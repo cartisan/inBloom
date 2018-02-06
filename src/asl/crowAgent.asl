@@ -40,6 +40,12 @@ wish(sitAround).
 +has(X) : is_pleasant(eat(X)) & has(X)  <-			// still has X when event selected 
 	!eat(X).
 	
+
++seen(cheese) <-					// the belief seen(cheese)
+	.print("in seen cheese");	// TODO delete
+	+perceived(seen(cheese));	// mental note
+	!get_cheese.
+	
  
 +self(has_purpose) <-
 	.suspend(default_activity).
@@ -95,7 +101,7 @@ wish(sitAround).
 /***** Plans  *******************************/
 /********************************************/
 
-+!get_cheese : hasSeenCheese() <-
++!get_cheese: perceived(seen(cheese)) <-
 	+self(has_purpose);
 	!flatter(crow);
 	!pickUpCheese(cheese);

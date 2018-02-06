@@ -92,8 +92,10 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     		} else {
     			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
     			result = agent.share(item, patient);
+    			
     		}
     	}
+    	
     	
     	if (action.getFunctor().equals("relax")) {
 			result = agent.relax();

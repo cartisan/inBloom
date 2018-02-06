@@ -53,7 +53,7 @@ public class CrowModel extends Model {
 		
 		logger.info(flatterer.name + "flattered " + flattered.name);
 		
-		if(flatterer.has ("Cheese")) {
+		if(flatterer.has("Cheese")) {
 		Cheese cheeseItem = (Cheese) flatterer.get(Cheese.itemName);
 		flatterer.removeFromInventory(cheeseItem);
 		this.environment.addEventPerception(flatterer.name, "wasFlattered[emotion(shame)]");
