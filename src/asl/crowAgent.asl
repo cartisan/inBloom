@@ -46,6 +46,10 @@ wish(sitAround).
 	+perceived(seen(cheese));	// mental note
 	!get_cheese.
 	
++wasFlattered(Anims) <-
+	.print("was flattered");
+	+perceived(flattered(Anims));
+	!bragging. 
  
 +self(has_purpose) <-
 	.suspend(default_activity).
@@ -105,7 +109,12 @@ wish(sitAround).
 	+self(has_purpose);
 	!flatter(crow);
 	!pickUpCheese(cheese);
-	-self(has_purpose). 	
+	-self(has_purpose). 
+	
++!bragging: flattered(Anims) <-
+	+self(has_purpose);
+	!sing;
+	-self(has_purpose).
 
 /********************************************/
 /*****      Action Execution Goals **********/

@@ -17,10 +17,16 @@ public class CrowModel extends Model {
 	
 	public CrowModel(List<LauncherAgent> agentList, PlotEnvironment<CrowModel> env) {
 		super(agentList, env);
-		
+		this.cheese = new Cheese();
 		this.actionCount = 0;
 		this.cheeseSeen = false; 
 		// this.cheesePosition = 0; //in the beak of the crow
+		
+		for(StoryworldAgent agent: this.agents.values()) {
+			if( agent.name == "crow") {
+				agent.addToInventory(this.cheese);
+			}
+		}
 	}
 	
 	public boolean hasSeenCheese() {
@@ -53,7 +59,7 @@ public class CrowModel extends Model {
 		
 		logger.info(flatterer.name + "flattered " + flattered.name);
 		
-		if(flatterer.has("Cheese")) {
+		if(flatterer.has("cheese")) {
 		Cheese cheeseItem = (Cheese) flatterer.get(Cheese.itemName);
 		flatterer.removeFromInventory(cheeseItem);
 		this.environment.addEventPerception(flatterer.name, "wasFlattered[emotion(shame)]");
@@ -66,7 +72,7 @@ public class CrowModel extends Model {
 		boolean freeCheese = true; 
 		
 		for(StoryworldAgent agent: this.agents.values()) {
-			if( agent.has("Cheese")) {
+			if( agent.has("cheese")) {
 				freeCheese = false;
 			}
 		}
@@ -90,7 +96,7 @@ public class CrowModel extends Model {
 		this.environment.addEventPerception(singer.name, "sang[emotion(joy)]");
 		logger.info(singer.name + "sang");
 		
-		if( singer.has("Cheese")) {
+		if( singer.has("cheese")) {
 			singer.removeFromInventory(this.cheese);
 			this.environment.addEventPerception(singer.name, "lostCheese[emotion(shame)]");
 			logger.info(singer.name + "lost cheese");
