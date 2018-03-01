@@ -18,14 +18,11 @@ public class CrowEnvironment extends PlotEnvironment<CrowModel> {
 		super.initialize(agents);
 		CrowModel model = new CrowModel(agents, this);
 		this.setModel(model);
-
-
 	}
 
 	@Override
 	protected void updateStatePercepts(String agentName) {
 		super.updateStatePercepts(agentName);
-
 	}
 
 
@@ -34,8 +31,8 @@ public class CrowEnvironment extends PlotEnvironment<CrowModel> {
 		boolean result = super.executeAction(agentName, action);
 		StoryworldAgent agent = getModel().getAgent(agentName);
 
-		if (action.getFunctor().equals("walkAround")) {
-			result = getModel().walkAround(agent);
+		if (action.getFunctor().equals("peek_around_for_cheese")) {
+			result = getModel().peek_around_for_cheese(agent);
 		}
 
 		if (action.getFunctor().equals("sitAround")) {

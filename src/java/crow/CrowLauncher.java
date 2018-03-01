@@ -15,10 +15,10 @@ public class CrowLauncher extends PlotLauncher {
 
 		    ImmutableList<LauncherAgent> agents = ImmutableList.of(
 		      runner.new LauncherAgent("crow",
-		        new Personality(0, -1, 0, 0, 0)
+		        new Personality(1, 0, 0.5, 0, 1)
 		      ),
 		      runner.new LauncherAgent("fox",
-				new Personality(0, 0.9, 0, 0, 0)
+				new Personality(1, -1, 1, -1, -1)
 				      )
 		      
 		    );

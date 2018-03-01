@@ -11,8 +11,8 @@ is_work(bake(_)).
 
 is_pleasant(eat(cheese)).
 
-obligation(walkAround).
-wish(sitAround).
+evil_plan(peek_around_for_cheese).
+neutral_behavior(sitAround).
 
 !default_activity.
 
@@ -42,7 +42,6 @@ wish(sitAround).
 	
 
 +seen(cheese) <-					// the belief seen(cheese)
-	.print("in seen cheese");	// TODO delete
 	+perceived(seen(cheese));	// mental note
 	!get_cheese1.
 	
@@ -51,7 +50,6 @@ wish(sitAround).
 	!get_cheese2.
 	
 +wasFlattered <-
-	.print("was flattered");
 	+perceived(wasFlattered);
 	!bragging. 
  
@@ -72,24 +70,17 @@ wish(sitAround).
 /*****      Personality *********************/
 /********************************************/
 
-// Don't follow obligations if feeling passive, or very "anti-social" tendencies
-@default_activity_2[affect(or(personality(conscientiousness,low), mood(arousal,negative)))]
+// Don't follow evil plan if neutral or high on agreeableness or feeling passive
+@default_activity_2[affect(not(personality(agreeableness,low)))]
 +!default_activity <-
-	?wish(X);
+	?neutral_behavior(X);
 	!X;
 	!default_activity.
 	
-// Always follow obligations if high on consc, and feels like being active
-@default_activity_1[affect(and(personality(conscientiousness,high), mood(arousal,positive)))]
+// Always follow evil plan if low on agreeableness, and feels like being active
+@default_activity_1[affect(and(personality(agreeableness,low),mood(dominance,high)))]
 +!default_activity <-
-	?obligation(X);
-	!X;
-	!default_activity.
-
-// Don't follow obligations if feeling passive, or very "anti-social" tendencies
-@default_activity_2[affect(or(personality(conscientiousness,low), mood(arousal,negative)))]
-+!default_activity <-
-	?wish(X);
+	?evil_plan(X);
 	!X;
 	!default_activity.
 
@@ -98,27 +89,31 @@ wish(sitAround).
 +!default_activity <-
 	.random(R);
 	if(R>0.5) {
-		?wish(X);
+		?neutral_behavior(X);
 	} else {
-		?obligation(X);
+		?evil_plan(X);
 	}
 	!X;
-	!default_activity.	
+	!default_activity.
 	
 /********************************************/
 /***** Plans  *******************************/
 /********************************************/
 
+// Perform an evil plan to get the cheese if "anti-social" tendencies
+@flatter_somebody[affect(personality(conscientiousness, low))]
 +!get_cheese1: perceived(seen(cheese)) <-
 	+self(has_purpose);
 	!flatter(crow);
-	-self(has_purpose). 
+	-self(has_purpose).
 	
 +!get_cheese2: perceived(freeCheese) <-
 	+self(has_purpose);
 	!pickUpCheese(cheese);
 	-self(has_purpose).
-	
+
+// Start singing when you were flattered and you are extraverted and in a good mood
+@start_singing[affectand((personality(extraversion,positive)),mood(pleasure,high))]
 +!bragging: perceived(wasFlattered) <-
 	+self(has_purpose);
 	!sing;
@@ -131,8 +126,8 @@ wish(sitAround).
 +!sitAround <-
 	sitAround.
 	
-+!walkAround <-
-	walkAround. 
++!peek_around_for_cheese <-
+	peek_around_for_cheese.
 	
 +!flatter(Anims) <-
 	flatter(Anims).
