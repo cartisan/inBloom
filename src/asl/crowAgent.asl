@@ -44,8 +44,16 @@ wish(sitAround).
 +seen(cheese) <-					// the belief seen(cheese)
 	.print("in seen cheese");	// TODO delete
 	+perceived(seen(cheese));	// mental note
-	!get_cheese.
+	!get_cheese1.
 	
++freeCheese <-
+	+perceived(freeCheese);
+	!get_cheese2.
+	
++wasFlattered <-
+	.print("was flattered");
+	+perceived(wasFlattered);
+	!bragging. 
  
 +self(has_purpose) <-
 	.suspend(default_activity).
@@ -101,11 +109,20 @@ wish(sitAround).
 /***** Plans  *******************************/
 /********************************************/
 
-+!get_cheese: perceived(seen(cheese)) <-
++!get_cheese1: perceived(seen(cheese)) <-
 	+self(has_purpose);
 	!flatter(crow);
+	-self(has_purpose). 
+	
++!get_cheese2: perceived(freeCheese) <-
+	+self(has_purpose);
 	!pickUpCheese(cheese);
-	-self(has_purpose). 	
+	-self(has_purpose).
+	
++!bragging: perceived(wasFlattered) <-
+	+self(has_purpose);
+	!sing;
+	-self(has_purpose).
 
 /********************************************/
 /*****      Action Execution Goals **********/
