@@ -114,7 +114,8 @@ public class StoryworldAgent {
 		// into ASL side?
 		this.environment.addEventPerception(name,
 												String.format("received(%s)[emotion(gratitude, %s)]", item.literal(), this.name));
-		logger.info(this.name + " received some " + item.literal() + ".");
+		//logger.info(this.name + " received some " + item.literal() + ".");
+		logger.info(this.name + " received some " + item.getItemName() + ".");
 		return true;
 	}
 

@@ -39,7 +39,7 @@ public class CrowModel extends Model {
 		
 		if((!cheeseSeen) && (this.actionCount >= 3) && (agent.name == "fox")) {
 			this.cheeseSeen = true;
-			this.environment.addEventPerception(agent.name, "seen(cheese)");
+			this.environment.addEventPerception(agent.name, "seen(cheese)[emotion(joy)]");
 			logger.info(agent.name + " saw cheese");
 		}
 		
@@ -48,8 +48,24 @@ public class CrowModel extends Model {
 	
 	public boolean sitAround(StoryworldAgent agent) {
 		
-		logger.info(agent.name + "sat around");
+		logger.info(agent.name + " sat around");
 		return agent.relax();
+	}
+	
+	public boolean askForCheese(StoryworldAgent asking, StoryworldAgent asked) {
+		
+		this.environment.addEventPerception(asked.name, " wasAsked");
+		
+		logger.info(asking.name + " asked"  + asked.name + " for Cheese");
+		
+		return true;
+	}
+	
+	public boolean answerNegatively(StoryworldAgent asked, StoryworldAgent asking) {
+		
+		this.environment.addEventPerception(asking.name, "wasAnsweredNegatively[emotion(anger)]");
+		logger.info(asked.name + " answered"  + asking.name + " negatively");
+		return true;
 	}
 	
 	
@@ -127,7 +143,8 @@ public class CrowModel extends Model {
 		@Override
 		public String literal() {
 			// TODO Auto-generated method stub
-			return null; 
+			return null;
+			
 		}
 	}
 }

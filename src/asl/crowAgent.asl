@@ -42,18 +42,30 @@ wish(sitAround).
 	
 
 +seen(cheese) <-					// the belief seen(cheese)
-	.print("in seen cheese");	// TODO delete
+	.print(" seen cheese");	// TODO delete
 	+perceived(seen(cheese));	// mental note
-	!get_cheese1.
+	!get_cheese_from_animal.
 	
 +freeCheese <-
 	+perceived(freeCheese);
-	!get_cheese2.
+	!get_cheese_from_ground.
 	
 +wasFlattered <-
 	.print("was flattered");
 	+perceived(wasFlattered);
 	!bragging. 
+	
++wasAsked <-
+	.print("was asked");
+	+perceived(wasAsked);
+	!answer_cheese_request.
+	//.abolish(_[perception(wasAsked)]).
+	
++wasAnsweredNegatively <-
+	.print("was answered negatively");
+	+perceived(wasAnsweredNegatively);
+	!get_cheese_from_animal.
+	
  
 +self(has_purpose) <-
 	.suspend(default_activity).
@@ -109,12 +121,37 @@ wish(sitAround).
 /***** Plans  *******************************/
 /********************************************/
 
-+!get_cheese1: perceived(seen(cheese)) <-
+
+@get_cheese_from_animal_1[affect(and(personality(agreeableness,low),not(mood(pleasure,high))))]
++!get_cheese_from_animal: perceived(seen(cheese)) <-
 	+self(has_purpose);
 	!flatter(crow);
-	-self(has_purpose). 
+	-self(has_purpose).
 	
-+!get_cheese2: perceived(freeCheese) <-
+	
+@get_cheese_from_animal_2[affect(and(not(personality(agreeableness,low)),(mood(pleasure,high))))]
++!get_cheese_from_animal: perceived(seen(cheese)) <-
+	+self(has_purpose);
+	!askForCheese(crow);
+	-self(has_purpose).
+	
+	
+	@get_cheese_from_animal_3[affect(and(not(personality(agreeableness,low)),not(mood(pleasure,high))))]
++!get_cheese_from_animal: perceived(seen(cheese)) <-
+	+self(has_purpose);
+	!flatter(crow);
+	-self(has_purpose).
+	
+	
+	@get_cheese_from_animal_4[affect(and((personality(agreeableness,low)),(mood(pleasure,high))))]
++!get_cheese_from_animal: perceived(seen(cheese)) <-
+	+self(has_purpose);
+	!askForCheese(crow);
+	-self(has_purpose).
+	 
+	 
+	
++!get_cheese_from_ground: perceived(freeCheese) <-
 	+self(has_purpose);
 	!pickUpCheese(cheese);
 	-self(has_purpose).
@@ -123,6 +160,20 @@ wish(sitAround).
 	+self(has_purpose);
 	!sing;
 	-self(has_purpose).
+	
+@answer_cheese_request_1[affect(and(personality(agreeableness,low)))]
++!answer_cheese_request: perceived(wasAsked) | perceived(wasAnsweredNegatively) <-
+	+self(has_purpose);
+	!answerNegatively(fox);
+	-self(has_purpose).	
+	
+@answer_cheese_request_2[affect(and(personality(agreeableness,high)))]
++!answer_cheese_request: perceived(wasAsked) | perceived(wasAnsweredNegatively) <-
+	+self(has_purpose);
+	!share(cheese,fox);
+	-self(has_purpose).	
+	
+
 
 /********************************************/
 /*****      Action Execution Goals **********/
@@ -137,9 +188,20 @@ wish(sitAround).
 +!flatter(Anims) <-
 	flatter(Anims).
 	
++!askForCheese(Anims) <-
+	askForCheese(Anims).
+		
 +!sing <-
 	sing.
 	
 +!pickUpCheese(cheese) <-
 	pickUpCheese(cheese).
+	
++!answerNegatively(Anims) <-
+	answerNegatively(Anims).
+	
++!share(X, Anims) <-
+	share(X, Anims). 
+
+
 	
