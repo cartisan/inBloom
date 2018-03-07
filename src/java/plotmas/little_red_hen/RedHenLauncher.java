@@ -23,9 +23,9 @@ public class RedHenLauncher extends PlotLauncher {
         
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
 							runner.new LauncherAgent("hen",					  // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
-//									new Personality(0,  1,  0.7,  0.3, 0.15)    //punishment
+									new Personality(0,  1,  0.7,  0.3, 0.15)    //punishment
 //									new Personality(0,  1,  0.7,  0.3, -0.8)    //low neurot --> no punishment
-									new Personality(0,  1,  0.7,  0.7, -0.8)    //high aggrea --> sharing
+//									new Personality(0,  1,  0.7,  0.7, -0.8)    //high aggrea --> sharing
 									
 //									new Personality(0, -1,  0.7,  0.3, 0.15)    //low consc --> no plot
 									

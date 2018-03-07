@@ -80,7 +80,8 @@ public class StoryworldAgent {
 			Item item = this.get(itemType);
 			receiver.receive(item, this);
 			this.environment.addEventPerception(name,
-					String.format("shared(%s,%s)[emotion(pride, self)]", item.literal(), receiver.name));
+					String.format("shared(%s,%s)" + Model.addTargetedEmotion("pride", "self"),
+								  item.literal(), receiver.name));
 			return true;
 		}
 		
@@ -95,11 +96,15 @@ public class StoryworldAgent {
 				receiver.receive(item, this);
 			}
 			
-			String recList = receivers.stream().map(rec -> rec.name).collect(Collectors.joining(",", "[", "]")).toString();
-			this.environment.addEventPerception(name,
-					String.format("share(%s,%s)[emotion(pride, self)]", item.literal(), recList));
-			logger.info(this.name + " shared some " + item.literal() + ".");
+			String recList = receivers.stream().map(rec -> rec.name)
+											   .collect(Collectors.joining(",", "[", "]"))
+											   .toString();
 			
+			this.environment.addEventPerception(name,
+					String.format("share(%s,%s)" + Model.addTargetedEmotion("pride", "self"),
+								  item.literal(), recList));
+			
+			logger.info(this.name + " shared some " + item.literal() + ".");
 			
 			return true;
 		}
@@ -110,11 +115,12 @@ public class StoryworldAgent {
 	public boolean receive(Item item, StoryworldAgent from) {
 		this.addToInventory(item);
 		
-		// TODO: this emotion might depend on properties of object, in which case its deliberative and should go
-		// into ASL side?
 		this.environment.addEventPerception(name,
-												String.format("receive(%s)[emotion(gratitude, %s)]", item.literal(), this.name));
+				String.format("receive(%s)" + Model.addTargetedEmotion("gratitude", "self"),
+							  item.literal(), this.name));
+		
 		logger.info(this.name + " received some " + item.literal() + ".");
+	
 		return true;
 	}
 
@@ -125,7 +131,7 @@ public class StoryworldAgent {
 			if (item.isEdible()) {
 				this.removeFromInventory(item);
 				this.environment.addEventPerception(name, 
-														String.format("eat(%s)[emotion(satisfaction)]", item.literal()));
+						String.format("eat(%s)" + Model.addEmotion("satisfaction"), item.literal()));
 				
 				// in theory: here double dispatch
 				// so food can affect agent in specific
@@ -140,7 +146,7 @@ public class StoryworldAgent {
 	}
 	
 	public boolean relax() {
-		this.environment.addEventPerception(name, "relax[emotion(joy)]");
+		this.environment.addEventPerception(name, "relax" + Model.addEmotion("joy"));
 		return true;
 	}
 

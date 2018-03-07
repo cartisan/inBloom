@@ -46,7 +46,6 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
     	return (System.nanoTime() - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
     }
     
-    
     protected DomainModel model;
     
     /**
