@@ -3,12 +3,6 @@
 /*****      Common sense beliefs ************/
 /********************************************/
 
-is_work(plant(_)).
-is_work(tend(_)).
-is_work(harvest(_)).
-is_work(grind(_)).
-is_work(bake(_)).
-
 is_pleasant(eat(cheese)).
 
 obligation(walkAround).
@@ -135,18 +129,17 @@ wish(sitAround).
 /*	-self(has_purpose).	*/
 	
 	
-	@get_cheese_from_animal_3[affect(and(not(personality(agreeableness,low)),not(mood(pleasure,high))))]
+@get_cheese_from_animal_3[affect(and(not(personality(agreeableness,low)),not(mood(pleasure,high))))]
 +!get_cheese_from_animal: perceived(seen(cheese)) <-
 	+self(has_purpose);
 	!flatter(crow).
 	
 	
-	@get_cheese_from_animal_4[affect(and((personality(agreeableness,low)),(mood(pleasure,high))))]
+@get_cheese_from_animal_4[affect(and((personality(agreeableness,low)),(mood(pleasure,high))))]
 +!get_cheese_from_animal: perceived(seen(cheese)) <-
 	+self(has_purpose);
-	!askForCheese(crow);
-	-self(has_purpose).	 
-	 
+	!askForCheese(crow).
+
 	
 +!get_cheese_from_ground: perceived(freeCheese) <-
 	!pickUpCheese(cheese);
