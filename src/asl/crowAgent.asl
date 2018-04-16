@@ -3,12 +3,6 @@
 /*****      Common sense beliefs ************/
 /********************************************/
 
-is_work(plant(_)).
-is_work(tend(_)).
-is_work(harvest(_)).
-is_work(grind(_)).
-is_work(bake(_)).
-
 is_pleasant(eat(cheese)).
 
 evil_plan(peek_around_for_cheese).
