@@ -1,5 +1,8 @@
 package plotmas.crow;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
@@ -18,6 +21,8 @@ public class CrowLauncher extends PlotLauncher {
 		        new Personality(0, 1, 0, -1, 0)
 		      ),
 		      runner.new LauncherAgent("fox",
+		    	Arrays.asList("hungry"),		//beliefs
+		    	new LinkedList<String>(),		//goals
 				new Personality(0, 1, 0, 1, 0)
 				      )
 		      

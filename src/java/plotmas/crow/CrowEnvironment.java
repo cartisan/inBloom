@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import jason.asSyntax.ListTermImpl;
-import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import plotmas.PlotEnvironment;
@@ -59,6 +58,7 @@ public class CrowEnvironment extends PlotEnvironment<CrowModel> {
 		}
 		
 		if (action.getFunctor().equals("answerNegatively")) {
+			logger.info("in env, asnwerNegativeley");
 			Term receiverTerm = action.getTerm(0);
 
 			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
@@ -90,6 +90,12 @@ public class CrowEnvironment extends PlotEnvironment<CrowModel> {
     			
     		}
     	}
+		
+
+		if (action.getFunctor().equals("eat")) {
+    		String item = action.getTerm(0).toString();
+    		result = agent.eat(item);
+		}
 		
 		pauseOnRepeat(agentName, action);
 		return result;

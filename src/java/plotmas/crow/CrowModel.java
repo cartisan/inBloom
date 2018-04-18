@@ -35,7 +35,6 @@ public class CrowModel extends Model {
 	
 	public boolean walkAround(StoryworldAgent agent){
 		this.actionCount +=1;
-		logger.info("Someone was walking around");
 		
 		if((!cheeseSeen) && (this.actionCount >= 3) && (agent.name == "fox")) {
 			this.cheeseSeen = true;
@@ -47,39 +46,32 @@ public class CrowModel extends Model {
 	}
 	
 	public boolean sitAround(StoryworldAgent agent) {
-		
-		logger.info(agent.name + " sat around");
-		return agent.relax();
+		//agent.relax();
+		return true;
 	}
 	
 	public boolean askForCheese(StoryworldAgent asking, StoryworldAgent asked) {
-		
-		this.environment.addEventPerception(asked.name, " wasAsked");
-		
-		logger.info(asking.name + " asked"  + asked.name + " for Cheese");
-		
+		logger.info(asking.name + " asked "  + asked.name + " for Cheese");
+		this.environment.addEventPerception(asked.name, "wasAsked");
 		return true;
 	}
 	
 	public boolean answerNegatively(StoryworldAgent asked, StoryworldAgent asking) {
-		
-		this.environment.addEventPerception(asking.name, "wasAnsweredNegatively[emotion(anger)]");
 		logger.info(asked.name + " answered"  + asking.name + " negatively");
+		this.environment.addEventPerception(asking.name, "wasAnsweredNegatively[emotion(anger)]");
 		return true;
 	}
 	
 	
 	public boolean flatter(StoryworldAgent flatterer, StoryworldAgent flattered) {
-		
+		logger.info(flatterer.name + " flattered " + flattered.name);
 		this.environment.addEventPerception(flattered.name, "wasFlattered[emotion(joy)]");
 		
-		logger.info(flatterer.name + "flattered " + flattered.name);
-		
 		if(flatterer.has("cheese")) {
-		Cheese cheeseItem = (Cheese) flatterer.get(Cheese.itemName);
-		flatterer.removeFromInventory(cheeseItem);
-		this.environment.addEventPerception(flatterer.name, "wasFlattered[emotion(shame)]");
-		logger.info(flatterer.name + "lost cheese");
+			Cheese cheeseItem = (Cheese) flatterer.get(Cheese.itemName);
+			flatterer.removeFromInventory(cheeseItem);
+			this.environment.addEventPerception(flatterer.name, "wasFlattered[emotion(shame)]");
+			logger.info(flatterer.name + "lost cheese");
 		}
 		return true;
 	}
@@ -110,17 +102,18 @@ public class CrowModel extends Model {
 	
 	public boolean sing(StoryworldAgent singer) {
 		this.environment.addEventPerception(singer.name, "sang[emotion(joy)]");
-		logger.info(singer.name + "sang");
+		logger.info(singer.name + " sang");
 		
-		if( singer.has("cheese")) {
+		if(singer.has("cheese")) {
 			singer.removeFromInventory(this.cheese);
-			//this.environment.addEventPerception(singer.name, "lostCheese[emotion(shame)]");
+			logger.info(singer.name + " lost cheese");
+
 			for(StoryworldAgent agent: this.agents.values()) {
 				if(agent != singer){
+					logger.info(agent + " saw cheese fall");
 					this.environment.addEventPerception(agent.name, "freeCheese");
 				}
 			}
-			logger.info(singer.name + "lost cheese");
 		}
 		return true;
 	
@@ -133,17 +126,20 @@ public class CrowModel extends Model {
 	
 	public class Cheese extends Item {
 		static final String itemName = "cheese";
+		
+		@Override
+		public boolean isEdible() {
+			return true;
+		}
 
 		@Override
 		public String getItemName() {
-			// TODO Auto-generated method stub
 			return itemName;
 		}
 
 		@Override
 		public String literal() {
-			// TODO Auto-generated method stub
-			return null;
+			return "cheese";
 			
 		}
 	}
