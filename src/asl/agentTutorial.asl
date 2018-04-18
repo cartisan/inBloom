@@ -1,18 +1,13 @@
 // Goal
-!clean_all. 
-                  // initial goal
-
+!addition.
 
 // Belief Update Rules
-
-
++sum(X) <-
+	.print("I perceive a result");	// print is an internal action provided by Jason, hence the dot at the beginning	
+	.print("Sum of 2+4 =", X).
 
 // Plans
-
-+!clean_all <- clean; !move; !clean_all.
-
-+!move:position(0)  <- right.
-+!move:position(1)  <- down.
-+!move:position(2)  <- left.
-+!move:position(3)  <- up.
-
++!addition <-
+	.print("Started adding");
+	add(2,4);						// call environment action
+	.print("Finished adding").
