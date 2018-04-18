@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 import jason.architecture.AgArch;
 import jason.asSyntax.Literal;
-import plotmas.graph.PlotGraph;
+import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
 
 /**
@@ -26,7 +26,7 @@ public class PlotAwareAgArch extends AgArch {
 
         for(Literal p:perceptions.orElse(new LinkedList<Literal>())) {
         	if(!(null == p.getAnnot("emotion"))) {
-	    		PlotGraph.getPlotListener().addEvent(name, p.toString(), Vertex.Type.PERCEPT);
+	    		PlotGraphController.getPlotListener().addEvent(name, p.toString(), Vertex.Type.PERCEPT);
 	            logger.info(name + " - added perception: " + p.toString());
         	}
         }

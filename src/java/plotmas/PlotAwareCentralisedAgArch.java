@@ -7,7 +7,7 @@ import jason.asSemantics.Message;
 import jason.infra.centralised.BaseCentralisedMAS;
 import jason.infra.centralised.CentralisedAgArch;
 import jason.infra.centralised.MsgListener;
-import plotmas.graph.PlotGraph;
+import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
 
 /**
@@ -21,11 +21,10 @@ public class PlotAwareCentralisedAgArch extends CentralisedAgArch {
     public void sendMsg(Message m) throws ReceiverNotFoundException {
         // insert message send into plot graph before message is actually send, 
     	// necessary because super.sendMsd calls receiveMsg and sometimes results in race conditions in plot graph
-    	Vertex senderV = PlotGraph.getPlotListener().addMsgSend(m);
+    	Vertex senderV = PlotGraphController.getPlotListener().addMsgSend(m);
     	
     	// actually send the message
         if (m.getSender() == null)  m.setSender(getAgName());
-        
         PlotAwareCentralisedAgArch rec = (PlotAwareCentralisedAgArch) BaseCentralisedMAS.getRunner().getAg(m.getReceiver());
             
         if (rec == null) {
@@ -44,7 +43,7 @@ public class PlotAwareCentralisedAgArch extends CentralisedAgArch {
     }
     
     public void receiveMsg(Message m, Vertex senderV) {
-    	PlotGraph.getPlotListener().addMsgReceive(m, senderV);
+    	PlotGraphController.getPlotListener().addMsgReceive(m, senderV);
 
     	//actually receive the message
         super.receiveMsg(m);

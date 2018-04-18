@@ -6,7 +6,7 @@ import jason.JasonException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Mood;
-import plotmas.graph.PlotGraph;
+import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
 import plotmas.helper.MoodMapper;
 
@@ -28,14 +28,12 @@ public class PlotAwareAg extends AffectiveAgent {
         this.name = this.getTS().getUserAgArch().getAgName();
     }
         
-        
-        
 	@Override
     public void addEmotion(Emotion emotion, String type) throws JasonException {
         super.addEmotion(emotion, type);
         
         // add emotion to plot graph
-        PlotGraph.getPlotListener().addEvent(this.name, emotion.toLiteral().toString(), Vertex.Type.EMOTION);
+        PlotGraphController.getPlotListener().addEvent(this.name, emotion.toLiteral().toString(), Vertex.Type.EMOTION);
         logger.info(this.name + " - appraised emotion: " + emotion.toLiteral().toString());
     }
 	

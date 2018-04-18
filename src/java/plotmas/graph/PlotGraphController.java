@@ -23,13 +23,14 @@ import plotmas.PlotLauncher.LauncherAgent;
 /**
  * Responsible for maintaining and visualizing the graph that represents the emergent plot of the narrative universe.
  * Class provides an instance: <i>plotListener</i>, which is accessible throughout plotmas for saving plot-relevant
- * events. 
+ * events. In order to open a JFrame with the graph call the  non-static 
+ * {@link #visualizeGraph(boolean) visualizeGraph} method.
  * @author Leonid Berov
  */
-public class PlotGraph {
+public class PlotGraphController {
     
-    static Logger logger = Logger.getLogger(PlotGraph.class.getName());
-	private static PlotGraph plotListener = null;
+    static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
+	private static PlotGraphController plotListener = null;
 	public static Color BGCOLOR = Color.WHITE;
 	private static JFrame frame;
 
@@ -37,15 +38,30 @@ public class PlotGraph {
 	private PlotDirectedSparseGraph graph; 
 	
 	
-	public static PlotGraph getPlotListener() {
+	/**
+	 * System-wide method for getting access to the active PlotGraph instance that collects events
+	 * and is used for drawing the graph.
+	 * @return an instance of PlotGraph
+	 */
+	public static PlotGraphController getPlotListener() {
 		return plotListener;
 	}
 
+	/**
+	 * Initializes the mapping of plot events using this class by creating an instance and setting up
+	 * up a graph with subgraphs for each character.
+	 * @param characters a collection of all acting character agents
+	 */
 	public static void instantiatePlotListener(Collection<LauncherAgent> characters) {
-		PlotGraph.plotListener = new PlotGraph(characters);
+		PlotGraphController.plotListener = new PlotGraphController(characters);
 	}
 	
-	public static JFrame visualizeGraph(PlotDirectedSparseGraph g) {
+	/**
+	 * Helper method that allows the plotting of arbitrary instances of plot graphs.
+	 * @param g an instance of {@link PlotDirectedSparseGraph} to be drawn and opened in a JFrame
+	 * @return
+	 */
+	private static JFrame visualizeGraph(PlotDirectedSparseGraph g) {
 		// Maybe just implement custom renderer instead of all the transformers?
 		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
 		
@@ -77,13 +93,13 @@ public class PlotGraph {
 		GraphZoomScrollPane scrollPane= new GraphZoomScrollPane(vv);
 
 		String[] name = g.getClass().toString().split("\\.");
-		PlotGraph.frame = new JFrame(name[name.length-1]);
+		PlotGraphController.frame = new JFrame(name[name.length-1]);
 
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		        	PlotGraph.frame.dispose();
-		        	PlotGraph.frame = null;
+		        	PlotGraphController.frame.dispose();
+		        	PlotGraphController.frame = null;
 		        }
 		    }
 		);
@@ -95,10 +111,15 @@ public class PlotGraph {
 		
 		frame.setVisible(true);
 		
-		return PlotGraph.frame;
+		return PlotGraphController.frame;
 	}
 	
-	public PlotGraph(Collection<LauncherAgent> characters) {
+	/**
+	 * Creates a new instance of {@link PlotDirectedSparseGraph}, which is used to capture new events.
+	 * Sets up a subgraphs for each character agent.
+	 * @param characters a collection of all acting character agents
+	 */
+	public PlotGraphController(Collection<LauncherAgent> characters) {
 		this.graph = new PlotDirectedSparseGraph();
 		
 		// set up a "named" tree for each character
@@ -132,7 +153,7 @@ public class PlotGraph {
 	
 	/**
 	 * Clones this.graph and conflates the copy to reduce redundant information. 
-	 * Removes from the graph: 
+	 * Conflation removes from the graph: 
 	 *   - perceptions that are reporting the results of an agent action
  	 *   - emotions that are caused by actions or perceptions
  	 * The removed emotions are incorporated into the vertex of causing
@@ -195,11 +216,17 @@ public class PlotGraph {
 		return cleanG;
 	}
 	
+	/**
+	 * Draws the current state of the plot graph in a JFrame. 
+	 * @param compress true if conflated view (more compact by applying {@link #postProcessThisGraph()}) is to be 
+	 * 	displayed
+	 * @return the displayed JFrame
+	 */
 	public JFrame visualizeGraph(boolean compress) {
 		if(compress)
-			return PlotGraph.visualizeGraph(this.postProcessThisGraph());
+			return PlotGraphController.visualizeGraph(this.postProcessThisGraph());
 		else 
-			return PlotGraph.visualizeGraph(this.graph);
+			return PlotGraphController.visualizeGraph(this.graph);
 	}
 	
 

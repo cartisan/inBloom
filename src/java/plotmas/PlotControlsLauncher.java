@@ -10,7 +10,7 @@ import javax.swing.JFrame;
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
 import plotmas.graph.MoodGraph;
-import plotmas.graph.PlotGraph;
+import plotmas.graph.PlotGraphController;
 
 /**
  * Encapsulates the changes to the Jason GUI that are needed by {@link PlotLauncher}. Doesn't provide any 
@@ -42,7 +42,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 		this.pauseExecution();
 		
 		// create and visualize plot graph
-		this.plotGraph = PlotGraph.getPlotListener().visualizeGraph(COMPRESS_GRAPH);
+		this.plotGraph = PlotGraphController.getPlotListener().visualizeGraph(COMPRESS_GRAPH);
 		
 		// create and visualize mood graph
 		MoodGraph.getMoodListener().createData();

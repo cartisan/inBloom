@@ -17,7 +17,7 @@ import jason.bb.DefaultBeliefBase;
 import jason.infra.centralised.CentralisedAgArch;
 import jason.infra.centralised.RConf;
 import jason.mas2j.AgentParameters;
-import plotmas.graph.PlotGraph;
+import plotmas.graph.PlotGraphController;
 import plotmas.helper.PlotFormatter;
 
 /**
@@ -48,8 +48,8 @@ public class PlotLauncher extends PlotControlsLauncher {
     
     
     /** 
-     * This copies the functionality of the super class, but inserts the PlotAwareCentralisedAgentArch to enable
-     * the proper representation of messages in the plot graph.
+     * This implements the functionality of the super class, but inserts {@link PlotAwareCentralisedAgentArch}
+     * to enable the proper representation of messages in the plot graph.
      * @see jason.infra.centralised.RunCentralisedMAS#createAgs()
      * @see plotmas.PlotAwareCentralisedAgentArch
      */
@@ -254,7 +254,7 @@ public class PlotLauncher extends PlotControlsLauncher {
         }
         
         
-		PlotGraph.instantiatePlotListener(agents);
+		PlotGraphController.instantiatePlotListener(agents);
         
 		this.createMas2j(agents, agentFileName);
 		this.init(defArgs);

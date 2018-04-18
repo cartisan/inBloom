@@ -13,7 +13,7 @@ import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
 
 /**
  * Maintains a number of functions that transform the visual appearance of nodes and vertices based on their type.
- * Is employed by {@link PlotGraph} during {@link PlotGraph#visualizeGraph() visualizeGraph()} in order to set up its 
+ * Is employed by {@link PlotGraphController} during {@link PlotGraphController#visualizeGraph() visualizeGraph()} in order to set up its 
  * {@link edu.uci.ics.jung.visualization.VisualizationViewer VisualizationViewer} instance.
  * @author Leonid Berov
  */
@@ -68,7 +68,7 @@ public class Transformers {
         public Paint apply(Vertex v){ 
         	switch (v.getType()) {
 	        	case ROOT:
-	        		return PlotGraph.BGCOLOR;
+	        		return PlotGraphController.BGCOLOR;
 	        	case SPEECHACT:
 	        		return Color.getHSBColor(Float.valueOf("0"), Float.valueOf("0"), Float.valueOf("0.95"));
 	        	case LISTEN:
@@ -83,7 +83,7 @@ public class Transformers {
         public Paint apply(Vertex v){ 
         	switch (v.getType()) {
 	        	case ROOT:
-	        		return PlotGraph.BGCOLOR;
+	        		return PlotGraphController.BGCOLOR;
         		default:
         			return Color.BLACK;
         	}
@@ -99,7 +99,7 @@ public class Transformers {
     	public Paint apply(Edge e) {
         	switch (e.getType()) {
         	case ROOT:
-        		return PlotGraph.BGCOLOR;
+        		return PlotGraphController.BGCOLOR;
         	case COMMUNICATION:
         		return Color.LIGHT_GRAY;
     		default:

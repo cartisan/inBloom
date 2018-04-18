@@ -29,6 +29,10 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> i
 	private HashMap<String, Vertex> lastVertexMap = new HashMap<>();			// maps: agentName --> vertex
 	private Table<String, String, Vertex> senderMap = HashBasedTable.create();	// maps: agentName, message --> vertex
 
+    /**
+     * Returns a list of nodes that represent the roots of each character subgraph.
+     * @return
+     */
     public List<Vertex> getRoots() {
 		if (roots.size() > 0) {
 			return roots;
@@ -84,9 +88,8 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> i
 	}
 	
 	/**
-	 * Returns vertice, that is successors in a plot sense,
-	 * i.e. vertices that pertain to the same character column.This excludes
-	 * vertices connected by communication edges.
+	 * Returns vertice, that is successors in a plot sense, i.e. vertices that pertain to the same character column.
+	 * This excludes vertices connected by communication edges.
 	 * @param vertex for which char-successor is sought
 	 * @return successor vertex if present, or null
 	 */
@@ -102,6 +105,11 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> i
         return null;
     }
 	
+	/**
+	 * Returns the subgraph of a character, i.e. all vertices connected to a certain root node.
+	 * @param root
+	 * @return
+	 */
 	public List<Vertex> getCharSubgraph(Vertex root) {
 		List<Vertex> succs = new LinkedList<Vertex>();
 
@@ -146,6 +154,12 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> i
 	    return dest;
 	}
 	
+	/**
+	 * Removes a vertex from this graph and connects its successor with the provided predecessor. This is necessary,
+	 * in case several predecessors of {@code toRemove} are to be removed as well.
+	 * @param toRemove vertex instance to be removed
+	 * @param lastV vertex instance that should be used as predecessor
+	 */
 	public void removeVertexAndPatchGraph(Vertex toRemove, Vertex lastV) {
 		// patch up hole from removal
 		Vertex nextV = this.getCharSuccessor(toRemove);
