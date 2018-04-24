@@ -3,12 +3,6 @@
 /*****      Common sense beliefs ************/
 /********************************************/
 
-is_work(plant(_)).
-is_work(tend(_)).
-is_work(harvest(_)).
-is_work(grind(_)).
-is_work(bake(_)).
-
 is_pleasant(eat(cheese)).
 
 evil_plan(peek_around_for_cheese).
@@ -50,8 +44,10 @@ neutral_behavior(sitAround).
 	!get_cheese2.
 	
 +wasFlattered <-
+	.suspend(default_activity);
 	+perceived(wasFlattered);
-	!bragging. 
+	!bragging;
+	.resume(default_activity).
  
 +self(has_purpose) <-
 	.suspend(default_activity).
@@ -103,21 +99,16 @@ neutral_behavior(sitAround).
 // Perform an evil plan to get the cheese if "anti-social" tendencies
 @flatter_somebody[affect(personality(conscientiousness, low))]
 +!get_cheese1: perceived(seen(cheese)) <-
-	+self(has_purpose);
-	!flatter(crow);
-	-self(has_purpose).
+	!flatter(crow).
+
 	
 +!get_cheese2: perceived(freeCheese) <-
-	+self(has_purpose);
-	!pickUpCheese(cheese);
-	-self(has_purpose).
+	!pickUpCheese(cheese).
 
 // Start singing when you were flattered and you are extraverted and in a good mood
 @start_singing[affectand((personality(extraversion,positive)),mood(pleasure,high))]
 +!bragging: perceived(wasFlattered) <-
-	+self(has_purpose);
-	!sing;
-	-self(has_purpose).
+	!sing.
 
 /********************************************/
 /*****      Action Execution Goals **********/
