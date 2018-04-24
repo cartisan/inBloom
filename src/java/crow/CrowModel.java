@@ -98,7 +98,7 @@ public class CrowModel extends Model {
 		if( singer.has("cheese")) {
 			singer.removeFromInventory(this.cheese);
 			this.freeCheese = true;
-			//this.environment.addEventPerception(singer.name, "lostCheese[emotion(shame)]");
+			this.environment.addEventPerception(singer.name, "lostCheese[emotion(shame)]");
 //			for(StoryworldAgent agent: this.agents.values()) {
 //				if(agent != singer){
 //					this.environment.addEventPerception(agent.name, "freeCheese");

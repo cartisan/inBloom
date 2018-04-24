@@ -45,7 +45,7 @@ neutral_behavior(sitAround).
 	+perceived(seen(cheese));	// mental note
 	!get_cheese1.
 	
-+freeCheese <-
++freeCheese <-						// mental noes bleiben erhalten
 	+perceived(freeCheese);
 	!get_cheese2.
 	
