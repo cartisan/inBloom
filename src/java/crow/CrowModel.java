@@ -87,7 +87,7 @@ public class CrowModel extends Model {
 			
 			this.environment.addEventPerception(picker.name, "missedCheese[emotion(anger)]");
 			logger.info(picker.name + "failed to pick up cheese");
-			return false;
+			return true;
 		}
 	}
 	
@@ -98,7 +98,12 @@ public class CrowModel extends Model {
 		
 		if( singer.has("cheese")) {
 			singer.removeFromInventory(this.cheese);
-			this.environment.addEventPerception(singer.name, "lostCheese[emotion(shame)]");
+			//this.environment.addEventPerception(singer.name, "lostCheese[emotion(shame)]");
+			for(StoryworldAgent agent: this.agents.values()) {
+				if(agent != singer){
+					this.environment.addEventPerception(agent.name, "freeCheese");
+				}
+			}
 			logger.info(singer.name + "lost cheese");
 		}
 		return true;
