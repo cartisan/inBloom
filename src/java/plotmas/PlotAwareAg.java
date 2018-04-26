@@ -1,11 +1,17 @@
 package plotmas;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import jason.JasonException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Mood;
+import jason.asSemantics.Option;
+import jason.asSemantics.Unifier;
+import jason.asSyntax.Plan;
+import jason.asSyntax.PlanBody;
+import jason.asSyntax.Trigger;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
 import plotmas.helper.MoodMapper;
@@ -26,6 +32,44 @@ public class PlotAwareAg extends AffectiveAgent {
     public void initAg() {
         super.initAg();
         this.name = this.getTS().getUserAgArch().getAgName();
+    }
+    
+    @Override
+    public Option selectOption(List<Option> options) {
+        Option o = super.selectOption(options);
+        if(o != null) {
+        	Plan unifiedPlan = o.getPlan().capply(o.getUnifier());
+        	String planString = parsePlan(unifiedPlan);
+        	if(planString.contains("!") && !isPlanRecursive(unifiedPlan, o.getUnifier().clone())) { // o.getUnifier() vs new Unifier()
+        		PlotGraphController.getPlotListener().addEvent(this.name, planString, Vertex.Type.INTENTION);
+        	}
+        }
+        return o;
+    }
+    
+    /*
+     * Checks whether a plan body contains a goal which unifies with the plan trigger.
+     */
+    private boolean isPlanRecursive(Plan plan, Unifier u) {
+    	PlanBody pb = plan.getBody();
+    	while(pb != null) {
+    		switch(pb.getBodyType()) {
+    			case achieve:
+    			case achieveNF:
+    				if(u.unifies(plan.getTrigger().getTerm(1), pb.getBodyTerm())) { // plan.getTrigger().getTerm(1) = trigger without +!
+    					return true;
+    				}
+    				break;
+    			default:
+    				break;
+    		}
+    		pb = pb.getBodyNext();
+    	}
+    	return false;
+    }
+    
+    private String parsePlan(Plan plan) {
+    	return plan.getTrigger().toString().substring(1);
     }
         
 	@Override

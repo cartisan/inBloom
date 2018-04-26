@@ -19,7 +19,7 @@ public class Vertex implements Cloneable {
 	//removes annotations from literal-style stings
 	public static Pattern NO_ANNOT_PATTERN = Pattern.compile("(.+?\\(.+?\\))");
 	
-	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, LISTEN, PERCEPT }
+	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, LISTEN, PERCEPT, INTENTION }
 
 	private String id;
 	private String label;
@@ -100,12 +100,12 @@ public class Vertex implements Cloneable {
 		String result = this.getLabel();
 		
 		switch(this.type) {
-		case SPEECHACT:	result = "SPEECH>>" + result;
+//		case SPEECHACT:	result = "SPEECH>>" + result;
+//						result = appendEmotions(result);
+//						break;
+		case LISTEN:	/*result = "LISTEN<<" + result;
 						result = appendEmotions(result);
-						break;
-		case LISTEN:	result = "LISTEN<<" + result;
-						result = appendEmotions(result);
-						break;
+						break;*/
 		case PERCEPT: 	Matcher m = NO_ANNOT_PATTERN.matcher(result);
 				        if (m.find())
 				            result = "+" + m.group(1);

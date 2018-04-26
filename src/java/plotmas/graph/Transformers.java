@@ -46,12 +46,15 @@ public class Transformers {
         	switch (v.getType()) {
         		case SPEECHACT:
         			return factory.getRoundRectangle(v);
-        		case LISTEN:
-        			return factory.getRoundRectangle(v);
+//        		case LISTEN:
+//        			return factory.getRoundRectangle(v);
         		case EMOTION:
         			return factory.getRectangle(v);
+        		case LISTEN:
         		case PERCEPT:
         			return factory.getRectangle(v);
+        		case INTENTION:
+        			return factory.getRoundRectangle(v);
         		default:
         			return factory.getEllipse(v);
         	}	
@@ -102,6 +105,8 @@ public class Transformers {
         		return PlotGraphController.BGCOLOR;
         	case COMMUNICATION:
         		return Color.LIGHT_GRAY;
+        	case MOTIVATION:
+        		return Color.DARK_GRAY;
     		default:
     			return Color.BLACK;
         	}

@@ -168,7 +168,7 @@ wish(relax).
 	!grind(wheat);
 	!bake(bread);
 	-self(has_purpose). 	
-
+	
 // Reject helping others if "antisocial", but not feeling powerless
 @reject_request_1[affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]
 +!help_with(X)[source(Name)] : is_work(X) <-

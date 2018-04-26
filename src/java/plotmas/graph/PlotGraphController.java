@@ -142,12 +142,15 @@ public class PlotGraphController {
 	}
 	
 	public Vertex addMsgSend(Message m) {
-		Vertex senderV = this.graph.addMsgSend(m.getSender(), m.getPropCont().toString());
+		// Format message to intention format, i.e. "!performative(receiver, content)"
+		Vertex senderV = this.graph.addMsgSend(m.getSender(), "!" + m.getIlForce() + "(" + m.getReceiver() + ", " + m.getPropCont().toString() + ")");
 		return senderV;
 	}
 
 	public Vertex addMsgReceive(Message m, Vertex senderV) {
-		Vertex recV = this.graph.addMsgReceive(m.getReceiver(), m.getPropCont().toString(), senderV);
+		// Add an "!" to the content if message was an achieve performative
+		// "+", to have the percept format, is added in Vertex#toString
+		Vertex recV = this.graph.addMsgReceive(m.getReceiver(), (m.getIlForce().startsWith("achieve") ? "!" : "") + m.getPropCont().toString(), senderV);
 		return recV;
 	}
 	

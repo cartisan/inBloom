@@ -98,7 +98,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> i
             return null;
         
         for (Edge edge : getOutgoing_internal(vertex))
-        	if (edge.getType() != Edge.Type.COMMUNICATION) {
+        	if (edge.getType() != Edge.Type.COMMUNICATION && edge.getType() != Edge.Type.MOTIVATION) {
         		return this.getDest(edge);
         	}
         
