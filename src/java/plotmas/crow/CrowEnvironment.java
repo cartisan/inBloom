@@ -19,8 +19,6 @@ public class CrowEnvironment extends PlotEnvironment<CrowModel> {
 		super.initialize(agents);
 		CrowModel model = new CrowModel(agents, this);
 		this.setModel(model);
-
-
 	}
 
 	@Override

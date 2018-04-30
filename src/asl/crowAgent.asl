@@ -32,15 +32,15 @@ is_pleasant(eat(cheese)).
 	!eat(X).
 	
 
-+seen(cheese) <-					// the belief seen(cheese)
-	.print(" seen cheese");	// TODO delete
-	+perceived(seen(cheese));	// mental note
-	!!get_cheese_from_animal.
++seen(cheese) <-
+	.print(" seen cheese");	
+	+perceived(seen(cheese));
+	!get_cheese_from_animal.
 	
 +freeCheese <-
 	.print(" seen cheese fall on the ground");
 	+perceived(freeCheese);
-	!!get_cheese_from_ground.
+	!get_cheese_from_ground.
 	
 +wasFlattered <-
 	.print("was flattered");
@@ -93,22 +93,21 @@ is_pleasant(eat(cheese)).
 
 @get_cheese_from_animal_1[affect(not(mood(pleasure,high)))]
 +!get_cheese_from_animal: perceived(seen(cheese)) <-
+	+self(has_purpose);
 	.print("trying to get cheese by flattery");
-//	+self(has_purpose);
 	!flatter(crow).
-//	-self(has_purpose).
 	
 @get_cheese_from_animal_2[affect((mood(pleasure,high)))]
 +!get_cheese_from_animal: perceived(seen(cheese)) <-
 	.print("trying to get cheese by asking");
-//	+self(has_purpose);
+	+self(has_purpose);
 	!askForCheese(crow).
-//	-self(has_purpose).
 
 	
 +!get_cheese_from_ground: perceived(freeCheese) <-
 	.print("trying to pick up cheese");
-	!pickUpCheese.
+	!pickUpCheese;
+	-self(has_purpose).
 	
 +!bragging: perceived(wasFlattered) <-
 	.print("bragging");
