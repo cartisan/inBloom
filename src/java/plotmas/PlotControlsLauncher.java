@@ -10,7 +10,7 @@ import javax.swing.JFrame;
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
 import plotmas.graph.MoodGraph;
-import plotmas.graph.PlotGraph;
+import plotmas.graph.PlotGraphController;
 
 /**
  * Encapsulates the changes to the Jason GUI that are needed by {@link PlotLauncher}. Doesn't provide any 
@@ -19,6 +19,7 @@ import plotmas.graph.PlotGraph;
  */
 public class PlotControlsLauncher extends RunCentralisedMAS {
 	public static PlotLauncher runner = null;
+	protected static boolean COMPRESS_GRAPH = false;	// used to determine if PlotGraph should compressed before drawing
 	
 	private JButton pauseButton;
 	private JButton drawButton;
@@ -41,10 +42,10 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 		this.pauseExecution();
 		
 		// create and visualize plot graph
-		this.plotGraph = PlotGraph.getPlotListener().visualizeGraph();
+		this.plotGraph = PlotGraphController.getPlotListener().visualizeGraph(COMPRESS_GRAPH);
 		
 		// create and visualize mood graph
-		MoodGraph.getMoodListener().createGraph();
+		MoodGraph.getMoodListener().createData();
 		this.moodGraph = MoodGraph.getMoodListener().visualizeGraph();
 		
 		this.isDraw = true;

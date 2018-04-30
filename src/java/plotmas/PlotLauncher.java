@@ -11,8 +11,13 @@ import java.util.logging.Logger;
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
+import jason.asSemantics.Agent;
 import jason.asSemantics.Personality;
-import plotmas.graph.PlotGraph;
+import jason.bb.DefaultBeliefBase;
+import jason.infra.centralised.CentralisedAgArch;
+import jason.infra.centralised.RConf;
+import jason.mas2j.AgentParameters;
+import plotmas.graph.PlotGraphController;
 import plotmas.helper.PlotFormatter;
 
 /**
@@ -40,6 +45,113 @@ public class PlotLauncher extends PlotControlsLauncher {
 	protected static Class ENV_CLASS;
     static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
     static Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
+    
+    
+    /** 
+     * This implements the functionality of the super class, but inserts {@link PlotAwareCentralisedAgentArch}
+     * to enable the proper representation of messages in the plot graph.
+     * @see jason.infra.centralised.RunCentralisedMAS#createAgs()
+     * @see plotmas.PlotAwareCentralisedAgentArch
+     */
+    @Override
+    protected void createAgs() throws JasonException {
+        
+        RConf generalConf = RConf.fromString(project.getInfrastructure().getParameter(0));
+        
+        int nbAg = 0;
+        Agent pag = null;
+        
+        // create the agents
+        for (AgentParameters ap : project.getAgents()) {
+            try {
+                
+                String agName = ap.name;
+
+                for (int cAg = 0; cAg < ap.getNbInstances(); cAg++) {
+                    nbAg++;
+                    
+                    String numberedAg = agName;
+                    if (ap.getNbInstances() > 1) {
+                        numberedAg += (cAg + 1);
+                        // cannot add zeros before, it causes many compatibility problems and breaks dynamic creation 
+                        // numberedAg += String.format("%0"+String.valueOf(ap.qty).length()+"d", cAg + 1);
+                    }
+                    
+                    String nb = "";
+                    int    n  = 1;
+                    while (getAg(numberedAg+nb) != null)
+                        nb = "_" + (n++);
+                    numberedAg += nb;
+                    
+                    logger.fine("Creating agent " + numberedAg + " (" + (cAg + 1) + "/" + ap.getNbInstances() + ")");
+                    CentralisedAgArch agArch;
+                    
+                    RConf agentConf;
+                    if (ap.getOption("rc") == null) {
+                        agentConf = generalConf;
+                    } else {
+                        agentConf = RConf.fromString(ap.getOption("rc"));
+                    }                    
+                    
+                    // Get the number of reasoning cycles or number of cycles for each stage 
+                    int cycles           = -1; // -1 means default value of the platform
+                    int cyclesSense      = -1;
+                    int cyclesDeliberate = -1; 
+                    int cyclesAct        = -1;
+                    
+                    if (ap.getOption("cycles") != null) {
+                        cycles = Integer.valueOf(ap.getOption("cycles"));
+                    }
+                    if (ap.getOption("cycles_sense") != null) {
+                        cyclesSense = Integer.valueOf(ap.getOption("cycles_sense"));
+                    }
+                    if (ap.getOption("cycles_deliberate") != null) {
+                        cyclesDeliberate = Integer.valueOf(ap.getOption("cycles_deliberate"));
+                    }
+                    if (ap.getOption("cycles_act") != null) {
+                        cyclesAct = Integer.valueOf(ap.getOption("cycles_act"));
+                    }
+                    
+                    // Create agents according to the specific architecture
+                    if (agentConf == RConf.POOL_SYNCH) {
+//                        agArch = new CentralisedAgArchForPool();
+                    	throw new JasonException("This jason agent architecture is not supported by plotmas");
+                    } else if (agentConf == RConf.POOL_SYNCH_SCHEDULED) {
+                    	throw new JasonException("This jason agent architecture is not supported by plotmas");
+                    } else if  (agentConf == RConf.ASYNCH || agentConf == RConf.ASYNCH_SHARED_POOLS) {
+//                        agArch = new CentralisedAgArchAsynchronous();
+                    	throw new JasonException("This jason agent architecture is not supported by plotmas");
+                    } else {
+                        agArch = new PlotAwareCentralisedAgArch();
+                    }
+                    
+                    agArch.setCycles(cycles);
+                    agArch.setCyclesSense(cyclesSense);
+                    agArch.setCyclesDeliberate(cyclesDeliberate);
+                    agArch.setCyclesAct(cyclesAct);
+
+                    agArch.setConf(agentConf);
+                    agArch.setAgName(numberedAg);
+                    agArch.setEnvInfraTier(env);
+                    if ((generalConf != RConf.THREADED) && cAg > 0 && ap.getAgArchClasses().isEmpty() && ap.getBBClass().equals(DefaultBeliefBase.class.getName())) {
+                        // creation by cloning previous agent (which is faster -- no parsing, for instance)
+                        agArch.createArchs(ap.getAgArchClasses(), pag, this);
+                    } else {
+                        // normal creation
+                        agArch.createArchs(ap.getAgArchClasses(), ap.agClass.getClassName(), ap.getBBClass(), ap.asSource.toString(), ap.getAsSetts(debug, project.getControlClass() != null), this);
+                    }
+                    addAg(agArch);
+                    
+                    pag = agArch.getTS().getAg();
+                }
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Error creating agent " + ap.name, e);
+            }
+        }
+        
+        if (generalConf != RConf.THREADED) logger.info("Created "+nbAg+" agents.");
+    }
+    
     
 	protected void createMas2j(Collection<LauncherAgent> agents, String agentFileName) {
 		try{
@@ -96,7 +208,7 @@ public class PlotLauncher extends PlotControlsLauncher {
 	}
 	
 	protected void initzializePlotEnvironment(ImmutableList<LauncherAgent> agents) {
-		PlotEnvironment env = (PlotEnvironment) this.env.getUserEnvironment();
+		PlotEnvironment<?> env = (PlotEnvironment<?>) this.env.getUserEnvironment();
 		env.initialize(agents);
 	}
 	
@@ -142,7 +254,7 @@ public class PlotLauncher extends PlotControlsLauncher {
         }
         
         
-		PlotGraph.instantiatePlotListener(agents);
+		PlotGraphController.instantiatePlotListener(agents);
         
 		this.createMas2j(agents, agentFileName);
 		this.init(defArgs);

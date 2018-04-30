@@ -17,13 +17,13 @@ import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
 import jason.util.Pair;
 import plotmas.PlotLauncher.LauncherAgent;
-import plotmas.graph.PlotGraph;
+import plotmas.graph.PlotGraphController;
 import plotmas.storyworld.Model;
 
 /**
  *  Responsible for relaying action requests from ASL agents to the {@link plotmas.storyworld.Model Storyworld} and
  *  perceptions from the Storyworld to ASL agents (via {@link jason.asSemantics.AffectiveAgent jason's AffectiveAgent}). 
- *  Each action is reported to the {@link plotmas.graph.PlotGraph PlotGraph} for visual representation. <br>
+ *  Each action is reported to the {@link plotmas.graph.PlotGraphController PlotGraph} for visual representation. <br>
  *  Subclasses need to override {@link #executeAction(String, Structure)} to implement their domain-specific relaying 
  *  and should make sure to execute {@code super.executeAction(agentName, action);}, which will take care of plotting.
  *  
@@ -47,7 +47,6 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
     public static Long getPlotTimeNow() {
     	return (System.nanoTime() - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
     }
-    
     
     protected DomainModel model;
     
@@ -115,7 +114,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 	@Override
     public boolean executeAction(String agentName, Structure action) {
     	// add attempted action to plot graph
-    	PlotGraph.getPlotListener().addEvent(agentName, action.toString());
+    	PlotGraphController.getPlotListener().addEvent(agentName, action.toString());
     	logger.info(String.format("%s performed %s", agentName, action.toString()));
 		
 		return false;
