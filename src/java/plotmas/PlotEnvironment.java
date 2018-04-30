@@ -30,7 +30,7 @@ import plotmas.storyworld.Model;
  *  <p> The environment is set up to pause a simulation if all agents repeated the same action for {@link #MAX_REPEATE_NUM}
  *  times.
  * 
- * @see plotmas.little_red_hen.FarmEnvironment
+ * @see plotmas.stories.little_red_hen.FarmEnvironment
  * @author Leonid Berov
  */
 public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSteppedEnvironment {
@@ -110,7 +110,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 	 * method in the {@link plotmas.storyworld.model Model}, which will decide if it succeeds and how if affects the
 	 * storyworld.
 	 * 
-	 * @see plotmas.little_red_hen.FarmEnvironment
+	 * @see plotmas.stories.little_red_hen.FarmEnvironment
 	 */
 	@Override
     public boolean executeAction(String agentName, Structure action) {
@@ -166,7 +166,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
      * Subclass this method to add domain-specific states to the percepts, don't forget to
      * first call `super.updateStatePercepts(agentName);`
      * 
-     * @see plotmas.little_red_hen.FarmEnvironment#updateStatePercepts(java.lang.String)
+     * @see plotmas.stories.little_red_hen.FarmEnvironment#updateStatePercepts(java.lang.String)
      */
     protected void updateStatePercepts(String agentName) {
     	// update list of present agents (excluding self)

@@ -17,7 +17,7 @@ import plotmas.PlotLauncher.LauncherAgent;
  * {@link StoryworldAgent agent models}.
  * 
  * 
- * @see plotmas.little_red_hen.FarmModel
+ * @see plotmas.stories.little_red_hen.FarmModel
  * @author Leonid Berov
  */
 public abstract class Model {

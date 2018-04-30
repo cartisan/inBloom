@@ -1,4 +1,4 @@
-package plotmas.crow;
+package plotmas.stories.crow;
 
 import java.util.Arrays;
 import java.util.LinkedList;

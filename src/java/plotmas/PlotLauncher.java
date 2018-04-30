@@ -24,7 +24,7 @@ import plotmas.helper.PlotFormatter;
  * <b> Attention: </b> static parameter {@link #ENV_CLASS} needs to be set to the class of your custom environment before executing 
  * {@code run}.
  * 
- * @see plotmas.little_red_hen.RedHenLauncher
+ * @see plotmas.stories.little_red_hen.RedHenLauncher
  * @author Leonid Berov
  */
 public class PlotLauncher extends PlotControlsLauncher {

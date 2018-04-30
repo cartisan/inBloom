@@ -1,4 +1,4 @@
-package plotmas.little_red_hen;
+package plotmas.stories.little_red_hen;
 
 import com.google.common.collect.ImmutableList;
 
