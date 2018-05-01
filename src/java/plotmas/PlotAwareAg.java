@@ -6,12 +6,13 @@ import java.util.logging.Logger;
 import jason.JasonException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
+import jason.asSemantics.Event;
+import jason.asSemantics.Intention;
 import jason.asSemantics.Mood;
 import jason.asSemantics.Option;
 import jason.asSemantics.Unifier;
 import jason.asSyntax.Plan;
 import jason.asSyntax.PlanBody;
-import jason.asSyntax.Trigger;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
 import plotmas.helper.MoodMapper;
@@ -38,8 +39,27 @@ public class PlotAwareAg extends AffectiveAgent {
     public Option selectOption(List<Option> options) {
         Option o = super.selectOption(options);
         if(o != null) {
+        	// Get the selected plan and apply unification
         	Plan unifiedPlan = o.getPlan().capply(o.getUnifier());
+        	
+        	// Find and add motivation
+        	Event se = this.getTS().getC().getSelectedEvent();
+        	Intention sourceIntention = se.getIntention();
+        	String motivationString = "[motivation(%1s)]";
+        	if(sourceIntention != null && !(isPlanRecursive(sourceIntention.peek().getPlan(), new Unifier()))) {
+        		motivationString = String.format(motivationString, sourceIntention.peek().getTrigger().getTerm(1).toString().split("\\[")[0]);
+        	} else {
+        		//motivationString = String.format(motivationString, se.getTrigger().getTerm(1).toString());
+        		motivationString = "";
+        	}
+        	
+        	// Convert plan to string
         	String planString = parsePlan(unifiedPlan);
+        	
+        	// Append motivation in "annotation style" to intention string. Triggers do not support addAnnot.
+        	planString += motivationString;
+        	
+        	// Plot plan as intention in graph
         	if(planString.contains("!") && !isPlanRecursive(unifiedPlan, o.getUnifier().clone())) { // o.getUnifier() vs new Unifier()
         		PlotGraphController.getPlotListener().addEvent(this.name, planString, Vertex.Type.INTENTION);
         	}

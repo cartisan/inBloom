@@ -2,6 +2,7 @@ package plotmas.graph;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Logger;
@@ -13,6 +14,8 @@ import org.jfree.ui.RefineryUtilities;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
+import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import jason.asSemantics.Emotion;
@@ -70,10 +73,17 @@ public class PlotGraphController {
 		
 		Layout<Vertex, Edge> layout = new PlotGraphLayout(g);
 		
+		
+		
 		// Create a viewing server
 		VisualizationViewer<Vertex, Edge> vv = new VisualizationViewer<Vertex, Edge>(layout);
 		vv.setPreferredSize(new Dimension(600, 600)); // Sets the viewing area
 		vv.setBackground(BGCOLOR);
+		
+		// Add a mouse to translate the graph.
+		PluggableGraphMouse gm = new PluggableGraphMouse();
+		gm.add(new TranslatingGraphMousePlugin(MouseEvent.BUTTON1_MASK));
+		vv.setGraphMouse(gm);
 
 		// modify vertices
 		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
@@ -141,9 +151,9 @@ public class PlotGraphController {
 		this.graph.addEvent(character, event, Vertex.Type.EVENT, linkType);
 	}
 	
-	public Vertex addMsgSend(Message m) {
-		// Format message to intention format, i.e. "!performative(receiver, content)"
-		Vertex senderV = this.graph.addMsgSend(m.getSender(), "!" + m.getIlForce() + "(" + m.getReceiver() + ", " + m.getPropCont().toString() + ")");
+	public Vertex addMsgSend(Message m, String motivation) {
+		// Format message to intention format, i.e. "!performative(content)"
+		Vertex senderV = this.graph.addMsgSend(m.getSender(), "!" + m.getIlForce() + "(" + m.getPropCont().toString() + ")" + motivation);
 		return senderV;
 	}
 
@@ -165,11 +175,12 @@ public class PlotGraphController {
 	 */
 	private PlotDirectedSparseGraph postProcessThisGraph() {
 		// For each subgraph, conflate action->perception->emotion vertices into one vertex
+		// Additionally, create motivation edges between intentions and their motivations
 		PlotDirectedSparseGraph cleanG = this.graph.clone();
 		
 		for(Vertex root : cleanG.getRoots()) {
 			LinkedList<Vertex> eventList = new LinkedList<>();
-			
+
 			for(Vertex v : cleanG.getCharSubgraph(root)){
 				switch(v.getType()) {
 					case PERCEPT: {
@@ -209,8 +220,68 @@ public class PlotGraphController {
 								}
 							}
 					}; break;
+					case INTENTION:
+					case SPEECHACT: {
+						// If Source != Self -> Motivated by previous Listen
+							// Find last listen with same term
+							// Add source to that listen vertex
+							// remove this intention vertex and patch graph
+						// Else -> Motivated by previous intention / percept
+							// Find last vertex with same term
+							// add an edge from that vertex to this intention vertex
+						
+						String label = v.getLabel();
+						String[] parts = label.split("\\[motivation\\(");
+						
+						boolean isVertexRemoved = false;
+						
+						if(parts.length > 1) {
+							String motivation = parts[1].substring(0, parts[1].length() - 2).split("\\[")[0];
+							String resultingLabel = parts[0];
+							for(Vertex target : eventList) {
+								String intention = target.getIntention();
+								if(intention.equals(motivation)) {
+									cleanG.addEdge(new Edge(Edge.Type.MOTIVATION), target, v);
+									v.setMotivation(target);
+									v.setLabel(resultingLabel);
+								}
+							}
+						} else {
+							// has no motivation, meaning it is the result of a recursion (default_activity -> relax)
+							// or it is the result of a listen.
+							String[] sourceSplit = label.split("\\[source\\(");
+							String source = "";
+							if(sourceSplit.length > 1) {
+								source = sourceSplit[1].substring(0, sourceSplit[1].length() - 2);
+							}
+							// look for a previous listen of the same intention and collapse if found
+							for(Vertex target : eventList) {
+								if(target.getType() == Vertex.Type.LISTEN) {
+									if(target.getIntention().equals(v.getIntention())) {
+										
+										// Update the source on the label.
+										if(!source.isEmpty())
+											target.setLabel(target.getLabel() + "[source(" + source + ")]");
+										
+										if(v.toString().contains("disappointment")) {
+											target.setLabel(target.getLabel() + "---");
+										}
+										
+										// Remove this intention.
+										Vertex lastV = eventList.isEmpty() ? root : eventList.getFirst();
+										cleanG.removeVertexAndPatchGraph(v, lastV);
+										isVertexRemoved = true;
+										break;
+									}
+								}
+							}
+						}
+						if(!isVertexRemoved) {
+							eventList.addFirst(v);
+						}
+					}; break;
 					default: {
-						eventList.addFirst(v);;
+						eventList.addFirst(v);
 					}
 				}
 			}

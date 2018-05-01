@@ -27,11 +27,49 @@ public class Vertex implements Cloneable {
 	
 	private LinkedList<String> emotions = new LinkedList<>();
 	
+	private Vertex motivation;
 
 	public void setType(Type type) {
 		this.type = type;
 	}
+	
+	public void setMotivation(Vertex motivation) {
+		this.motivation = motivation;
+	}
+	
+	public boolean hasMotivation() {
+		return this.motivation != null;
+	}
+	
+	public Vertex getMotivation() {
+		return this.motivation;
+	}
 
+	/**
+	 * Returns the label of this string if it is an intention.
+	 * It only returns something other than the empty string,
+	 * if the label starts with "!".
+	 * For vertices of type INTENTION or SPEECHACT, this returns
+	 * the complete label without annotations, without "!".
+	 * For vertices of type LISTEN, this returns the vertex label
+	 * without annotations and without the leading "+!".
+	 * For all other vertices, this returns an empty string.
+	 */
+	public String getIntention() {
+		switch(this.type) {
+			case INTENTION:
+			case LISTEN:
+			case SPEECHACT:
+				String removedAnnots = this.label.split("\\[")[0];
+				if(removedAnnots.startsWith("!")) {
+					return removedAnnots.substring(1);
+				} else {
+					return "";
+				}
+			default:
+				return "";
+		}
+	}
 	/**
 	 * Creates a default instance of vertex, with type {@link Vertex.Type#EVENT}.
 	 * @param label vertex content
@@ -85,7 +123,9 @@ public class Vertex implements Cloneable {
 	public String getFunctor() {
 		String removedAnnots = getLabel().split("\\[")[0];
 		String removedTerms = removedAnnots.split("\\(")[0];
-		
+		if(removedTerms.startsWith("!")) {
+			removedTerms = removedTerms.substring(1);
+		}
 		return removedTerms;
 	}
 	
@@ -103,9 +143,9 @@ public class Vertex implements Cloneable {
 //		case SPEECHACT:	result = "SPEECH>>" + result;
 //						result = appendEmotions(result);
 //						break;
-		case LISTEN:	/*result = "LISTEN<<" + result;
+		case LISTEN:	result = "+" + result;
 						result = appendEmotions(result);
-						break;*/
+						break;
 		case PERCEPT: 	Matcher m = NO_ANNOT_PATTERN.matcher(result);
 				        if (m.find())
 				            result = "+" + m.group(1);
