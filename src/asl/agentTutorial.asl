@@ -1,5 +1,5 @@
 // Goal
-s
+
 
 
 // Belief Update Rules

@@ -1,4 +1,4 @@
-package plotmas.crow;
+package plotmas.stories.crow;
 
 import java.util.List;
 
@@ -59,7 +59,7 @@ public class CrowModel extends Model {
 	
 	public boolean flatter(StoryworldAgent flatterer, StoryworldAgent flattered) {
 		
-		this.environment.addEventPerception(flattered.name, "wasFlattered[emotion(joy)]");
+		this.environment.addEventPerception(flattered.name, "wasFlattered" + addEmotion("joy"));
 		
 		logger.info(flatterer.name + " flattered " + flattered.name);
 		
@@ -67,7 +67,7 @@ public class CrowModel extends Model {
 			Cheese cheeseItem = (Cheese) flatterer.get(Cheese.itemName);
 			flatterer.removeFromInventory(cheeseItem);
 			this.freeCheese = true;
-			this.environment.addEventPerception(flatterer.name, "wasFlattered[emotion(shame)]");
+			this.environment.addEventPerception(flatterer.name, "wasFlattered"  + addEmotion("shame"));
 			logger.info(flatterer.name + " lost cheese");
 		}
 		return true;
@@ -78,13 +78,13 @@ public class CrowModel extends Model {
 		if(freeCheese) {
 			picker.addToInventory(this.cheese);
 		
-			this.environment.addEventPerception(picker.name, "gotCheese[emotion(joy)]");
+			this.environment.addEventPerception(picker.name, "gotCheese" + addEmotion("joy"));
 			logger.info(picker.name + " picked up cheese");
 			freeCheese = false;
 			return true;
 		}
 		else {
-			this.environment.addEventPerception(picker.name, "missedCheese[emotion(anger)]");
+			this.environment.addEventPerception(picker.name, "missedCheese" + addEmotion("anger"));
 			logger.info(picker.name + " failed to pick up cheese");
 			return true;
 		}
@@ -92,13 +92,13 @@ public class CrowModel extends Model {
 	
 	
 	public boolean sing(StoryworldAgent singer) {
-		this.environment.addEventPerception(singer.name, "sang[emotion(joy)]");
+		this.environment.addEventPerception(singer.name, "sang" + addEmotion("joy"));
 		logger.info(singer.name + " sang");
 		
 		if( singer.has("cheese")) {
 			singer.removeFromInventory(this.cheese);
 			this.freeCheese = true;
-			this.environment.addEventPerception(singer.name, "lostCheese[emotion(shame)]");
+			this.environment.addEventPerception(singer.name, "lostCheese" + addEmotion("shame"));
 //			for(StoryworldAgent agent: this.agents.values()) {
 //				if(agent != singer){
 //					this.environment.addEventPerception(agent.name, "freeCheese");

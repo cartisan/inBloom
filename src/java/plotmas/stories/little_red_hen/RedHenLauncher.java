@@ -1,4 +1,4 @@
-package plotmas.little_red_hen;
+package plotmas.stories.little_red_hen;
 
 import com.google.common.collect.ImmutableList;
 
@@ -17,19 +17,20 @@ public class RedHenLauncher extends PlotLauncher {
 	public static void main(String[] args) throws JasonException {
         logger.info("Starting up from Launcher!");
         ENV_CLASS = FarmEnvironment.class;
+        COMPRESS_GRAPH = true;
         
         runner = new RedHenLauncher();
         
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
 							runner.new LauncherAgent("hen",					  // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
-									new Personality(0,  1, 0.7,  0.3, 0.15)    //punishment
-//									new Personality(0,  1, 0.7,  0.3,  -1)    //low neurot --> no punishment
-//									new Personality(0,  1, 0.7,  0.7,  -1)    //high aggrea --> sharing
+									new Personality(0,  1,  0.7,  0.3, 0.15)    //punishment
+//									new Personality(0,  1,  0.7,  0.3, -0.8)    //low neurot --> no punishment
+//									new Personality(0,  1,  0.7,  0.7, -0.8)    //high aggrea --> sharing
 									
-//									new Personality(0, -1, 0.7,  0.3, 0.15)    //low consc --> no plot
+//									new Personality(0, -1,  0.7,  0.3, 0.15)    //low consc --> no plot
 									
-//									new Personality(0,  1, 0,    0.3, 0.15)    //low extra --> no help requests, no punishment, no sharing <-- not after update!
-//									new Personality(0,  1, 0,    0.7, 0.15)    //low extra, high aggrea --> no help requests, no punishment, sharing
+//									new Personality(0,  1, -0.3,   0.3, 0.15)    //low extra --> no help requests, no punishment, no sharing <-- not after update!
+//									new Personality(0,  1, -0.3,  0.7, 0.15)    //low extra, high aggrea --> no help requests, no punishment, sharing
 							),
 							runner.new LauncherAgent("dog",
 									new Personality(0, -1, 0, -0.7, -0.8)
