@@ -22,6 +22,7 @@ import jason.asSemantics.Emotion;
 import jason.asSemantics.Message;
 import jason.asSyntax.parser.ParseException;
 import plotmas.PlotLauncher.LauncherAgent;
+import plotmas.graph.visitor.PostProcessVisitor;
 
 /**
  * Responsible for maintaining and visualizing the graph that represents the emergent plot of the narrative universe.
@@ -173,6 +174,8 @@ public class PlotGraphController {
  	 * 
 	 * @return a clone of this.graph with removed redundant vertices
 	 */
+	@SuppressWarnings("unused")
+	@Deprecated
 	private PlotDirectedSparseGraph postProcessThisGraph() {
 		// For each subgraph, conflate action->perception->emotion vertices into one vertex
 		// Additionally, create motivation edges between intentions and their motivations
@@ -301,7 +304,8 @@ public class PlotGraphController {
 	 */
 	public JFrame visualizeGraph(boolean compress) {
 		if(compress)
-			return PlotGraphController.visualizeGraph(this.postProcessThisGraph());
+			//return PlotGraphController.visualizeGraph(this.postProcessThisGraph());
+			return PlotGraphController.visualizeGraph(new PostProcessVisitor().apply(this.graph));
 		else 
 			return PlotGraphController.visualizeGraph(this.graph);
 	}

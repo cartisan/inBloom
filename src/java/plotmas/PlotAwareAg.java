@@ -1,11 +1,9 @@
 package plotmas;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
 import jason.JasonException;
-import jason.asSemantics.ActionExec;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Event;
