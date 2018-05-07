@@ -79,7 +79,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
      * This relaying is necessary, because the action needs to be plotted when it is executed,
      * and not when it is scheduled, otherwise the graph would get out of order.
      */
-    private HashMap<Structure, Intention> actionIntentionMap = new HashMap<>();
+    private HashMap<String, Intention> actionIntentionMap = new HashMap<>();
     
     public void initialize(List<LauncherAgent> agents) {
     	PlotEnvironment.startTime = System.nanoTime();
@@ -97,13 +97,13 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
     public boolean executeAction(String agentName, Structure action) {
     	// add attempted action to plot graph
 		String motivation = "[motivation(%s)]";
-		Intention intent = actionIntentionMap.get(action);
+		Intention intent = actionIntentionMap.get(agentName);
 		if(intent != null) {
 			motivation = String.format(motivation, intent.peek().getTrigger().getTerm(1).toString().split("\\[")[0]);
 		} else {
 			motivation = "";
 		}
-		actionIntentionMap.remove(action);
+		actionIntentionMap.remove(agentName);
     	PlotGraphController.getPlotListener().addEvent(agentName, action.toString() + motivation);
     	logger.info(String.format("%s performed %s", agentName, action.toString()));
 		
@@ -116,7 +116,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 	@Override
 	public void scheduleAction(String agName, Structure action, Object infraData) {
 		Intention intent = ((ActionExec)infraData).getIntention();
-		actionIntentionMap.put(action, intent);
+		actionIntentionMap.put(agName, intent);
 		super.scheduleAction(agName, action, infraData);
 	}
 	
