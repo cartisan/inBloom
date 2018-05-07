@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import jason.asSemantics.ActionExec;
+import jason.asSemantics.Intention;
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
@@ -70,6 +72,15 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
      */
     private HashMap<String, List<Literal>> perceivedEventsMap = new HashMap<>();
     
+    /**
+     * Whenever an action is scheduled, this map stores the related intention.
+     * This mapping is then used in <i>executeAction</i> to derive the intention of the agents action,
+     * in order to create an actualization edge.
+     * This relaying is necessary, because the action needs to be plotted when it is executed,
+     * and not when it is scheduled, otherwise the graph would get out of order.
+     */
+    private HashMap<Structure, Intention> actionIntentionMap = new HashMap<>();
+    
     public void initialize(List<LauncherAgent> agents) {
     	PlotEnvironment.startTime = System.nanoTime();
     	initializeActionCounting(agents);
@@ -85,10 +96,28 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 	@Override
     public boolean executeAction(String agentName, Structure action) {
     	// add attempted action to plot graph
-    	PlotGraphController.getPlotListener().addEvent(agentName, action.toString());
+		String motivation = "[motivation(%s)]";
+		Intention intent = actionIntentionMap.get(action);
+		if(intent != null) {
+			motivation = String.format(motivation, intent.peek().getTrigger().getTerm(1).toString().split("\\[")[0]);
+		} else {
+			motivation = "";
+		}
+		actionIntentionMap.remove(action);
+    	PlotGraphController.getPlotListener().addEvent(agentName, action.toString() + motivation);
     	logger.info(String.format("%s performed %s", agentName, action.toString()));
 		
 		return false;
+	}
+	
+	/**
+	 * Saves action intentions for later retrieval in a hashmap.
+	 */
+	@Override
+	public void scheduleAction(String agName, Structure action, Object infraData) {
+		Intention intent = ((ActionExec)infraData).getIntention();
+		actionIntentionMap.put(action, intent);
+		super.scheduleAction(agName, action, infraData);
 	}
 	
 	public void setModel(DomainModel model) {

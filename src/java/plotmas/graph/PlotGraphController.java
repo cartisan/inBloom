@@ -209,6 +209,12 @@ public class PlotGraphController {
 							}
 							
 							for(Vertex targetEvent:eventList) {
+								// If the target vertex is an intention, skip it
+								// (intentions do not have associated emotions)
+								if(!targetEvent.getIntention().isEmpty()) {
+									continue;
+								}
+								
 								if((targetEvent.getFunctor().equals(em.getCause())) & !(targetEvent.hasEmotion(em.getName()))) {
 									// safe emotion in corresponding action
 									targetEvent.addEmotion(em.getName());
@@ -222,13 +228,9 @@ public class PlotGraphController {
 					}; break;
 					case INTENTION:
 					case SPEECHACT: {
-						// If Source != Self -> Motivated by previous Listen
-							// Find last listen with same term
-							// Add source to that listen vertex
-							// remove this intention vertex and patch graph
-						// Else -> Motivated by previous intention / percept
-							// Find last vertex with same term
-							// add an edge from that vertex to this intention vertex
+						// MOTIVATION Edges
+						// Find last vertex with same term as motivation annotation
+						// add an edge from that vertex to this intention vertex
 						
 						String label = v.getLabel();
 						String[] parts = label.split("\\[motivation\\(");
@@ -239,46 +241,47 @@ public class PlotGraphController {
 							String motivation = parts[1].substring(0, parts[1].length() - 2).split("\\[")[0];
 							String resultingLabel = parts[0];
 							for(Vertex target : eventList) {
-								String intention = target.getIntention();
-								if(intention.equals(motivation)) {
+								boolean isMotivation = motivation.equals(target.getIntention()); // True for intentions which motivated
+								if(!isMotivation)
+									isMotivation = motivation.equals(target.getLabel().split("\\[")[0]); // True for percepts which motivated
+								if(!isMotivation)
+									isMotivation = motivation.equals(target.getLabel().split("\\[")[0].substring(1)); // True for listens which motivated
+								if(isMotivation) {
 									cleanG.addEdge(new Edge(Edge.Type.MOTIVATION), target, v);
 									v.setMotivation(target);
 									v.setLabel(resultingLabel);
+									break;
 								}
-							}
-						} else {
-							// has no motivation, meaning it is the result of a recursion (default_activity -> relax)
-							// or it is the result of a listen.
-							String[] sourceSplit = label.split("\\[source\\(");
-							String source = "";
-							if(sourceSplit.length > 1) {
-								source = sourceSplit[1].substring(0, sourceSplit[1].length() - 2);
-							}
-							// look for a previous listen of the same intention and collapse if found
-							for(Vertex target : eventList) {
-								if(target.getType() == Vertex.Type.LISTEN) {
-									if(target.getIntention().equals(v.getIntention())) {
-										
-										// Update the source on the label.
-										if(!source.isEmpty())
-											target.setLabel(target.getLabel() + "[source(" + source + ")]");
-										
-										if(v.toString().contains("disappointment")) {
-											target.setLabel(target.getLabel() + "---");
-										}
-										
-										// Remove this intention.
-										Vertex lastV = eventList.isEmpty() ? root : eventList.getFirst();
-										cleanG.removeVertexAndPatchGraph(v, lastV);
-										isVertexRemoved = true;
-										break;
-									}
-								}
+								
 							}
 						}
 						if(!isVertexRemoved) {
 							eventList.addFirst(v);
 						}
+					}; break;
+					case EVENT: {
+						// ACTUALIZATION Edges
+						// (stored in the same way as motivation edges, but on event vertices)
+						// Find last vertex with same term as motivation annotation
+						// add an edge from that vertex to this intention vertex
+						
+						String label = v.getLabel();
+						String[] parts = label.split("\\[motivation\\(");
+						if(parts.length > 1) {
+							String motivation = parts[1].substring(0, parts[1].length() - 2).split("\\[")[0];
+							String resultingLabel = parts[0];
+							for(Vertex target : eventList) {
+								boolean isMotivation = motivation.equals(target.getIntention()); // True for intentions which motivated
+								if(isMotivation) {
+									cleanG.addEdge(new Edge(Edge.Type.ACTUALIZATION), target, v);
+									v.setMotivation(target);
+									v.setLabel(resultingLabel);
+									break;
+								}
+								
+							}
+						}
+						eventList.addFirst(v);
 					}; break;
 					default: {
 						eventList.addFirst(v);

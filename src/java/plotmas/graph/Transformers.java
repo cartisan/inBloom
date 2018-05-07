@@ -96,17 +96,20 @@ public class Transformers {
     };   
 	static public Function<Edge, Shape> edgeShapeTransformer = new Function<Edge,Shape>(){
         public Shape apply(Edge e){
-        	if(e.getType() == Edge.Type.MOTIVATION) {
-        		return new Line2D.Float(0.0f, 0.0f, 0.0f, 0.0f);
+        	switch(e.getType()) {
+        	//case MOTIVATION:
+        		//return new Line2D.Float(0f, 25f, 1f, 25f);
+        	case TEMPORAL:
+        		return new Line2D.Float(0f, 0f, 0f, 0f);
+        	default:
+        		return new Line2D.Float(0f, 0f, 1f, 0f);
         	}
-        	return new Line2D.Float(0.0f, 0.0f, 1.0f, 0.0f);
         }
     };
     
     static public Function<Edge, Paint> edgeDrawPaintTransformer = new Function<Edge,Paint>(){
     	public Paint apply(Edge e) {
         	switch (e.getType()) {
-        	case MOTIVATION:
         	case ROOT:
         		return PlotGraphController.BGCOLOR;
         	case COMMUNICATION:

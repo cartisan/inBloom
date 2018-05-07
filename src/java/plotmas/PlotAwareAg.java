@@ -1,9 +1,11 @@
 package plotmas;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
 import jason.JasonException;
+import jason.asSemantics.ActionExec;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Event;
@@ -46,11 +48,25 @@ public class PlotAwareAg extends AffectiveAgent {
         	Event se = this.getTS().getC().getSelectedEvent();
         	Intention sourceIntention = se.getIntention();
         	String motivationString = "[motivation(%1s)]";
-        	if(sourceIntention != null && !(isPlanRecursive(sourceIntention.peek().getPlan(), new Unifier()))) {
+        	boolean planRecursive = false;
+        	if(sourceIntention != null)
+        		planRecursive = isPlanRecursive(sourceIntention.peek().getPlan(), new Unifier());
+        	
+        	if(sourceIntention != null && !planRecursive) {
         		motivationString = String.format(motivationString, sourceIntention.peek().getTrigger().getTerm(1).toString().split("\\[")[0]);
         	} else {
-        		//motivationString = String.format(motivationString, se.getTrigger().getTerm(1).toString());
-        		motivationString = "";
+        		// If no intention was attached to the event, simply use the trigger of the event as the motivation
+        		
+        		if(!planRecursive) {
+        			String[] parts = se.getTrigger().getTerm(1).toString().split("\\[");
+        			String mot = "";
+        			for(int i = 0; i < parts.length - 1; i++) {
+        				mot += parts[i];
+        			}
+        			motivationString = String.format(motivationString, mot);
+        		} else {
+        			motivationString = "";
+        		}
         	}
         	
         	// Convert plan to string
@@ -66,7 +82,7 @@ public class PlotAwareAg extends AffectiveAgent {
         }
         return o;
     }
-    
+
     /*
      * Checks whether a plan body contains a goal which unifies with the plan trigger.
      */

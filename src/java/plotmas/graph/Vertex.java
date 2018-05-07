@@ -58,7 +58,6 @@ public class Vertex implements Cloneable {
 	public String getIntention() {
 		switch(this.type) {
 			case INTENTION:
-			case LISTEN:
 			case SPEECHACT:
 				String removedAnnots = this.label.split("\\[")[0];
 				if(removedAnnots.startsWith("!")) {
@@ -128,7 +127,7 @@ public class Vertex implements Cloneable {
 		}
 		return removedTerms;
 	}
-	
+
 	/**
 	 * Implements the string representations of the vertex depending on its type. This determines how vertices will be
 	 * displayed in the final graph.
@@ -138,7 +137,6 @@ public class Vertex implements Cloneable {
 	@Override
 	public String toString() {
 		String result = this.getLabel();
-		
 		switch(this.type) {
 //		case SPEECHACT:	result = "SPEECH>>" + result;
 //						result = appendEmotions(result);
