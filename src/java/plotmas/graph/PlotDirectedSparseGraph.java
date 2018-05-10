@@ -54,7 +54,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> i
     	return result;
     }
 	
-	public Vertex addEvent(String root, String event, Vertex.Type eventType, Edge.Type linkType) {
+	public synchronized Vertex addEvent(String root, String event, Vertex.Type eventType, Edge.Type linkType) {
 		Vertex newVertex = new Vertex(event, eventType);
 		Vertex parent = lastVertexMap.get(root);
 		
