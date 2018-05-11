@@ -33,12 +33,13 @@ public class PlotAwareAg extends AffectiveAgent {
     public void initAg() {
         super.initAg();
         this.name = this.getTS().getUserAgArch().getAgName();
+        this.getTS().addGoalListener(new PlotGoalListener(this.name, logger));
     }
     
     @Override
     public Option selectOption(List<Option> options) {
         Option o = super.selectOption(options);
-        if(o != null) {
+        /*if(o != null) {
         	// Get the selected plan and apply unification
         	Plan unifiedPlan = o.getPlan().capply(o.getUnifier());
         	
@@ -77,7 +78,7 @@ public class PlotAwareAg extends AffectiveAgent {
         	if(planString.contains("!") && !isPlanRecursive(unifiedPlan, o.getUnifier().clone())) { // o.getUnifier() vs new Unifier()
         		PlotGraphController.getPlotListener().addEvent(this.name, planString, Vertex.Type.INTENTION);
         	}
-        }
+        }*/
         return o;
     }
 
