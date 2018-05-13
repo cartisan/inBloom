@@ -7,10 +7,10 @@ import jason.JasonException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Event;
-import jason.asSemantics.Intention;
 import jason.asSemantics.Mood;
 import jason.asSemantics.Option;
 import jason.asSemantics.Unifier;
+import jason.asSyntax.Literal;
 import jason.asSyntax.Plan;
 import jason.asSyntax.PlanBody;
 import plotmas.graph.PlotGraphController;
@@ -33,66 +33,106 @@ public class PlotAwareAg extends AffectiveAgent {
     public void initAg() {
         super.initAg();
         this.name = this.getTS().getUserAgArch().getAgName();
-        this.getTS().addGoalListener(new PlotGoalListener(this.name, logger));
     }
     
+    /**
+     * This method is responsible for selecting one of the applicable plans
+     * and inserting it into the intention stack.
+     * It is overridden to plot intentions as they are created by desires
+     * from the agent.
+     * @param options Options to select an intention from
+     * @return Selected option
+     */
     @Override
     public Option selectOption(List<Option> options) {
         Option o = super.selectOption(options);
-        /*if(o != null) {
-        	// Get the selected plan and apply unification
-        	Plan unifiedPlan = o.getPlan().capply(o.getUnifier());
+        
+        // If we are adding an intention
+        if(o != null && o.getPlan().getTrigger().isAchvGoal()) {
         	
-        	// Find and add motivation
-        	Event se = this.getTS().getC().getSelectedEvent();
-        	Intention sourceIntention = se.getIntention();
-        	String motivationString = "[motivation(%1s)]";
-        	boolean planRecursive = false;
-        	if(sourceIntention != null)
-        		planRecursive = isPlanRecursive(sourceIntention.peek().getPlan(), new Unifier());
+        	// Receive intention with bound variables
+        	Literal intention = (Literal)o.getPlan().getTrigger().getLiteral().capply(o.getUnifier());
         	
-        	if(sourceIntention != null && !planRecursive) {
-        		motivationString = String.format(motivationString, sourceIntention.peek().getTrigger().getTerm(1).toString().split("\\[")[0]);
-        	} else {
-        		// If no intention was attached to the event, simply use the trigger of the event as the motivation
-        		
-        		if(!planRecursive) {
-        			String[] parts = se.getTrigger().getTerm(1).toString().split("\\[");
-        			String mot = "";
-        			for(int i = 0; i < parts.length - 1; i++) {
-        				mot += parts[i];
+        	// These will later be initialized with the motivation,
+        	// once with free variables for recursion check
+        	// and once with bound variables for plotting
+        	Literal motivation = null;
+        	Literal motivationNoUnif = null;
+        	
+        	// This variable will later be set to true,
+        	// if this intention would trigger the plan
+        	// it is the result of again.
+        	boolean isRecursive = false;
+        	
+        	// Find the motivation of this intention
+        	Event event = this.getTS().getC().getSelectedEvent();
+        	if(event != null) {
+        		if(event.getIntention() != null) {
+        			
+        			// Get the motivation with free variables in order to
+        			// later check for recursion. This prevents intentions
+        			// like default_activity and the recurring punished
+        			// from being plotted.
+        			Plan motivatingPlan = (Plan)event.getIntention().peek().getPlan().clone();
+        			motivationNoUnif = (Literal)motivatingPlan.getTrigger().getLiteral().clone();
+        			
+        			// We do not want a motivation, if the motivation was recursive (e.g. default_activity)
+        			if(!isPlanRecursive(motivatingPlan, event.getIntention().peek().getUnif().clone())) {
+        				motivation = (Literal)event.getIntention().peek().getTrigger().getLiteral().clone();
         			}
-        			motivationString = String.format(motivationString, mot);
         		} else {
-        			motivationString = "";
+        			// If the selected event has no intention, then this
+        			// intention is either an initial goal (default_activity)
+        			// or the result of the listen. In the first case, return
+        			// so we don't plot the intention. In the second case,
+        			// use the event trigger as the motivation.
+        			if(isPlanRecursive((Plan) o.getPlan().clone(), o.getUnifier().clone())) {
+        				return o;
+        			} else {
+        				motivation = (Literal)event.getTrigger().getLiteral().clone();
+        			}
         		}
         	}
         	
-        	// Convert plan to string
-        	String planString = parsePlan(unifiedPlan);
-        	
-        	// Append motivation in "annotation style" to intention string. Triggers do not support addAnnot.
-        	planString += motivationString;
-        	
-        	// Plot plan as intention in graph
-        	if(planString.contains("!") && !isPlanRecursive(unifiedPlan, o.getUnifier().clone())) { // o.getUnifier() vs new Unifier()
-        		PlotGraphController.getPlotListener().addEvent(this.name, planString, Vertex.Type.INTENTION);
+        	// Do the recursion check
+        	Unifier u = new Unifier();
+        	if(motivationNoUnif != null && u.unifiesNoUndo(intention, motivationNoUnif)) {
+        		isRecursive = true;
         	}
-        }*/
+        	
+        	String intentionString = "!" + intention.toString();
+        	String motivationString = motivation == null ? "" : "[motivation(" + motivation.toString() + ")]";
+        	
+        	// Actually plot the intention with the motivation
+        	if(!isRecursive) {
+        		PlotGraphController.getPlotListener().addEvent(
+        			this.name,
+        			intentionString + motivationString,
+        			Vertex.Type.INTENTION
+        		);
+        	}
+        }
         return o;
     }
-
-    /*
-     * Checks whether a plan body contains a goal which unifies with the plan trigger.
+    
+    /**
+     * This method checks whether a plan is recursive.
+     * This is the case if any of the body terms which
+     * are of type "achieve" or "achieveNF" unify with
+     * the plan trigger.
+     * @param plan Plan to be checked for recursion
+     * @param u Unifier to be used
+     * @return true if the plan is recursive, false otherwise
      */
     private boolean isPlanRecursive(Plan plan, Unifier u) {
     	PlanBody pb = plan.getBody();
+    	Literal trigger = plan.getTrigger().getLiteral();
     	while(pb != null) {
     		switch(pb.getBodyType()) {
     			case achieve:
     			case achieveNF:
-    				if(u.unifies(plan.getTrigger().getTerm(1), pb.getBodyTerm())) { // plan.getTrigger().getTerm(1) = trigger without +!
-    					return true;
+    				if(u.unifies(trigger, pb.getBodyTerm())) {
+        				return true;
     				}
     				break;
     			default:
@@ -102,11 +142,7 @@ public class PlotAwareAg extends AffectiveAgent {
     	}
     	return false;
     }
-    
-    private String parsePlan(Plan plan) {
-    	return plan.getTrigger().toString().substring(1);
-    }
-        
+
 	@Override
     public void addEmotion(Emotion emotion, String type) throws JasonException {
         super.addEmotion(emotion, type);
