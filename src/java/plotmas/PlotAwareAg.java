@@ -1,5 +1,6 @@
 package plotmas;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -102,6 +103,20 @@ public class PlotAwareAg extends AffectiveAgent {
         	
         	String intentionString = "!" + intention.toString();
         	String motivationString = motivation == null ? "" : "[motivation(" + motivation.toString() + ")]";
+        	
+        	if(motivation != null) {
+        		if(motivation.getFunctor().equals("mood")) {
+        			HashSet<String> sources = this.getAffectiveTS().getAffectiveC().getS();
+        			motivationString = "[motivation(";
+        			for(String s : sources) {
+        				motivationString += s;
+        				motivationString += ",";
+        			}
+        			motivationString = motivationString.substring(0, motivationString.length() - 1);
+        			motivationString += ")]";
+        		}
+        	}
+        	
         	
         	// Actually plot the intention with the motivation
         	if(!isRecursive) {
