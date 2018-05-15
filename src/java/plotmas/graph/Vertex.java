@@ -127,6 +127,25 @@ public class Vertex implements Cloneable {
 		}
 		return removedTerms;
 	}
+	
+	/**
+	 * Returns the the vertex' label without annotations.
+	 * Example: <br />
+	 * <pre>
+	 * {@code
+	 * 	eat(bread) -> eat(bread)
+	 * }
+	 * </pre>
+	 * 
+	 * @return
+	 */	
+	public String getWithoutAnnotation() {
+		String removedAnnots = getLabel().split("\\[")[0];
+		if(removedAnnots.startsWith("!")) {
+			removedAnnots = removedAnnots.substring(1);
+		}
+		return removedAnnots;
+	}
 
 	/**
 	 * Implements the string representations of the vertex depending on its type. This determines how vertices will be

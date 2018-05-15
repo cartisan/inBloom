@@ -62,7 +62,7 @@ public class PostProcessVisitor implements PlotGraphVisitor {
 				continue;
 			}
 			
-			if((targetEvent.getFunctor().equals(emotion.getCause()))
+			if((targetEvent.getWithoutAnnotation().equals(emotion.getCause()))
 					& !(targetEvent.hasEmotion(emotion.getName()))) {
 				targetEvent.addEmotion(emotion.getName());
 				

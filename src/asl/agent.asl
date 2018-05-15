@@ -56,7 +56,7 @@ wish(relax).
 /********************************************/
 
 +rejected_help_request(Req)[source(Name)] <-
-	.appraise_emotion(anger, Name, "rejected_help_request");
+	.appraise_emotion(anger, Name, "rejected_help_request(Req)[source(Name)]");
 	.abolish(rejected_help_request(Req));
 	-asking(Req, Name);
 	if(not asking(Req, _)) {
@@ -64,7 +64,7 @@ wish(relax).
 	}.
 	
 +accepted_help_request(Req)[source(Name)] <-
-	.appraise_emotion(gratitude, Name, "accepted_help_request");
+	.appraise_emotion(gratitude, Name, "accepted_help_request(Req)[source(Name)]");
 	.abolish(accepted_help_request(Req));
 	-asking(Req, Name);
 	if(not asking(Req, _)) {
