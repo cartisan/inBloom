@@ -22,6 +22,7 @@ import jason.asSemantics.Emotion;
 import jason.asSemantics.Message;
 import jason.asSyntax.parser.ParseException;
 import plotmas.PlotLauncher.LauncherAgent;
+import plotmas.graph.visitor.EdgeLayoutVisitor;
 import plotmas.graph.visitor.PostProcessVisitor;
 
 /**
@@ -303,11 +304,17 @@ public class PlotGraphController {
 	 * @return the displayed JFrame
 	 */
 	public JFrame visualizeGraph(boolean compress) {
-		if(compress)
-			//return PlotGraphController.visualizeGraph(this.postProcessThisGraph());
-			return PlotGraphController.visualizeGraph(new PostProcessVisitor().apply(this.graph));
-		else 
+		if(compress) {
+			PlotDirectedSparseGraph g = new PostProcessVisitor().apply(this.graph);
+
+			EdgeLayoutVisitor elv = new EdgeLayoutVisitor(g, 9);
+			g.accept(elv);
+			
+			return PlotGraphController.visualizeGraph(g);
+		} else {
 			return PlotGraphController.visualizeGraph(this.graph);
+		}
+			
 	}
 	
 

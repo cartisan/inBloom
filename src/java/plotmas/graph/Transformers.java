@@ -88,8 +88,6 @@ public class Transformers {
 	        	case ROOT:
 	        		return PlotGraphController.BGCOLOR;
         		default:
-        			if(v.hasMotivation())
-        				return Color.YELLOW;
         			return Color.BLACK;
         	}
         }
@@ -97,8 +95,11 @@ public class Transformers {
 	static public Function<Edge, Shape> edgeShapeTransformer = new Function<Edge,Shape>(){
         public Shape apply(Edge e){
         	switch(e.getType()) {
-        	//case MOTIVATION:
-        		//return new Line2D.Float(0f, 25f, 1f, 25f);
+        	case MOTIVATION:
+        		return new Line2D.Float(0f, e.getOffset(), 1f, e.getOffset());
+        	case ACTUALIZATION:
+        		float off = -20f;
+        		return new Line2D.Float(0f, off, 1f, off);
         	case TEMPORAL:
         		return new Line2D.Float(0f, 0f, 0f, 0f);
         	default:
@@ -114,6 +115,8 @@ public class Transformers {
         		return PlotGraphController.BGCOLOR;
         	case COMMUNICATION:
         		return Color.LIGHT_GRAY;
+        	case ACTUALIZATION:
+        		return Color.CYAN.darker();
     		default:
     			return Color.BLACK;
         	}

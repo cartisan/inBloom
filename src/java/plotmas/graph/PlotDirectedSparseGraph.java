@@ -11,7 +11,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 
-import edu.uci.ics.jung.graph.DirectedSparseGraph;
+import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import plotmas.graph.Vertex.Type;
 import plotmas.graph.visitor.PlotGraphVisitor;
 import plotmas.graph.visitor.RemovedEdge;
@@ -23,7 +23,7 @@ import plotmas.graph.visitor.RemovedEdge;
  * @author Leonid Berov
  */
 @SuppressWarnings("serial")
-public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> implements Cloneable {
+public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Edge> implements Cloneable {
   
     static Logger logger = Logger.getLogger(PlotDirectedSparseGraph.class.getName());
 	
@@ -54,7 +54,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> i
     	return result;
     }
 	
-	public Vertex addEvent(String root, String event, Vertex.Type eventType, Edge.Type linkType) {
+	public synchronized Vertex addEvent(String root, String event, Vertex.Type eventType, Edge.Type linkType) {
 		Vertex newVertex = new Vertex(event, eventType);
 		Vertex parent = lastVertexMap.get(root);
 		
