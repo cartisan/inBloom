@@ -1,14 +1,17 @@
 package plotmas.graph;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Line2D;
 
 import com.google.common.base.Function;
 
+import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
 
 /**
@@ -88,10 +91,22 @@ public class Transformers {
         			return Color.BLACK;
         	}
         }
-    };   
+    };
+    
 	static public Function<Edge, Shape> edgeShapeTransformer = new Function<Edge,Shape>(){
         public Shape apply(Edge e){
         	return new Line2D.Float(0.0f, 0.0f, 1.0f, 0.0f);
+        }
+    };
+
+    static public Function<Edge, Stroke> edgeStrokeHighlightingTransformer = new Function<Edge,Stroke>(){
+        public Stroke apply(Edge e){
+            PickedState<Edge> pickedEdgeState = PlotGraphController.VV.getPickedEdgeState();
+            
+            if (pickedEdgeState.isPicked(e))
+            	return new BasicStroke(3.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f);
+            
+        	return new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f);
         }
     };
     

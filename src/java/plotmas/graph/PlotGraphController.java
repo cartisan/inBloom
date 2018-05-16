@@ -13,6 +13,7 @@ import org.jfree.ui.RefineryUtilities;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import jason.asSemantics.Emotion;
@@ -31,6 +32,7 @@ public class PlotGraphController {
     
     static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
 	private static PlotGraphController plotListener = null;
+	public static VisualizationViewer<Vertex, Edge> VV = null;
 	public static Color BGCOLOR = Color.WHITE;
 	private static JFrame frame;
 
@@ -71,26 +73,32 @@ public class PlotGraphController {
 		Layout<Vertex, Edge> layout = new PlotGraphLayout(g);
 		
 		// Create a viewing server
-		VisualizationViewer<Vertex, Edge> vv = new VisualizationViewer<Vertex, Edge>(layout);
-		vv.setPreferredSize(new Dimension(600, 600)); // Sets the viewing area
-		vv.setBackground(BGCOLOR);
+		VV = new VisualizationViewer<Vertex, Edge>(layout);
+		VV.setPreferredSize(new Dimension(600, 600)); // Sets the viewing area
+		VV.setBackground(BGCOLOR);
+		
+		// Add a mouse to translate the graph.
+		PluggableGraphMouse gm = new PluggableGraphMouse();
+		gm.add(new SelectingTranslatingGraphMousePlugin());
+		VV.setGraphMouse(gm);
 
 		// modify vertices
-		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-		vv.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
-		vv.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
-		vv.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
-		vv.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
-		vv.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+		VV.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+		VV.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
+		VV.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
+		VV.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
+		VV.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
+		VV.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
 		
 		// modify edges
-		vv.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
-		vv.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		vv.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		vv.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		VV.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
+		VV.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		VV.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		VV.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		VV.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
 
 		// Start visualization components
-		GraphZoomScrollPane scrollPane= new GraphZoomScrollPane(vv);
+		GraphZoomScrollPane scrollPane= new GraphZoomScrollPane(VV);
 
 		String[] name = g.getClass().toString().split("\\.");
 		PlotGraphController.frame = new JFrame(name[name.length-1]);
