@@ -213,21 +213,6 @@ public class PlotLauncher extends PlotControlsLauncher {
 	}
 	
 	/**
-	 * Has to be executed after initialization is complete because it depends
-	 * on PlotEnvironment being already initialized with a plotStartTime.
-	 */
-	public synchronized void setupPlotLogger() {
-        Handler[] hs = Logger.getLogger("").getHandlers(); 
-        for (int i = 0; i < hs.length; i++) { 
-            Logger.getLogger("").removeHandler(hs[i]); 
-        }
-        Handler h = PlotFormatter.handler();
-        Logger.getLogger("").addHandler(h);
-        Logger.getLogger("").setLevel(Level.INFO);
-//        Logger.getLogger("").setLevel(Level.FINE);
-	}
-	
-	/**
 	 * Creates a mas2j file to prepare execution of the MAS, sets up agents, environment and model and finally starts
 	 * the execution of the MAS. The execution is paused if all agents repeat the same action
 	 * {@link PlotEnvironment.MAX_REPEATE_NUM} number of times.
