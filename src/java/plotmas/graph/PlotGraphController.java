@@ -203,7 +203,7 @@ public class PlotGraphController {
 							}
 							
 							for(Vertex targetEvent:eventList) {
-								if((targetEvent.getFunctor().equals(em.getCause())) & !(targetEvent.hasEmotion(em.getName()))) {
+								if((targetEvent.getWithoutAnnotation().equals(em.getCause())) & !(targetEvent.hasEmotion(em.getName()))) {
 									// safe emotion in corresponding action
 									targetEvent.addEmotion(em.getName());
 									
