@@ -8,7 +8,7 @@ import java.util.UUID;
  */
 public class Edge implements Cloneable {
 	
-	public enum Type { ROOT, TEMPORAL, MOTIVATION, COMMUNICATION, ACTUALIZATION }
+	public enum Type { ROOT, TEMPORAL, MOTIVATION, COMMUNICATION, ACTUALIZATION, TERMINATION }
 	
 	private String id;
 	private Type type;

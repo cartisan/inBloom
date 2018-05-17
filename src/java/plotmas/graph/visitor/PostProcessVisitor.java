@@ -131,6 +131,41 @@ public class PostProcessVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitListen(Vertex vertex) {
+		if(vertex.getFunctor().equals("rejected_request")) {
+			String label = vertex.getLabel();
+			String request = "";
+			int reqStart = label.indexOf('(');
+			int inbetweenParantheses = 0;
+			for(int i = reqStart + 1; i <= label.length(); i++) {
+				switch(label.charAt(i)) {
+					case '(':
+						inbetweenParantheses++;
+						break;
+					case ')':
+						inbetweenParantheses--;
+					break;
+					default:
+						break;
+				}
+				if(inbetweenParantheses < 0) {
+					request = label.substring(reqStart + 1, i);
+					break;
+				}
+			}
+			
+			for(Vertex target : this.eventList) {
+				if(target.getType() == Vertex.Type.SPEECHACT) {
+					if(target.getFunctor().startsWith("achieve")) {
+						String achvReq = target.getLabel().split(target.getFunctor())[1];
+						String reqMatcher = "(" + request + ")";
+						if(achvReq.equals(reqMatcher)) {
+							this.graph.addEdge(new Edge(Edge.Type.TERMINATION), vertex, target);
+							break;
+						}
+					}
+				}
+			}
+		}
 		this.eventList.addFirst(vertex);
 	}
 	

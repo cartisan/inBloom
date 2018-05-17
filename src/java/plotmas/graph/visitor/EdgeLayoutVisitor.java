@@ -1,30 +1,75 @@
 package plotmas.graph.visitor;
 
+import java.util.Collection;
+
 import plotmas.graph.Edge;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.Vertex;
 
 public class EdgeLayoutVisitor implements PlotGraphVisitor {
 	
+	private static final int EDGE_SPACING = 9;
+	
 	private PlotDirectedSparseGraph graph;
-	private Vertex[] occupance;
-	private int offsetStart;
-	private int offsetStep;
+	private Vertex[] occupanceLeft;
+	private Vertex[] occupanceRight;
 	
 	public EdgeLayoutVisitor(PlotDirectedSparseGraph g, int numLanes) {
 		this.graph = g;
-		this.occupance = new Vertex[numLanes];
-		int totalWidth = 80;
-		this.offsetStep = -totalWidth / numLanes;
-		this.offsetStart = -(int)((float)this.offsetStep * ((float)numLanes / 2f));
+		this.occupanceLeft = new Vertex[numLanes];
+		this.occupanceRight = new Vertex[numLanes];
 	}
 	
 	private void visitVertex(Vertex vertex) {
-		for(int i = 0; i < this.occupance.length; i++) {
-			if(this.occupance[i] == vertex) {
-				this.occupance[i] = null;
+		for(int i = 0; i < this.occupanceLeft.length; i++) {
+			if(this.occupanceLeft[i] == vertex) {
+				this.occupanceLeft[i] = null;
+			}
+			if(this.occupanceRight[i] == vertex) {
+				this.occupanceRight[i] = null;
 			}
 		}
+		Collection<Edge> termEdges = this.graph.getInEdges(vertex);
+		for(Edge tEdge : termEdges) {
+			if(tEdge.getType() == Edge.Type.TERMINATION) {
+				Vertex terminationSource = this.graph.getSource(tEdge);
+				int lane = this.getFreeLaneRight();
+				this.occupanceRight[lane] = terminationSource;
+				tEdge.setOffset(EDGE_SPACING + lane * EDGE_SPACING);
+			}
+		}
+	}
+	
+	@Override
+	public EdgeVisitResult visitEdge(Edge edge) {
+		Edge.Type type = edge.getType();
+		if(type == Edge.Type.TEMPORAL || type == Edge.Type.ROOT) {
+			return EdgeVisitResult.CONTINUE;
+		}
+		if(type == Edge.Type.MOTIVATION) {
+			int lane = getFreeLaneLeft();
+			this.occupanceLeft[lane] = graph.getDest(edge);
+			edge.setOffset(EDGE_SPACING + lane * EDGE_SPACING);
+		}
+		return EdgeVisitResult.TERMINATE;
+	}
+	
+	private int getFreeLaneLeft() {
+		for(int i = 0; i < this.occupanceLeft.length; i++) {
+			if(this.occupanceLeft[i] == null) {
+				return i;
+			}
+		}
+		return 0;
+	}
+	
+	private int getFreeLaneRight() {
+		for(int i = 0; i < this.occupanceRight.length; i++) {
+			if(this.occupanceRight[i] == null) {
+				return i;
+			}
+		}
+		return 0;
 	}
 
 	@Override
@@ -61,32 +106,4 @@ public class EdgeLayoutVisitor implements PlotGraphVisitor {
 	public void visitIntention(Vertex vertex) {
 		this.visitVertex(vertex);
 	}
-
-	@Override
-	public EdgeVisitResult visitEdge(Edge edge) {
-		Edge.Type type = edge.getType();
-		if(type == Edge.Type.TEMPORAL || type == Edge.Type.ROOT) {
-			return EdgeVisitResult.CONTINUE;
-		}
-		if(type == Edge.Type.MOTIVATION) {
-			int lane = getFreeLane();
-			this.occupance[lane] = graph.getDest(edge);
-			edge.setOffset(getOffset(lane));
-		}
-		return EdgeVisitResult.TERMINATE;
-	}
-	
-	private int getOffset(int lane) {
-		return this.offsetStart + this.offsetStep * lane;
-	}
-	
-	private int getFreeLane() {
-		for(int i = 0; i < this.occupance.length; i++) {
-			if(this.occupance[i] == null) {
-				return i;
-			}
-		}
-		return 0;
-	}
-
 }

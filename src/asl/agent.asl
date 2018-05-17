@@ -55,19 +55,19 @@ wish(relax).
 /*****      Emotion management **************/
 /********************************************/
 
-+rejected_help_request(Req)[source(Name)] <-
-	.appraise_emotion(anger, Name, "rejected_help_request(Req)[source(Name)]");
-	.abolish(rejected_help_request(Req));
-	-asking(Req, Name);
-	if(not asking(Req, _)) {
++rejected_request(help_with(Req))[source(Name)] <-
+	.appraise_emotion(anger, Name, "rejected_request(help_with(Req))[source(Name)]");
+	.abolish(rejected_request(help_with(Req)));
+	-asking(help_with(Req), Name);
+	if(not asking(help_with(Req), _)) {
 		.resume(Req);
 	}.
 	
-+accepted_help_request(Req)[source(Name)] <-
-	.appraise_emotion(gratitude, Name, "accepted_help_request(Req)[source(Name)]");
-	.abolish(accepted_help_request(Req));
-	-asking(Req, Name);
-	if(not asking(Req, _)) {
++accepted_request(help_with(Req))[source(Name)] <-
+	.appraise_emotion(gratitude, Name, "accepted_request(help_with(Req))[source(Name)]");
+	.abolish(accepted_help_request(help_with(Req)));
+	-asking(help_with(Req), Name);
+	if(not asking(help_with(Req), _)) {
 		.resume(Req);
 	}.
 
@@ -84,7 +84,7 @@ wish(relax).
 	for (.member(Animal, Animals)) {
 		.print("Asking ", Animal, " to help with ", X)
 		.send(Animal, achieve, help_with(X));
-		+asking(X, Animal);
+		+asking(help_with(X), Animal);
 	}
 	.suspend(X);
 	!X.
@@ -175,19 +175,19 @@ wish(relax).
 +!help_with(X)[source(Name)] : is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
 	.appraise_emotion(reproach, Name, "help_with(X)[source(Name)]");
-	.send(Name, tell, rejected_help_request(X)).
+	.send(Name, tell, rejected_request(help_with(X))).
 
 // Reject helping others if "anti-social tendencies" and feeling strong
 @reject_request_2[affect(and(personality(conscientiousness,negative), mood(dominance,high)))]
 +!help_with(X)[source(Name)] : is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
 	.appraise_emotion(reproach, Name, "help_with(X)[source(Name)]");
-	.send(Name, tell, rejected_help_request(X)).
+	.send(Name, tell, rejected_request(help_with(X))).
 
 @accept_request
 +!help_with(X)[source(Name)] <-
 	.print("I'll help you with ", X, ", ", Name);
-	.send(Name, tell, accepted_help_request(X));
+	.send(Name, tell, accepted_request(help_with(X)));
 	help(Name).
 	
 

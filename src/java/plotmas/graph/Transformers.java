@@ -95,15 +95,10 @@ public class Transformers {
 	static public Function<Edge, Shape> edgeShapeTransformer = new Function<Edge,Shape>(){
         public Shape apply(Edge e){
         	switch(e.getType()) {
-        	case MOTIVATION:
-        		return new Line2D.Float(0f, e.getOffset(), 1f, e.getOffset());
-        	case ACTUALIZATION:
-        		float off = -20f;
-        		return new Line2D.Float(0f, off, 1f, off);
         	case TEMPORAL:
         		return new Line2D.Float(0f, 0f, 0f, 0f);
         	default:
-        		return new Line2D.Float(0f, 0f, 1f, 0f);
+        		return new Line2D.Float(0f, e.getOffset(), 1f, e.getOffset());
         	}
         }
     };
@@ -117,6 +112,8 @@ public class Transformers {
         		return Color.LIGHT_GRAY;
         	case ACTUALIZATION:
         		return Color.CYAN.darker();
+        	case TERMINATION:
+        		return Color.getHSBColor(0f, .65f, .85f);
     		default:
     			return Color.BLACK;
         	}
