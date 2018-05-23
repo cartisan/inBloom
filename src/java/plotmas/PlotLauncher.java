@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,7 +17,6 @@ import jason.infra.centralised.CentralisedAgArch;
 import jason.infra.centralised.RConf;
 import jason.mas2j.AgentParameters;
 import plotmas.graph.PlotGraphController;
-import plotmas.helper.PlotFormatter;
 
 /**
  * Used to perform a Java-side setup and execution of a Jason MAS. <br>
@@ -159,6 +157,7 @@ public class PlotLauncher extends PlotControlsLauncher {
 		    
 		    writer.println("MAS launcher {");
 		    writer.println("	environment: " + ENV_CLASS.getName());
+		    writer.println("	executionControl: jason.control.ExecutionControl");
 		    writer.println("");
 		    writer.println("	agents:");
 		    
