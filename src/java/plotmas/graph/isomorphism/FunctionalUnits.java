@@ -11,12 +11,13 @@ public class FunctionalUnits {
 	
 	public static final PlotDirectedSparseGraph NESTED_GOAL;
 	public static final PlotDirectedSparseGraph DENIED_REQUEST;
+	public static final PlotDirectedSparseGraph RETALIATION;
 	
 	public static final PlotDirectedSparseGraph DEBUG_SPEECH;
 	public static final PlotDirectedSparseGraph DEBUG_TERMINATION;
 	
 	static {
-		ALL = new PlotDirectedSparseGraph[2];
+		ALL = new PlotDirectedSparseGraph[3];
 		
 		Vertex v1, v2, v3;
 		
@@ -45,6 +46,29 @@ public class FunctionalUnits {
 		nestedGoal.addEdge(makeActualization(), v2, v3);
 		NESTED_GOAL = nestedGoal;
 		
+		PlotDirectedSparseGraph retaliation = new PlotDirectedSparseGraph();
+		v1 = makeIntention();
+		v2 = makeNegative();
+		retaliation.addEdge(makeCommunication(), v1, v2);
+		v1 = makeIntention();
+		retaliation.addEdge(makeMotivation(), v2, v1);
+		v2 = makeIntention();
+		v3 = makeIntention();
+		retaliation.addEdge(makeMotivation(), v1, v2);
+		retaliation.addEdge(makeMotivation(), v1, v3);
+		v1 = makePositive();
+		retaliation.addEdge(makeActualization(), v2, v1);
+		v1 = makeNegative();
+		retaliation.addEdge(makeCommunication(), v3, v1);
+		RETALIATION = retaliation;
+		
+		ALL[0] = DENIED_REQUEST;
+		ALL[1] = NESTED_GOAL;
+		ALL[2] = RETALIATION;
+		
+		/**
+		 * DEBUG UNITS
+		 */
 		PlotDirectedSparseGraph speech = new PlotDirectedSparseGraph();
 		v1 = makeIntention();
 		v2 = makeWild();
@@ -56,9 +80,6 @@ public class FunctionalUnits {
 		v2 = makeWild();
 		termination.addEdge(makeTermination(), v2, v1);
 		DEBUG_TERMINATION = termination;
-		
-		ALL[0] = DENIED_REQUEST;
-		ALL[1] = NESTED_GOAL;
 	}
 	
 	private static Vertex makeIntention() {

@@ -202,7 +202,7 @@ public class State {
 		assert v2 < n2;
 		assert core1[v1] == NULL_NODE;
 		assert core2[v2] == NULL_NODE;
-		
+
 		return isSynFeasible(v1, v2) && isSemFeasible(v1, v2);
 	}
 	

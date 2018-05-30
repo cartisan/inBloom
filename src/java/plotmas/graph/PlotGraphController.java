@@ -311,28 +311,16 @@ public class PlotGraphController {
 
 			EdgeLayoutVisitor elv = new EdgeLayoutVisitor(g, 9);
 			g.accept(elv);
-			
-			/*VF2IsomorphismTester tester = new VF2IsomorphismTester();
-			Map<Integer, Integer> map = tester.findIsomorphism(g, FunctionalUnits.DENIED_REQUEST);
-			if(map.isEmpty()) {
-				g.getRoots().get(0).setLabel("No DR");
-			}*/
-			try {
-				UnitFinder finder = new UnitFinder();
-				Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, FunctionalUnits.DENIED_REQUEST);
-				g.getRoots().get(0).setLabel("DR: " + mappings.size());
-				int id = 0;
-				for(Map<Vertex, Vertex> map : mappings) {
-					/*if(id < g.getVertexCount()) {
-						g.getVertex(id).setLabel("|" + id + "| = " + map.size());
-					}*/
-					for(Vertex v : map.keySet()) {
-						v.setLabel(v.getLabel() + " @" + id);
-					}
-					id++;
+
+			UnitFinder finder = new UnitFinder();
+			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, FunctionalUnits.RETALIATION);
+			g.getRoots().get(0).setLabel("Count: " + mappings.size());
+			int id = 0;
+			for(Map<Vertex, Vertex> map : mappings) {
+				for(Vertex v : map.keySet()) {
+					v.setLabel(v.getLabel() + " @" + id);
 				}
-			} catch(Exception e) {
-				g.getRoots().get(0).setLabel(e.getMessage());
+				id++;
 			}
 			
 			return PlotGraphController.visualizeGraph(g);
