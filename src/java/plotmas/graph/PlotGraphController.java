@@ -5,6 +5,9 @@ import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.swing.JFrame;
@@ -22,6 +25,8 @@ import jason.asSemantics.Emotion;
 import jason.asSemantics.Message;
 import jason.asSyntax.parser.ParseException;
 import plotmas.PlotLauncher.LauncherAgent;
+import plotmas.graph.isomorphism.FunctionalUnits;
+import plotmas.graph.isomorphism.UnitFinder;
 import plotmas.graph.visitor.EdgeLayoutVisitor;
 import plotmas.graph.visitor.PostProcessVisitor;
 
@@ -310,6 +315,29 @@ public class PlotGraphController {
 			EdgeLayoutVisitor elv = new EdgeLayoutVisitor(g, 9);
 			g.accept(elv);
 			
+			/*VF2IsomorphismTester tester = new VF2IsomorphismTester();
+			Map<Integer, Integer> map = tester.findIsomorphism(g, FunctionalUnits.DENIED_REQUEST);
+			if(map.isEmpty()) {
+				g.getRoots().get(0).setLabel("No DR");
+			}*/
+			try {
+				UnitFinder finder = new UnitFinder();
+				Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, FunctionalUnits.DENIED_REQUEST);
+				g.getRoots().get(0).setLabel("DR: " + mappings.size());
+				int id = 0;
+				for(Map<Vertex, Vertex> map : mappings) {
+					/*if(id < g.getVertexCount()) {
+						g.getVertex(id).setLabel("|" + id + "| = " + map.size());
+					}*/
+					for(Vertex v : map.keySet()) {
+						v.setLabel(v.getLabel() + " @" + id);
+					}
+					id++;
+				}
+			} catch(Exception e) {
+				g.getRoots().get(0).setLabel(e.getMessage());
+			}
+			
 			return PlotGraphController.visualizeGraph(g);
 		} else {
 			return PlotGraphController.visualizeGraph(this.graph);
@@ -324,26 +352,35 @@ public class PlotGraphController {
 		
 		// Create Trees for each agent and add the roots
 		Vertex v1 = new Vertex("hen", Vertex.Type.ROOT); Vertex v2 = new Vertex("dog", Vertex.Type.ROOT); 
-		Vertex v3 = new Vertex("cow", Vertex.Type.ROOT); Vertex v4 = new Vertex("cazzegiare"); 
-		Vertex v5 = new Vertex("cazzegiare"); Vertex v6 = new Vertex("askHelp(plant(wheat))");
-		Vertex v7 = new Vertex("plant(wheat)");
+		Vertex v3 = new Vertex("!achieve(help_with(plant(wheat)))", Vertex.Type.SPEECHACT); Vertex v4 = new Vertex("!help_with(plant(wheat))[(-)]", Vertex.Type.LISTEN); 
+		Vertex v5 = new Vertex("!help_with(plant(wheat))", Vertex.Type.INTENTION); Vertex v6 = new Vertex("!tell(reject_request(help_with(plant(wheat))))", Vertex.Type.SPEECHACT);
+		Vertex v7 = new Vertex("reject_request(help_with(plant(wheat)))[(-)]", Vertex.Type.LISTEN);
 		
 		graph.addRoot(v1);
 		graph.addRoot(v2);
-		graph.addRoot(v3);
 		
 		// simulate adding vertices later
-		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v6);
-		graph.addEdge(new Edge(), v6, v7);
+		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v3);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v2, v4);
-		graph.addEdge(new Edge(Edge.Type.ROOT), v3, v5);
-		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), v6, v5);
+		graph.addEdge(new Edge(Edge.Type.TEMPORAL), v3, v7);
+		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), v3, v4);
+		graph.addEdge(new Edge(Edge.Type.MOTIVATION), v4, v5);
+		graph.addEdge(new Edge(Edge.Type.TEMPORAL), v4, v5);
+		graph.addEdge(new Edge(Edge.Type.MOTIVATION), v5, v6);
+		graph.addEdge(new Edge(Edge.Type.TEMPORAL), v5, v6);
+		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), v6, v7);
+		graph.addEdge(new Edge(Edge.Type.TERMINATION), v7, v3);
 		
 		return graph;
 	}
 	
 	public static void main(String[] args) {
 		PlotDirectedSparseGraph forest = createTestGraph();
+		EdgeLayoutVisitor elv = new EdgeLayoutVisitor(forest, 9);
+		forest.accept(elv);
+		UnitFinder finder = new UnitFinder();
+		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(forest, FunctionalUnits.DENIED_REQUEST);
+		forest.getRoots().get(0).setLabel("" + mappings.size());
 		visualizeGraph(forest);
 	}
 }

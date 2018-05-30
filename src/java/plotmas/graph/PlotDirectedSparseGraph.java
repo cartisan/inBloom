@@ -30,6 +30,8 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	private List<Vertex> roots = Lists.newArrayList();
 	private HashMap<String, Vertex> lastVertexMap = new HashMap<>();			// maps: agentName --> vertex
 	private Table<String, String, Vertex> senderMap = HashBasedTable.create();	// maps: agentName, message --> vertex
+	
+	private Vertex[] vertexArray;
 
     /**
      * Returns a list of nodes that represent the roots of each character subgraph.
@@ -87,6 +89,30 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		this.addEdge(new Edge(Edge.Type.COMMUNICATION), sendV, recV);
 		
 		return recV;
+	}
+	
+	public Vertex getVertex(int vertexId) {
+		if(vertexArray == null) {
+			vertexArray = new Vertex[this.getVertexCount()];
+			vertices.keySet().toArray(vertexArray);
+		}
+		if(vertexId < 0 || vertexId >= vertexArray.length) {
+			return null;
+		}
+		return vertexArray[vertexId];
+	}
+	
+	public int getVertexId(Vertex vertex) {
+		if(vertexArray == null) {
+			vertexArray = new Vertex[this.getVertexCount()];
+			vertices.keySet().toArray(vertexArray);
+		}
+		for(int i = 0; i < vertexArray.length; i++) {
+			if(vertexArray[i] == vertex) {
+				return i;
+			}
+		}
+		return -1;
 	}
 	
 	/**
