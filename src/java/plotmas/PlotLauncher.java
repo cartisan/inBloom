@@ -151,13 +151,15 @@ public class PlotLauncher extends PlotControlsLauncher {
     }
     
     
-	protected void createMas2j(Collection<LauncherAgent> agents, String agentFileName) {
+	protected void createMas2j(Collection<LauncherAgent> agents, String agentFileName, boolean debugMode) {
 		try{
 		    PrintWriter writer = new PrintWriter(DEAULT_FILE_NAME, "UTF-8");
 		    
 		    writer.println("MAS launcher {");
 		    writer.println("	environment: " + ENV_CLASS.getName());
-		    writer.println("	executionControl: jason.control.ExecutionControl");
+		    if(!debugMode) {
+		    	writer.println("	executionControl: jason.control.ExecutionControl");
+		    }
 		    writer.println("");
 		    writer.println("	agents:");
 		    
@@ -224,6 +226,8 @@ public class PlotLauncher extends PlotControlsLauncher {
 	 */
 	public void run (String[] args, ImmutableList<LauncherAgent> agents, String agentFileName) throws JasonException  {
 		String defArgs[];
+		boolean debugMode=false;
+		
 		if (ENV_CLASS == null) {
         	throw new RuntimeException("PlotLauncher.ENV_CLASS must be set to the class of your custom"
         			+ " environment before executing this method");
@@ -235,12 +239,13 @@ public class PlotLauncher extends PlotControlsLauncher {
         else {
         	assert args[0] == "-debug";
         	defArgs = new String[] {PlotLauncher.DEAULT_FILE_NAME, "-debug"};
+        	debugMode = true;
         }
         
         
 		PlotGraphController.instantiatePlotListener(agents);
         
-		this.createMas2j(agents, agentFileName);
+		this.createMas2j(agents, agentFileName, debugMode);
 		this.init(defArgs);
 		this.create();
         
