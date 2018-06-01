@@ -25,6 +25,8 @@ public class State {
 	
 	private int lastAddedv1;
 	
+	private Map<String, Integer> agentNodeCounts;
+	
 	public State(PlotDirectedSparseGraph plotGraph, PlotDirectedSparseGraph unitGraph) {
 		g1 = plotGraph;
 		g2 = unitGraph;
@@ -39,6 +41,8 @@ public class State {
 		in2 = new int[n2];
 		out1 = new int[n1];
 		out2 = new int[n2];
+		
+		agentNodeCounts = new HashMap<String, Integer>();
 		
 		Arrays.fill(core1, NULL_NODE);
 		Arrays.fill(core2, NULL_NODE);
@@ -60,6 +64,8 @@ public class State {
 		in2 = other.in2;
 		out1 = other.out1;
 		out2 = other.out2;
+		
+		agentNodeCounts = other.agentNodeCounts;
 	}
 	
 	/**
@@ -87,6 +93,8 @@ public class State {
 		core1[v1] = v2;
 		core2[v2] = v1;
 		
+		countNodeForAgent(g1.getAgent(g1.getVertex(v1)));
+		
 		Set<Integer> in1Set = getPredecessors(g1, v1);
 		Set<Integer> out1Set = getSuccessors(g1, v1);
 		Set<Integer> in2Set = getPredecessors(g2, v2);
@@ -106,12 +114,26 @@ public class State {
 		}
 	}
 	
+	private void countNodeForAgent(String agent) {
+		int current = 0;
+		if(agentNodeCounts.containsKey(agent)) {
+			current = agentNodeCounts.get(agent);
+		}
+		agentNodeCounts.put(agent, current + 1);
+	}
+	
+	private void uncountNodeForAgent(String agent) {
+		agentNodeCounts.put(agent, agentNodeCounts.get(agent) - 1);
+	}
+	
 	public void backtrack() {
 		assert lastAddedv1 != NULL_NODE;
 		
 		int lastAddedv2 = core1[lastAddedv1];
 		core1[lastAddedv1] = NULL_NODE;
 		core2[lastAddedv2] = NULL_NODE;
+		
+		uncountNodeForAgent(g1.getAgent(g1.getVertex(lastAddedv1)));
 		
 		Set<Integer> in1Set = getPredecessors(g1, lastAddedv1);
 		Set<Integer> out1Set = getSuccessors(g1, lastAddedv1);
@@ -358,7 +380,20 @@ public class State {
 	}
 	
 	private boolean checkVertexCompatibility(int v1, int v2) {
-		UnitVertexType t1 = UnitVertexType.typeOf(g1.getVertex(v1));
+		Vertex plotVertex = g1.getVertex(v1);
+		Integer currentCount = agentNodeCounts.get(g1.getAgent(plotVertex));
+		if(currentCount == null || currentCount == 0) {
+			int involvedAgents = 0;
+			for(int nodeCount : agentNodeCounts.values()) {
+				if(nodeCount > 0) {
+					involvedAgents++;
+				}
+			}
+			if(involvedAgents >= 2) {
+				return false;
+			}
+		}
+		UnitVertexType t1 = UnitVertexType.typeOf(plotVertex);
         UnitVertexType t2 = UnitVertexType.typeOf(g2.getVertex(v2));
         if(t2 == UnitVertexType.WILDCARD) {
         	return t1 == UnitVertexType.POSITIVE || t1 == UnitVertexType.NEGATIVE;

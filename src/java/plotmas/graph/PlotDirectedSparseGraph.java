@@ -91,6 +91,21 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		return recV;
 	}
 	
+	public String getAgent(Vertex vertex) {
+		// TODO: Improve performance
+		for(Vertex root : this.roots) {
+			String agent = root.getLabel();
+			Vertex v = root;
+			while(!(v == null)) {
+				if(v == vertex) {
+					return agent;
+				}
+				v = getCharSuccessor(v);
+			}
+		}
+		return "none";
+	}
+	
 	public Vertex getVertex(int vertexId) {
 		if(vertexArray == null) {
 			vertexArray = new Vertex[this.getVertexCount()];
