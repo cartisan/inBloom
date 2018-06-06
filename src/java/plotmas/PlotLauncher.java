@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,7 +17,6 @@ import jason.infra.centralised.CentralisedAgArch;
 import jason.infra.centralised.RConf;
 import jason.mas2j.AgentParameters;
 import plotmas.graph.PlotGraphController;
-import plotmas.helper.PlotFormatter;
 
 /**
  * Used to perform a Java-side setup and execution of a Jason MAS. <br>
@@ -153,12 +151,15 @@ public class PlotLauncher extends PlotControlsLauncher {
     }
     
     
-	protected void createMas2j(Collection<LauncherAgent> agents, String agentFileName) {
+	protected void createMas2j(Collection<LauncherAgent> agents, String agentFileName, boolean debugMode) {
 		try{
 		    PrintWriter writer = new PrintWriter(DEAULT_FILE_NAME, "UTF-8");
 		    
 		    writer.println("MAS launcher {");
 		    writer.println("	environment: " + ENV_CLASS.getName());
+		    if(!debugMode) {
+		    	writer.println("	executionControl: jason.control.ExecutionControl");
+		    }
 		    writer.println("");
 		    writer.println("	agents:");
 		    
@@ -213,21 +214,6 @@ public class PlotLauncher extends PlotControlsLauncher {
 	}
 	
 	/**
-	 * Has to be executed after initialization is complete because it depends
-	 * on PlotEnvironment being already initialized with a plotStartTime.
-	 */
-	public synchronized void setupPlotLogger() {
-        Handler[] hs = Logger.getLogger("").getHandlers(); 
-        for (int i = 0; i < hs.length; i++) { 
-            Logger.getLogger("").removeHandler(hs[i]); 
-        }
-        Handler h = PlotFormatter.handler();
-        Logger.getLogger("").addHandler(h);
-        Logger.getLogger("").setLevel(Level.INFO);
-//        Logger.getLogger("").setLevel(Level.FINE);
-	}
-	
-	/**
 	 * Creates a mas2j file to prepare execution of the MAS, sets up agents, environment and model and finally starts
 	 * the execution of the MAS. The execution is paused if all agents repeat the same action
 	 * {@link PlotEnvironment.MAX_REPEATE_NUM} number of times.
@@ -240,6 +226,8 @@ public class PlotLauncher extends PlotControlsLauncher {
 	 */
 	public void run (String[] args, ImmutableList<LauncherAgent> agents, String agentFileName) throws JasonException  {
 		String defArgs[];
+		boolean debugMode=false;
+		
 		if (ENV_CLASS == null) {
         	throw new RuntimeException("PlotLauncher.ENV_CLASS must be set to the class of your custom"
         			+ " environment before executing this method");
@@ -251,12 +239,13 @@ public class PlotLauncher extends PlotControlsLauncher {
         else {
         	assert args[0] == "-debug";
         	defArgs = new String[] {PlotLauncher.DEAULT_FILE_NAME, "-debug"};
+        	debugMode = true;
         }
         
         
 		PlotGraphController.instantiatePlotListener(agents);
         
-		this.createMas2j(agents, agentFileName);
+		this.createMas2j(agents, agentFileName, debugMode);
 		this.init(defArgs);
 		this.create();
         

@@ -128,12 +128,13 @@ public class Vertex implements Cloneable {
 		return removedTerms;
 	}
 	
+	
 	/**
 	 * Returns the the vertex' label without annotations.
 	 * Example: <br />
 	 * <pre>
 	 * {@code
-	 * 	eat(bread) -> eat(bread)
+	 * 	eat(bread)[source(self)] -> eat(bread)
 	 * }
 	 * </pre>
 	 * 

@@ -308,12 +308,13 @@ public class PlotGraphController {
 	public JFrame visualizeGraph(boolean compress) {
 		if(compress) {
 			PlotDirectedSparseGraph g = new PostProcessVisitor().apply(this.graph);
-
+			//PlotDirectedSparseGraph g = this.graph;
+			
 			EdgeLayoutVisitor elv = new EdgeLayoutVisitor(g, 9);
 			g.accept(elv);
 
 			UnitFinder finder = new UnitFinder();
-			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, FunctionalUnits.RETALIATION);
+			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, FunctionalUnits.NESTED_GOAL);
 			g.getRoots().get(0).setLabel("Count: " + mappings.size());
 			int id = 0;
 			for(Map<Vertex, Vertex> map : mappings) {

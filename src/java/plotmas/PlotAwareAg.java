@@ -1,6 +1,7 @@
 package plotmas;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -106,7 +107,7 @@ public class PlotAwareAg extends AffectiveAgent {
         	
         	if(motivation != null) {
         		if(motivation.getFunctor().equals("mood")) {
-        			HashSet<String> sources = this.getAffectiveTS().getAffectiveC().getS();
+        			LinkedList<String> sources = this.getAffectiveTS().getAffectiveC().getS();
         			motivationString = "[motivation(";
         			for(String s : sources) {
         				motivationString += s;
