@@ -101,7 +101,7 @@ public class Transformers {
 
     static public Function<Edge, Stroke> edgeStrokeHighlightingTransformer = new Function<Edge,Stroke>(){
         public Stroke apply(Edge e){
-            PickedState<Edge> pickedEdgeState = PlotGraphController.VV.getPickedEdgeState();
+            PickedState<Edge> pickedEdgeState = PlotGraphController.getPlotListener().visViewer.getPickedEdgeState();
             
             if (pickedEdgeState.isPicked(e))
             	return new BasicStroke(3.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f);

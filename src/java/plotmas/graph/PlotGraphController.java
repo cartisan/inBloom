@@ -1,11 +1,16 @@
 package plotmas.graph;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 
 import org.jfree.ui.RefineryUtilities;
@@ -28,16 +33,22 @@ import plotmas.PlotLauncher.LauncherAgent;
  * {@link #visualizeGraph(boolean) visualizeGraph} method.
  * @author Leonid Berov
  */
-public class PlotGraphController {
+@SuppressWarnings("serial")
+public class PlotGraphController extends JFrame{
     
-    static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
 	private static PlotGraphController plotListener = null;
-	public static VisualizationViewer<Vertex, Edge> VV = null;
+	/**
+	 * Types of plot graph that can be drawn: [0] full graph, [1] analyzed graph
+	 */
+	private static final String[] GRAPH_TYPES = new String[] {"full plot graph", "analyzed plot graph"};
+	protected static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
 	public static Color BGCOLOR = Color.WHITE;
-	private static JFrame frame;
 
 
-	private PlotDirectedSparseGraph graph; 
+	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
+	protected PlotDirectedSparseGraph drawnGraph = null;	// graph that is currently being drawn
+	private JComboBox<String> graphTypeList = null;			// ComboBox that is displayed on the graph to change display type
+	public VisualizationViewer<Vertex, Edge> visViewer = null;
 	
 	
 	/**
@@ -59,77 +70,60 @@ public class PlotGraphController {
 	}
 	
 	/**
-	 * Helper method that allows the plotting of arbitrary instances of plot graphs.
-	 * @param g an instance of {@link PlotDirectedSparseGraph} to be drawn and opened in a JFrame
-	 * @return
-	 */
-	private static JFrame visualizeGraph(PlotDirectedSparseGraph g) {
-		// Maybe just implement custom renderer instead of all the transformers?
-		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
-		
-		// Tutorial:
-		// http://www.grotto-networking.com/JUNG/JUNG2-Tutorial.pdf
-		
-		Layout<Vertex, Edge> layout = new PlotGraphLayout(g);
-		
-		// Create a viewing server
-		VV = new VisualizationViewer<Vertex, Edge>(layout);
-		VV.setPreferredSize(new Dimension(600, 600)); // Sets the viewing area
-		VV.setBackground(BGCOLOR);
-		
-		// Add a mouse to translate the graph.
-		PluggableGraphMouse gm = new PluggableGraphMouse();
-		gm.add(new SelectingTranslatingGraphMousePlugin());
-		VV.setGraphMouse(gm);
-
-		// modify vertices
-		VV.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-		VV.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
-		VV.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
-		VV.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
-		VV.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
-		VV.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
-		
-		// modify edges
-		VV.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
-		VV.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		VV.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		VV.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		VV.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
-
-		// Start visualization components
-		GraphZoomScrollPane scrollPane= new GraphZoomScrollPane(VV);
-
-		String[] name = g.getClass().toString().split("\\.");
-		PlotGraphController.frame = new JFrame(name[name.length-1]);
-
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-		    @Override
-		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		        	PlotGraphController.frame.dispose();
-		        	PlotGraphController.frame = null;
-		        }
-		    }
-		);
-		
-		frame.getContentPane().add(scrollPane);
-		frame.pack();
-		
-		RefineryUtilities.positionFrameOnScreen(frame, 0.0, 0.2);
-		
-		frame.setVisible(true);
-		
-		return PlotGraphController.frame;
-	}
-	
-	/**
 	 * Creates a new instance of {@link PlotDirectedSparseGraph}, which is used to capture new events.
 	 * Sets up a subgraphs for each character agent.
 	 * @param characters a collection of all acting character agents
 	 */
 	public PlotGraphController(Collection<LauncherAgent> characters) {
-		this.graph = new PlotDirectedSparseGraph();
+		super("Plot Graph");
+
+		// Set up controls of plot graph
+		// Closing this window doesn't stop simulation
+		this.addWindowListener(new java.awt.event.WindowAdapter() {
+		    @Override
+		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+		        	PlotGraphController.getPlotListener().dispose();
+		        }
+		    }
+		);
 		
+		// Add dropdown to select displayed graph type
+		this.graphTypeList = new JComboBox<>(GRAPH_TYPES);
+		this.graphTypeList.setSelectedItem(GRAPH_TYPES[0]);
+		this.graphTypeList.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				@SuppressWarnings("unchecked")
+				JComboBox<String> combo = (JComboBox<String>) event.getSource();
+				String selectedType = (String) combo.getSelectedItem();
+				
+//				PlotGraphController.getPlotListener().graphTypeList.setSelectedItem(selectedType);
+//				if(selectedType.equals(GRAPH_TYPES[0])) {
+//					PlotGraphController.getPlotListener().visualizeGraph(false);
+//				}
+//				else {
+//					PlotGraphController.getPlotListener().visualizeGraph(true);
+//				}
+				PlotGraphController.getPlotListener().graphTypeList.setSelectedItem(selectedType);
+				if(selectedType.equals(GRAPH_TYPES[0])) {
+					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().graph);
+					visViewer.setGraphLayout(layout);
+					visViewer.repaint();
+//					PlotGraphController.getPlotListener().visualizeGraph(false);
+				}
+				else {
+					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().postProcessThisGraph());
+					visViewer.setGraphLayout(layout);
+					visViewer.repaint();
+//					PlotGraphController.getPlotListener().visualizeGraph(true);
+				}
+			}
+		});
+		
+		this.add(graphTypeList, BorderLayout.NORTH);
+		
+		// create and initialize the plot graph the will be created by this listener
+		this.graph = new PlotDirectedSparseGraph();
 		// set up a "named" tree for each character
 		for (LauncherAgent character : characters) {
 			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
@@ -231,13 +225,69 @@ public class PlotGraphController {
 	 * @return the displayed JFrame
 	 */
 	public JFrame visualizeGraph(boolean compress) {
-		if(compress)
-			return PlotGraphController.visualizeGraph(this.postProcessThisGraph());
-		else 
-			return PlotGraphController.visualizeGraph(this.graph);
+		if(compress) {
+			this.graphTypeList.setSelectedItem(GRAPH_TYPES[1]);
+			this.drawnGraph = this.postProcessThisGraph(); 
+		}
+		else { 
+			this.graphTypeList.setSelectedItem(GRAPH_TYPES[0]);
+			this.drawnGraph = this.graph;
+		}
+		return this.visualizeGraph();
 	}
 	
+	/**
+	 * Plots and displays the graph that is selected by {@code this.drawnGraph}.
+	 * @return the displayed JFrame
+	 */
+	protected JFrame visualizeGraph() {
+		// Maybe just implement custom renderer instead of all the transformers?
+		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
+		
+		// Tutorial:
+		// http://www.grotto-networking.com/JUNG/JUNG2-Tutorial.pdf
+		
+		Layout<Vertex, Edge> layout = new PlotGraphLayout(this.drawnGraph);
+		
+		// Create a viewing server
+		visViewer = new VisualizationViewer<Vertex, Edge>(layout);
+		visViewer.setPreferredSize(new Dimension(1500, 600)); // Sets the viewing area
+		visViewer.setBackground(BGCOLOR);
+		
+		// Add a mouse to translate the graph.
+		PluggableGraphMouse gm = new PluggableGraphMouse();
+		gm.add(new SelectingTranslatingGraphMousePlugin());
+		visViewer.setGraphMouse(gm);
+		
+		// modify vertices
+		visViewer.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+		visViewer.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
+		visViewer.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
+		visViewer.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
+		visViewer.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
+		visViewer.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+		
+		// modify edges
+		visViewer.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
+		visViewer.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		visViewer.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		visViewer.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		visViewer.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
 
+		// Start visualization components
+		GraphZoomScrollPane scrollPane = new GraphZoomScrollPane(visViewer);
+
+		this.getContentPane().add(scrollPane);
+		this.pack();
+		
+		RefineryUtilities.positionFrameOnScreen(this, 0.0, 0.2);
+		
+		this.setVisible(true);
+		
+		return this;
+	}
+	
+	
 	/*************************** for testing purposes ***********************************/
 	private static PlotDirectedSparseGraph createTestGraph() {
 		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
@@ -264,6 +314,8 @@ public class PlotGraphController {
 	
 	public static void main(String[] args) {
 		PlotDirectedSparseGraph forest = createTestGraph();
-		visualizeGraph(forest);
+		PlotGraphController controller = new PlotGraphController(new ArrayList<LauncherAgent>());
+		controller.drawnGraph = forest;
+		controller.visualizeGraph();
 	}
 }
