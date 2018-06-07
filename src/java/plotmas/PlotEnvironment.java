@@ -15,6 +15,7 @@ import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
+import jason.runtime.MASConsoleGUI;
 import jason.util.Pair;
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.graph.PlotGraphController;
@@ -113,6 +114,9 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 	 */
 	@Override
     public boolean executeAction(String agentName, Structure action) {
+		// check if pause mode is enabled, wait with execution while it is
+		this.waitWhilePause();
+		
     	// add attempted action to plot graph
     	PlotGraphController.getPlotListener().addEvent(agentName, action.toString());
     	logger.info(String.format("%s performed %s", agentName, action.toString()));
@@ -255,6 +259,34 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 	}
 	
     
+    /********************** Methods for pausing and continuing the environment *****************************/
+	/* necessary, because Jason's pause mode sets the GUI waiting, which means no logging output is possible
+	 * However, we want to be logging while processing graphs in pause mode, so we reroute logging output to
+	 * the console {@see PlotControlsLauncher#pauseExecution}  
+	 */
+	
+    /**
+     * Wakes up the environment when Launcher exits pause mode.
+     */
+    synchronized void wake() {
+    	this.notifyAll();
+    	logger.info(" Execution continued, switching to Jason GUI output");
+    }
+	
+	/**
+	 * Checks if Launcher is in paused state and defers action execution
+	 * until its woken up again.
+	 */
+	synchronized void waitWhilePause() {
+        try {
+            while (MASConsoleGUI.get().isPause()) {
+            	logger.info("Execution paused, switching to logger output");
+                wait();
+            }
+        } catch (Exception e) { }
+    }
+	
+	
     /********************** Methods for pausing the execution after nothing happens **************************
     * checks if all agents executed the same action for the last MAX_REPEATE_NUM of times, if yes, pauses the MAS.
     */

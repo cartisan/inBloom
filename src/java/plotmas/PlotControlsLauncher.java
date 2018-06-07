@@ -69,8 +69,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	    MASConsoleGUI.get().setPause(true);
 	    this.pauseButton.setText("Continue");
 
-	    // FIXME switching to console logger on pauseExecution causes simulation to not pause ?!
-//		setupConsoleLogger();
+		setupConsoleLogger();
 	}
 
 	protected void continueExecution() {
@@ -78,6 +77,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	    MASConsoleGUI.get().setPause(false);
 	    
 	    this.setupPlotLogger();
+	    ((PlotEnvironment<?>) this.env.getUserEnvironment()).wake();
 	}
 
 	protected void drawGraphs() {
