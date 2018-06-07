@@ -240,7 +240,6 @@ public class State {
 		//		 improves efficiency by quite a bit.
 		
 		// Calculate whether R_Pred and R_Succ hold.
-		/* This is an invalid condition. Breaks unit detection.
 		boolean rPred = true;
 		boolean rSucc = true;
 		
@@ -276,9 +275,7 @@ public class State {
 		if(!rPred || !rSucc) {
 			return false;
 		}
-		
-		*/
-		
+
 		// Calculate whether R_In and R_Out hold.
 		boolean rIn;
 		boolean rOut;
@@ -409,15 +406,15 @@ public class State {
 				Vertex vm1 = g2.getVertex(v2);
 				Vertex vm2 = g2.getVertex(m);
 				
-				Collection<Edge> nEdges = g1.findEdgeSet(vn1, vn2);
-				Collection<Edge> mEdges = g2.findEdgeSet(vm1, vm2);
+				Collection<Edge> nEdges = getEdges(g1, vn1, vn2);
+				Collection<Edge> mEdges = getEdges(g2, vm1, vm2);
 				
 				if(!checkEdgeSetCompatibility(nEdges, mEdges)) {
 					return false;
 				}
 				
-				nEdges = g1.findEdgeSet(vn2, vn1);
-				mEdges = g2.findEdgeSet(vm2, vm1);
+				nEdges = getEdges(g1, vn2, vn1);
+				mEdges = getEdges(g2, vm2, vm1);
 				
 				if(!checkEdgeSetCompatibility(nEdges, mEdges)) {
 					return false;
@@ -442,11 +439,30 @@ public class State {
 		return edgeTypes.isEmpty();
 	}
 	
+	private Collection<Edge> getEdges(PlotDirectedSparseGraph g, Vertex v1, Vertex v2) {
+		Collection<Edge> allEdges = g.findEdgeSet(v1, v2);
+		Collection<Edge> filteredEdges = new HashSet<Edge>();
+		
+		for(Edge e : allEdges) {
+			if(isEdgeValid(e)) {
+				filteredEdges.add(e);
+			}
+		}
+		
+		return filteredEdges;
+	}
+	
 	private Set<Integer> getPredecessors(PlotDirectedSparseGraph g, int v) {
 		Vertex vert = g.getVertex(v);
 		HashSet<Integer> predecessors = new HashSet<Integer>();
 		for(Vertex p : g.getPredecessors(vert)) {
-			predecessors.add(g.getVertexId(p));
+			Collection<Edge> edges = g.findEdgeSet(p, vert);
+			for(Edge e : edges) {
+				if(isEdgeValid(e)) {
+					predecessors.add(g.getVertexId(p));
+					break;
+				}
+			}
 		}
 		return predecessors;
 	}
@@ -455,8 +471,18 @@ public class State {
 		Vertex vert = g.getVertex(v);
 		HashSet<Integer> successors = new HashSet<Integer>();
 		for(Vertex p : g.getSuccessors(vert)) {
-			successors.add(g.getVertexId(p));
+			Collection<Edge> edges = g.findEdgeSet(vert, p);
+			for(Edge e : edges) {
+				if(isEdgeValid(e)) {
+					successors.add(g.getVertexId(p));
+					break;
+				}
+			}
 		}
 		return successors;
+	}
+	
+	private boolean isEdgeValid(Edge e) {
+		return e.getType() != Edge.Type.TEMPORAL && e.getType() != Edge.Type.ROOT;
 	}
 }
