@@ -47,7 +47,8 @@ public class PlotGraphController extends JFrame{
 
 	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
 	protected PlotDirectedSparseGraph drawnGraph = null;	// graph that is currently being drawn
-	private JComboBox<String> graphTypeList = null;			// ComboBox that is displayed on the graph to change display type
+	private JComboBox<String> graphTypeList = new JComboBox<>(GRAPH_TYPES);;			// ComboBox that is displayed on the graph to change display type
+	private String selectedGraphType = GRAPH_TYPES[0];
 	public VisualizationViewer<Vertex, Edge> visViewer = null;
 	
 	
@@ -86,41 +87,6 @@ public class PlotGraphController extends JFrame{
 		        }
 		    }
 		);
-		
-		// Add dropdown to select displayed graph type
-		this.graphTypeList = new JComboBox<>(GRAPH_TYPES);
-		this.graphTypeList.setSelectedItem(GRAPH_TYPES[0]);
-		this.graphTypeList.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				@SuppressWarnings("unchecked")
-				JComboBox<String> combo = (JComboBox<String>) event.getSource();
-				String selectedType = (String) combo.getSelectedItem();
-				
-//				PlotGraphController.getPlotListener().graphTypeList.setSelectedItem(selectedType);
-//				if(selectedType.equals(GRAPH_TYPES[0])) {
-//					PlotGraphController.getPlotListener().visualizeGraph(false);
-//				}
-//				else {
-//					PlotGraphController.getPlotListener().visualizeGraph(true);
-//				}
-				PlotGraphController.getPlotListener().graphTypeList.setSelectedItem(selectedType);
-				if(selectedType.equals(GRAPH_TYPES[0])) {
-					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().graph);
-					visViewer.setGraphLayout(layout);
-					visViewer.repaint();
-//					PlotGraphController.getPlotListener().visualizeGraph(false);
-				}
-				else {
-					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().postProcessThisGraph());
-					visViewer.setGraphLayout(layout);
-					visViewer.repaint();
-//					PlotGraphController.getPlotListener().visualizeGraph(true);
-				}
-			}
-		});
-		
-		this.add(graphTypeList, BorderLayout.NORTH);
 		
 		// create and initialize the plot graph the will be created by this listener
 		this.graph = new PlotDirectedSparseGraph();
@@ -226,12 +192,12 @@ public class PlotGraphController extends JFrame{
 	 */
 	public JFrame visualizeGraph(boolean compress) {
 		if(compress) {
-			this.graphTypeList.setSelectedItem(GRAPH_TYPES[1]);
-			this.drawnGraph = this.postProcessThisGraph(); 
+			this.drawnGraph = this.postProcessThisGraph();
+			this.selectedGraphType  = GRAPH_TYPES[1];
 		}
 		else { 
-			this.graphTypeList.setSelectedItem(GRAPH_TYPES[0]);
 			this.drawnGraph = this.graph;
+			this.selectedGraphType = GRAPH_TYPES[0];
 		}
 		return this.visualizeGraph();
 	}
@@ -250,33 +216,60 @@ public class PlotGraphController extends JFrame{
 		Layout<Vertex, Edge> layout = new PlotGraphLayout(this.drawnGraph);
 		
 		// Create a viewing server
-		visViewer = new VisualizationViewer<Vertex, Edge>(layout);
-		visViewer.setPreferredSize(new Dimension(1500, 600)); // Sets the viewing area
-		visViewer.setBackground(BGCOLOR);
+		this.visViewer = new VisualizationViewer<Vertex, Edge>(layout);
+		this.visViewer.setPreferredSize(new Dimension(1500, 600)); // Sets the viewing area
+		this.visViewer.setBackground(BGCOLOR);
 		
 		// Add a mouse to translate the graph.
 		PluggableGraphMouse gm = new PluggableGraphMouse();
 		gm.add(new SelectingTranslatingGraphMousePlugin());
-		visViewer.setGraphMouse(gm);
+		this.visViewer.setGraphMouse(gm);
 		
 		// modify vertices
-		visViewer.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-		visViewer.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
-		visViewer.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
-		visViewer.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
-		visViewer.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
-		visViewer.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+		this.visViewer.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+		this.visViewer.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
+		this.visViewer.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
+		this.visViewer.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
+		this.visViewer.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
+		this.visViewer.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
 		
 		// modify edges
-		visViewer.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
-		visViewer.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		visViewer.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		visViewer.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		visViewer.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
+		this.visViewer.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
+		this.visViewer.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		this.visViewer.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		this.visViewer.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		this.visViewer.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
 
-		// Start visualization components
+		// enable scrolling control bar
 		GraphZoomScrollPane scrollPane = new GraphZoomScrollPane(visViewer);
 
+		// set up the combo-box for changing displayed plot graphs: first select the currently shown graph type
+		this.graphTypeList.setSelectedItem(this.selectedGraphType);
+		
+		// second: activate a listener that redraws the plot when selection changes. Careful here: order with 1. matters
+		this.graphTypeList.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				@SuppressWarnings("unchecked")
+				JComboBox<String> combo = (JComboBox<String>) event.getSource();
+				String selectedType = (String) combo.getSelectedItem();
+				
+				if(selectedType.equals(GRAPH_TYPES[0])) {
+					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().graph);
+					PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
+					PlotGraphController.getPlotListener().visViewer.repaint();
+				}
+				else {
+					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().postProcessThisGraph());
+					PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
+					PlotGraphController.getPlotListener().visViewer.repaint();
+
+				}
+			}
+		});
+		
+		this.add(graphTypeList, BorderLayout.NORTH);		
+		
 		this.getContentPane().add(scrollPane);
 		this.pack();
 		
@@ -314,7 +307,8 @@ public class PlotGraphController extends JFrame{
 	
 	public static void main(String[] args) {
 		PlotDirectedSparseGraph forest = createTestGraph();
-		PlotGraphController controller = new PlotGraphController(new ArrayList<LauncherAgent>());
+		PlotGraphController.instantiatePlotListener(new ArrayList<LauncherAgent>());
+		PlotGraphController controller = PlotGraphController.getPlotListener();
 		controller.drawnGraph = forest;
 		controller.visualizeGraph();
 	}
