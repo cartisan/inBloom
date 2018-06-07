@@ -27,22 +27,8 @@ public class Vertex implements Cloneable {
 	
 	private LinkedList<String> emotions = new LinkedList<>();
 	
-	private Vertex motivation;
-
 	public void setType(Type type) {
 		this.type = type;
-	}
-	
-	public void setMotivation(Vertex motivation) {
-		this.motivation = motivation;
-	}
-	
-	public boolean hasMotivation() {
-		return this.motivation != null;
-	}
-	
-	public Vertex getMotivation() {
-		return this.motivation;
 	}
 
 	/**

@@ -254,7 +254,7 @@ public class PlotGraphController {
 									isMotivation = motivation.equals(target.getLabel().split("\\[")[0].substring(1)); // True for listens which motivated
 								if(isMotivation) {
 									cleanG.addEdge(new Edge(Edge.Type.MOTIVATION), target, v);
-									v.setMotivation(target);
+									//v.setMotivation(target);
 									v.setLabel(resultingLabel);
 									break;
 								}
@@ -280,7 +280,7 @@ public class PlotGraphController {
 								boolean isMotivation = motivation.equals(target.getIntention()); // True for intentions which motivated
 								if(isMotivation) {
 									cleanG.addEdge(new Edge(Edge.Type.ACTUALIZATION), target, v);
-									v.setMotivation(target);
+									//v.setMotivation(target);
 									v.setLabel(resultingLabel);
 									break;
 								}
@@ -314,7 +314,7 @@ public class PlotGraphController {
 			g.accept(elv);
 
 			UnitFinder finder = new UnitFinder();
-			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, FunctionalUnits.NESTED_GOAL);
+			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, FunctionalUnits.DENIED_REQUEST);
 			g.getRoots().get(0).setLabel("Count: " + mappings.size());
 			int id = 0;
 			for(Map<Vertex, Vertex> map : mappings) {

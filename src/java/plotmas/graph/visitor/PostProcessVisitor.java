@@ -1,6 +1,8 @@
 package plotmas.graph.visitor;
 
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 import jason.asSemantics.Emotion;
 import jason.asSyntax.parser.ParseException;
@@ -38,7 +40,7 @@ public class PostProcessVisitor implements PlotGraphVisitor {
 			for(Vertex target : this.eventList) {
 				if(motivation.equals(target.getIntention())) {
 					this.graph.addEdge(new Edge(Edge.Type.ACTUALIZATION), target, vertex);
-					vertex.setMotivation(target);
+					//vertex.setMotivation(target);
 					vertex.setLabel(resultingLabel);
 					break;
 				}
@@ -99,31 +101,38 @@ public class PostProcessVisitor implements PlotGraphVisitor {
 		String[] parts = label.split("\\[motivation\\(");
 		
 		if(parts.length > 1) {
-			String motivation = parts[1].substring(0, parts[1].length() - 2).split("\\[")[0];
+			String[] motivations = parts[1].substring(0, parts[1].length() - 2).split(";");
 			String resultingLabel = parts[0];
+			Set<Vertex> motivationVertices = new HashSet<Vertex>();
+			for(String motivation : motivations) {
+				motivation = motivation.split("\\[")[0];
 
-			for(Vertex target : this.eventList) {
-				boolean isMotivation = false;
-				
-				// Check for intentions
-				isMotivation = isMotivation ||
-						motivation.equals(target.getIntention());
-				
-				// Check for percepts
-				isMotivation = isMotivation ||
-						motivation.equals(target.getLabel().split("\\[")[0]);
-				
-				// Check for listens
-				isMotivation = isMotivation ||
-						motivation.equals(target.getLabel().split("\\[")[0].substring(1));
-				
-				if(isMotivation) {
-					this.graph.addEdge(new Edge(Edge.Type.MOTIVATION), target, vertex);
-					vertex.setMotivation(target);
-					vertex.setLabel(resultingLabel);
-					break;
+				for(Vertex target : this.eventList) {
+					boolean isMotivation = false;
+					
+					// Check for intentions
+					isMotivation = isMotivation ||
+							motivation.equals(target.getIntention());
+					
+					// Check for percepts
+					isMotivation = isMotivation ||
+							motivation.equals(target.getLabel().split("\\[")[0]);
+					
+					// Check for listens
+					isMotivation = isMotivation ||
+							motivation.equals(target.getLabel().split("\\[")[0].substring(1));
+					
+					if(isMotivation && !motivationVertices.contains(target)) {
+						this.graph.addEdge(new Edge(Edge.Type.MOTIVATION), target, vertex);
+						//vertex.setMotivation(target);
+						motivationVertices.add(target);
+						
+						break;
+					}
 				}
 			}
+			
+			vertex.setLabel(resultingLabel);
 		}
 		
 		this.eventList.addFirst(vertex);
