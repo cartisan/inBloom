@@ -8,10 +8,21 @@ import edu.uci.ics.jung.graph.util.Pair;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.Vertex;
 
+/**
+ * Class which handles finding subgraph isomorphisms.
+ * For further information, see:
+ * 		https://ieeexplore.ieee.org/abstract/document/1323804/
+ * @author Sven Wilke
+ */
 public class UnitFinder {
-	
-	public UnitFinder() {}
-	
+
+	/**
+	 * Finds all subgraphs of the form unitGraph in the given plotGraph.
+	 * @param plotGraph The graph to find subgraphs in
+	 * @param unitGraph The graph describing the subgraphs to look for
+	 * @return Set which contains a map for each instance of unitGraph in plotGraph.
+	 * 		   The maps map from vertices of the plotGraph to vertices of the unitGraph.
+	 */
 	public Set<Map<Vertex, Vertex>> findUnits(PlotDirectedSparseGraph plotGraph, PlotDirectedSparseGraph unitGraph) {
 		HashSet<Map<Vertex, Vertex>> allMappings = new HashSet<Map<Vertex, Vertex>>();
 		match(new State(plotGraph, unitGraph), allMappings);
@@ -37,7 +48,6 @@ public class UnitFinder {
 					boolean found = match(nextState, unitList);
 					if(found) {
 						foundAny = true;
-						//unitList.add(nextState.getMapping());
 					}
 					nextState.backtrack();
 				}

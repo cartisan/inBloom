@@ -31,7 +31,25 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	private HashMap<String, Vertex> lastVertexMap = new HashMap<>();			// maps: agentName --> vertex
 	private Table<String, String, Vertex> senderMap = HashBasedTable.create();	// maps: agentName, message --> vertex
 	
+	/**
+	 * An array containing all vertices of this graph.
+	 * Used to identify vertices by id in plotmas.graph.isomorphism.State
+	 * This is generated whenever a change to the vertices was made and
+	 * the method getVertex or getVertexId is called.
+	 */
 	private Vertex[] vertexArray;
+	
+	/**
+	 * A flag which is set to true whenever the graph changed.
+	 * Used to identify whether or not vertexArray needs to be generated.
+	 */
+	private boolean isDirty = true;
+	
+	/**
+	 * Map used for quick access to the agent name of the subgraph a
+	 * vertex is in. This map is cloned to a clone of this graph.
+	 */
+	private HashMap<Vertex, String> vertexAgentMap = new HashMap<>();			// maps: vertex --> agentName
 
     /**
      * Returns a list of nodes that represent the roots of each character subgraph.
@@ -53,6 +71,8 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
     	
     	this.lastVertexMap.put(vertex.getLabel(), vertex);
     	
+    	this.vertexAgentMap.put(vertex, vertex.getLabel());
+    	
     	return result;
     }
 	
@@ -66,6 +86,8 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		
 		this.addEdge(new Edge(linkType), parent, newVertex);
 		lastVertexMap.put(root, newVertex);
+		
+		this.vertexAgentMap.put(newVertex, root);
 		
 		return newVertex;
 	}
@@ -87,29 +109,44 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	public Vertex addMsgReceive(String receiver, String message, Vertex sendV) {
 		Vertex recV = addEvent(receiver, message, Vertex.Type.LISTEN,  Edge.Type.TEMPORAL);
 		this.addEdge(new Edge(Edge.Type.COMMUNICATION), sendV, recV);
-		
+		this.vertexAgentMap.put(recV, receiver);
 		return recV;
 	}
 	
-	public String getAgent(Vertex vertex) {
-		// TODO: Improve performance
-		for(Vertex root : this.roots) {
-			String agent = root.getLabel();
-			Vertex v = root;
-			while(!(v == null)) {
-				if(v == vertex) {
-					return agent;
-				}
-				v = getCharSuccessor(v);
-			}
-		}
-		return "none";
+	/**
+	 * Overriden method call to addEdge, in order to set isDirty flag.
+	 */
+	@Override
+	public boolean addEdge(Edge edge, Vertex from, Vertex to) {
+		isDirty = true;
+		return super.addEdge(edge, from, to);
 	}
 	
+	/**
+	 * Returns the name of the agent the given
+	 * vertex is in the subgraph of.
+	 * @param vertex
+	 * @return name of agent
+	 */
+	public String getAgent(Vertex vertex) {
+		if(!vertexAgentMap.containsKey(vertex)) {
+			return "none";
+		}
+		return vertexAgentMap.get(vertex);
+	}
+	
+	/**
+	 * Returns the vertex identified by the
+	 * given id.
+	 * Generates vertexArray if needed.
+	 * @param vertexId
+	 * @return Vertex
+	 */
 	public Vertex getVertex(int vertexId) {
-		if(vertexArray == null) {
+		if(isDirty) {
 			vertexArray = new Vertex[this.getVertexCount()];
 			vertices.keySet().toArray(vertexArray);
+			isDirty = false;
 		}
 		if(vertexId < 0 || vertexId >= vertexArray.length) {
 			return null;
@@ -117,10 +154,17 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		return vertexArray[vertexId];
 	}
 	
+	/**
+	 * Finds the id of a given vertex.
+	 * Generates vertexArray if needed.
+	 * @param vertex
+	 * @return int vertexId
+	 */
 	public int getVertexId(Vertex vertex) {
-		if(vertexArray == null) {
+		if(isDirty) {
 			vertexArray = new Vertex[this.getVertexCount()];
 			vertices.keySet().toArray(vertexArray);
+			isDirty = false;
 		}
 		for(int i = 0; i < vertexArray.length; i++) {
 			if(vertexArray[i] == vertex) {
@@ -187,6 +231,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
     		if(clone.getType()==Type.ROOT)
     			dest.roots.add(clone);
     		
+    		dest.vertexAgentMap.put(clone, vertexAgentMap.get(v));
 	    }
 
 	    // clone edges, make sure that incident vertices are translated into their cloned counterparts
