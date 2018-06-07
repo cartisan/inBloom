@@ -8,12 +8,10 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
-import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
+import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.picking.ShapePickSupport;
-import edu.uci.ics.jung.visualization.transform.MutableTransformer;
 
 /**
  * Plugin that highlights edges when mouseEvent is executed close by, and is also capable of moving canvas when
@@ -21,8 +19,7 @@ import edu.uci.ics.jung.visualization.transform.MutableTransformer;
  * 
  * @author Leonid Berov
  */
-//public class SelectingTranslatingGraphMousePlugin extends TranslatingGraphMousePlugin implements MouseListener, MouseMotionListener {
-public class SelectingTranslatingGraphMousePlugin extends AbstractGraphMousePlugin implements MouseListener, MouseMotionListener {
+public class SelectingTranslatingGraphMousePlugin extends TranslatingGraphMousePlugin implements MouseListener, MouseMotionListener {
     
 	private static int PROXIMITY_DIST = 25;
     /**
@@ -47,11 +44,10 @@ public class SelectingTranslatingGraphMousePlugin extends AbstractGraphMousePlug
 	 */
     @SuppressWarnings("unchecked")
     public void mousePressed(MouseEvent e) {
+    	super.mousePressed(e);
     	
     	if (e.getModifiers() == modifiers) {
-    		down = e.getPoint();
-    		
-			VisualizationViewer<Vertex,Edge> vv = PlotGraphController.getPlotListener().visViewer;
+			VisualizationViewer<Vertex,Edge> vv = (VisualizationViewer<Vertex,Edge>) e.getSource();
 			GraphElementAccessor<Vertex,Edge> pickSupport = vv.getPickSupport();
 			((ShapePickSupport<Vertex,Edge>) pickSupport).setPickSize(PROXIMITY_DIST);
 			
@@ -86,11 +82,10 @@ public class SelectingTranslatingGraphMousePlugin extends AbstractGraphMousePlug
 	 */
     @SuppressWarnings("unchecked")
     public void mouseReleased(MouseEvent e) {
+    	super.mouseReleased(e);
+    	
 		if (e.getModifiers() == modifiers) {
-			down = null;
-			
-			VisualizationViewer<Vertex,Edge> vv = PlotGraphController.getPlotListener().visViewer;
-			
+			VisualizationViewer<Vertex,Edge> vv = (VisualizationViewer<Vertex,Edge>) e.getSource();
 			PickedState<Edge> pickedEdgeState = vv.getPickedEdgeState();
 			
 			// remove edge that was picked on mouse press
@@ -98,63 +93,7 @@ public class SelectingTranslatingGraphMousePlugin extends AbstractGraphMousePlug
 			
 			vv.repaint();
 			
-	        vv.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-	        
             e.consume();
 		}
     }
-
-    /**
-     * chack the modifiers. If accepted, translate the graph according
-     * to the dragging of the mouse pointer
-     * @param e the event
-	 */
-    public void mouseDragged(MouseEvent e) {
-        VisualizationViewer<Vertex,Edge> vv = PlotGraphController.getPlotListener().visViewer;
-        boolean accepted = checkModifiers(e);
-        if(accepted) {
-            MutableTransformer modelTransformer = vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.LAYOUT);
-            vv.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-            try {
-                Point2D q = vv.getRenderContext().getMultiLayerTransformer().inverseTransform(down);
-                Point2D p = vv.getRenderContext().getMultiLayerTransformer().inverseTransform(e.getPoint());
-                float dx = (float) (p.getX()-q.getX());
-                float dy = (float) (p.getY()-q.getY());
-                
-                modelTransformer.translate(dx, dy);
-                down.x = e.getX();
-                down.y = e.getY();
-            } catch(RuntimeException ex) {
-                System.err.println("down = "+down+", e = "+e);
-                throw ex;
-            }
-        
-            e.consume();
-            vv.repaint();
-        }
-    }
-
-	@Override
-	public void mouseMoved(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
 }
