@@ -1,14 +1,20 @@
 package plotmas.graph;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 import org.jfree.ui.RefineryUtilities;
 
@@ -42,9 +48,8 @@ public class PlotGraphController {
 	public static Color BGCOLOR = Color.WHITE;
 	private static JFrame frame;
 
-
-	private PlotDirectedSparseGraph graph; 
-	
+	private PlotDirectedSparseGraph graph;
+	private List<String> information = new LinkedList<String>();
 	
 	/**
 	 * System-wide method for getting access to the active PlotGraph instance that collects events
@@ -69,7 +74,7 @@ public class PlotGraphController {
 	 * @param g an instance of {@link PlotDirectedSparseGraph} to be drawn and opened in a JFrame
 	 * @return
 	 */
-	private static JFrame visualizeGraph(PlotDirectedSparseGraph g) {
+	private static JFrame visualizeGraph(PlotDirectedSparseGraph g, Collection<String> information) {
 		// Maybe just implement custom renderer instead of all the transformers?
 		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
 		
@@ -119,6 +124,16 @@ public class PlotGraphController {
 		);
 		
 		frame.getContentPane().add(scrollPane);
+		
+		if(information != null && information.size() > 0) {
+			JPanel infoPanel = new JPanel();
+			infoPanel.setLayout(new FlowLayout(SwingConstants.LEADING, 15, 5));
+			for(String info : information) {
+				infoPanel.add(new JLabel(info));
+			}
+			frame.getContentPane().add(infoPanel, BorderLayout.PAGE_END);
+		}
+
 		frame.pack();
 		
 		RefineryUtilities.positionFrameOnScreen(frame, 0.0, 0.2);
@@ -312,10 +327,10 @@ public class PlotGraphController {
 			
 			EdgeLayoutVisitor elv = new EdgeLayoutVisitor(g, 9);
 			g.accept(elv);
-
+			
+			long start = System.currentTimeMillis();
 			UnitFinder finder = new UnitFinder();
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, FunctionalUnits.DENIED_REQUEST);
-			g.getRoots().get(0).setLabel("Count: " + mappings.size());
 			int id = 0;
 			for(Map<Vertex, Vertex> map : mappings) {
 				for(Vertex v : map.keySet()) {
@@ -323,10 +338,13 @@ public class PlotGraphController {
 				}
 				id++;
 			}
+			long time = System.currentTimeMillis() - start;
+			information.add("Time taken: " + time + "ms");
+			information.add("Units found: " + mappings.size());
 			
-			return PlotGraphController.visualizeGraph(g);
+			return PlotGraphController.visualizeGraph(g, this.information);
 		} else {
-			return PlotGraphController.visualizeGraph(this.graph);
+			return PlotGraphController.visualizeGraph(this.graph, this.information);
 		}
 			
 	}
@@ -367,6 +385,6 @@ public class PlotGraphController {
 		UnitFinder finder = new UnitFinder();
 		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(forest, FunctionalUnits.DENIED_REQUEST);
 		forest.getRoots().get(0).setLabel("" + mappings.size());
-		visualizeGraph(forest);
+		visualizeGraph(forest, null);
 	}
 }

@@ -75,12 +75,7 @@ public class State {
 	 * @return true if goal state, false otherwise
 	 */
 	public boolean isGoal() {
-		for(int i = 0; i < n2; i++) {
-			if(core2[i] == NULL_NODE) {
-				return false;
-			}
-		}
-		return true;
+		return depth == n2;
 	}
 	
 	public void addMapping(int v1, int v2) {
@@ -174,7 +169,7 @@ public class State {
 		
 		// TODO: Optimize by saving how many entries are in the sets
 		//		 out1, out2, in1 and in2 and abort early
-		
+
 		// Consider successor pairs
 		HashSet<Pair<Integer>> tOut = new HashSet<Pair<Integer>>();
 		for(int currentOut1 = 0; currentOut1 < n1; currentOut1++) {
@@ -235,39 +230,42 @@ public class State {
 		Set<Integer> succ1 = getSuccessors(g1, v1);
 		Set<Integer> succ2 = getSuccessors(g2, v2);
 		
-		// TODO: Turning the loops around (i.e. first looping through succ/pred
-		//		 and then checking whether something[n] is != NULL_NODE)
-		//		 improves efficiency by quite a bit.
-		
 		// Calculate whether R_Pred and R_Succ hold.
 		boolean rPred = true;
 		boolean rSucc = true;
 		
-		for(int n = 0; n < n1 && rPred && rSucc; n++) {
+		for(int n : pred1) {
 			if(core1[n] != NULL_NODE) {
-				if(pred1.contains(n)) {
-					if(!pred2.contains(core1[n])) {
-						rPred = false;
-					}
-				}
-				if(succ1.contains(n)) {
-					if(!succ2.contains(core1[n])) {
-						rSucc = false;
-					}
+				if(!pred2.contains(core1[n])) {
+					rPred = false;
+					break;
 				}
 			}
 		}
-		for(int n = 0; n < n2 && rPred && rSucc; n++) {
-			if(core2[n] != NULL_NODE) {
-				if(pred2.contains(n)) {
-					if(!pred1.contains(core2[n])) {
-						rPred = false;
-					}
+		
+		for(int n : succ1) {
+			if(core1[n] != NULL_NODE) {
+				if(!succ2.contains(core1[n])) {
+					rSucc = false;
+					break;
 				}
-				if(succ2.contains(n)) {
-					if(!succ1.contains(core2[n])) {
-						rSucc = false;
-					}
+			}
+		}
+		
+		for(int n : pred2) {
+			if(core2[n] != NULL_NODE) {
+				if(!pred1.contains(core2[n])) {
+					rPred = false;
+					break;
+				}
+			}
+		}
+		
+		for(int n : succ2) {
+			if(core2[n] != NULL_NODE) {
+				if(!succ1.contains(core2[n])) {
+					rSucc = false;
+					break;
 				}
 			}
 		}
