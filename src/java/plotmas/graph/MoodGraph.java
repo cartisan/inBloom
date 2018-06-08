@@ -106,12 +106,13 @@ public class MoodGraph extends JFrame {
 		ChartPanel chartPanel = new ChartPanel(this.chart);
 		chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ));
 		
-		// create dropdown to select modd dimension
+		// create dropdown to select mood dimension
 		JComboBox<String> moodDimensionList = new JComboBox<>(MOOD_DIMS);
 		moodDimensionList.setSelectedItem(this.selectedMoodDimension);
 		moodDimensionList.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
+				@SuppressWarnings("unchecked")
 				JComboBox<String> combo = (JComboBox<String>) event.getSource();
 				String selectedDimension = (String) combo.getSelectedItem();
 				
@@ -127,7 +128,7 @@ public class MoodGraph extends JFrame {
 		});
 		
 		this.add(chartPanel, BorderLayout.CENTER);
-		this.add(moodDimensionList, BorderLayout.SOUTH);
+		this.add(moodDimensionList, BorderLayout.NORTH);
 		
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override

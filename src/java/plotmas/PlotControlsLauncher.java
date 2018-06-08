@@ -117,6 +117,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	@Override
 	protected void createButtons() {
 		createDrawButton();
+		createAnalysisButton();
 		super.createButtons();
 	}
 
@@ -136,6 +137,20 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 		
 		MASConsoleGUI.get().addButton(btDraw);
 		this.drawButton = btDraw;
+	}
+	
+	protected void createAnalysisButton() {
+		JButton btAnalyze = new JButton("Analyze Graph");
+		btAnalyze.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				if(MASConsoleGUI.get().isPause()) {
+					PlotGraphController.getPlotListener().analyze();
+				}
+			}
+	
+		});
+		
+		MASConsoleGUI.get().addButton(btAnalyze);
 	}
 
 	@Override
