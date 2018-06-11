@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -144,19 +145,35 @@ public class PlotGraphController extends JFrame{
 		EdgeLayoutVisitor elv = new EdgeLayoutVisitor(g, 9);
 		g.accept(elv);
 		
+		Map<Vertex, Integer> vertexUnitCount = new HashMap<>();
+		
 		long start = System.currentTimeMillis();
 		UnitFinder finder = new UnitFinder();
-		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, FunctionalUnits.DENIED_REQUEST);
-		int id = 0;
-		for(Map<Vertex, Vertex> map : mappings) {
-			for(Vertex v : map.keySet()) {
-				v.setLabel(v.getLabel() + " @" + id);
+		int polyvalentVertices = 0;
+		int unitInstances = 0;
+		for(PlotDirectedSparseGraph unit : FunctionalUnits.ALL) {
+			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, unit);
+			unitInstances += mappings.size();
+			for(Map<Vertex, Vertex> map : mappings) {
+				for(Vertex v : map.keySet()) {
+					if(!vertexUnitCount.containsKey(v)) {
+						vertexUnitCount.put(v, 1);
+					} else {
+						int count = vertexUnitCount.get(v);
+						count++;
+						if(count == 2) {
+							polyvalentVertices++;
+						}
+						vertexUnitCount.put(v, count);
+					}
+				}
 			}
-			id++;
 		}
 		long time = System.currentTimeMillis() - start;
 		addInformation("Time taken: " + time + "ms");
-		addInformation("Units found: " + mappings.size());
+		addInformation("Units found: " + unitInstances);
+		addInformation("Polyvalence: " + polyvalentVertices);
+		addInformation("Tellability: " + ((float)polyvalentVertices / (float)g.getVertexCount()));
 		this.analyzedGraph = g;
 	}
 	
