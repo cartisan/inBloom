@@ -19,6 +19,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.RefineryUtilities;
 
 import plotmas.PlotAwareAg;
+import plotmas.PlotControlsLauncher;
 
 
 /**
@@ -29,7 +30,7 @@ import plotmas.PlotAwareAg;
  * @author Leonid Berov
  */
 @SuppressWarnings("serial")
-public class MoodGraph extends JFrame {
+public class MoodGraph extends JFrame implements PlotmasGraph {
 
 	protected static Logger logger = Logger.getLogger(MoodGraph.class.getName());
 	public static String[] MOOD_DIMS = new String[] {"pleasure", "arousal", "dominance"};
@@ -96,11 +97,11 @@ public class MoodGraph extends JFrame {
 		this.moodData.clear();
 	}
 	
-	public JFrame visualizeGraph() {
+	public MoodGraph visualizeGraph() {
 		return this.visualizeGraph(this.moodData);
 	}
 	
-	public JFrame visualizeGraph(DefaultCategoryDataset data) {
+	public MoodGraph visualizeGraph(DefaultCategoryDataset data) {
 		// create line chart
 		this.createChart(data);
 		ChartPanel chartPanel = new ChartPanel(this.chart);
@@ -133,7 +134,7 @@ public class MoodGraph extends JFrame {
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		        	MoodGraph.getMoodListener().dispose();
+		        	MoodGraph.getMoodListener().closeGraph();
 		        }
 		    }
 		);
@@ -145,6 +146,13 @@ public class MoodGraph extends JFrame {
 		return this;
 	}
 
+	
+	public void closeGraph() {
+		this.dispose();
+    	
+    	PlotControlsLauncher gui = (PlotControlsLauncher) PlotControlsLauncher.getRunner();
+    	gui.graphClosed(this);
+	}
 	
 	private void addMoodPoint(Double value, Long time, String agName) {
 		this.moodData.addValue(value, agName, time);

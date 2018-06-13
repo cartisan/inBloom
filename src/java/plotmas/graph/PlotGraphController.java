@@ -24,6 +24,7 @@ import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Message;
 import jason.asSyntax.parser.ParseException;
+import plotmas.PlotControlsLauncher;
 import plotmas.PlotLauncher.LauncherAgent;
 
 /**
@@ -34,7 +35,7 @@ import plotmas.PlotLauncher.LauncherAgent;
  * @author Leonid Berov
  */
 @SuppressWarnings("serial")
-public class PlotGraphController extends JFrame{
+public class PlotGraphController extends JFrame implements PlotmasGraph {
     
 	private static PlotGraphController plotListener = null;
 	/**
@@ -47,9 +48,10 @@ public class PlotGraphController extends JFrame{
 
 	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
 	protected PlotDirectedSparseGraph drawnGraph = null;	// graph that is currently being drawn
-	private JComboBox<String> graphTypeList = new JComboBox<>(GRAPH_TYPES);;			// ComboBox that is displayed on the graph to change display type
+	private JComboBox<String> graphTypeList = new JComboBox<>(GRAPH_TYPES);			// ComboBox that is displayed on the graph to change display type
 	private String selectedGraphType = GRAPH_TYPES[0];
 	public VisualizationViewer<Vertex, Edge> visViewer = null;
+	private GraphZoomScrollPane scrollPane = null; //panel used to display scrolling bars
 	
 	
 	/**
@@ -83,7 +85,7 @@ public class PlotGraphController extends JFrame{
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		        	PlotGraphController.getPlotListener().dispose();
+					PlotGraphController.getPlotListener().closeGraph();
 		        }
 		    }
 		);
@@ -95,6 +97,14 @@ public class PlotGraphController extends JFrame{
 			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
 			graph.addRoot(root);
 		}
+	}
+
+	public void closeGraph() {
+		this.getContentPane().remove(scrollPane);
+    	this.dispose();
+    	
+    	PlotControlsLauncher gui = (PlotControlsLauncher) PlotControlsLauncher.getRunner();
+    	gui.graphClosed(this);
 	}
 	
 	public void addEvent(String character, String event) {
@@ -190,7 +200,7 @@ public class PlotGraphController extends JFrame{
 	 * 	displayed
 	 * @return the displayed JFrame
 	 */
-	public JFrame visualizeGraph(boolean compress) {
+	public PlotGraphController visualizeGraph(boolean compress) {
 		if(compress) {
 			this.drawnGraph = this.postProcessThisGraph();
 			this.selectedGraphType  = GRAPH_TYPES[1];
@@ -204,9 +214,9 @@ public class PlotGraphController extends JFrame{
 	
 	/**
 	 * Plots and displays the graph that is selected by {@code this.drawnGraph}.
-	 * @return the displayed JFrame
+	 * @return the displayed PlotGraphController
 	 */
-	protected JFrame visualizeGraph() {
+	public PlotGraphController visualizeGraph() {
 		// Maybe just implement custom renderer instead of all the transformers?
 		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
 		
@@ -241,7 +251,7 @@ public class PlotGraphController extends JFrame{
 		this.visViewer.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
 
 		// enable scrolling control bar
-		GraphZoomScrollPane scrollPane = new GraphZoomScrollPane(visViewer);
+		this.scrollPane = new GraphZoomScrollPane(visViewer);
 
 		// set up the combo-box for changing displayed plot graphs: first select the currently shown graph type
 		this.graphTypeList.setSelectedItem(this.selectedGraphType);
@@ -268,9 +278,9 @@ public class PlotGraphController extends JFrame{
 			}
 		});
 		
-		this.add(graphTypeList, BorderLayout.NORTH);		
+		this.add(graphTypeList, BorderLayout.NORTH);
 		
-		this.getContentPane().add(scrollPane);
+		this.getContentPane().add(this.scrollPane);
 		this.pack();
 		
 		RefineryUtilities.positionFrameOnScreen(this, 0.0, 0.2);
