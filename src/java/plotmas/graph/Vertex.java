@@ -2,12 +2,12 @@ package plotmas.graph;
 
 import java.util.LinkedList;
 import java.util.UUID;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jason.asSemantics.Emotion;
 import jason.asSyntax.parser.ParseException;
+import plotmas.helper.TermParser;
 
 /**
  * Represents a typed vertex in the plot graph. The text of the vertex is stored in {@link #label}, the type 
@@ -45,7 +45,7 @@ public class Vertex implements Cloneable {
 		switch(this.type) {
 			case INTENTION:
 			case SPEECHACT:
-				String removedAnnots = this.label.split("\\[")[0];
+				String removedAnnots = TermParser.removeAnnots(this.label);
 				if(removedAnnots.startsWith("!")) {
 					return removedAnnots.substring(1);
 				} else {
@@ -106,7 +106,7 @@ public class Vertex implements Cloneable {
 	 * @return
 	 */
 	public String getFunctor() {
-		String removedAnnots = getLabel().split("\\[")[0];
+		String removedAnnots = TermParser.removeAnnots(getLabel());
 		String removedTerms = removedAnnots.split("\\(")[0];
 		if(removedTerms.startsWith("!")) {
 			removedTerms = removedTerms.substring(1);
@@ -127,7 +127,7 @@ public class Vertex implements Cloneable {
 	 * @return
 	 */	
 	public String getWithoutAnnotation() {
-		String removedAnnots = getLabel().split("\\[")[0];
+		String removedAnnots = TermParser.removeAnnots(getLabel());
 		if(removedAnnots.startsWith("!")) {
 			removedAnnots = removedAnnots.substring(1);
 		}
@@ -150,9 +150,10 @@ public class Vertex implements Cloneable {
 		case LISTEN:	result = "+" + result;
 						result = appendEmotions(result);
 						break;
-		case PERCEPT: 	Matcher m = NO_ANNOT_PATTERN.matcher(result);
+		case PERCEPT: 	/*Matcher m = NO_ANNOT_PATTERN.matcher(result);
 				        if (m.find())
-				            result = "+" + m.group(1);
+				            result = "+" + m.group(1);*/
+						result = "+" + TermParser.removeAnnots(result);
 						result = appendEmotions(result);
 						break;
 		case EMOTION: 	try {

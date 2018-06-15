@@ -9,6 +9,7 @@ import jason.asSyntax.parser.ParseException;
 import plotmas.graph.Edge;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.Vertex;
+import plotmas.helper.TermParser;
 
 public class PostProcessVisitor implements PlotGraphVisitor {
 
@@ -37,7 +38,7 @@ public class PostProcessVisitor implements PlotGraphVisitor {
 		String label = vertex.getLabel();
 		String[] parts = label.split("\\[motivation\\(");
 		if(parts.length > 1) {
-			String motivation = parts[1].substring(0, parts[1].length() - 2).split("\\[")[0];
+			String motivation = TermParser.removeAnnots(parts[1].substring(0, parts[1].length() - 2));
 			String resultingLabel = parts[0];
 			for(Vertex target : this.eventList) {
 				if(motivation.equals(target.getIntention())) {
@@ -66,10 +67,9 @@ public class PostProcessVisitor implements PlotGraphVisitor {
 				continue;
 			}
 			
-			if((targetEvent.getWithoutAnnotation().equals(emotion.getCause()))
+			if((targetEvent.getWithoutAnnotation().equals(emotion.getCause())) 
 					& !(targetEvent.hasEmotion(emotion.getName()))) {
 				targetEvent.addEmotion(emotion.getName());
-				
 				this.removeVertex(vertex);
 				break;
 			}
@@ -78,14 +78,16 @@ public class PostProcessVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitPercept(Vertex vertex) {
-		if(!this.eventList.isEmpty() &&
-			eventList.getFirst().getType() == Vertex.Type.EVENT &&
-			eventList.getFirst().getFunctor().equals(vertex.getFunctor())) {
-			
-			this.removeVertex(vertex);
-		} else {
-			this.eventList.addFirst(vertex);
+		if(!this.eventList.isEmpty()) {
+			for(Vertex targetEvent : this.eventList) {
+				if(targetEvent.getType() == Vertex.Type.EVENT &&
+					targetEvent.getFunctor().equals(vertex.getFunctor())) {
+					this.removeVertex(vertex);
+					return;
+				}
+			}
 		}
+		this.eventList.addFirst(vertex);
 	}
 
 	@Override
@@ -107,8 +109,7 @@ public class PostProcessVisitor implements PlotGraphVisitor {
 			String resultingLabel = parts[0];
 			Set<Vertex> motivationVertices = new HashSet<Vertex>();
 			for(String motivation : motivations) {
-				motivation = motivation.split("\\[")[0];
-
+				motivation = TermParser.removeAnnots(motivation);
 				for(Vertex target : this.eventList) {
 					boolean isMotivation = false;
 					
@@ -118,21 +119,21 @@ public class PostProcessVisitor implements PlotGraphVisitor {
 					
 					// Check for percepts
 					isMotivation = isMotivation ||
-							motivation.equals(target.getLabel().split("\\[")[0]);
+							motivation.equals(TermParser.removeAnnots(target.getLabel()));
 					
 					// Check for listens
 					isMotivation = isMotivation ||
-							motivation.equals(target.getLabel().split("\\[")[0].substring(1));
+							motivation.equals(TermParser.removeAnnots(target.getLabel()).substring(1));
 					
 					if(isMotivation && !motivationVertices.contains(target)) {
 						this.graph.addEdge(new Edge(Edge.Type.MOTIVATION), target, vertex);
 						//vertex.setMotivation(target);
 						motivationVertices.add(target);
-						
 						break;
 					}
 				}
 			}
+			
 			if(!KEEP_MOTIVATION || !motivationVertices.isEmpty())
 				vertex.setLabel(resultingLabel);
 		}

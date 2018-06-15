@@ -20,6 +20,7 @@ import jason.environment.TimeSteppedEnvironment;
 import jason.util.Pair;
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.graph.PlotGraphController;
+import plotmas.helper.TermParser;
 import plotmas.storyworld.Model;
 
 /**
@@ -128,7 +129,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 		String motivation = "[motivation(%s)]";
 		Intention intent = actionIntentionMap.get(agentName);
 		if(intent != null) {
-			motivation = String.format(motivation, intent.peek().getTrigger().getTerm(1).toString().split("\\[")[0]);
+			motivation = String.format(motivation, TermParser.removeAnnots(intent.peek().getTrigger().getTerm(1).toString()));
 		} else {
 			motivation = "";
 		}
