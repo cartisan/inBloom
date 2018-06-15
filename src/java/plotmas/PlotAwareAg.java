@@ -107,13 +107,15 @@ public class PlotAwareAg extends AffectiveAgent {
         	if(motivation != null) {
         		if(motivation.getFunctor().equals("mood")) {
         			Collection<String> sources = this.getAffectiveTS().getAffectiveC().getS();
-        			motivationString = "[motivation(";
-        			for(String s : sources) {
-        				motivationString += s;
-        				motivationString += ";";
+        			if(!sources.isEmpty()) {
+        				motivationString = "[motivation(";
+            			for(String s : sources) {
+            				motivationString += s;
+            				motivationString += ";";
+            			}
+            			motivationString = motivationString.substring(0, motivationString.length() - 1);
+            			motivationString += ")]";
         			}
-        			motivationString = motivationString.substring(0, motivationString.length() - 1);
-        			motivationString += ")]";
         		}
         	}
         	

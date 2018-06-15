@@ -12,6 +12,8 @@ import plotmas.graph.Vertex;
 
 public class PostProcessVisitor implements PlotGraphVisitor {
 
+	private static final boolean KEEP_MOTIVATION = true;
+	
 	private PlotDirectedSparseGraph graph;
 	
 	private LinkedList<Vertex> eventList;
@@ -131,8 +133,8 @@ public class PostProcessVisitor implements PlotGraphVisitor {
 					}
 				}
 			}
-			
-			vertex.setLabel(resultingLabel);
+			if(!KEEP_MOTIVATION || !motivationVertices.isEmpty())
+				vertex.setLabel(resultingLabel);
 		}
 		
 		this.eventList.addFirst(vertex);
