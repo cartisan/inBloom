@@ -2,6 +2,7 @@ package plotmas.graph.isomorphism;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -198,6 +199,10 @@ public class State {
 		}
 		if(!tIn.isEmpty()) {
 			return tIn;
+		}
+		
+		if(depth > 0) {
+			return Collections.emptySet();
 		}
 		
 		HashSet<Pair<Integer>> tAll = new HashSet<Pair<Integer>>();
