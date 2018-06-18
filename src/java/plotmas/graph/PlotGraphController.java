@@ -29,6 +29,7 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import jason.asSemantics.Message;
 import plotmas.PlotLauncher.LauncherAgent;
+import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.graph.isomorphism.FunctionalUnits;
 import plotmas.graph.isomorphism.UnitFinder;
 import plotmas.graph.visitor.EdgeLayoutVisitor;
@@ -151,8 +152,8 @@ public class PlotGraphController extends JFrame{
 		UnitFinder finder = new UnitFinder();
 		int polyvalentVertices = 0;
 		int unitInstances = 0;
-		for(PlotDirectedSparseGraph unit : FunctionalUnits.ALL) {
-			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, unit);
+		for(FunctionalUnit unit : FunctionalUnits.ALL) {
+			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, unit.getGraph());
 			unitInstances += mappings.size();
 			for(Map<Vertex, Vertex> map : mappings) {
 				for(Vertex v : map.keySet()) {

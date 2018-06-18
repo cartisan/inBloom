@@ -7,17 +7,17 @@ import plotmas.graph.Edge;
 
 public class FunctionalUnits {
 	
-	public static PlotDirectedSparseGraph[] ALL;
+	public static FunctionalUnit[] ALL;
 	
-	public static final PlotDirectedSparseGraph NESTED_GOAL;
-	public static final PlotDirectedSparseGraph DENIED_REQUEST;
-	public static final PlotDirectedSparseGraph RETALIATION;
+	public static final FunctionalUnit NESTED_GOAL;
+	public static final FunctionalUnit DENIED_REQUEST;
+	public static final FunctionalUnit RETALIATION;
 	
-	public static final PlotDirectedSparseGraph DEBUG_SPEECH;
-	public static final PlotDirectedSparseGraph DEBUG_TERMINATION;
+	public static final FunctionalUnit DEBUG_SPEECH;
+	public static final FunctionalUnit DEBUG_TERMINATION;
 	
 	static {
-		ALL = new PlotDirectedSparseGraph[3];
+		ALL = new FunctionalUnit[3];
 		
 		Vertex v1, v2, v3;
 		
@@ -36,7 +36,7 @@ public class FunctionalUnits {
 		v3 = makeNegative();
 		deniedRequest.addEdge(makeCommunication(), v2, v3);
 		deniedRequest.addEdge(makeTermination(), v3, v1);
-		DENIED_REQUEST = deniedRequest;
+		DENIED_REQUEST = new FunctionalUnit("Denied Request", deniedRequest);
 		
 		PlotDirectedSparseGraph nestedGoal = new PlotDirectedSparseGraph();
 		v1 = makeIntention();
@@ -44,7 +44,7 @@ public class FunctionalUnits {
 		v3 = makeWild();
 		nestedGoal.addEdge(makeMotivation(), v1, v2);
 		nestedGoal.addEdge(makeActualization(), v2, v3);
-		NESTED_GOAL = nestedGoal;
+		NESTED_GOAL = new FunctionalUnit("Nested Goal", nestedGoal);
 		
 		PlotDirectedSparseGraph retaliation = new PlotDirectedSparseGraph();
 		v1 = makeIntention();
@@ -60,7 +60,7 @@ public class FunctionalUnits {
 		retaliation.addEdge(makeActualization(), v2, v1);
 		v1 = makeNegative();
 		retaliation.addEdge(makeCommunication(), v3, v1);
-		RETALIATION = retaliation;
+		RETALIATION = new FunctionalUnit("Retaliation", retaliation);
 		
 		ALL[0] = DENIED_REQUEST;
 		ALL[1] = NESTED_GOAL;
@@ -73,13 +73,13 @@ public class FunctionalUnits {
 		v1 = makeIntention();
 		v2 = makeWild();
 		speech.addEdge(makeCommunication(), v1, v2);
-		DEBUG_SPEECH = speech;
+		DEBUG_SPEECH = new FunctionalUnit("Debug Speech", speech);
 		
 		PlotDirectedSparseGraph termination = new PlotDirectedSparseGraph();
 		v1 = makeIntention();
 		v2 = makeWild();
 		termination.addEdge(makeTermination(), v2, v1);
-		DEBUG_TERMINATION = termination;
+		DEBUG_TERMINATION = new FunctionalUnit("Debug Termination", termination);
 	}
 	
 	private static Vertex makeIntention() {
