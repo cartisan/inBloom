@@ -3,7 +3,7 @@
 /*****      Common sense beliefs ************/
 /********************************************/
 
-is_work(plant(_)).
+travelling(//gehen nach Davila(_)).
 is_work(tend(_)).
 is_work(harvest(_)).
 is_work(grind(_)).
@@ -11,7 +11,7 @@ is_work(bake(_)).
 
 is_pleasant(eat(cheese)).
 
-obligation(walkAround).
+obligation(working).
 wish(chilling).
 
 !default_activity.
@@ -148,18 +148,23 @@ wish(chilling).
 	+self(has_purpose);
 	!askForCheese(crow);
 	-self(has_purpose).
-	 
-	 
-	
-+!get_cheese_from_ground: perceived(freeCheese) <-
+
+//+!askOracle: perceived(pregnancy) <-
 	+self(has_purpose);
-	!pickUpCheese(cheese);
+	!askOracle;
+	-self(has_purpose).
+
++!suicide: perceived(deathWish) <-
+	+self(has_purpose);
+	!killSelf;
 	-self(has_purpose).
 	
-+!bragging: perceived(wasFlattered) <-
++!blinding: perceived(deadMom) <-
 	+self(has_purpose);
-	!sing;
+	!blindSelf;
 	-self(has_purpose).
+	
+
 	
 @answer_cheese_request_1[affect(and(personality(agreeableness,low)))]
 +!answer_cheese_request: perceived(wasAsked) | perceived(wasAnsweredNegatively) <-
@@ -194,32 +199,6 @@ wish(chilling).
 +!blinding <-
 	blinding.
 
-
-
-
-+!sitAround <-
-	sitAround.
-	
-+!walkAround <-
-	walkAround. 
-	
-+!flatter(Anims) <-
-	flatter(Anims).
-	
-+!askForCheese(Anims) <-
-	askForCheese(Anims).
-		
-+!sing <-
-	sing.
-	
-+!pickUpCheese(cheese) <-
-	pickUpCheese(cheese).
-	
-+!answerNegatively(Anims) <-
-	answerNegatively(Anims).
-	
-+!share(X, Anims) <-
-	share(X, Anims). 
 
 
 	

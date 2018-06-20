@@ -1,25 +1,26 @@
-package oedipus;
+package oedipusnew;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
+import plotmas.PlotAwareAg;
+import plotmas.PlotAwareAgArch;
 import plotmas.PlotEnvironment;
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.storyworld.StoryworldAgent;
-import plotmas.tutorial.TutorialModel;
 
-public class OedipusEnvironment extends PlotEnvironment<OedipusModel> {
+public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 
-	static Logger logger = Logger.getLogger(OedipusEnvironment.class.getName());
+	static Logger logger = Logger.getLogger(OedipusEnvironmentNew.class.getName());
 	@Override
 	public void initialize(List<LauncherAgent> agents) {
 		super.initialize(agents);
-		OedipusModel model = new OedipusModel(agents, this);
+		OedipusModelNew model = new OedipusModelNew(agents, this);
 		this.setModel(model);
 		this.model.location = null; 
 
@@ -35,6 +36,15 @@ public class OedipusEnvironment extends PlotEnvironment<OedipusModel> {
 	   removePerceptsByUnif(agentName, Literal.parseLiteral("position(X)"));
 	   addPercept(agentName, Literal.parseLiteral("position(" + String.valueOf(pos) + ")" ));
 	   }
+	
+	public void createAgent() {
+		 ArrayList<String> agArchs = new ArrayList<String>(Arrays.asList(PlotAwareAgArch.class.getName()));
+	        try {
+	this.getEnvironmentInfraTier().getRuntimeServices().createAgent("oedipus", "agent_oedipusNew.asl", PlotAwareAg.class.getName(), agArchs, null, null, null);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        } 
+	}
 
 
 	@Override
@@ -57,19 +67,6 @@ public class OedipusEnvironment extends PlotEnvironment<OedipusModel> {
 			result = getModel().goToPlace(agent, location); 
 		}
 		
-		if (action.getFunctor().equals("suicide")) {
-			result = getModel().suicide(agent);
-		}
-		
-		if (action.getFunctor().equals("blinding")) {
-			result = getModel().blinding(agent);
-		}
-		
-		
-		
-		
-		
-		
 		
 		if (action.getFunctor().equals("getChild")) {
 			Term receiverTerm = action.getTerm(0);
@@ -77,41 +74,37 @@ public class OedipusEnvironment extends PlotEnvironment<OedipusModel> {
 			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
 			result = getModel().getChild(agent, patient); 
 		}
+		
+		if (action.getFunctor().equals("ask")) {
+			Term receiverTerm = action.getTerm(0);
+			
+			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
+			result = getModel().ask(agent, patient);
+		}
 
 
-		if (action.getFunctor().equals("giveChildTo")) {
+		/**if (action.getFunctor().equals("giveChildTo")) {
 			Term receiverTerm = action.getTerm(0);
 
 			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
-			result = getModel().giveChildto(agent, patient); 
-		}
-		
-		if (action.getFunctor().equals("askRiddle")) {
-			Term receiverTerm = action.getTerm(0);
-
-			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
-			result = getModel().askRiddle(agent, patient); 
-		}
-
-		if (action.getFunctor().equals("kill")) {
-			Term receiverTerm = action.getTerm(0);
-
-			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
-			result = getModel().kill(agent, patient); 
-		}
-
-		if (action.getFunctor().equals("marry")) {
-			Term receiverTerm = action.getTerm(0);
-
-			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
-			result = getModel().marry(agent, patient); 
-		}
+			result = getModel().giveChildTo(agent, patient); 
+		}**/
 		
 		
 		
-		pauseOnRepeat(agentName, action);
+		
+		pauseOnRepeat(agentName, action); 
 		return result;
 		
 		
 	}
 }
+
+
+
+// this.getEnvironmentInfraTier().getRuntimeServices().createAgent(agName, agSource, agClass, archClasses, bbsPars, stts, father)
+// -> kann vom Model aus aufgerufen werden	z.B.					oedipus, "agent.asl", PlotAwareAgName.get_name(), plotAwareAgArchClass.get_name()
+
+/** Liste der Agenten holen (bei update state percepts).
+model.getAgent(agentName).partner gibt uns Partner des Agenten. Literal partner(X) löschen und neuen hinzufügen.
+Hierbei wird perception mit Partner jedes Mal hinzugefügt, sonst ändern sodass es nur bei Änderungen neue perception gibt.**/
