@@ -139,6 +139,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 	 * @return a clone of this.graph with removed redundant vertices
 	 */
 	private PlotDirectedSparseGraph postProcessThisGraph() {
+		logger.info("Start analzing and compressing the plot graph");
 		// For each subgraph, conflate action->perception->emotion vertices into one vertex
 		PlotDirectedSparseGraph cleanG = this.graph.clone();
 		
