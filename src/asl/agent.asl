@@ -124,15 +124,14 @@ wish(relax).
 /****** Mood  *******************************/
 /********************************************/
 +mood(hostile) <-
-	?affect_target(Anims);
-	!punished(Anims).
+	!punish.
 
 // begin declarative goal  (p. 174; Bordini,2007)*/
-+!punished(L) : punished(L) <- true.
++!punish : punished(L) <- true.
 
 // insert all actual punishment plans
 @punished_plan_1[atomic]	
-+!punished(_) : mood(hostile) & has(X) & is_pleasant(eat(X)) <-
++!punish : mood(hostile) & has(X) & is_pleasant(eat(X)) <-
 	?affect_target(Anims);
 	if (.empty(Anims)) {
 		!eat(X);
@@ -145,17 +144,16 @@ wish(relax).
 	}.
 	
 // blind commitment: if no means to punish present now, keep trying
-+!punished(_) : true <- 
-	?affect_target(Anims);	
-	!punished(Anims).
++!punish : true <- 
+	!punish.
 
 // relativised commitment: finish desire if not in hostile mood anymore, or punishment done
 -mood(hostile) <-
-	.succeed_goal(punished(_)).
+	.succeed_goal(punish).
 
 +punished(L) : true <- 
 	-punished(L);
-	.succeed_goal(punished(_)).
+	.succeed_goal(punish).
 	
 /********************************************/
 /***** Plans  *******************************/
