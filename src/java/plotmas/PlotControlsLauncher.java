@@ -2,15 +2,22 @@ package plotmas;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
 import plotmas.graph.MoodGraph;
-import plotmas.graph.PlotGraph;
+import plotmas.graph.PlotGraphController;
+import plotmas.graph.PlotmasGraph;
+import plotmas.helper.PlotFormatter;
 
 /**
  * Encapsulates the changes to the Jason GUI that are needed by {@link PlotLauncher}. Doesn't provide any 
@@ -19,49 +26,100 @@ import plotmas.graph.PlotGraph;
  */
 public class PlotControlsLauncher extends RunCentralisedMAS {
 	public static PlotLauncher runner = null;
+	protected static boolean COMPRESS_GRAPH = false;	// used to determine if PlotGraph should be compressed before drawing
+	protected static Level LOG_LEVEL = Level.INFO;
+//	protected static Level LOG_LEVEL = Level.FINE;
 	
 	private JButton pauseButton;
 	private JButton drawButton;
-	private JFrame plotGraph;
-	private JFrame moodGraph;
+	private LinkedList<PlotmasGraph> graphs = new LinkedList<PlotmasGraph>();
 	protected boolean isDraw = false;
 
+	
+	/**
+	 * Has to be executed after initialization is complete because it depends
+	 * on PlotEnvironment being already initialized with a plotStartTime.
+	 */
+	public synchronized void setupPlotLogger() {
+        Handler[] hs = Logger.getLogger("").getHandlers(); 
+        for (int i = 0; i < hs.length; i++) { 
+            Logger.getLogger("").removeHandler(hs[i]); 
+        }
+        Handler h = PlotFormatter.handler();
+        Logger.getLogger("").addHandler(h);
+        Logger.getLogger("").setLevel(LOG_LEVEL);
+	}
+	
+	/**
+	 * Changes all logging to appear on stdout. This is helpful because logging during paused state (e.g. during
+	 * plotting) is impossible due to paused Jason console (?).
+	 */
+	public synchronized void setupConsoleLogger() {
+        Handler[] hs = Logger.getLogger("").getHandlers(); 
+        for (int i = 0; i < hs.length; i++) { 
+            Logger.getLogger("").removeHandler(hs[i]); 
+        }
+        
+        ConsoleHandler h = new ConsoleHandler();
+        h.setFormatter(new PlotFormatter());
+        Logger.getLogger("").addHandler(h);
+        Logger.getLogger("").setLevel(LOG_LEVEL);
+	}
+	
 	protected void pauseExecution() {
 	    MASConsoleGUI.get().setPause(true);
 	    this.pauseButton.setText("Continue");
+
+	    // FIXME switching to console logger on pauseExecution causes simulation to not pause ?!
+//		setupConsoleLogger();
 	}
 
 	protected void continueExecution() {
 		this.pauseButton.setText("Pause");
 	    MASConsoleGUI.get().setPause(false);
+	    
+	    this.setupPlotLogger();
 	}
 
 	protected void drawGraphs() {
-		this.drawButton.setText("Close Graphs");
-		this.pauseExecution();
+		if(!MASConsoleGUI.get().isPause())
+			this.pauseExecution();
 		
 		// create and visualize plot graph
-		this.plotGraph = PlotGraph.getPlotListener().visualizeGraph();
+		this.graphs.add(PlotGraphController.getPlotListener().visualizeGraph(COMPRESS_GRAPH));
 		
 		// create and visualize mood graph
-		MoodGraph.getMoodListener().createGraph();
-		this.moodGraph = MoodGraph.getMoodListener().visualizeGraph();
+		MoodGraph.getMoodListener().createData();
+		this.graphs.add(MoodGraph.getMoodListener().visualizeGraph());
 		
 		this.isDraw = true;
+		this.drawButton.setText("Close Graphs");
 	}
 
+	
+	public void graphClosed(PlotmasGraph g) {
+		this.graphs.remove(g);
+		if(this.graphs.isEmpty()) {
+			this.resetGraphView();
+		}
+
+	}
+	
 	protected void closeGraphs() {
-		this.drawButton.setText("Show Graphs");
-		
 		// close windows graph
-		this.plotGraph.dispose();
-		this.moodGraph.dispose();
-		
-		this.isDraw = false;
-		
+		Iterator<PlotmasGraph> it = this.graphs.iterator();
+		while(it.hasNext()){
+			PlotmasGraph g = it.next();
+			it.remove();
+			g.closeGraph();
+		}
+	}
+
+	public void resetGraphView() {
 		// release pointers
-		this.plotGraph = null;
-		this.moodGraph = null;
+		this.graphs = new LinkedList<PlotmasGraph>();
+		this.isDraw = false;
+		this.drawButton.setText("Show Graphs");
 	}
 
 	@Override

@@ -1,19 +1,25 @@
 package plotmas.graph;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.stream.LongStream;
 
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.RefineryUtilities;
 
 import plotmas.PlotAwareAg;
+import plotmas.PlotControlsLauncher;
 
 
 /**
@@ -24,11 +30,15 @@ import plotmas.PlotAwareAg;
  * @author Leonid Berov
  */
 @SuppressWarnings("serial")
-public class MoodGraph extends JFrame {
+public class MoodGraph extends JFrame implements PlotmasGraph {
 
 	protected static Logger logger = Logger.getLogger(MoodGraph.class.getName());
+	public static String[] MOOD_DIMS = new String[] {"pleasure", "arousal", "dominance"};
 	private static MoodGraph moodListener = null;
+	
 	private DefaultCategoryDataset moodData = null;
+	private String selectedMoodDimension = null;
+	private JFreeChart chart = null;
 
 	public static MoodGraph getMoodListener() {
 		if (MoodGraph.moodListener==null) {
@@ -40,14 +50,16 @@ public class MoodGraph extends JFrame {
 	public MoodGraph() {
 		super("Mood Graph");
 		moodData = new DefaultCategoryDataset();
+		this.selectedMoodDimension = MOOD_DIMS[0];
 	}
 	
 	public MoodGraph(String title) {
 		super("Mood Graph " + title);
 		moodData = new DefaultCategoryDataset();
+		this.selectedMoodDimension = MOOD_DIMS[0];
 	}
 	
-	public void createGraph() {
+	public void createData() {
 		this.deleteGraphData();
 		
 		Long startTime = PlotAwareAg.moodMapper.latestStartTime();
@@ -60,40 +72,69 @@ public class MoodGraph extends JFrame {
 			Iterator<Long> it = LongStream.iterate(startTime, n -> n+1).limit(endTime / 1 + 1).iterator();
 			while(it.hasNext()) {
 				Long x_val = it.next();
-				Double sampledMood = PlotAwareAg.moodMapper.sampleMood(agName, x_val);
+				Double sampledMood = PlotAwareAg.moodMapper.sampleMood(agName, x_val).get(selectedMoodDimension);
 				this.addMoodPoint(sampledMood, x_val, agName);
 			}
 		}
+	}
+	
+	private void createChart(DefaultCategoryDataset data) {
+		String title = "Mood Development Over Time"; 
+		if (data.getRowCount() == 0)
+			title = "No mood points have been reported to MoodGraph";
+		
+		JFreeChart lineChart = ChartFactory.createLineChart(
+				title,
+				"plot time in ms", this.selectedMoodDimension,
+				data,
+				PlotOrientation.VERTICAL,
+				true,true,false);
+		
+		this.chart = lineChart;
 	}
 	
 	public void deleteGraphData() {
 		this.moodData.clear();
 	}
 	
-	public JFrame visualizeGraph() {
+	public MoodGraph visualizeGraph() {
 		return this.visualizeGraph(this.moodData);
 	}
 	
-	public JFrame visualizeGraph(DefaultCategoryDataset data) {
-		String title = "Pleasure development over time"; 
-		if (data.getRowCount() == 0)
-			title = "No mood points have been reported to MoodGraph";
-		
-		JFreeChart lineChart = ChartFactory.createLineChart(
-				title,
-				"plot time in ms", "Pleasure",
-				data,
-				PlotOrientation.VERTICAL,
-				true,true,false);
-
-		ChartPanel chartPanel = new ChartPanel(lineChart);
+	public MoodGraph visualizeGraph(DefaultCategoryDataset data) {
+		// create line chart
+		this.createChart(data);
+		ChartPanel chartPanel = new ChartPanel(this.chart);
 		chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ));
-		setContentPane(chartPanel);
+		
+		// create dropdown to select mood dimension
+		JComboBox<String> moodDimensionList = new JComboBox<>(MOOD_DIMS);
+		moodDimensionList.setSelectedItem(this.selectedMoodDimension);
+		moodDimensionList.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				@SuppressWarnings("unchecked")
+				JComboBox<String> combo = (JComboBox<String>) event.getSource();
+				String selectedDimension = (String) combo.getSelectedItem();
+				
+				MoodGraph.getMoodListener().selectedMoodDimension = selectedDimension;
+				MoodGraph.getMoodListener().createData();
+				
+				((CategoryPlot) MoodGraph.getMoodListener().chart.getPlot()).getRangeAxis().setLabel(
+						MoodGraph.getMoodListener().selectedMoodDimension
+				);
+				
+				MoodGraph.getMoodListener().repaint();
+			}
+		});
+		
+		this.add(chartPanel, BorderLayout.CENTER);
+		this.add(moodDimensionList, BorderLayout.NORTH);
 		
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		        	MoodGraph.getMoodListener().dispose();
+		        	MoodGraph.getMoodListener().closeGraph();
 		        }
 		    }
 		);
@@ -103,6 +144,14 @@ public class MoodGraph extends JFrame {
 		this.setVisible(true);
 		
 		return this;
+	}
+
+	
+	public void closeGraph() {
+		this.dispose();
+    	
+    	PlotControlsLauncher gui = (PlotControlsLauncher) PlotControlsLauncher.getRunner();
+    	gui.graphClosed(this);
 	}
 	
 	private void addMoodPoint(Double value, Long time, String agName) {

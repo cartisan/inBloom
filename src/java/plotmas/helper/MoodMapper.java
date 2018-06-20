@@ -1,11 +1,13 @@
 package plotmas.helper;
 
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import jason.util.Pair;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
+import jason.asSemantics.Mood;
 
 /**
  * Helper class that manages the mapping between plot-time and agent's mood changes. Maintained by 
@@ -14,7 +16,8 @@ import jason.util.Pair;
  * @author Leonid Berov
  */
 public class MoodMapper {
-	private HashMap<String, List<Pair<Long,Double>>> timedMoodMap = new HashMap<>();
+//	private HashMap<String, List<Pair<Long,Mood>>> timedMoodMap = new HashMap<>();
+	private Table<String, Long, Mood> timedMoodMap = HashBasedTable.create();
 	private LinkedList<Long> startTimes = new LinkedList<>();
 	
 	/**
@@ -24,17 +27,11 @@ public class MoodMapper {
 	 * @param time
 	 * @param pleasure
 	 */
-	public void addMood(String agName, Long time, double pleasure) {
-		if(timedMoodMap.containsKey(agName)) {
-			List<Pair<Long, Double>> moodList = timedMoodMap.get(agName);
-			moodList.add(new Pair<>(time, pleasure));	
-		} else {
+	public void addMood(String agName, Long time, Mood mood) {
+		if(!timedMoodMap.containsRow(agName)) {
 			startTimes.add(time);
-
-			List<Pair<Long, Double>> moodList = new LinkedList<>();
-			moodList.add(new Pair<>(time, pleasure));				
-			timedMoodMap.put(agName, moodList);
 		}
+		timedMoodMap.put(agName, time, mood);
 	}
 	
 	/**
@@ -51,7 +48,7 @@ public class MoodMapper {
 	 * @return as set of agent names
 	 */
 	public Set<String> mappedAgents() {
-		return this.timedMoodMap.keySet();
+		return this.timedMoodMap.rowKeySet();
 	}
 	
 	/**
@@ -61,23 +58,23 @@ public class MoodMapper {
 	 * @return time in ms
 	 */
 	public Long latestMoodEntry(String agName) {
-		List<Pair<Long, Double>> timeMoodList = timedMoodMap.get(agName);
-		return timeMoodList.stream().mapToLong(pair -> pair.getFirst()).max().getAsLong();
+		Map<Long, Mood> timeMoodMap = timedMoodMap.row(agName);
+		return timeMoodMap.keySet().stream().mapToLong(l -> l).max().getAsLong();
 	}
 	
 	/**
-	 * Identifies the pleasure value for the given agent at the given time by interpolating between the mapped changes
+	 * Identifies the mood for the given agent at the given time by interpolating between the mapped changes
 	 * @param agName
 	 * @param time
-	 * @return pleasure value in the interval [-1.0, 1.0]
+	 * @return mood value in the interval [-1.0, 1.0]
 	 */
-	public double sampleMood(String agName, Long time) {
-		List<Pair<Long, Double>> timeMoodList = timedMoodMap.get(agName);
+	public Mood sampleMood(String agName, Long time) {
+		Map<Long, Mood> timeMoodMap = timedMoodMap.row(agName);
 		
 		// find the last (time, mood) pair before sampling time
-		Pair<Long, Double> sample = timeMoodList.stream().filter(x -> x.getFirst() <= time) //get all pairs before sampling time
-																			.max( (x1, x2) -> Long.compare(x1.getFirst(), x2.getFirst()) ) // get last entry before sampling time
+		Long sampleTime = timeMoodMap.keySet().stream().filter(x -> x <= time) //get all pairs before sampling time
+																			.max( (x1, x2) -> Long.compare(x1, x2) ) // get last entry before sampling time
 																			.get();
-		return sample.getSecond();
+		return timeMoodMap.get(sampleTime);
 	}
 }

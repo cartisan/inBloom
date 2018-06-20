@@ -17,13 +17,13 @@ import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
 import jason.util.Pair;
 import plotmas.PlotLauncher.LauncherAgent;
-import plotmas.graph.PlotGraph;
+import plotmas.graph.PlotGraphController;
 import plotmas.storyworld.Model;
 
 /**
  *  Responsible for relaying action requests from ASL agents to the {@link plotmas.storyworld.Model Storyworld} and
  *  perceptions from the Storyworld to ASL agents (via {@link jason.asSemantics.AffectiveAgent jason's AffectiveAgent}). 
- *  Each action is reported to the {@link plotmas.graph.PlotGraph PlotGraph} for visual representation. <br>
+ *  Each action is reported to the {@link plotmas.graph.PlotGraphController PlotGraphController} for visual representation. <br>
  *  Subclasses need to override {@link #executeAction(String, Structure)} to implement their domain-specific relaying 
  *  and should make sure to execute {@code super.executeAction(agentName, action);}, which will take care of plotting.
  *  
@@ -35,6 +35,8 @@ import plotmas.storyworld.Model;
  */
 public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSteppedEnvironment {
 	public static final Integer MAX_REPEATE_NUM = 7;
+	static final String STEP_TIMEOUT = "100";
+	
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
     public static Long startTime = null;
     
@@ -45,7 +47,6 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
     public static Long getPlotTimeNow() {
     	return (System.nanoTime() - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
     }
-    
     
     protected DomainModel model;
     
@@ -71,6 +72,33 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
      */
     private HashMap<String, List<Literal>> perceivedEventsMap = new HashMap<>();
     
+    /**
+     * Jason-internal initialization executed by the framwork during 
+     * {@link jason.infra.centralised.CentralisedEnvironment#CentralisedEnvironment(jason.mas2j.ClassParameters,
+     *  jason.infra.centralised.BaseCentralisedMAS) CentralisedEnvironment instaniation}. Responsible for setting
+     *  up timeouts and over action policy.
+     *   
+     * @see jason.environment.TimeSteppedEnvironment#init(java.lang.String[])
+     */
+    @Override
+    public void init(String[] args) {
+    	if (args.length > 0)
+    		logger.warning("Initilization arguments provided but usage unclear, ignoring. Args: " + args.toString());
+    	
+    	String[] env_args = {STEP_TIMEOUT};
+    	super.init(env_args);
+
+    	// Make sure actions are executed even if reasoning cycle comes up with several actions in one environment step
+    	this.setOverActionsPolicy(OverActionsPolicy.queue);
+    }
+    
+    /**
+     * Plotmas specific initialization executed after {@linkplain #init(String[])}, but shortly before MAS execution
+     * ensues. Responsible for setting up plot-related information like story time and agents' action counting.
+     * Executed during {@link PlotLauncher#initzializePlotEnvironment(com.google.common.collect.ImmutableList) PlotLauncher
+     * initialization}.
+     * @param agents
+     */
     public void initialize(List<LauncherAgent> agents) {
     	PlotEnvironment.startTime = System.nanoTime();
     	initializeActionCounting(agents);
@@ -78,7 +106,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
     
 	/**
 	 * Override this method in your subclass in order to relay ASL agent's action requests to the appropriate
-	 * method in the {@link plotmas.storyworld.model Model}, which will decide if it suceeds and how if affects the
+	 * method in the {@link plotmas.storyworld.model Model}, which will decide if it succeeds and how if affects the
 	 * storyworld.
 	 * 
 	 * @see plotmas.little_red_hen.FarmEnvironment
@@ -86,7 +114,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 	@Override
     public boolean executeAction(String agentName, Structure action) {
     	// add attempted action to plot graph
-    	PlotGraph.getPlotListener().addEvent(agentName, action.toString());
+    	PlotGraphController.getPlotListener().addEvent(agentName, action.toString());
     	logger.info(String.format("%s performed %s", agentName, action.toString()));
 		
 		return false;
@@ -228,12 +256,12 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 	
     
     /********************** Methods for pausing the execution after nothing happens **************************
-    * checks if all agents executed the same action for the last MAX_REPEATE_NUM of times, if yes, pauses the simu.
+    * checks if all agents executed the same action for the last MAX_REPEATE_NUM of times, if yes, pauses the MAS.
     */
     protected void initializeActionCounting(List<LauncherAgent> agents) {
         HashMap<String, Pair<String, Integer>> agentActionCount = new HashMap<>();
         
-        // set up connections between agents, model and environment
+        // set up a neutral action count for each agent: no action, executed 1 time
         for (LauncherAgent agent : agents) {
         	agentActionCount.put(agent.name, new Pair<String, Integer>("", 1));
         }
@@ -246,6 +274,8 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 		// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
     	if (allAgentsRepeating()) {
     		// reset counter
+    		logger.severe("Auto-paused execution of simulation because all agents repeated their last action for " +
+    				String.valueOf(MAX_REPEATE_NUM) + " of times.");
     		PlotLauncher.runner.pauseExecution();
     		resetAllAgentActionCounts();
     	}

@@ -6,7 +6,7 @@ import java.util.UUID;
  * Represents a typed edge in the plot graph.
  * @author Leonid Berov
  */
-public class Edge {
+public class Edge implements Cloneable {
 	
 	public enum Type { ROOT, TEMPORAL, MOTIVATION, COMMUNICATION }
 	
@@ -36,5 +36,10 @@ public class Edge {
 
 	public void setType(Type type) {
 		this.type = type;
+	}
+	
+	@Override
+	public Edge clone() {
+		return new Edge(this.type);
 	}
 }
