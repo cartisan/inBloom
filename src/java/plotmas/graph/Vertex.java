@@ -27,6 +27,12 @@ public class Vertex implements Cloneable {
 	
 	private LinkedList<String> emotions = new LinkedList<>();
 	
+	/**
+	 * The minimum width divided by two this vertex should have
+	 * in the plot graph visualisation. Set by EdgeLayoutVisitor.
+	 */
+	public int minWidth;
+	
 	public void setType(Type type) {
 		this.type = type;
 	}

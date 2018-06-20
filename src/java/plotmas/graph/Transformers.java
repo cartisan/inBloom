@@ -31,7 +31,7 @@ public class Transformers {
         	int width = (int) FONT.getStringBounds(v.toString(), 
         					new FontRenderContext(FONT.getTransform(), false, false)).getBounds().getWidth(); 
         	
-        	return width + 10;
+        	return Math.max(width, v.minWidth * 2) + 10;
         }
     };
     
