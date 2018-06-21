@@ -41,7 +41,7 @@ public class StoryworldAgent {
 		LinkedList<String> invRepr = new LinkedList<String>();
 		
 		for (Item item : inventory) {
-			invRepr.add("has(" + item.literal() + ")");
+			invRepr.add("has(" + item.getItemName() + ")");
 		}
 
 		return invRepr;

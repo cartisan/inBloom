@@ -39,8 +39,8 @@ wish(relax).
 +has(X) : is_pleasant(eat(X)) & has(X)  <-			// still has X when event selected 
 	!eat(X).
 	
-+has(wheat(seed)) <- 
-	!!create_bread.
++has(wheat) <- 
+	!!create(bread).
 
 +self(has_purpose) <-
 	.suspend(default_activity).
@@ -160,7 +160,7 @@ wish(relax).
 /***** Plans  *******************************/
 /********************************************/
 
-+!create_bread : has(wheat(seed)) <-
++!create(bread) : has(wheat) <-
 	+self(has_purpose);
 	!plant(wheat);
 	!tend(wheat);

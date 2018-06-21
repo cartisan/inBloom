@@ -117,23 +117,23 @@ public class FarmModel extends Model{
 		@Override
 		public String literal() {
 			if (state == WHEAT_STATE.SEED) {
-				return "wheat(seed)";
+				return "state(wheat(seed))";
 			}
 			
 			if (state == WHEAT_STATE.GROWING) {
-				return "wheat(growing)";
+				return "state(wheat(grwing))";
 			}
 
 			if (state == WHEAT_STATE.RIPE) {
-				return "wheat(ripe)";
+				return "state(wheat(ripe))";
 			}
 			
 			if (state == WHEAT_STATE.HARVESTED) {
-				return "wheat(harvested)";
+				return "state(wheat(harvested))";
 			}
 			
 			if (state == WHEAT_STATE.FLOUR) {
-				return "wheat(flour)";
+				return "state(wheat(flour))";
 			}
 		
 			return null;
