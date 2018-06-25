@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,20 +45,16 @@ import plotmas.graph.visitor.PostProcessVisitor;
 public class PlotGraphController extends JFrame{
     
 	private static PlotGraphController plotListener = null;
-	/**
-	 * Types of plot graph that can be drawn: [0] full graph, [1] analyzed graph
-	 */
-	private static final String[] GRAPH_TYPES = new String[] {"full plot graph", "analyzed plot graph"};
+
 	protected static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
 	public static Color BGCOLOR = Color.WHITE;
 	
 	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
-	private PlotDirectedSparseGraph analyzedGraph = null;	// analyzed (post-processed) version of graph
-	protected PlotDirectedSparseGraph drawnGraph = null;	// graph that is currently being drawn
-	private JComboBox<String> graphTypeList = new JComboBox<>(GRAPH_TYPES);			// ComboBox that is displayed on the graph to change display type
-	private String selectedGraphType = GRAPH_TYPES[0];
+	private JComboBox<PlotDirectedSparseGraph> graphTypeList = new JComboBox<>();	// ComboBox that is displayed on the graph to change display type
 	public VisualizationViewer<Vertex, Edge> visViewer = null;
 	private JPanel infoPanel = new JPanel(); // parent of information JLabels
+	
+	private boolean hasBeenAnalyzed = false;
 	
 	/**
 	 * System-wide method for getting access to the active PlotGraph instance that collects events
@@ -100,6 +95,8 @@ public class PlotGraphController extends JFrame{
 		
 		// create and initialize the plot graph the will be created by this listener
 		this.graph = new PlotDirectedSparseGraph();
+		this.graph.setName("Full Plot Graph");
+		
 		// set up a "named" tree for each character
 		for (LauncherAgent character : characters) {
 			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
@@ -107,6 +104,10 @@ public class PlotGraphController extends JFrame{
 		}
 		
 		addInformation("Agents: " + characters.size());
+		addGraph(this.graph);
+		graphTypeList.setSelectedItem(this.graph);
+		
+		addGraph(FunctionalUnits.ALL_UNITS_GRAPH);
 	}
 	
 	public void addEvent(String character, String event) {
@@ -140,9 +141,32 @@ public class PlotGraphController extends JFrame{
 		infoPanel.repaint();
 	}
 	
-	public void analyze() {
+	/**
+	 * Adds a graph to the graph type list.
+	 * If a graph with the same name is already in the list,
+	 * the new one will replace it.
+	 * @param g Graph to add
+	 */
+	public void addGraph(PlotDirectedSparseGraph g) {
+		for(int i = 0; i < graphTypeList.getItemCount(); i++) {
+			String n = graphTypeList.getItemAt(i).toString();
+			if(n.equals(g.toString())) {
+				graphTypeList.removeItemAt(i);
+				graphTypeList.addItem(g);
+				return;
+			}
+		}
+		graphTypeList.addItem(g);
+		graphTypeList.repaint();
+	}
+	
+	public float analyze() {
+		if(hasBeenAnalyzed) {
+			return -1f;
+		}
+		hasBeenAnalyzed = true;
 		PlotDirectedSparseGraph g = new PostProcessVisitor().apply(this.graph);
-
+		g.setName("Analyzed Plot Graph");
 		EdgeLayoutVisitor elv = new EdgeLayoutVisitor(g, 9);
 		g.accept(elv);
 		
@@ -174,40 +198,24 @@ public class PlotGraphController extends JFrame{
 		addInformation("Time taken: " + time + "ms");
 		addInformation("Units found: " + unitInstances);
 		addInformation("Polyvalence: " + polyvalentVertices);
-		addInformation("Tellability: " + ((float)polyvalentVertices / (float)g.getVertexCount()));
-		this.analyzedGraph = g;
-	}
-	
-	/**
-	 * Draws the current state of the plot graph in a JFrame. 
-	 * @param compress true if conflated view (more compact by applying {@link #postProcessThisGraph()}) is to be 
-	 * 	displayed
-	 * @return the displayed JFrame
-	 */
-	public JFrame visualizeGraph(boolean compress) {
-		if(this.analyzedGraph != null) {
-			this.drawnGraph = this.analyzedGraph;
-			this.selectedGraphType  = GRAPH_TYPES[1];
-		}
-		else { 
-			this.drawnGraph = this.graph;
-			this.selectedGraphType = GRAPH_TYPES[0];
-		}
-		return this.visualizeGraph();
+		float tellability = (float)polyvalentVertices / (float)g.getVertexCount();
+		addInformation("Tellability: " + tellability);
+		this.addGraph(g);
+		return tellability;
 	}
 	
 	/**
 	 * Plots and displays the graph that is selected by {@code this.drawnGraph}.
 	 * @return the displayed JFrame
 	 */
-	protected JFrame visualizeGraph() {
+	public JFrame visualizeGraph() {
 		// Maybe just implement custom renderer instead of all the transformers?
 		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
 		
 		// Tutorial:
 		// http://www.grotto-networking.com/JUNG/JUNG2-Tutorial.pdf
 		
-		Layout<Vertex, Edge> layout = new PlotGraphLayout(this.drawnGraph);
+		Layout<Vertex, Edge> layout = new PlotGraphLayout((PlotDirectedSparseGraph)this.graphTypeList.getSelectedItem());
 		
 		// Create a viewing server
 		this.visViewer = new VisualizationViewer<Vertex, Edge>(layout);
@@ -240,28 +248,17 @@ public class PlotGraphController extends JFrame{
 		// c information panel
 		infoPanel.setLayout(new FlowLayout(SwingConstants.LEADING, 15, 5));
 		
-		// set up the combo-box for changing displayed plot graphs: first select the currently shown graph type
-		this.graphTypeList.setSelectedItem(this.selectedGraphType);
-		
 		// second: activate a listener that redraws the plot when selection changes. Careful here: order with 1. matters
 		this.graphTypeList.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				@SuppressWarnings("unchecked")
-				JComboBox<String> combo = (JComboBox<String>) event.getSource();
-				String selectedType = (String) combo.getSelectedItem();
+				JComboBox<PlotDirectedSparseGraph> combo = (JComboBox<PlotDirectedSparseGraph>) event.getSource();
+				PlotDirectedSparseGraph selectedGraph = (PlotDirectedSparseGraph) combo.getSelectedItem();
 				
-				if(selectedType.equals(GRAPH_TYPES[0])) {
-					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().graph);
-					PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
-					PlotGraphController.getPlotListener().visViewer.repaint();
-				}
-				else {
-					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().analyzedGraph != null ? PlotGraphController.getPlotListener().analyzedGraph : PlotGraphController.getPlotListener().graph);
-					PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
-					PlotGraphController.getPlotListener().visViewer.repaint();
-
-				}
+				Layout<Vertex, Edge> layout = new PlotGraphLayout(selectedGraph);
+				PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
+				PlotGraphController.getPlotListener().visViewer.repaint();
 			}
 		});
 		
@@ -276,45 +273,5 @@ public class PlotGraphController extends JFrame{
 		this.setVisible(true);
 		
 		return this;
-	}
-
-	/*************************** for testing purposes ***********************************/
-	private static PlotDirectedSparseGraph createTestGraph() {
-		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
-		
-		// Create Trees for each agent and add the roots
-		Vertex v1 = new Vertex("hen", Vertex.Type.ROOT); Vertex v2 = new Vertex("dog", Vertex.Type.ROOT); 
-		Vertex v3 = new Vertex("!achieve(help_with(plant(wheat)))", Vertex.Type.SPEECHACT); Vertex v4 = new Vertex("!help_with(plant(wheat))[(-)]", Vertex.Type.LISTEN); 
-		Vertex v5 = new Vertex("!help_with(plant(wheat))", Vertex.Type.INTENTION); Vertex v6 = new Vertex("!tell(reject_request(help_with(plant(wheat))))", Vertex.Type.SPEECHACT);
-		Vertex v7 = new Vertex("reject_request(help_with(plant(wheat)))[(-)]", Vertex.Type.LISTEN);
-		
-		graph.addRoot(v1);
-		graph.addRoot(v2);
-		
-		// simulate adding vertices later
-		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v3);
-		graph.addEdge(new Edge(Edge.Type.ROOT), v2, v4);
-		graph.addEdge(new Edge(Edge.Type.TEMPORAL), v3, v7);
-		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), v3, v4);
-		graph.addEdge(new Edge(Edge.Type.MOTIVATION), v4, v5);
-		graph.addEdge(new Edge(Edge.Type.TEMPORAL), v4, v5);
-		graph.addEdge(new Edge(Edge.Type.MOTIVATION), v5, v6);
-		graph.addEdge(new Edge(Edge.Type.TEMPORAL), v5, v6);
-		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), v6, v7);
-		graph.addEdge(new Edge(Edge.Type.TERMINATION), v7, v3);
-		
-		return graph;
-	}
-	
-	public static void main(String[] args) {
-		PlotDirectedSparseGraph forest = createTestGraph();
-
-		EdgeLayoutVisitor elv = new EdgeLayoutVisitor(forest, 9);
-		forest.accept(elv);
-
-		PlotGraphController.instantiatePlotListener(new ArrayList<LauncherAgent>());
-		PlotGraphController controller = PlotGraphController.getPlotListener();
-		controller.drawnGraph = forest;
-		controller.visualizeGraph();
 	}
 }

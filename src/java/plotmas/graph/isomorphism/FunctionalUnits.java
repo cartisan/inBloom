@@ -1,9 +1,9 @@
 package plotmas.graph.isomorphism;
 
+import plotmas.graph.Edge;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.Vertex;
-
-import plotmas.graph.Edge;
+import plotmas.graph.visitor.EdgeLayoutVisitor;
 
 public class FunctionalUnits {
 	
@@ -15,6 +15,8 @@ public class FunctionalUnits {
 	
 	public static final FunctionalUnit DEBUG_SPEECH;
 	public static final FunctionalUnit DEBUG_TERMINATION;
+	
+	public static final PlotDirectedSparseGraph ALL_UNITS_GRAPH;
 	
 	static {
 		ALL = new FunctionalUnit[3];
@@ -65,6 +67,15 @@ public class FunctionalUnits {
 		ALL[0] = DENIED_REQUEST;
 		ALL[1] = NESTED_GOAL;
 		ALL[2] = RETALIATION;
+		
+		PlotDirectedSparseGraph allUnitsGraph = ALL[0].getDisplayGraph();
+		for(int i = 1; i < ALL.length; i++) {
+			ALL[i].getDisplayGraph().cloneInto(allUnitsGraph);
+		}
+		EdgeLayoutVisitor elv = new EdgeLayoutVisitor(allUnitsGraph, 9);
+		allUnitsGraph.accept(elv);
+		allUnitsGraph.setName("Functional Units");
+		ALL_UNITS_GRAPH = allUnitsGraph;
 		
 		/**
 		 * DEBUG UNITS

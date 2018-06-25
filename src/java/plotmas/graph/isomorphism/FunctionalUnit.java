@@ -61,8 +61,8 @@ public class FunctionalUnit {
 	private void createDisplayGraph() {
 		displayGraph = unitGraph.clone();
 		Vertex[] roots = new Vertex[] {
-			new Vertex("agent1", Vertex.Type.ROOT),
-			new Vertex("agent2", Vertex.Type.ROOT)
+			new Vertex(this.name + " Agent 1", Vertex.Type.ROOT),
+			new Vertex(this.name + " Agent 2", Vertex.Type.ROOT)
 		};
 		
 		Vertex startVertex = null;
@@ -78,6 +78,12 @@ public class FunctionalUnit {
 		displayGraph.addRoot(roots[0]);
 		displayGraph.addRoot(roots[1]);
 		connect(startVertex, roots, 0);
+		
+		if(displayGraph.getIncidentEdges(roots[1]).isEmpty()) {
+			displayGraph.removeVertex(roots[1]);
+		}
+		
+		displayGraph.setName(this.getName());
 	}
 	
 	/**

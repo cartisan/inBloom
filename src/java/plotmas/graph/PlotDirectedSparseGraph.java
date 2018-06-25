@@ -32,6 +32,12 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	private Table<String, String, Vertex> senderMap = HashBasedTable.create();	// maps: agentName, message --> vertex
 	
 	/**
+	 * The name of this graph.
+	 * Used as a string representation
+	 */
+	private String name;
+	
+	/**
 	 * An array containing all vertices of this graph.
 	 * Used to identify vertices by id in plotmas.graph.isomorphism.State
 	 * This is generated whenever a change to the vertices was made and
@@ -217,8 +223,16 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	
 	@Override
 	public PlotDirectedSparseGraph clone() {
+		return cloneInto(new PlotDirectedSparseGraph());
+	}
+
+	/**
+	 * Clones the vertices and edges of this graph into the provided graph.
+	 * @param dest
+	 * @return the provided graph with vertices and edges of this one added.
+	 */
+	public PlotDirectedSparseGraph cloneInto(PlotDirectedSparseGraph dest) {
 		// BEWARE: lastVertexMap is not cloned, the returned graph is not useable for continuing plotting 
-		PlotDirectedSparseGraph dest = new PlotDirectedSparseGraph();
 		
 		// clone vertices and add them to cloned graph
 		HashMap<Vertex,Vertex> cloneMap = new HashMap<>();		// maps old vertex -> cloned vertex
@@ -354,5 +368,14 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 			throw new RuntimeException("Unknown vertex type. Aborting visit!");
 		}
 		
+	}
+	
+	public void setName(String newName) {
+		this.name = newName;
+	}
+	
+	@Override
+	public String toString() {
+		return this.name;
 	}
 }
