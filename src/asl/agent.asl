@@ -9,16 +9,30 @@ is_work(harvest(_)).
 is_work(grind(_)).
 is_work(bake(_)).
 
+//is_work(create(bread)).
+
+creatable_from(wheat,bread).
+
 is_pleasant(eat(bread)).
 
 obligation(farm_work).
 wish(relax).
+
+is_useful(A,true) :- is_pleasant(eat(A)).
 
 !default_activity.
 
 /********************************************/
 /*****      Common sense reasoning ************/
 /********************************************/
+
+// follow work-intensive wishes when somewhat active
+@wish_1[affect(not(mood(arousal,low)))]
++wish(X) : is_work(X) <-
+	!!X.
+
++wish(X)  <-
+	!!X.
 
 // Share when in a good mood, and not "misanthrophic"
 //@share_food_plan[atomic, affect(and(mood(pleasure,high),not(personality(agreeableness,low))))]
@@ -31,16 +45,24 @@ wish(relax).
 // Share when very agreeable character, unless in a bad mood
 @share_food_plan2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +has(X) : is_pleasant(eat(X)) & has(X) <- 			// still has X when event selected
+	-wish(create(X));
 	?agents(Anims);
 	!share(X, Anims);
 	.print("Shared: ", X, " with the others");
 	!eat(X).
 
 +has(X) : is_pleasant(eat(X)) & has(X)  <-			// still has X when event selected 
+	-wish(create(X));
 	!eat(X).
 	
-+has(wheat) <- 
-	!!create(bread).
++has(X) : has(X) <-
+	-wish(create(X));
+	?creatable_from(X,Y);
+	?is_useful(Y,Z)
+	if(Z) {
+		+obligation(create(Y));
+		+wish(create(Y));
+	}.
 
 +self(has_purpose) <-
 	.suspend(default_activity).
@@ -160,14 +182,36 @@ wish(relax).
 /***** Plans  *******************************/
 /********************************************/
 
-+!create(bread) : has(wheat) <-
+//+!create(bread) : has(wheat) <-
+//	+self(has_purpose);
+//	!plant(wheat);
+//	!tend(wheat);
+//	!harvest(wheat);
+//	!grind(wheat);
+//	!bake(bread);
+//	-self(has_purpose).
+
++!create(bread) : has(wheat) & state(wheat(seed))<-
 	+self(has_purpose);
 	!plant(wheat);
+	!create(bread).
+
++!create(bread) : state(wheat(growing))<-
 	!tend(wheat);
+	!create(bread).
+
++!create(bread) : state(wheat(ripe))<-
 	!harvest(wheat);
+	!create(bread).
+
++!create(bread) : state(wheat(harvested))<-
 	!grind(wheat);
+	!create(bread).
+
++!create(bread) : state(wheat(flour))<-
 	!bake(bread);
-	-self(has_purpose). 	
+	-wish(create(bread));
+	-self(has_purpose).
 
 // Reject helping others if "antisocial", but not feeling powerless
 @reject_request_1[affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]
