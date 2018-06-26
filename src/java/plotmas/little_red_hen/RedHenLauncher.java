@@ -17,13 +17,12 @@ public class RedHenLauncher extends PlotLauncher {
 	public static void main(String[] args) throws JasonException {
         logger.info("Starting up from Launcher!");
         ENV_CLASS = FarmEnvironment.class;
-        COMPRESS_GRAPH = true;
         
         runner = new RedHenLauncher();
         
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
 							runner.new LauncherAgent("hen",					  // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
-									new Personality(0,  1,  0.7,  0.3, 0.15)    //punishment
+									new Personality(0,  1,  0.7,  0.3, 0.3)    //punishment
 //									new Personality(0,  1,  0.7,  0.3, -0.8)    //low neurot --> no punishment
 //									new Personality(0,  1,  0.7,  0.7, -0.8)    //high aggrea --> sharing
 									

@@ -201,6 +201,7 @@ public class PlotGraphController extends JFrame{
 		float tellability = (float)polyvalentVertices / (float)g.getVertexCount();
 		addInformation("Tellability: " + tellability);
 		this.addGraph(g);
+		this.graphTypeList.setSelectedItem(g);
 		return tellability;
 	}
 	
