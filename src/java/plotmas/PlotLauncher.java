@@ -44,6 +44,14 @@ public class PlotLauncher extends PlotControlsLauncher {
     static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
     static Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
     
+    /**
+     * Resets static variables such that a new
+     * cycle of simulation may be run.
+     */
+    public void reset() {
+    	env = null;
+    	ags.clear();
+    }
     
     /** 
      * This implements the functionality of the super class, but inserts {@link PlotAwareCentralisedAgentArch}

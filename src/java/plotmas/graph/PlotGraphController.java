@@ -161,6 +161,10 @@ public class PlotGraphController extends JFrame{
 	}
 	
 	public float analyze() {
+		return analyze(null);
+	}
+	
+	public float analyze(PlotDirectedSparseGraph analyzedGraphContainer) {
 		if(hasBeenAnalyzed) {
 			return -1f;
 		}
@@ -202,6 +206,11 @@ public class PlotGraphController extends JFrame{
 		addInformation("Tellability: " + tellability);
 		this.addGraph(g);
 		this.graphTypeList.setSelectedItem(g);
+		
+		if(analyzedGraphContainer != null) {
+			g.cloneInto(analyzedGraphContainer);
+		}
+		
 		return tellability;
 	}
 	
