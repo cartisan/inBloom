@@ -8,6 +8,7 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Line2D;
+import java.util.Set;
 
 import com.google.common.base.Function;
 
@@ -24,6 +25,8 @@ public class Transformers {
 	
 	static private Font FONT = new Font("Courier New", Font.PLAIN, 12);
 	static private int HEIGHT = 20;
+	
+	static public Set<Vertex> HIGHLIGHT;
 	
 	static public Function<Vertex, Integer> vertexSizeTransformer = new Function<Vertex,Integer>(){
         public Integer apply(Vertex v){
@@ -86,7 +89,12 @@ public class Transformers {
     };
     
     static public Function<Vertex, Paint> vertexDrawPaintTransformer = new Function<Vertex,Paint>(){
-        public Paint apply(Vertex v){ 
+        public Paint apply(Vertex v){
+        	if(HIGHLIGHT != null) {
+        		if(HIGHLIGHT.contains(v)) {
+        			return Color.YELLOW;
+        		}
+        	}
         	switch (v.getType()) {
 	        	case ROOT:
 	        		return PlotGraphController.BGCOLOR;

@@ -2,8 +2,11 @@ package plotmas.graph;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -13,6 +16,7 @@ import com.google.common.collect.Table;
 
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import plotmas.graph.Vertex.Type;
+import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.graph.visitor.PlotGraphVisitor;
 import plotmas.graph.visitor.RemovedEdge;
 
@@ -57,6 +61,9 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 */
 	private HashMap<Vertex, String> vertexAgentMap = new HashMap<>();			// maps: vertex --> agentName
 
+
+	private Map<FunctionalUnit, Set<Vertex>> unitVertexGroups = new HashMap<>(); // stores all vertices belonging to a functional unit
+	
     /**
      * Returns a list of nodes that represent the roots of each character subgraph.
      * @return
@@ -221,6 +228,32 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
         return succs;
     }
 	
+	/**
+	 * Adds a given vertex to the set of vertices belonging to the
+	 * provided functional unit.
+	 * @param v Vertex to add
+	 * @param unit Functional unit the vertex belongs to
+	 */
+	public void markVertexAsUnit(Vertex v, FunctionalUnit unit) {
+		if(!unitVertexGroups.containsKey(unit)) {
+			unitVertexGroups.put(unit, new HashSet<Vertex>());
+		}
+		
+		unitVertexGroups.get(unit).add(v);
+	}
+	
+	/**
+	 * Returns all vertices belonging to the provided unit.
+	 * @param unit to retrieve the vertices of
+	 * @return Set of vertices
+	 */
+	public Set<Vertex> getUnitVertices(FunctionalUnit unit) {
+		if(!unitVertexGroups.containsKey(unit)) {
+			unitVertexGroups.put(unit, new HashSet<Vertex>());
+		}
+		return unitVertexGroups.get(unit);
+	}
+	
 	@Override
 	public PlotDirectedSparseGraph clone() {
 		return cloneInto(new PlotDirectedSparseGraph());
@@ -252,6 +285,13 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	    for (Edge e : this.getEdges()) {
 	    	Collection<Vertex> vClones = this.getIncidentVertices(e).stream().map( v -> cloneMap.get(v)).collect(Collectors.toList());
 	        dest.addEdge(e.clone(), vClones);
+	    }
+	    
+	    for(Map.Entry<FunctionalUnit, Set<Vertex>> entry : unitVertexGroups.entrySet()) {
+	    	FunctionalUnit fu = entry.getKey();
+	    	for(Vertex v : entry.getValue()) {
+	    		dest.markVertexAsUnit(cloneMap.get(v), fu);
+	    	}
 	    }
 	    
 	    return dest;

@@ -103,6 +103,27 @@ public class PlotGraphController extends JFrame{
 			graph.addRoot(root);
 		}
 		
+		// Initialize functional unit combo box
+		JComboBox<FunctionalUnit> unitComboBox = new JComboBox<FunctionalUnit>(FunctionalUnits.ALL);
+		unitComboBox.addItem(null);
+		unitComboBox.setSelectedItem(null);
+		unitComboBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				@SuppressWarnings("unchecked")
+				JComboBox<FunctionalUnit> combo = (JComboBox<FunctionalUnit>) event.getSource();
+				FunctionalUnit selectedUnit = (FunctionalUnit) combo.getSelectedItem();
+				if(selectedUnit == null) {
+					Transformers.HIGHLIGHT = null;
+				} else {
+					Transformers.HIGHLIGHT = ((PlotDirectedSparseGraph)graphTypeList.getSelectedItem()).getUnitVertices(selectedUnit);
+				}
+				PlotGraphController.getPlotListener().visViewer.repaint();
+			}
+		});
+		addInformation("Highlight Unit:");
+		this.infoPanel.add(unitComboBox);
+		
 		addInformation("Agents: " + characters.size());
 		addGraph(this.graph);
 		graphTypeList.setSelectedItem(this.graph);
@@ -185,6 +206,7 @@ public class PlotGraphController extends JFrame{
 			unitInstances += mappings.size();
 			for(Map<Vertex, Vertex> map : mappings) {
 				for(Vertex v : map.keySet()) {
+					g.markVertexAsUnit(v, unit);
 					if(!vertexUnitCount.containsKey(v)) {
 						vertexUnitCount.put(v, 1);
 					} else {
@@ -192,6 +214,7 @@ public class PlotGraphController extends JFrame{
 						count++;
 						if(count == 2) {
 							polyvalentVertices++;
+							v.setLabel("* " + v.getLabel());
 						}
 						vertexUnitCount.put(v, count);
 					}
