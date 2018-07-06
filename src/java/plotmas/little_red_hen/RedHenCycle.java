@@ -23,11 +23,12 @@ public class RedHenCycle extends PlotCycle {
 	private List<int[]> valueList;
 
 	protected RedHenCycle() {
+		// Create PlotCycle with needed agents.
 		super(new String[] { "hen", "dog", "cow", "pig" }, "agent");
-		
+
+		// Generate all possible personalities.
 		int[] values = new int[5];
 		boolean hasAll = false;
-		
 		HashSet<int[]> valueSet = new HashSet<>();
 		while(!hasAll) {
 			for(int i = 0; i < values.length; i++) {
@@ -48,6 +49,7 @@ public class RedHenCycle extends PlotCycle {
 			valueList.add(v);
 		}
 		
+		// Log how many personalities there are.
 		log("Running " + valueList.size() + " cycles...");
 	}
 	
@@ -62,7 +64,10 @@ public class RedHenCycle extends PlotCycle {
 			return new ReflectResult(null, null, false);
 		}
 		
-		int[] values = valueList.get(cycle);
+		// Get personality values of last simulation (to save them if the simulation was good)
+		int[] values = valueList.get(cycle - 1);
+		
+		// Save tellability, graph and hen personality if it was better than the best before
 		if(er.getTellability() > bestTellability) {
 			bestTellability = er.getTellability();
 			log("New best: " + bestTellability);
@@ -70,15 +75,24 @@ public class RedHenCycle extends PlotCycle {
 			bestPersonality = createPersonalitiesFromValues(values)[0];
 		}
 		
+		// Retrieve next personality values
+		values = valueList.get(cycle);
+		
 		log("Cycle " + cycle++);
+		
+		// Create new personalities
 		Personality[] p = createPersonalitiesFromValues(values);
+		
 		return new ReflectResult(new RedHenLauncher(), p);
 	}
 	
 	@Override
 	protected void finish() {
+		// Print results
 		log("Best tellability: " + bestTellability);
 		log("Hen personality: " + bestPersonality.toString());
+		
+		// Add best graph to PlotGraphController
 		bestGraph.setName("Plot graph with highest tellability");
 		bestGraph.accept(new EdgeLayoutVisitor(bestGraph, 9));
 		PlotGraphController.getPlotListener().addGraph(bestGraph);

@@ -20,16 +20,35 @@ import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
 
+/**
+ * Class which facilitates running a cycle of multiple simulations.
+ * @author Sven Wilke
+ */
 public abstract class PlotCycle implements Runnable {
 	
+	/**
+	 * The names of the agents in this simulation.
+	 */
 	private String[] agentNames;
+	/**
+	 * The source file of the agent code.
+	 */
 	private String agentSrc;
 	
+	/**
+	 * Whether the next cycle should start after the current one
+	 * is finished.
+	 */
 	private boolean isPaused;
 	
 	private JFrame cycleFrame;
 	private JTextArea logTextArea = new JTextArea(10, 40);
 	
+	/**
+	 * Creates a new cycle object with specified agents.
+	 * @param agentNames an array of the names of all agents
+	 * @param agentSrc the name of the source file for the agent code
+	 */
 	protected PlotCycle(String[] agentNames, String agentSrc) {
 		this.agentNames = agentNames;
 		this.agentSrc = agentSrc;
@@ -60,14 +79,34 @@ public abstract class PlotCycle implements Runnable {
 		cycleFrame.setVisible(true);
 	}
 	
+	/**
+	 * Closes and disposes the log gui.
+	 */
 	protected void closeGui() {
 		cycleFrame.setVisible(false);
 		cycleFrame.dispose();
 	}
 	
+	/**
+	 * Should be overridden by subclass.
+	 * Creates new parameters for the next simulation based on
+	 * the results of the previous simulation.
+	 * @param er Results of the previous simulation
+	 * @return ReflectResult containing parameters (launcher, personalities) for the next simulation
+	 */
 	protected abstract ReflectResult reflect(EngageResult er);
+	/**
+	 * Should be overriden by subclass.
+	 * Creates parameters for the first simulation.
+	 * @return ReflectResult containing parameters (launcher, personalities) for the next simulation
+	 */
 	protected abstract ReflectResult createInitialReflectResult();
 	
+	/**
+	 * Runs a single simulation until it is paused (finished by Plotmas or user) or some time has passed.
+	 * @param rr ReflectResult containing Personality array with length equal to agent count as well as PlotLauncher instance
+	 * @return EngageResult containing the graph of this simulation and its tellability score.
+	 */
 	@SuppressWarnings("deprecation")
 	protected EngageResult engage(ReflectResult rr) {
 		PlotLauncher runner = rr.getRunner();
@@ -109,6 +148,9 @@ public abstract class PlotCycle implements Runnable {
 		return ImmutableList.copyOf(agents);
 	}
 	
+	/**
+	 * Starts the cycle.
+	 */
 	@Override
 	public void run() {
 		ReflectResult rr = this.createInitialReflectResult();
@@ -119,15 +161,27 @@ public abstract class PlotCycle implements Runnable {
 		this.finish();
 	}
 	
+	/**
+	 * Can be overridden by subclass.
+	 * This is called after the last simulation was run.
+	 */
 	protected void finish() {
 	}
 	
+	/**
+	 * Logs a message to the PlotCycle log window.
+	 * '\n' is appended automatically.
+	 * @param string Message to log
+	 */
 	protected void log(String string) {
 		logTextArea.append(string + "\n");
 		logTextArea.setCaretPosition(logTextArea.getText().length());
 		logTextArea.repaint();
 	}
 	
+	/**
+	 * Runnable for a single simulation.
+	 */
 	private class Cycle implements Runnable {
 		
 		private PlotLauncher runner;
@@ -152,9 +206,28 @@ public abstract class PlotCycle implements Runnable {
 		}
 	}
 	
+	/**
+	 * Result of the reflect method. Contains PlotLauncher instance
+	 * and personalities for the next simulation.
+	 * Can be extended to allow further parameters.
+	 */
 	public class ReflectResult {
+		/**
+		 * Instance of the PlotLauncher for
+		 * the story in question.
+		 */
 		private PlotLauncher runner;
+		/**
+		 * Personalities which are used for the agents.
+		 * Will be in used in the same order as the
+		 * agentNames array passed to the PlotCycle constructor.
+		 */
 		private Personality[] personalities;
+		/**
+		 * If this is false, the cycle will not execute another
+		 * simulation and call finish().
+		 * runner and personalities do not matter in this case.
+		 */
 		private boolean shouldContinue;
 		
 		public ReflectResult(PlotLauncher runner, Personality[] personalities) {
@@ -180,6 +253,11 @@ public abstract class PlotCycle implements Runnable {
 		}
 	}
 	
+	/**
+	 * Result of the engage method. Contains plot graph of
+	 * the last simulation and the tellability score.
+	 * Can be extended to allow further return values.
+	 */
 	public class EngageResult {
 		private PlotDirectedSparseGraph plotGraph;
 		private float tellabilityScore;
