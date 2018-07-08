@@ -22,10 +22,9 @@ wish(chilling).
 	.resume(default_activity).
 	
 +wasAsked <-
-	?agents(Anims);
 	.print("wasAsked");
 	+perceived(wasAsked);
-	!answer_question(Anims).
+	!answer_question(laios).
 	
 +wifePregnant <-
 	.print("wife pregnant");
