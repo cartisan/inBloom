@@ -22,21 +22,26 @@ wish(chilling).
 	.resume(default_activity).
 	
 +wasAsked <-
-	.print("was asked");
+	?agents(Anims);
+	.print("wasAsked");
 	+perceived(wasAsked);
-	!answer_question.
+	!answer_question(Anims).
 	
 +wifePregnant <-
 	.print("wife pregnant");
 	+perceived(wifePregnant);
 	!ask(oracle).
 	
-+pregnant <-
-	getChild;
-	.print("got child").
+/*+sonKillsMe <-
+	.print("My son will kill me");
+	+perceived(sonKillsMe);
+	!giveAway(Oedipus). */
 	
-
-
+/*+pregnant <-
+	getChild;
+	.print("got child").*/
+	
+	
 
 /********************************************/
 /***** Self-specifications  *****************/
@@ -86,10 +91,6 @@ wish(chilling).
 /********************************************/
 
 
-+!askOracle: perceived(pregnancy) <-				// kann im common sense reasoning stehen
-	+self(has_purpose);
-	!askOracle;
-	-self(has_purpose).
 
 +!suicide: perceived(deathWish) <-
 	+self(has_purpose);
@@ -100,16 +101,7 @@ wish(chilling).
 	+self(has_purpose);
 	!blindSelf;
 	-self(has_purpose).
-	
-+!getChild: perceived(gotChild) <-
-	+self(has_purpose);
-	.create_agent(oedipus, "oedipus.asl");
-	-self(has_purpose).
-	
-+!answer_question: perceived(wasAsked) <-
-	+self(has_purpose);
-	!answer_question;
-	-self(has_purpose).
+
 
 	
 
@@ -139,6 +131,12 @@ wish(chilling).
 
 +!ask(Anims) <-
 	ask(Anims).
+	
++!answer_question(Anims) <-
+	answer_question(Anims).
+	
+/*+!giveAway(Anims) <-
+	giveAway(Anims).*/
 
 
 	

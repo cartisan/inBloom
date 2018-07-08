@@ -27,6 +27,8 @@ public class OedipusModelNew extends Model {
 		this.actionCount +=1;
 		logger.info("Someone was chilling");
 		
+		
+		
 		return agent.relax(); 
 		
 		
@@ -36,8 +38,8 @@ public class OedipusModelNew extends Model {
 		this.actionCount +=1;
 		logger.info("Someone was working");
 		
-		if((this.actionCount >5) && (agent.name == "jocaste")){
-			this.environment.addEventPerception(agent.name, "pregnant");
+		if(this.actionCount == 20){
+			this.environment.addEventPerception("jocaste", "pregnant");
 			this.environment.addEventPerception("laios", "wifePregnant");
 			
 			
@@ -49,9 +51,19 @@ public class OedipusModelNew extends Model {
 	
 	public boolean ask(StoryworldAgent asker, StoryworldAgent asked){
 		this.actionCount +=1;
-		logger.info(asker.name +"asked"+ asked.name);
-		this.environment.addEventPerception(asked.name, "was asked");
+		logger.info(asker.name +" asked "+ asked.name);
+		this.environment.addEventPerception(asked.name, "wasAsked");
 		
+		return true;
+	}
+	
+	public boolean answer_question(StoryworldAgent answerer, StoryworldAgent answered){
+		this.actionCount +=1;
+		logger.info(answerer.name +" answered "+ answered.name);
+		if (answered.name == "laios") {
+			this.environment.addEventPerception(answered.name, "sonKillsMe");
+			logger.info(answered.name +"getsAnswer sonKillsMe");
+		}
 		return true;
 	}
 	
@@ -63,17 +75,14 @@ public class OedipusModelNew extends Model {
 		return true;
 	}
 	
-	public boolean getChild(StoryworldAgent agent, StoryworldAgent patient) {
-		this.environment.addEventPerception(agent.name, "gotChild");
-		this.actionCount +=1;
-/**		if	(agent.name == "jocaste"){
-			
-		create_agent(oedipus,"agent_oedipusNew.asl");
-		logger.info(agent.name + "gave birth to Oedipus");} **/
-		((OedipusEnvironmentNew) this.environment).createAgent();
-		return true; 
+	//public boolean getChild(StoryworldAgent agent, StoryworldAgent patient) {
+		//this.environment.addEventPerception(agent.name, "gotChild");
+		//this.actionCount +=1;
+
+		//((OedipusEnvironmentNew) this.environment).createAgent();
+		//return true; 
 		
-	}
+	//}
 	
 
 
@@ -82,5 +91,8 @@ public class OedipusModelNew extends Model {
 	
 
 }
+/**		if	(agent.name == "jocaste"){
 
+create_agent(oedipus,"agent_oedipusNew.asl");
+logger.info(agent.name + "gave birth to Oedipus");} **/
 /** Agenten haben ein marriedTo, kann null sein oder ein anderer Agent. Muss durch Perceptions an Agents zurück gegeben werden.**/

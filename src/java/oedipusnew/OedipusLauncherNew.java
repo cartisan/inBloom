@@ -33,8 +33,8 @@ public class OedipusLauncherNew extends PlotLauncher {
 				//        new Personality(0, 0, 0, 0, 0)
 				//      ),
 		      runner.new LauncherAgent("shepherd",
-				        new Personality(0, 0, 0, 0, 0)
-				      ) 
+				       new Personality(0, 0, 0, 0, 0)
+				     ) 
 		    );
 
 		    runner.run(args, agents, "agent_oedipusNew"); 

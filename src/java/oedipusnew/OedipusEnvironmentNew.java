@@ -67,13 +67,19 @@ public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 			result = getModel().goToPlace(agent, location); 
 		}
 		
-		
-		if (action.getFunctor().equals("getChild")) {
+		if (action.getFunctor().equals("answer_question")) {
 			Term receiverTerm = action.getTerm(0);
-
+		
 			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
-			result = getModel().getChild(agent, patient); 
+			result = getModel().answer_question(agent, patient);
 		}
+		
+		//if (action.getFunctor().equals("getChild")) {
+			//Term receiverTerm = action.getTerm(0);
+
+			//StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
+			//result = getModel().getChild(agent, patient); 
+		//}
 		
 		if (action.getFunctor().equals("ask")) {
 			Term receiverTerm = action.getTerm(0);
@@ -81,6 +87,13 @@ public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
 			result = getModel().ask(agent, patient);
 		}
+		
+		/**if (action.getFunctor().equals("giveAway")) {
+			Term receiverTerm = action.getTerm(0);
+			
+			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
+			result = getModel().giveAway(agent, patient);
+		}**/
 
 
 		/**if (action.getFunctor().equals("giveChildTo")) {
