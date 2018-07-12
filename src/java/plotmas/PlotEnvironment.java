@@ -1,5 +1,7 @@
 package plotmas;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,12 +11,15 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import jason.asSemantics.AffectiveAgent;
+import jason.asSemantics.Personality;
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
+import jason.runtime.RuntimeServicesInfraTier;
 import jason.util.Pair;
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.graph.PlotGraphController;
@@ -129,6 +134,43 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 		return this.model;
 	}
 	
+	/**
+	 * Creates a new agent and registers it in all necessary places. Starts the agent after registration. 
+	 */
+	public void createAgent(String name, String aslFile, Personality personality) {
+		ArrayList<String> agArchs = new ArrayList<String>(Arrays.asList(PlotAwareAgArch.class.getName()));
+		String agName = null;
+		
+        try {
+        	logger.info("Creating a new agent odipus");
+        	agName = this.getRuntimeServices().createAgent(name, aslFile, PlotAwareAg.class.getName(), agArchs, null, null, null);
+
+        	// set the agents personality
+        	AffectiveAgent ag = ((PlotLauncher) PlotLauncher.getRunner()).getPlotAgent(agName);
+        	ag.initializePersonality(personality);
+	    } catch (Exception e) {
+	    	e.printStackTrace();
+        } 
+        
+        
+        // creates a model representation for the new agent
+        this.getModel().addAgent(agName);
+        
+        // enables plot graph to track new agent's actions
+        // TODO: how to implement an appropriate vertical offset to visualize agent's late arrival?
+        PlotGraphController.getPlotListener().addCharacter(agName);
+        
+        // enable action counting for new agent, so it is accounted for in auto-pause feature
+        this.registerAgentForActionCount(agName);
+        
+        // start new agent's reasoning cycle
+        this.getRuntimeServices().startAgent(agName);
+	}
+	
+    private RuntimeServicesInfraTier getRuntimeServices() {
+        return new PlotAwareCentralisedRuntimeServices(PlotLauncher.getRunner());
+    }
+	
     /********************** Methods for updating agent percepts **************************
     * - distinguishes between:
     *   - perceptions of model states, things that are constantly there but might have different values
@@ -170,9 +212,9 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
     protected void updateStatePercepts(String agentName) {
     	// update list of present agents (excluding self)
     	removePerceptsByUnif(Literal.parseLiteral("agents(X)"));
-    	Set<String> presentAnimals = new HashSet<>(this.model.agents.keySet());
-    	presentAnimals.remove(agentName);
-    	List<Term> animList = presentAnimals.stream().map(ASSyntax::createAtom).collect(Collectors.toList());
+    	Set<String> presentAgents = new HashSet<>(this.model.agents.keySet());
+    	presentAgents.remove(agentName);
+    	List<Term> animList = presentAgents.stream().map(ASSyntax::createAtom).collect(Collectors.toList());
     	addPercept(agentName, ASSyntax.createLiteral("agents", ASSyntax.createList(animList)));
     	
     	// update inventory state for each agents
@@ -259,13 +301,16 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
     * checks if all agents executed the same action for the last MAX_REPEATE_NUM of times, if yes, pauses the MAS.
     */
     protected void initializeActionCounting(List<LauncherAgent> agents) {
-        HashMap<String, Pair<String, Integer>> agentActionCount = new HashMap<>();
+    	this.agentActionCount = new HashMap<>();
         
-        // set up a neutral action count for each agent: no action, executed 1 time
         for (LauncherAgent agent : agents) {
-        	agentActionCount.put(agent.name, new Pair<String, Integer>("", 1));
+        	this.registerAgentForActionCount(agent.name);
         }
-        this.agentActionCount = agentActionCount;
+    }
+    
+    private void registerAgentForActionCount(String agName) {
+    	// set up a neutral action count for each agent: no action, executed 1 time
+    	agentActionCount.put(agName, new Pair<String, Integer>("", 1));
     }
 	
 	protected void pauseOnRepeat(String agentName, Structure action) {

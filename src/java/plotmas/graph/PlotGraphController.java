@@ -124,9 +124,13 @@ public class PlotGraphController {
 		
 		// set up a "named" tree for each character
 		for (LauncherAgent character : characters) {
-			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
-			graph.addRoot(root);
+			this.addCharacter(character.name);
 		}
+	}
+	
+	public void addCharacter(String agName) {
+		Vertex root = new Vertex(agName, Vertex.Type.ROOT);
+		graph.addRoot(root);		
 	}
 	
 	public void addEvent(String character, String event) {

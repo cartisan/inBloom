@@ -1,15 +1,11 @@
 package oedipusnew;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
-import plotmas.PlotAwareAg;
-import plotmas.PlotAwareAgArch;
 import plotmas.PlotEnvironment;
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.storyworld.StoryworldAgent;
@@ -37,17 +33,6 @@ public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 	   addPercept(agentName, Literal.parseLiteral("position(" + String.valueOf(pos) + ")" ));
 	   }
 	
-	public void createAgent() {
-		 ArrayList<String> agArchs = new ArrayList<String>(Arrays.asList(PlotAwareAgArch.class.getName()));
-	        try {
-	this.getEnvironmentInfraTier().getRuntimeServices().createAgent("oedipus", "agent_oedipusNew.asl", PlotAwareAg.class.getName(), agArchs, null, null, null);
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	        } 
-	}
-
-
-	@Override
 	public boolean executeAction(String agentName, Structure action) {
 		boolean result = super.executeAction(agentName, action);
 		StoryworldAgent agent = getModel().getAgent(agentName);

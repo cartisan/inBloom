@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
+import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Agent;
 import jason.asSemantics.Personality;
 import jason.bb.DefaultBeliefBase;
@@ -267,6 +268,10 @@ public class PlotLauncher extends PlotControlsLauncher {
 		this.start();
 		this.waitEnd();
 		this.finish();
+	}
+	
+	public AffectiveAgent getPlotAgent(String agName) {
+		return AG_CLASS.cast(PlotLauncher.getRunner().getAg(agName).getTS().getAg());
 	}
 
 	/**
