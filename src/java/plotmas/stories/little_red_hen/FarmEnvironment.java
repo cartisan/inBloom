@@ -1,4 +1,4 @@
-package plotmas.little_red_hen;
+package plotmas.stories.little_red_hen;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -92,8 +92,10 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     		} else {
     			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
     			result = agent.share(item, patient);
+    			
     		}
     	}
+    	
     	
     	if (action.getFunctor().equals("relax")) {
 			result = agent.relax();

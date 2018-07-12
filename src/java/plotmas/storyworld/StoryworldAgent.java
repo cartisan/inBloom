@@ -119,7 +119,9 @@ public class StoryworldAgent {
 				String.format("receive(%s)" + Model.addTargetedEmotion("gratitude", "self"),
 							  item.literal(), this.name));
 		
-		logger.info(this.name + " received some " + item.literal() + ".");
+		//logger.info(this.name + " received some " + item.literal() + ".");
+		logger.info(this.name + " received some " + item.getItemName() + ".");
+	
 	
 		return true;
 	}

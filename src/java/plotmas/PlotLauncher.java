@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
+import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Agent;
 import jason.asSemantics.Personality;
 import jason.bb.DefaultBeliefBase;
@@ -27,7 +28,7 @@ import plotmas.graph.PlotGraphController;
  * <b> Attention: </b> static parameter {@link #ENV_CLASS} needs to be set to the class of your custom environment before executing 
  * {@code run}.
  * 
- * @see plotmas.little_red_hen.RedHenLauncher
+ * @see plotmas.stories.little_red_hen.RedHenLauncher
  * @author Leonid Berov
  */
 public class PlotLauncher extends PlotControlsLauncher {
@@ -256,6 +257,10 @@ public class PlotLauncher extends PlotControlsLauncher {
 		this.start();
 		this.waitEnd();
 		this.finish();
+	}
+	
+	public AffectiveAgent getPlotAgent(String agName) {
+		return AG_CLASS.cast(PlotLauncher.getRunner().getAg(agName).getTS().getAg());
 	}
 
 	/**

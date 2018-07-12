@@ -18,7 +18,7 @@ import plotmas.PlotLauncher.LauncherAgent;
  * {@link StoryworldAgent agent models}.
  * 
  * 
- * @see plotmas.little_red_hen.FarmModel
+ * @see plotmas.stories.little_red_hen.FarmModel
  * @author Leonid Berov
  */
 public abstract class Model {
@@ -64,17 +64,26 @@ public abstract class Model {
 	
 	public Model(List<LauncherAgent> agentList, PlotEnvironment<?> env) {
 		this.environment = env;
-		
         agents = new HashMap<String, StoryworldAgent>();
-        // set up connections between agents, model and environment
+        
+        // add all instantiated agents to world model
         for (LauncherAgent agentSetup : agentList) {
-        	StoryworldAgent ag = new StoryworldAgent(agentSetup.name) ;
-        	agents.put(agentSetup.name, ag);
-        	ag.setEnvironment(env);
+        	this.addAgent(agentSetup.name);
         }
 	}
 	
 	public StoryworldAgent getAgent(String name) {
 		return this.agents.get(name);
+	}
+	
+	public void addAgent(String agName) {
+		// set up connections between agents, model and environment
+    	StoryworldAgent ag = new StoryworldAgent(agName) ;
+    	agents.put(agName, ag);
+    	ag.setEnvironment(this.environment);		
+	}
+	
+	public void removeAgent(String agName) {
+		this.agents.remove(agName);
 	}
 }

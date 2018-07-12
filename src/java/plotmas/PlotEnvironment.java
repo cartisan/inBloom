@@ -1,5 +1,7 @@
 package plotmas;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,13 +11,17 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import jason.asSemantics.AffectiveAgent;
+import jason.asSemantics.Personality;
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
+import jason.infra.centralised.CentralisedEnvironment;
 import jason.runtime.MASConsoleGUI;
+import jason.runtime.RuntimeServicesInfraTier;
 import jason.util.Pair;
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.graph.PlotGraphController;
@@ -31,7 +37,7 @@ import plotmas.storyworld.Model;
  *  <p> The environment is set up to pause a simulation if all agents repeated the same action for {@link #MAX_REPEATE_NUM}
  *  times.
  * 
- * @see plotmas.little_red_hen.FarmEnvironment
+ * @see plotmas.stories.little_red_hen.FarmEnvironment
  * @author Leonid Berov
  */
 public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSteppedEnvironment {
@@ -110,7 +116,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 	 * method in the {@link plotmas.storyworld.model Model}, which will decide if it succeeds and how if affects the
 	 * storyworld.
 	 * 
-	 * @see plotmas.little_red_hen.FarmEnvironment
+	 * @see plotmas.stories.little_red_hen.FarmEnvironment
 	 */
 	@Override
     public boolean executeAction(String agentName, Structure action) {
@@ -132,6 +138,79 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 	public DomainModel getModel() {
 		return this.model;
 	}
+	
+	/**
+	 * Creates a new agent and registers it in all the necessary places. Starts the agent after registration. 
+	 * @param name Name of the agent that will be created
+	 * @param aslFile ASL file name that contains the agents reasoning code, should be located in src/asl
+	 * @param personality an instance of {@linkplain jason.asSemantics.Personality} that will affect the agents behavior
+	 */
+	public void createAgent(String name, String aslFile, Personality personality) {
+		ArrayList<String> agArchs = new ArrayList<String>(Arrays.asList(PlotAwareAgArch.class.getName()));
+		String agName = null;
+		
+        try {
+        	logger.info("Creating a new agent odipus");
+        	agName = this.getRuntimeServices().createAgent(name, aslFile, PlotAwareAg.class.getName(), agArchs, null, null, null);
+
+        	// set the agents personality
+        	AffectiveAgent ag = ((PlotLauncher) PlotLauncher.getRunner()).getPlotAgent(agName);
+        	ag.initializePersonality(personality);
+	    } catch (Exception e) {
+	    	e.printStackTrace();
+        } 
+        
+        
+        // creates a model representation for the new agent
+        this.getModel().addAgent(agName);
+        
+        // enables plot graph to track new agent's actions
+        // TODO: implement an appropriate vertical offset to visualize agent's late arrival
+        PlotGraphController.getPlotListener().addCharacter(agName);
+        
+        // enable action counting for new agent, so it is accounted for in auto-pause feature
+        this.registerAgentForActionCount(agName);
+        
+        // start new agent's reasoning cycle
+        this.getRuntimeServices().startAgent(agName);
+	}
+
+	/**
+	 * Stops and removes agent agName from the simulation, the model and all accounting facilities. 
+	 * @param agName The name of the agent to be removed
+	 * @param byAgName The name of the agent responsible for removing agName, or null if a happening is responsible
+	 */
+	public void killAgent(String agName, String byAgName) {
+		// stop agent
+		this.getRuntimeServices().killAgent(agName, byAgName);
+
+		// make sure action counting for pause does not take removed agent into account
+		agentActionCount.remove(agName);
+		
+		// indicate removal in plot graph
+		PlotGraphController.getPlotListener().addEvent(agName, "died");
+		
+		// remove character from story-world model
+		this.model.removeAgent(agName);
+	}
+
+	/**
+	 * Stops and removes agent agName from the simulation, the model and all accounting facilities. 
+	 * @param agName The name of the agent to be removed
+	 */
+	public void killAgent(String agName) {
+		this.killAgent(agName, null);
+	}
+	
+    /**
+     * Adopted getRuntimeServices method; to be used instead of {@linkplain CentralisedEnvironment#getRuntimeServices()}
+     * which was available through {@code this.getEnvironmentInfraTier().getRuntimeServices()}.
+     * @return Returns a CentralisedRuntimeServices subclass which operates on the plotmas specific 
+     * {@linkplain PlotAwareCentralisedAgArch} class.
+     */
+    private RuntimeServicesInfraTier getRuntimeServices() {
+        return new PlotAwareCentralisedRuntimeServices(PlotLauncher.getRunner());
+    }
 	
     /********************** Methods for updating agent percepts **************************
     * - distinguishes between:
@@ -169,15 +248,15 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
      * Subclass this method to add domain-specific states to the percepts, don't forget to
      * first call `super.updateStatePercepts(agentName);`
      * 
-     * @see plotmas.little_red_hen.FarmEnvironment#updateStatePercepts(java.lang.String)
+     * @see plotmas.stories.little_red_hen.FarmEnvironment#updateStatePercepts(java.lang.String)
      */
     protected void updateStatePercepts(String agentName) {
     	// update list of present agents (excluding self)
-    	removePerceptsByUnif(Literal.parseLiteral("agents(X)"));
-    	Set<String> presentAnimals = new HashSet<>(this.model.agents.keySet());
-    	presentAnimals.remove(agentName);
-    	List<Term> animList = presentAnimals.stream().map(ASSyntax::createAtom).collect(Collectors.toList());
-    	addPercept(agentName, ASSyntax.createLiteral("agents", ASSyntax.createList(animList)));
+    	removePerceptsByUnif(agentName, Literal.parseLiteral("agents(X)"));
+    	Set<String> presentAgents = new HashSet<>(this.model.agents.keySet());
+    	presentAgents.remove(agentName);
+    	List<Term> agentList = presentAgents.stream().map(ASSyntax::createAtom).collect(Collectors.toList());
+    	addPercept(agentName, ASSyntax.createLiteral("agents", ASSyntax.createList(agentList)));
     	
     	// update inventory state for each agents
     	removePerceptsByUnif(agentName, Literal.parseLiteral("has(X)"));
@@ -291,13 +370,16 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
     * checks if all agents executed the same action for the last MAX_REPEATE_NUM of times, if yes, pauses the MAS.
     */
     protected void initializeActionCounting(List<LauncherAgent> agents) {
-        HashMap<String, Pair<String, Integer>> agentActionCount = new HashMap<>();
+    	this.agentActionCount = new HashMap<>();
         
-        // set up a neutral action count for each agent: no action, executed 1 time
         for (LauncherAgent agent : agents) {
-        	agentActionCount.put(agent.name, new Pair<String, Integer>("", 1));
+        	this.registerAgentForActionCount(agent.name);
         }
-        this.agentActionCount = agentActionCount;
+    }
+    
+    private void registerAgentForActionCount(String agName) {
+    	// set up a neutral action count for each agent: no action, executed 1 time
+    	agentActionCount.put(agName, new Pair<String, Integer>("", 1));
     }
 	
 	protected void pauseOnRepeat(String agentName, Structure action) {
