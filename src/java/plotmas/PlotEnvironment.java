@@ -211,11 +211,11 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
      */
     protected void updateStatePercepts(String agentName) {
     	// update list of present agents (excluding self)
-    	removePerceptsByUnif(Literal.parseLiteral("agents(X)"));
+    	removePerceptsByUnif(agentName, Literal.parseLiteral("agents(X)"));
     	Set<String> presentAgents = new HashSet<>(this.model.agents.keySet());
     	presentAgents.remove(agentName);
-    	List<Term> animList = presentAgents.stream().map(ASSyntax::createAtom).collect(Collectors.toList());
-    	addPercept(agentName, ASSyntax.createLiteral("agents", ASSyntax.createList(animList)));
+    	List<Term> agentList = presentAgents.stream().map(ASSyntax::createAtom).collect(Collectors.toList());
+    	addPercept(agentName, ASSyntax.createLiteral("agents", ASSyntax.createList(agentList)));
     	
     	// update inventory state for each agents
     	removePerceptsByUnif(agentName, Literal.parseLiteral("has(X)"));
