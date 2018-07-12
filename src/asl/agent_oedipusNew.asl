@@ -52,13 +52,6 @@ wish(chilling).
 /*****      Personality *********************/
 /********************************************/
 
-// Don't follow obligations if feeling passive, or very "anti-social" tendencies
-@default_activity_2[affect(or(personality(conscientiousness,low), mood(arousal,negative)))]
-+!default_activity <-
-	?wish(X);
-	!X;
-	!default_activity.
-	
 // Always follow obligations if high on consc, and feels like being active
 @default_activity_1[affect(and(personality(conscientiousness,high), mood(arousal,positive)))]
 +!default_activity <-

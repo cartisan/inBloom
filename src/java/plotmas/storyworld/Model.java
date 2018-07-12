@@ -82,4 +82,8 @@ public abstract class Model {
     	agents.put(agName, ag);
     	ag.setEnvironment(this.environment);		
 	}
+	
+	public void removeAgent(String agName) {
+		this.agents.remove(agName);
+	}
 }
