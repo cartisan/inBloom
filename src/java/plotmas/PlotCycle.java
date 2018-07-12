@@ -46,6 +46,11 @@ public abstract class PlotCycle implements Runnable {
 	private JTextArea logTextArea = new JTextArea(10, 40);
 	
 	/**
+	 * Timeout in ms before a single simulation is forcibly stopped
+	 */
+	private static final long TIMEOUT = 1900;
+	
+	/**
 	 * Creates a new cycle object with specified agents.
 	 * @param agentNames an array of the names of all agents
 	 * @param agentSrc the name of the source file for the agent code
@@ -116,15 +121,14 @@ public abstract class PlotCycle implements Runnable {
 		t.start();
 		MASConsoleGUI.get().setPause(false);
 		long startTime = System.currentTimeMillis();
-		long timeout = 1900;
 		while(t.isAlive()) {
 			try {
 				if(MASConsoleGUI.hasConsole()) {
 					//MASConsoleGUI.get().getFrame().setVisible(false);
 					if(!isPaused) {
-						if(MASConsoleGUI.get().isPause() || System.currentTimeMillis() - startTime > timeout) {
-							runner.reset();
+						if(MASConsoleGUI.get().isPause() || System.currentTimeMillis() - startTime > TIMEOUT) {
 							t.stop();
+							runner.reset();
 						}
 					}
 				}

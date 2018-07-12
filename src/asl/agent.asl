@@ -112,11 +112,11 @@ wish(relax).
 @default_activity_3
 +!default_activity <-
 	.random(R);
-	if(R>0.5) {
+//	if(R>0.5) {
 		?wish(X);
-	} else {
-		?obligation(X);
-	}
+//	} else {
+//		?obligation(X);
+//	}
 	!X;
 	!default_activity.	
 
