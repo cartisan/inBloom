@@ -19,6 +19,7 @@ import jason.runtime.MASConsoleGUI;
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
+import plotmas.helper.Tellability;
 
 /**
  * Class which facilitates running a cycle of multiple simulations.
@@ -260,19 +261,19 @@ public abstract class PlotCycle implements Runnable {
 	 */
 	public class EngageResult {
 		private PlotDirectedSparseGraph plotGraph;
-		private float tellabilityScore;
+		private Tellability tellability;
 		
-		public EngageResult(PlotDirectedSparseGraph plotGraph, float tellabilityScore) {
+		public EngageResult(PlotDirectedSparseGraph plotGraph, Tellability tellability) {
 			this.plotGraph = plotGraph;
-			this.tellabilityScore = tellabilityScore;
+			this.tellability = tellability;
 		}
 		
 		public PlotDirectedSparseGraph getPlotGraph() {
 			return this.plotGraph;
 		}
 		
-		public float getTellability() {
-			return this.tellabilityScore;
+		public Tellability getTellability() {
+			return this.tellability;
 		}
 	}
 }

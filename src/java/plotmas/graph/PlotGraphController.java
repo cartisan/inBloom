@@ -33,6 +33,7 @@ import plotmas.graph.isomorphism.FunctionalUnits;
 import plotmas.graph.isomorphism.UnitFinder;
 import plotmas.graph.visitor.EdgeLayoutVisitor;
 import plotmas.graph.visitor.PostProcessVisitor;
+import plotmas.helper.Tellability;
 
 /**
  * Responsible for maintaining and visualizing the graph that represents the emergent plot of the narrative universe.
@@ -54,7 +55,7 @@ public class PlotGraphController extends JFrame{
 	public VisualizationViewer<Vertex, Edge> visViewer = null;
 	private JPanel infoPanel = new JPanel(); // parent of information JLabels
 	
-	private boolean hasBeenAnalyzed = false;
+	private Tellability analysisResult = null;
 	
 	/**
 	 * System-wide method for getting access to the active PlotGraph instance that collects events
@@ -181,15 +182,15 @@ public class PlotGraphController extends JFrame{
 		graphTypeList.repaint();
 	}
 	
-	public float analyze() {
+	public Tellability analyze() {
 		return analyze(null);
 	}
 	
-	public float analyze(PlotDirectedSparseGraph analyzedGraphContainer) {
-		if(hasBeenAnalyzed) {
-			return -1f;
+	public Tellability analyze(PlotDirectedSparseGraph analyzedGraphContainer) {
+		if(analysisResult != null) {
+			return analysisResult;
 		}
-		hasBeenAnalyzed = true;
+		analysisResult = new Tellability();
 		PlotDirectedSparseGraph g = new PostProcessVisitor().apply(this.graph);
 		g.setName("Analyzed Plot Graph");
 		EdgeLayoutVisitor elv = new EdgeLayoutVisitor(g, 9);
@@ -225,16 +226,20 @@ public class PlotGraphController extends JFrame{
 		addInformation("Time taken: " + time + "ms");
 		addInformation("Units found: " + unitInstances);
 		addInformation("Polyvalence: " + polyvalentVertices);
-		float tellability = (float)polyvalentVertices / (float)g.getVertexCount();
+		double tellability = (double)polyvalentVertices / (double)g.getVertexCount();
 		addInformation("Tellability: " + tellability);
 		this.addGraph(g);
 		this.graphTypeList.setSelectedItem(g);
+		
+		this.analysisResult.numFunctionalUnits = unitInstances;
+		this.analysisResult.numPolyvalentVertices = polyvalentVertices;
+		this.analysisResult.functionalPolyvalence = tellability;
 		
 		if(analyzedGraphContainer != null) {
 			g.cloneInto(analyzedGraphContainer);
 		}
 		
-		return tellability;
+		return analysisResult;
 	}
 	
 	/**
