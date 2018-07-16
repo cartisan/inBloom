@@ -24,20 +24,17 @@ public class Vertex implements Cloneable {
 	private String id;
 	private String label;
 	private Type type;
+	private int step;
 	
 	private LinkedList<String> emotions = new LinkedList<>();
 	
-
-	public void setType(Type type) {
-		this.type = type;
-	}
 
 	/**
 	 * Creates a default instance of vertex, with type {@link Vertex.Type#EVENT}.
 	 * @param label vertex content
 	 */
-	public Vertex(String label) {
-		this(label, Vertex.Type.EVENT);
+	public Vertex(String label, int step) {
+		this(label, Vertex.Type.EVENT, step);
 	}
 	
 	/**
@@ -45,10 +42,11 @@ public class Vertex implements Cloneable {
 	 * @param label vertex content
 	 * @param type possible types see {@link Vertex.Type}
 	 */
-	public Vertex(String label, Type type) {
+	public Vertex(String label, Type type, int step) {
 		this.label = label;
 		this.id = UUID.randomUUID().toString();
 		this.type = type;
+		this.step = step;
 	}
 	
 	public String getId() {
@@ -69,6 +67,14 @@ public class Vertex implements Cloneable {
 	
 	public Type getType() {
 		return type;
+	}
+	
+	public void setType(Type type) {
+		this.type = type;
+	}
+	
+	public int getStep() {
+		return step;
 	}
 
 	/**
@@ -151,7 +157,7 @@ public class Vertex implements Cloneable {
 	
 	@Override
 	public Vertex clone() {
-		return new Vertex(this.label, this.type);
+		return new Vertex(this.label, this.type, this.step);
 	}
 
 	/**

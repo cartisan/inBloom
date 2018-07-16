@@ -124,7 +124,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 		this.waitWhilePause();
 		
     	// add attempted action to plot graph
-    	PlotGraphController.getPlotListener().addEvent(agentName, action.toString());
+    	PlotGraphController.getPlotListener().addEvent(agentName, action.toString(), getStep());
     	logger.info(String.format("%s performed %s", agentName, action.toString()));
 		
 		return false;
@@ -188,7 +188,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 		agentActionCount.remove(agName);
 		
 		// indicate removal in plot graph
-		PlotGraphController.getPlotListener().addEvent(agName, "died");
+		PlotGraphController.getPlotListener().addEvent(agName, "died", getStep());
 		
 		// remove character from story-world model
 		this.model.removeAgent(agName);

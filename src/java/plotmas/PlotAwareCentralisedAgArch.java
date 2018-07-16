@@ -21,7 +21,8 @@ public class PlotAwareCentralisedAgArch extends CentralisedAgArch {
     public void sendMsg(Message m) throws ReceiverNotFoundException {
         // insert message send into plot graph before message is actually send, 
     	// necessary because super.sendMsd calls receiveMsg and sometimes results in race conditions in plot graph
-    	Vertex senderV = PlotGraphController.getPlotListener().addMsgSend(m);
+        int step = PlotLauncher.runner.getUserEnvironment().getStep();
+    	Vertex senderV = PlotGraphController.getPlotListener().addMsgSend(m, step);
     	
     	// actually send the message
         if (m.getSender() == null)  m.setSender(getAgName());
@@ -43,7 +44,8 @@ public class PlotAwareCentralisedAgArch extends CentralisedAgArch {
     }
     
     public void receiveMsg(Message m, Vertex senderV) {
-    	PlotGraphController.getPlotListener().addMsgReceive(m, senderV);
+        int step = PlotLauncher.runner.getUserEnvironment().getStep();
+    	PlotGraphController.getPlotListener().addMsgReceive(m, senderV, step);
 
     	//actually receive the message
         super.receiveMsg(m);

@@ -18,6 +18,7 @@ import jason.infra.centralised.CentralisedAgArch;
 import jason.infra.centralised.RConf;
 import jason.mas2j.AgentParameters;
 import plotmas.graph.PlotGraphController;
+import plotmas.storyworld.Model;
 
 /**
  * Used to perform a Java-side setup and execution of a Jason MAS. <br>
@@ -263,6 +264,10 @@ public class PlotLauncher extends PlotControlsLauncher {
 		return AG_CLASS.cast(PlotLauncher.getRunner().getAg(agName).getTS().getAg());
 	}
 
+	@SuppressWarnings("unchecked")
+	public PlotEnvironment<Model> getUserEnvironment() {
+		return (PlotEnvironment<Model>) this.getEnvironmentInfraTier().getUserEnvironment();
+	}
 	/**
 	 * Helper class used to encapsulate all parameters needed to initialise ASL Agents from java code.
 	 * This parameters will be used to create a mas2j file required to start a Jason multi agent system. 

@@ -107,29 +107,28 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 	}
 	
 	public void addCharacter(String agName) {
-		Vertex root = new Vertex(agName, Vertex.Type.ROOT);
-		graph.addRoot(root);		
+		this.graph.addRoot(agName);		
 	}
 	
-	public void addEvent(String character, String event) {
-		this.graph.addEvent(character, event, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
+	public void addEvent(String character, String event, int step) {
+		this.graph.addEvent(character, event, step, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
 	}
 	
-	public void addEvent(String character, String event, Vertex.Type eventType) {
-		this.graph.addEvent(character, event, eventType, Edge.Type.TEMPORAL);
+	public void addEvent(String character, String event, Vertex.Type eventType, int step) {
+		this.graph.addEvent(character, event, step, eventType, Edge.Type.TEMPORAL);
 	}
 	
-	public void addEvent(String character, String event, Edge.Type linkType) {
-		this.graph.addEvent(character, event, Vertex.Type.EVENT, linkType);
+	public void addEvent(String character, String event, Edge.Type linkType, int step) {
+		this.graph.addEvent(character, event, step, Vertex.Type.EVENT, linkType);
 	}
 	
-	public Vertex addMsgSend(Message m) {
-		Vertex senderV = this.graph.addMsgSend(m.getSender(), m.getPropCont().toString());
+	public Vertex addMsgSend(Message m, int step) {
+		Vertex senderV = this.graph.addMsgSend(m.getSender(), m.getPropCont().toString(), step);
 		return senderV;
 	}
 
-	public Vertex addMsgReceive(Message m, Vertex senderV) {
-		Vertex recV = this.graph.addMsgReceive(m.getReceiver(), m.getPropCont().toString(), senderV);
+	public Vertex addMsgReceive(Message m, Vertex senderV, int step) {
+		Vertex recV = this.graph.addMsgReceive(m.getReceiver(), m.getPropCont().toString(), senderV, step);
 		return recV;
 	}
 	
@@ -301,14 +300,14 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
 		
 		// Create Trees for each agent and add the roots
-		Vertex v1 = new Vertex("hen", Vertex.Type.ROOT); Vertex v2 = new Vertex("dog", Vertex.Type.ROOT); 
-		Vertex v3 = new Vertex("cow", Vertex.Type.ROOT); Vertex v4 = new Vertex("cazzegiare"); 
-		Vertex v5 = new Vertex("cazzegiare"); Vertex v6 = new Vertex("askHelp(plant(wheat))");
-		Vertex v7 = new Vertex("plant(wheat)");
+		Vertex v1 = graph.addRoot("hen");
+		Vertex v2 = graph.addRoot("dog");
+		Vertex v3 = graph.addRoot("cow"); 
 		
-		graph.addRoot(v1);
-		graph.addRoot(v2);
-		graph.addRoot(v3);
+		Vertex v4 = new Vertex("cazzegiare", 1); 
+		Vertex v5 = new Vertex("cazzegiare", 1); 
+		Vertex v6 = new Vertex("askHelp(plant(wheat))", 1);
+		Vertex v7 = new Vertex("plant(wheat)", 2);
 		
 		// simulate adding vertices later
 		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v6);

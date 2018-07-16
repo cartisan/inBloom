@@ -41,19 +41,21 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> i
 		throw new IllegalStateException("Graph was not initialised with root nodes") ;
 	}
 
-	public boolean addRoot(Vertex vertex) {
-    	boolean result = this.addVertex(vertex);
+	public Vertex addRoot(String agName) {
+		Vertex root = new Vertex(agName, Vertex.Type.ROOT, 0);
+		
+    	boolean result = this.addVertex(root);
     	if (result) {
-    		this.roots.add(vertex);
+    		this.roots.add(root);
+    		this.lastVertexMap.put(root.getLabel(), root);
+    		return root;
     	}
     	
-    	this.lastVertexMap.put(vertex.getLabel(), vertex);
-    	
-    	return result;
+    	return null;
     }
 	
-	public synchronized Vertex addEvent(String root, String event, Vertex.Type eventType, Edge.Type linkType) {
-		Vertex newVertex = new Vertex(event, eventType);
+	public synchronized Vertex addEvent(String root, String event, int step, Vertex.Type eventType, Edge.Type linkType) {
+		Vertex newVertex = new Vertex(event, eventType, step);
 		Vertex parent = lastVertexMap.get(root);
 		
 		if (parent.getType() == Vertex.Type.ROOT) {
@@ -66,22 +68,22 @@ public class PlotDirectedSparseGraph extends DirectedSparseGraph<Vertex, Edge> i
 		return newVertex;
 	}
 	
-	public Vertex addMsgSend(String sender, String message) {
+	public Vertex addMsgSend(String sender, String message, int step) {
 		Vertex sendV;
 		// if same message was already send before, use old vertex
 		// helps reusing vertex when multiple recipients
 		if(senderMap.contains(sender, message)) {
 			sendV = senderMap.get(sender, message);
 		} else {
-			sendV = addEvent(sender, message, Vertex.Type.SPEECHACT, Edge.Type.TEMPORAL);
+			sendV = addEvent(sender, message, step, Vertex.Type.SPEECHACT, Edge.Type.TEMPORAL);
 			senderMap.put(sender, message, sendV);
 		}
 		
 		return sendV;
 	}
 	
-	public Vertex addMsgReceive(String receiver, String message, Vertex sendV) {
-		Vertex recV = addEvent(receiver, message, Vertex.Type.LISTEN,  Edge.Type.TEMPORAL);
+	public Vertex addMsgReceive(String receiver, String message, Vertex sendV, int step) {
+		Vertex recV = addEvent(receiver, message, step, Vertex.Type.LISTEN,  Edge.Type.TEMPORAL);
 		this.addEdge(new Edge(Edge.Type.COMMUNICATION), sendV, recV);
 		
 		return recV;
