@@ -22,8 +22,6 @@ public class RedHenCycle extends PlotCycle {
 	
 	int cycle = 0;
 	
-	double[] scale = new double[] { -0.9, 0.9 };
-	
 	private PlotDirectedSparseGraph bestGraph = null;
 	private double bestTellability = -1f;
 	private Personality[] bestPersonalities = null;
@@ -41,7 +39,7 @@ public class RedHenCycle extends PlotCycle {
 		
 		// Open a file for writing results
 		try {
-			FileWriter fw = new FileWriter("results.csv");
+			FileWriter fw = new FileWriter("results.csv", cycle > 0);
 		    BufferedWriter bw = new BufferedWriter(fw);
 		    csvOut = new PrintWriter(bw);
 		} catch(IOException e) {
@@ -49,11 +47,16 @@ public class RedHenCycle extends PlotCycle {
 		}
 		
 		// Print CSV header
-		csvOut.println("tellability,functional_units,polyvalent_vertices,o0,c0,e0,a0,n0,o1,c1,e1,a1,n1");
+		if(cycle == 0)
+			csvOut.println("tellability,functional_units,polyvalent_vertices,o0,c0,e0,a0,n0,o1,c1,e1,a1,n1");
 		
 		// Generate all possible personalities.
-		personalityList = createPlotSpace(createPersonalitySpace(new double[] { -0.9, 0, 0.9 }), 2);
+		Personality[] personalitySpace = createPersonalitySpace(new double[] { -1.0, 0, 1.0 });
+		personalityList = createPlotSpace(personalitySpace, 2, true);
 		personalityIterator = personalityList.iterator();
+		
+		for(int i = 0; i < cycle && personalityIterator.hasNext(); i++)
+			personalityIterator.next();
 		
 		// Log how many personalities there are.
 		log("Running " + personalityList.size() + " cycles...");
@@ -77,6 +80,7 @@ public class RedHenCycle extends PlotCycle {
 		f.close();
 		if(cycle % 30 == 0) {
 			csvOut.flush();
+			System.gc();
 		}
 	}
 	
@@ -109,7 +113,6 @@ public class RedHenCycle extends PlotCycle {
 		log("Cycle " + cycle);
 		cycle++;
 		return new ReflectResult(new RedHenLauncher(), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
-//		return new ReflectResult(new RedHenLauncher(), new Personality[] {lastPersonalities[0], new Personality(0, -1, 0, -0.7, -0.8), new Personality(0, -1, 0, -0.7, -0.8), new Personality(0, -1, 0, -0.7, -0.8)});
 	}
 	
 	@Override
@@ -125,10 +128,14 @@ public class RedHenCycle extends PlotCycle {
 		bestGraph.setName("Plot graph with highest tellability");
 		bestGraph.accept(new EdgeLayoutVisitor(bestGraph, 9));
 		PlotGraphController.getPlotListener().addGraph(bestGraph);
+		
+		// Flush and close file
+		csvOut.flush();
+		csvOut.close();
 	}
 	
-	public List<Personality[]> createPlotSpace(Personality[] personalitySpace, int characters) {
-		List<int[]> values = allCombinations(characters, personalitySpace.length, false);
+	public List<Personality[]> createPlotSpace(Personality[] personalitySpace, int characters, boolean repeat) {
+		List<int[]> values = allCombinations(characters, personalitySpace.length, repeat);
 		List<Personality[]> allPersonalityCombinations = new LinkedList<Personality[]>();
 		for(int[] charPersonalities : values) {
 			Personality[] personalityArray = new Personality[characters];
@@ -176,7 +183,6 @@ public class RedHenCycle extends PlotCycle {
 	protected ReflectResult createInitialReflectResult() {
 		lastPersonalities = personalityIterator.next();
 		ReflectResult rr = new ReflectResult(new RedHenLauncher(), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
-//		ReflectResult rr = new ReflectResult(new RedHenLauncher(), new Personality[] {lastPersonalities[0], new Personality(0, -1, 0, -0.7, -0.8), new Personality(0, -1, 0, -0.7, -0.8), new Personality(0, -1, 0, -0.7, -0.8)});
 		log("Cycle " + cycle);
 		cycle++;
 		return rr;

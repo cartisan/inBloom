@@ -126,7 +126,7 @@ public abstract class PlotCycle implements Runnable {
 				if(MASConsoleGUI.hasConsole()) {
 					//MASConsoleGUI.get().getFrame().setVisible(false);
 					if(!isPaused) {
-						if(MASConsoleGUI.get().isPause() || System.currentTimeMillis() - startTime > TIMEOUT) {
+						if(MASConsoleGUI.get().isPause() || (System.currentTimeMillis() - startTime > TIMEOUT && PlotEnvironment.getPlotTimeNow() > TIMEOUT)) {
 							t.stop();
 							runner.reset();
 						}
