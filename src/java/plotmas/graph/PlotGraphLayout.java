@@ -2,10 +2,12 @@ package plotmas.graph;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 
@@ -15,7 +17,8 @@ import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
  * @author Leonid Berov
  */
 public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
-
+    static Logger logger = Logger.getLogger(PlotGraphLayout.class.getName());
+    
     // The horizontal/vertical vertex spacing.
     public static int PAD_X = 50;
     public static int PAD_Y = 50;
@@ -30,6 +33,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 //    protected HashMap<Vertex, Integer> columnWidth = new HashMap<>();		// maps: root     -> width of column
     protected HashMap<Vertex, Integer> columnStartAtX = new HashMap<>();	// maps: root     -> x value of all vertices in column
     protected HashMap<Integer, Integer> stepStartAtY = new HashMap<>();		// maps: step_num -> y value of first occ of this step
+    protected HashMap<Integer, Integer> stepEndAtY = new HashMap<>();		// maps: step_num -> y value of last occ of this step
     
     public PlotGraphLayout(PlotDirectedSparseGraph graph)  {
         super(graph);
@@ -59,6 +63,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
         if (roots.size() > 0 && this.graph != null) {
         	// analyze each column
        		for(Vertex root : roots) {
+       			logger.info("Column " + root.getLabel());
        			this.currentRoot = root;
        			
        			// persist x pos of column based on current position of pointer 
@@ -87,30 +92,86 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     		columnWidth = width;
     	}
     	
-    	// check if step position along the  y axis needs to be updated
+    	// check if step position along the y axis needs to be updated
     	if (!encounteredSteps.contains(vertex.getStep())) {
-    		// this is the first time this step appears in this column
-    		// check if its y position is bigger then the one we found in previous columns
-    		int prevY = this.stepStartAtY.getOrDefault(vertex.getStep(), Integer.MIN_VALUE);
-    		if (prevY < this.m_currentPoint.y) {
-    			this.stepStartAtY.put(vertex.getStep(), this.m_currentPoint.y);
+    		// this is the first time this step appears in this column, its position is relevant
+    		if (this.stepStartAtY.containsKey(vertex.getStep())) {
+    			// step was layouted by previous columns
+    			updateStepLocation(vertex, this.stepStartAtY); 
+    		} else { 
+    			// found a step that was not layouted by previous columns
+    			addStepLocation(vertex, this.stepStartAtY);
     		}
-    		
+
+    		// shift current pointer to reflect y position according to layout, no matter which column is responsible for the layout
+			this.m_currentPoint.y = this.stepStartAtY.get(vertex.getStep());
+			
     		// make sure following events in this time step do not change it's starting position
     		encounteredSteps.add(vertex.getStep());
     	}
     	
-    	// compute position for child
+    	logger.info("   vertex: " + vertex.toString() + " y-position: " + this.m_currentPoint.y);
+
+    	// continue with traversal of column
         Vertex child = ((PlotDirectedSparseGraph) this.graph).getCharSuccessor(vertex);
         if(!(child == null)) {
+        	// successor exists
+        	// check if next vertex has different step
+        	if(child.getStep() != vertex.getStep()) {
+        		// this is the last vertex of current step, update layout data
+        		// FIXME Do it
+        	}
+        	
+        	// compute position for child
         	columnWidth = this.analyzeColumn(child, encounteredSteps, columnWidth);
         } else {
         	// found last vertex in column --> adopt canvas size
         	this.updateCanvasSize();
+        	logger.info("Column " + this.currentRoot.getLabel() + " steps start at y dict: " + Arrays.toString(this.stepStartAtY.entrySet().toArray()));
         }
         
         return columnWidth;
     }
+
+	/**
+	 * @param vertex
+	 */
+	private void addStepLocation(Vertex vertex, HashMap<Integer, Integer> stepLocationMap) {
+		// check if it was just skipped by previous columns 
+		if (stepLocationMap.keySet().stream().anyMatch(key -> key > vertex.getStep())) {
+			// put the skipped step in the place where previous columns located its successor (or itself, if bigger)
+			int succYKey = stepLocationMap.keySet().stream().filter(key -> key > vertex.getStep())
+														    .mapToInt(x -> x)
+														    .min().getAsInt();
+			this.m_currentPoint.y = Integer.max(stepLocationMap.get(succYKey), this.m_currentPoint.y);
+		} 
+		
+		// safe the steps location in the layout
+		stepLocationMap.put(vertex.getStep(), this.m_currentPoint.y);
+	}
+
+	/**
+	 * @param vertex
+	 */
+	private void updateStepLocation(Vertex vertex, HashMap<Integer, Integer> stepLocationMap) {
+		// check if its y position is bigger then the one we previously found
+		int prevY = stepLocationMap.get(vertex.getStep());
+		if (prevY < this.m_currentPoint.y) {
+			// save new position of step in layout
+			stepLocationMap.put(vertex.getStep(), this.m_currentPoint.y);
+			
+			// move all (previously positioned) steps below this step according to newly found delta-y
+			int diff = this.m_currentPoint.y - prevY;
+			
+			Integer[] steps = stepLocationMap.keySet().stream()
+											 .filter(step -> step > vertex.getStep())
+									         .toArray(Integer[]::new);
+			
+			for(int step : steps) {
+				stepLocationMap.put(step, stepLocationMap.get(step) + diff);
+			}
+		}
+	}
 
 	private void buildLayout() {
         Collection<Vertex> roots = ((PlotDirectedSparseGraph) this.graph).getRoots();
