@@ -49,7 +49,13 @@ public class PlotLauncher extends PlotControlsLauncher {
      * cycle of simulation may be run.
      */
     public void reset() {
+    	
+    	control.stop();
+    	control = null;
+    	env.stop();
     	env = null;
+    	stopAgs();
+    	runner = null;
     	ags.clear();
     }
     
