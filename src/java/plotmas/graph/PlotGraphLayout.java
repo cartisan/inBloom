@@ -116,10 +116,17 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
         Vertex child = ((PlotDirectedSparseGraph) this.graph).getCharSuccessor(vertex);
         if(!(child == null)) {
         	// successor exists
+        	
         	// check if next vertex has different step
         	if(child.getStep() != vertex.getStep()) {
         		// this is the last vertex of current step, update layout data
-        		// FIXME Do it
+        		if (this.stepEndAtY.containsKey(vertex.getStep())) {
+        			// step was layouted by previous columns
+        			updateStepLocation(vertex, this.stepEndAtY); 
+        		} else { 
+        			// found a step that was not layouted by previous columns
+        			addStepLocation(vertex, this.stepEndAtY);
+        		}
         	}
         	
         	// compute position for child
@@ -154,7 +161,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 	 * @param vertex
 	 */
 	private void updateStepLocation(Vertex vertex, HashMap<Integer, Integer> stepLocationMap) {
-		// check if its y position is bigger then the one we previously found
+		// check if new step y position is bigger then the one we previously found
 		int prevY = stepLocationMap.get(vertex.getStep());
 		if (prevY < this.m_currentPoint.y) {
 			// save new position of step in layout
@@ -163,13 +170,24 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 			// move all (previously positioned) steps below this step according to newly found delta-y
 			int diff = this.m_currentPoint.y - prevY;
 			
-			Integer[] steps = stepLocationMap.keySet().stream()
-											 .filter(step -> step > vertex.getStep())
-									         .toArray(Integer[]::new);
-			
-			for(int step : steps) {
-				stepLocationMap.put(step, stepLocationMap.get(step) + diff);
-			}
+			// starts as well as end of all lower steps are affected
+			updateSucceedingSteps(vertex.getStep(), diff, this.stepStartAtY);
+			updateSucceedingSteps(vertex.getStep(), diff, this.stepEndAtY);
+		}
+	}
+
+	/**
+	 * @param currentStep the step number of the vertex currently analysed
+	 * @param diff the delta_y by which following steps need to be moved
+	 * @param stepLocationMap the map in which the update takes place ({@linkplain PlotGraphLayout#stepStartAtY} or {@linkplain  PlotGraphLayout#stepEndAtY}) 
+	 */
+	private void updateSucceedingSteps(Integer currentStep, int diff, HashMap<Integer, Integer> stepLocationMap) {
+		Integer[] steps = stepLocationMap.keySet().stream()
+										 .filter(step -> step > currentStep)
+								         .toArray(Integer[]::new);
+		
+		for(int step : steps) {
+			stepLocationMap.put(step, stepLocationMap.get(step) + diff);
 		}
 	}
 
@@ -216,16 +234,4 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     	if(this.m_currentPoint.y > size.height - PAD_Y) 
     		this.size.height = this.m_currentPoint.y + PAD_Y;
 	}
-	
-//    private int calculateWidthForColumn(Vertex vertex) {
-//    	int width = Transformers.vertexSizeTransformer.apply(vertex);
-//
-//    	Vertex successor = ((PlotDirectedSparseGraph) this.graph).getCharSuccessor(vertex); 
-//		if(successor == null) {
-//			return (this.PAD_X > width ? PAD_X : width);
-//		}
-//		
-//    	int max_width = calculateWidthForColumn(successor);
-//    	return (width > max_width ? width : max_width);
-//    }
 }

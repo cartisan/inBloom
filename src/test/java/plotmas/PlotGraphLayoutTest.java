@@ -296,4 +296,43 @@ public class PlotGraphLayoutTest extends TestCase {
 		// test that in second column step 2 was shifted down, because its missing in column one but has a successor there 
 		assertEquals(locations.get(v3).getY() + PlotGraphLayout.PAD_Y, locations.get(v7).getY());
 	}
+	
+	@SuppressWarnings("unchecked")
+	public void testEndOfStepChangeMovesColumns() throws Exception {
+		// ...... Building test graph ......
+		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
+		
+		// ... first column ...
+		Vertex v1 = graph.addRoot("hen");
+		Vertex v2 = new Vertex("1", 1);
+		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v2);
+
+		Vertex v3 = new Vertex("2", 2);
+		graph.addEdge(new Edge(), v2, v3);
+
+		Vertex v4 = new Vertex("3", 3);
+		graph.addEdge(new Edge(), v3, v4);		
+		
+		// ... second column ...
+		Vertex v5 = graph.addRoot("dog");
+		Vertex v6 = new Vertex("1", 1);
+		graph.addEdge(new Edge(Edge.Type.ROOT), v5, v6);
+
+		Vertex v7 = new Vertex("1", 1);
+		graph.addEdge(new Edge(), v6, v7);
+		
+		Vertex v8 = new Vertex("3", 3);
+		graph.addEdge(new Edge(), v7, v8);
+		
+		// !!! Check out how it looks
+//		visuallyInspectLayout(graph);
+		
+		// ..... Testing locations ......
+		Layout<Vertex, Edge> layout = new PlotGraphLayout(graph);
+		LoadingCache<Vertex, Point2D> locations = (LoadingCache<Vertex, Point2D>) LOC.get(layout);
+		
+		// test that in first column step 2 was shifted down, because in second column end of step 1 is lower
+		assertEquals(locations.get(v7).getY() + PlotGraphLayout.PAD_Y, locations.get(v3).getY());
+
+	}
 }
