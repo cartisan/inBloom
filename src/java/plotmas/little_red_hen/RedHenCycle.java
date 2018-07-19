@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 
 import jason.asSemantics.Personality;
+import jason.runtime.MASConsoleGUI;
 import plotmas.PlotCycle;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
@@ -20,7 +21,15 @@ import plotmas.helper.Tellability;
 
 public class RedHenCycle extends PlotCycle {
 	
-	int cycle = 0;
+	private static String outFile = "results.csv";
+	
+	private static int startCycle = 0;
+	private static int endCycle = -1;
+	private static int cycleNum = -1;
+	
+	private static int flushInterval = 30;
+	
+	private static boolean closeOnComplete = false;
 	
 	private PlotDirectedSparseGraph bestGraph = null;
 	private double bestTellability = -1f;
@@ -30,6 +39,7 @@ public class RedHenCycle extends PlotCycle {
 	private Iterator<Personality[]> personalityIterator;
 	
 	private Personality[] lastPersonalities;
+	private RedHenLauncher lastRunner;
 	
 	private PrintWriter csvOut;
 
@@ -39,7 +49,7 @@ public class RedHenCycle extends PlotCycle {
 		
 		// Open a file for writing results
 		try {
-			FileWriter fw = new FileWriter("results.csv", cycle > 0);
+			FileWriter fw = new FileWriter(outFile, startCycle > 0);
 		    BufferedWriter bw = new BufferedWriter(fw);
 		    csvOut = new PrintWriter(bw);
 		} catch(IOException e) {
@@ -47,7 +57,7 @@ public class RedHenCycle extends PlotCycle {
 		}
 		
 		// Print CSV header
-		if(cycle == 0)
+		if(startCycle == 0)
 			csvOut.println("tellability,functional_units,polyvalent_vertices,o0,c0,e0,a0,n0,o1,c1,e1,a1,n1");
 		
 		// Generate all possible personalities.
@@ -55,16 +65,80 @@ public class RedHenCycle extends PlotCycle {
 		personalityList = createPlotSpace(personalitySpace, 2, true);
 		personalityIterator = personalityList.iterator();
 		
-		for(int i = 0; i < cycle && personalityIterator.hasNext(); i++)
+		for(int i = 0; i < startCycle && personalityIterator.hasNext(); i++)
 			personalityIterator.next();
 		
+		if(endCycle == -1) {
+			endCycle = personalityList.size();
+		}
+		
 		// Log how many personalities there are.
-		log("Running " + personalityList.size() + " cycles...");
+		log("Running " + (endCycle - startCycle) + " cycles...");
 	}
 	
 	public static void main(String[] args) {
+		boolean shouldRun = true;
+		for(int i = 0; shouldRun && i < args.length; i += 2) {
+			shouldRun = handleArgument(args, i);
+		}
+		if(!shouldRun) {
+			printHelp();
+			return;
+		}
+		if(cycleNum > -1) {
+			endCycle = startCycle + cycleNum;
+		}
 		RedHenCycle cycle = new RedHenCycle();
 		cycle.run();
+	}
+	
+	private static boolean handleArgument(String[] args, int i) {
+		switch(args[i]) {
+			case "-close":
+				closeOnComplete = true;
+				return true;
+		}
+		if(args.length == i + 1) {
+			return false;
+		}
+		switch(args[i]) {
+			case "-out":
+				outFile = args[i + 1];
+				break;
+			case "-start":
+				startCycle = Integer.parseInt(args[i + 1]);
+				break;
+			case "-end":
+				if(endCycle > -1) {
+					System.err.println("You may only use either \"-cycle\" or \"-end\".");
+					return false;
+				}
+				endCycle = Integer.parseInt(args[i + 1]);
+				break;
+			case "-cycles":
+				if(endCycle > -1) {
+					System.err.println("You may only use either \"-cycle\" or \"-end\".");
+					return false;
+				}
+				cycleNum = Integer.parseInt(args[i + 1]);
+				break;
+			case "-flush":
+				flushInterval = Integer.parseInt(args[i + 1]);
+				break;
+			default:
+				return false;
+		}
+		return true;
+	}
+	
+	private static void printHelp() {
+		System.out.println("The following arguments are valid:");
+		System.out.println("\t[-out <file name>]\tSets the output file to the given file name.");
+		System.out.println("\t[-close]\t\tIf given this argument, the application will close upon completion of the last cycle.");
+		System.out.println("\t[-start <cycle>]\tThis lets the application skip all cycles before the provided one.");
+		System.out.println("\t[-end <cycle>]\t\tThis determines the first cycle the application will not complete. Do not use with \"-cycles\".");
+		System.out.println("\t[-cycles <amount>]\tThis determines how many cycles should be run. Do not use with \"-end\".");
+		System.out.println("\t[-flush <interval>]\tSets how many cycles should be run before the output gets written to a file.");
 	}
 	
 	private void onCycleResult(Personality[] personalities, Tellability tellability) {
@@ -78,9 +152,8 @@ public class RedHenCycle extends PlotCycle {
 		csv.deleteCharAt(csv.length() - 1);
 		csvOut.println(csv);
 		f.close();
-		if(cycle % 30 == 0) {
+		if(startCycle % flushInterval == 0) {
 			csvOut.flush();
-			System.gc();
 		}
 	}
 	
@@ -104,15 +177,16 @@ public class RedHenCycle extends PlotCycle {
 		}
 		
 		// Stop cycle if there are no other personality combinations
-		if(!personalityIterator.hasNext()) {
+		if(!personalityIterator.hasNext() || startCycle >= endCycle) {
 			return new ReflectResult(null, null, false);
 		}
 		
 		// Start the next cycle
 		lastPersonalities = personalityIterator.next();
-		log("Cycle " + cycle);
-		cycle++;
-		return new ReflectResult(new RedHenLauncher(), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		log("Cycle " + startCycle);
+		startCycle++;
+		
+		return new ReflectResult(lastRunner = new RedHenLauncher(), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
 	}
 	
 	@Override
@@ -132,6 +206,10 @@ public class RedHenCycle extends PlotCycle {
 		// Flush and close file
 		csvOut.flush();
 		csvOut.close();
+		
+		if(closeOnComplete) {
+			lastRunner.finish();
+		}
 	}
 	
 	public List<Personality[]> createPlotSpace(Personality[] personalitySpace, int characters, boolean repeat) {
@@ -183,8 +261,8 @@ public class RedHenCycle extends PlotCycle {
 	protected ReflectResult createInitialReflectResult() {
 		lastPersonalities = personalityIterator.next();
 		ReflectResult rr = new ReflectResult(new RedHenLauncher(), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
-		log("Cycle " + cycle);
-		cycle++;
+		log("Cycle " + startCycle);
+		startCycle++;
 		return rr;
 	}
 
