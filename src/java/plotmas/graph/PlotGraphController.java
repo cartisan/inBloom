@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JComboBox;
@@ -205,6 +206,7 @@ public class PlotGraphController extends JFrame{
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, unit.getGraph());
 			unitInstances += mappings.size();
+			logger.log(Level.INFO, "Found '" + unit.getName() + "' " + mappings.size() + " times.");
 			for(Map<Vertex, Vertex> map : mappings) {
 				for(Vertex v : map.keySet()) {
 					g.markVertexAsUnit(v, unit);

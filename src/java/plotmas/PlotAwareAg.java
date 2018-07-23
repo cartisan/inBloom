@@ -2,6 +2,7 @@ package plotmas;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jason.JasonException;
@@ -106,6 +107,7 @@ public class PlotAwareAg extends AffectiveAgent {
         	
         	if(motivation != null) {
         		if(motivation.getFunctor().equals("mood")) {
+        			
         			Collection<String> sources = this.getAffectiveTS().getAffectiveC().getS();
         			if(!sources.isEmpty()) {
         				motivationString = "[motivation(";
@@ -116,6 +118,7 @@ public class PlotAwareAg extends AffectiveAgent {
             			motivationString = motivationString.substring(0, motivationString.length() - 1);
             			motivationString += ")]";
         			}
+        			logger.log(Level.FINE, "Resolving " + motivation.toString() + ": " + motivationString);
         		}
         	}
         	
