@@ -33,8 +33,7 @@ import plotmas.graph.PlotGraphController;
 public class PlotLauncher extends PlotControlsLauncher {
 	protected static Logger logger = Logger.getLogger(PlotLauncher.class.getName());
 	public static String DEAULT_FILE_NAME = "launcher.mas2j";
-
-    
+	
     /** 
      * Subclasses need to set ENV_CLASS to the class of their PlotEnvironment implementation, e.g.
      * {@code ENV_CLASS = FarmEnvironment.class;}
@@ -236,9 +235,11 @@ public class PlotLauncher extends PlotControlsLauncher {
 	 * 
 	 * @param args contains the name of the mas2j and potentially {@code -debug} to execute in debug mode
 	 * @param agents a list of agent parameters used to initialize mas2j, environment and model
+	 * @param agentFileName specifies the source of the agent ASL code
+	 * @param usePlotLogger set this to false if you wish to set your own logging output
 	 * @throws JasonException
 	 */
-	public void run (String[] args, ImmutableList<LauncherAgent> agents, String agentFileName) throws JasonException  {
+	public void run(String[] args, ImmutableList<LauncherAgent> agents, String agentFileName, boolean usePlotLogger) throws JasonException  {
 		String defArgs[];
 		boolean debugMode=false;
 		
@@ -264,12 +265,18 @@ public class PlotLauncher extends PlotControlsLauncher {
 		this.create();
         
 		this.initzializePlotEnvironment(agents);
-		this.setupPlotLogger();
+		if(usePlotLogger) {
+			this.setupPlotLogger();
+		}
 		this.initializePlotAgents(agents);
 		
 		this.start();
 		this.waitEnd();
 		this.finish();
+	}
+	
+	public void run(String[] args, ImmutableList<LauncherAgent> agents, String agentFileName) throws JasonException  {
+		this.run(args, agents, agentFileName, true);
 	}
 
 	/**
