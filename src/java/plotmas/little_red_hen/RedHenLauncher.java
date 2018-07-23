@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
 import jason.asSemantics.Personality;
+import jason.infra.centralised.BaseCentralisedMAS;
+import plotmas.PlotControlsLauncher;
 import plotmas.PlotLauncher;
 
 
@@ -14,20 +16,31 @@ import plotmas.PlotLauncher;
  */
 public class RedHenLauncher extends PlotLauncher {
 
+	private static boolean showGUI = false;
+	
 	public RedHenLauncher() {
 		ENV_CLASS = FarmEnvironment.class;
-		runner = this;
+		PlotControlsLauncher.runner = this;
+		BaseCentralisedMAS.runner = this;
+	}
+	
+	@Override
+	public synchronized void setupLogger() {
+		if(showGUI) {
+			super.setupLogger();
+		}
 	}
 	
 	public static void main(String[] args) throws JasonException {
         logger.info("Starting up from Launcher!");
+        showGUI = true;
         ENV_CLASS = FarmEnvironment.class;
         
         runner = new RedHenLauncher();
 
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
 							runner.new LauncherAgent("hen",					  // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
-//									new Personality(0,  1,  0.7,  0.3, 0.3)    //punishment
+									new Personality(0,  1,  0.7,  0.3, 0.3)    //punishment
 //									new Personality(0,  1,  0.7,  0.3, -0.8)    //low neurot --> no punishment
 //									new Personality(0,  1,  0.7,  0.7, -0.8)    //high aggrea --> sharing
 									
@@ -35,7 +48,7 @@ public class RedHenLauncher extends PlotLauncher {
 									
 //									new Personality(0,  1, -0.3,   0.3, 0.15)    //low extra --> no help requests, no punishment, no sharing <-- not after update!
 //									new Personality(0,  1, -0.3,  0.7, 0.15)    //low extra, high aggrea --> no help requests, no punishment, sharing
-									new Personality(0.9, 0.9, 0.9, 0.9, 0.9)
+//									new Personality(0.9, 0.9, 0.9, 0.9, 0.9)
 							),
 							runner.new LauncherAgent("dog",
 									new Personality(0, -1, 0, -0.7, -0.8)
