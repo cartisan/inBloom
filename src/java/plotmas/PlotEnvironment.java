@@ -41,7 +41,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 	static final String STEP_TIMEOUT = "100";
 	
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
-    public static Long startTime = null;
+    public static Long startTime = 0L;
     
     /**
      * Returns the current plot time in ms, i.e. the time that has passed since simulation was started

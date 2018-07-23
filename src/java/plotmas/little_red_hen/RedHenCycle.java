@@ -10,18 +10,24 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
 
 import jason.asSemantics.Personality;
-import jason.runtime.MASConsoleGUI;
 import plotmas.PlotCycle;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.visitor.EdgeLayoutVisitor;
+import plotmas.helper.PlotFormatter;
 import plotmas.helper.Tellability;
 
 public class RedHenCycle extends PlotCycle {
 	
 	private static String outFile = "results.csv";
+	private static String logFile = "";
 	
 	private static int startCycle = 0;
 	private static int endCycle = -1;
@@ -72,16 +78,43 @@ public class RedHenCycle extends PlotCycle {
 			endCycle = personalityList.size();
 		}
 		
+		// Create the file handler here if the log file name is invariant of the name
+		// (logs all contents to a single file)
+		if(!logFile.contains("%d")) {
+			setupFileLogger();
+		}
 		// Log how many personalities there are.
 		log("Running " + (endCycle - startCycle) + " cycles...");
 	}
 	
-	public static void main(String[] args) {
-		boolean shouldRun = true;
-		for(int i = 0; shouldRun && i < args.length; i += 2) {
-			shouldRun = handleArgument(args, i);
+	private void setupFileLogger() {
+		Handler[] hs = Logger.getLogger("").getHandlers(); 
+        for (int i = 0; i < hs.length; i++) {
+        	hs[i].close();
+            Logger.getLogger("").removeHandler(hs[i]); 
+        }
+        
+        StreamHandler h;
+		try {
+			if(logFile.isEmpty()) {
+				h = new StreamHandler();
+			} else {
+				h = new FileHandler(String.format(logFile, startCycle));
+			}
+			h.setFormatter(new PlotFormatter());
+		    Logger.getLogger("").addHandler(h);
+		    Logger.getLogger("").setLevel(logFile.isEmpty() ? Level.OFF : Level.INFO);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		if(!shouldRun) {
+	}
+	
+	public static void main(String[] args) {
+		int nextArgument = 0;
+		for(int i = 0; nextArgument > -1 && i < args.length; i += nextArgument) {
+			nextArgument = handleArgument(args, i);
+		}
+		if(nextArgument == -1) {
 			printHelp();
 			return;
 		}
@@ -92,14 +125,14 @@ public class RedHenCycle extends PlotCycle {
 		cycle.run();
 	}
 	
-	private static boolean handleArgument(String[] args, int i) {
+	private static int handleArgument(String[] args, int i) {
 		switch(args[i]) {
 			case "-close":
 				closeOnComplete = true;
-				return true;
+				return 1;
 		}
 		if(args.length == i + 1) {
-			return false;
+			return -1;
 		}
 		switch(args[i]) {
 			case "-out":
@@ -111,29 +144,33 @@ public class RedHenCycle extends PlotCycle {
 			case "-end":
 				if(endCycle > -1) {
 					System.err.println("You may only use either \"-cycle\" or \"-end\".");
-					return false;
+					return -1;
 				}
 				endCycle = Integer.parseInt(args[i + 1]);
 				break;
 			case "-cycles":
 				if(endCycle > -1) {
 					System.err.println("You may only use either \"-cycle\" or \"-end\".");
-					return false;
+					return -1;
 				}
 				cycleNum = Integer.parseInt(args[i + 1]);
+				break;
+			case "-log":
+				logFile = args[i + 1];
 				break;
 			case "-flush":
 				flushInterval = Integer.parseInt(args[i + 1]);
 				break;
 			default:
-				return false;
+				return -1;
 		}
-		return true;
+		return 2;
 	}
 	
 	private static void printHelp() {
 		System.out.println("The following arguments are valid:");
 		System.out.println("\t[-out <file name>]\tSets the output file to the given file name.");
+		System.out.println("\t[-log <file name>]\tSets the log file to the given file name. Use %d in the file name to create a new log file for each cycle.");
 		System.out.println("\t[-close]\t\tIf given this argument, the application will close upon completion of the last cycle.");
 		System.out.println("\t[-start <cycle>]\tThis lets the application skip all cycles before the provided one.");
 		System.out.println("\t[-end <cycle>]\t\tThis determines the first cycle the application will not complete. Do not use with \"-cycles\".");
@@ -184,8 +221,12 @@ public class RedHenCycle extends PlotCycle {
 		// Start the next cycle
 		lastPersonalities = personalityIterator.next();
 		log("Cycle " + startCycle);
+		lastRunner = new RedHenLauncher();
+		// Create a new file logger if the log file name depends on the cycle number.
+		if(logFile.contains("%d")) {
+			setupFileLogger();
+		}
 		startCycle++;
-		
 		return new ReflectResult(lastRunner = new RedHenLauncher(), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
 	}
 	
@@ -260,8 +301,12 @@ public class RedHenCycle extends PlotCycle {
 	@Override
 	protected ReflectResult createInitialReflectResult() {
 		lastPersonalities = personalityIterator.next();
-		ReflectResult rr = new ReflectResult(new RedHenLauncher(), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		ReflectResult rr = new ReflectResult(lastRunner = new RedHenLauncher(), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
 		log("Cycle " + startCycle);
+		// Create a new file logger if the log file name depends on the cycle number.
+		if(logFile.contains("%d")) {
+			setupFileLogger();
+		}
 		startCycle++;
 		return rr;
 	}
