@@ -20,6 +20,8 @@ import jason.asSemantics.Personality;
 import plotmas.PlotCycle;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
+import plotmas.graph.isomorphism.FunctionalUnit;
+import plotmas.graph.isomorphism.FunctionalUnits;
 import plotmas.graph.visitor.EdgeLayoutVisitor;
 import plotmas.helper.PlotFormatter;
 import plotmas.helper.Tellability;
@@ -65,8 +67,14 @@ public class RedHenCycle extends PlotCycle {
 		}
 		
 		// Print CSV header
-		if(startCycle == 0)
-			csvOut.println("tellability,functional_units,polyvalent_vertices,o0,c0,e0,a0,n0,o1,c1,e1,a1,n1");
+		if(startCycle == 0) {
+			String header = "tellability,functional_units_total,";
+			for(FunctionalUnit unit : FunctionalUnits.ALL) {
+				header += unit.getName().toLowerCase().replace(' ', '_') + "s,";
+			}
+			header += "polyvalent_vertices,o0,c0,e0,a0,n0,o1,c1,e1,a1,n1";
+			csvOut.println(header);
+		}
 		
 		// Generate all possible personalities.
 		Personality[] personalitySpace = createPersonalitySpace(new double[] { -1.0, 0, 1.0 });
@@ -188,7 +196,11 @@ public class RedHenCycle extends PlotCycle {
 	private void onCycleResult(Personality[] personalities, Tellability tellability) {
 		StringBuilder csv = new StringBuilder();
 		Formatter f = new Formatter(csv);
-		f.format(Locale.ENGLISH, "%f,%d,%d,", tellability.functionalPolyvalence, tellability.numFunctionalUnits, tellability.numPolyvalentVertices);
+		f.format(Locale.ENGLISH, "%f,%d,", tellability.functionalPolyvalence, tellability.numFunctionalUnits);
+		for(FunctionalUnit unit : FunctionalUnits.ALL) {
+			f.format("%d,", tellability.functionalUnitCount.get(unit));
+		}
+		f.format("%d,", tellability.numPolyvalentVertices);
 		for(Personality p : personalities) {
 			f.format(Locale.ENGLISH, "%f,%f,%f,%f,%f,",
 								p.O, p.C, p.E, p.A, p.N);

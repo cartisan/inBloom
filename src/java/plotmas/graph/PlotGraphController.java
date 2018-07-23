@@ -206,6 +206,7 @@ public class PlotGraphController extends JFrame{
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, unit.getGraph());
 			unitInstances += mappings.size();
+			this.analysisResult.functionalUnitCount.put(unit, mappings.size());
 			logger.log(Level.INFO, "Found '" + unit.getName() + "' " + mappings.size() + " times.");
 			for(Map<Vertex, Vertex> map : mappings) {
 				for(Vertex v : map.keySet()) {
