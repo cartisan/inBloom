@@ -37,6 +37,8 @@ public class RedHenCycle extends PlotCycle {
 	
 	private static boolean closeOnComplete = false;
 	
+	private static boolean hideGui = false;
+	
 	private PlotDirectedSparseGraph bestGraph = null;
 	private double bestTellability = -1f;
 	private Personality[] bestPersonalities = null;
@@ -51,7 +53,7 @@ public class RedHenCycle extends PlotCycle {
 
 	protected RedHenCycle() {
 		// Create PlotCycle with needed agents.
-		super(new String[] { "hen", "dog", "cow", "pig" }, "agent");
+		super(new String[] { "hen", "dog", "cow", "pig" }, "agent", !hideGui);
 		
 		// Open a file for writing results
 		try {
@@ -128,6 +130,11 @@ public class RedHenCycle extends PlotCycle {
 	private static int handleArgument(String[] args, int i) {
 		switch(args[i]) {
 			case "-close":
+				closeOnComplete = true;
+				return 1;
+			case "-nogui":
+				hideGui = true;
+				System.out.println("Running in headless mode. This automatically enables \"close on complete\".");
 				closeOnComplete = true;
 				return 1;
 		}

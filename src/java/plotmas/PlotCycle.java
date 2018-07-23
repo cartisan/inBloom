@@ -55,10 +55,16 @@ public abstract class PlotCycle implements Runnable {
 	 * @param agentNames an array of the names of all agents
 	 * @param agentSrc the name of the source file for the agent code
 	 */
-	protected PlotCycle(String[] agentNames, String agentSrc) {
+	protected PlotCycle(String[] agentNames, String agentSrc, boolean showGui) {
 		this.agentNames = agentNames;
 		this.agentSrc = agentSrc;
-		initGui();
+		if(showGui) {
+			initGui();
+		}
+	}
+	
+	protected PlotCycle(String[] agentNames, String agentSrc) {
+		this(agentNames, agentSrc, true);
 	}
 	
 	private void initGui() {
@@ -89,8 +95,10 @@ public abstract class PlotCycle implements Runnable {
 	 * Closes and disposes the log gui.
 	 */
 	protected void closeGui() {
-		cycleFrame.setVisible(false);
-		cycleFrame.dispose();
+		if(cycleFrame != null) {
+			cycleFrame.setVisible(false);
+			cycleFrame.dispose();
+		}
 	}
 	
 	/**
@@ -179,9 +187,11 @@ public abstract class PlotCycle implements Runnable {
 	 * @param string Message to log
 	 */
 	protected void log(String string) {
-		logTextArea.append(string + "\n");
-		logTextArea.setCaretPosition(logTextArea.getText().length());
-		logTextArea.repaint();
+		if(logTextArea != null) {
+			logTextArea.append(string + "\n");
+			logTextArea.setCaretPosition(logTextArea.getText().length());
+			logTextArea.repaint();
+		}
 	}
 	
 	/**
