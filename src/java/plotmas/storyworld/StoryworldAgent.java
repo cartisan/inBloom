@@ -37,7 +37,7 @@ public class StoryworldAgent {
 	 * agent's inventory, which can be used to generate ASL agent perceptions.
 	 * @return
 	 */
-	public LinkedList<String> createInventoryPercepts() {
+	public synchronized LinkedList<String> createInventoryPercepts() {
 		LinkedList<String> invRepr = new LinkedList<String>();
 		
 		for (Item item : inventory) {
@@ -47,11 +47,11 @@ public class StoryworldAgent {
 		return invRepr;
 	}
 	
-	public void addToInventory(Item item) {
+	public synchronized void addToInventory(Item item) {
 		inventory.add(item);
 	}
 	
-	public void removeFromInventory(Item item) {
+	public synchronized void removeFromInventory(Item item) {
 		inventory.remove(item);
 	}
 	

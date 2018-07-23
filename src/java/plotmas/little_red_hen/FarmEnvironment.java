@@ -30,13 +30,15 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     protected void updateStatePercepts(String agentName) {
     	super.updateStatePercepts(agentName);
     	
-    	// update publicly known wheat state
-    	if (!(getModel().wheat == null)) {
-    		removePerceptsByUnif(agentName, Literal.parseLiteral("wheat(X)"));
-    		addPercept(agentName, Literal.parseLiteral(getModel().wheat.literal()));
-    	}
-    	else {
-    		removePerceptsByUnif(agentName, Literal.parseLiteral("wheat(X)"));
+    	synchronized(getModel()) {
+	    	// update publicly known wheat state
+	    	if (!(getModel().wheat == null)) {
+	    		removePerceptsByUnif(agentName, Literal.parseLiteral("wheat(X)"));
+	    		addPercept(agentName, Literal.parseLiteral(getModel().wheat.literal()));
+	    	}
+	    	else {
+	    		removePerceptsByUnif(agentName, Literal.parseLiteral("wheat(X)"));
+	    	}
     	}
     }
     
@@ -45,58 +47,60 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
 		// let the PlotEnvironment update the plot graph, initializes result as false
 		boolean result = super.executeAction(agentName, action);
     	StoryworldAgent agent = getModel().getAgent(agentName);
-    	
-    	if (action.getFunctor().equals("farm_work")) {
-    		result = getModel().farmWork(agent);
-    	}
-    	
-    	if (action.getFunctor().equals("plant")) {
-			result = getModel().plantWheat(agent);
-    	}
-    	
-    	if (action.toString().equals("tend(wheat)")) {
-    		result = getModel().tendWheat(agent);
-    	}
-    	
-    	if (action.toString().equals("harvest(wheat)")) {
-    		result = getModel().harvestWheat(agent);
-    	}
-    	
-    	if (action.toString().equals("grind(wheat)")) {
-    		result = getModel().grindWheat(agent);
-    	}
-    	
-    	if (action.getFunctor().equals("bake")) {
-    		result = getModel().bakeBread(agent);
-    	}
-    	
-    	if (action.getFunctor().equals("eat")) {
-    		String item = action.getTerm(0).toString();
-    		result = agent.eat(item);
-    	}
-
-    	if (action.getFunctor().equals("help")) {
-    		result = true;
-    	}
-    	
-    	if (action.getFunctor().equals("share")) {
-    		String item = action.getTerm(0).toString();
-    		Term receiverTerm = action.getTerm(1);
-    		
-    		if (receiverTerm.isList()) {
-    			List<StoryworldAgent> receivers = new LinkedList<>();
-    			for (Term rec: (ListTermImpl) receiverTerm) {
-        			receivers.add(getModel().getAgent(rec.toString()));
-    			}
-    			result = agent.share(item, receivers);
-    		} else {
-    			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
-    			result = agent.share(item, patient);
-    		}
-    	}
-    	
-    	if (action.getFunctor().equals("relax")) {
-			result = agent.relax();
+    	synchronized(getModel()) {
+	    	if (action.getFunctor().equals("farm_work")) {
+	    		result = getModel().farmWork(agent);
+	    	}
+	    	
+	    	if (action.getFunctor().equals("plant")) {
+				result = getModel().plantWheat(agent);
+	    	}
+	    	
+	    	if (action.toString().equals("tend(wheat)")) {
+	    		result = getModel().tendWheat(agent);
+	    	}
+	    	
+	    	if (action.toString().equals("harvest(wheat)")) {
+	    		result = getModel().harvestWheat(agent);
+	    	}
+	    	
+	    	if (action.toString().equals("grind(wheat)")) {
+	    		result = getModel().grindWheat(agent);
+	    	}
+	    	
+	    	if (action.getFunctor().equals("bake")) {
+	    		result = getModel().bakeBread(agent);
+	    	}
+	    	
+	    	if (action.getFunctor().equals("eat")) {
+	    		String item = action.getTerm(0).toString();
+	    		result = agent.eat(item);
+	    	}
+	
+	    	if (action.getFunctor().equals("help")) {
+	    		result = true;
+	    	}
+	    	
+	    	if (action.getFunctor().equals("share")) {
+	    		String item = action.getTerm(0).toString();
+	    		Term receiverTerm = action.getTerm(1);
+	    		
+	    		if (receiverTerm.isList()) {
+	    			List<StoryworldAgent> receivers = new LinkedList<>();
+	    			for (Term rec: (ListTermImpl) receiverTerm) {
+	        			receivers.add(getModel().getAgent(rec.toString()));
+	    			}
+	    			result = agent.share(item, receivers);
+	    		} else {
+	    			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
+	    			result = agent.share(item, patient);
+	    		}
+	    	}
+	    	
+	    	if (action.getFunctor().equals("relax")) {
+				result = agent.relax();
+	    	}
+	    	
     	}
     	
     	pauseOnRepeat(agentName, action);
