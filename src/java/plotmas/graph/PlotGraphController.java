@@ -99,6 +99,8 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 	}
 
 	public void closeGraph() {
+		logger.info("Closing and reseting plot graph view");
+		
 		this.getContentPane().remove(scrollPane);
     	this.dispose();
     	
@@ -227,7 +229,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 		// Tutorial:
 		// http://www.grotto-networking.com/JUNG/JUNG2-Tutorial.pdf
 		
-		Layout<Vertex, Edge> layout = new PlotGraphLayout(this.drawnGraph);
+		PlotGraphLayout layout = new PlotGraphLayout(this.drawnGraph);
 		
 		// Create a viewing server
 		this.visViewer = new VisualizationViewer<Vertex, Edge>(layout);

@@ -2,6 +2,7 @@ package plotmas.graph;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,7 +34,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     protected transient Point m_currentPoint = new Point();
     protected transient Vertex currentRoot;
     
-//    protected HashMap<Vertex, Integer> columnWidth = new HashMap<>();		// maps: root     -> width of column
+    protected HashMap<Vertex, Integer> columnWidths = new HashMap<>();		// maps: root     -> width of column
     protected HashMap<Vertex, Integer> columnStartAtX = new HashMap<>();	// maps: root     -> x value of all vertices in column
     protected HashMap<Integer, Integer> stepStartAtY = new HashMap<>();		// maps: step_num -> y value of first occ of this step
     protected HashMap<Integer, Integer> stepEndAtY = new HashMap<>();		// maps: step_num -> y value of last occ of this step
@@ -51,6 +52,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 	public void reset() {
 		this.columnStartAtX = new HashMap<>();
 		this.stepStartAtY = new HashMap<>();
+		this.stepEndAtY = new HashMap<>();
 	}
     
     protected void buildGraph() {
@@ -69,19 +71,21 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
        		for(Vertex root : roots) {
        			logger.fine("Column " + root.getLabel());
        			this.currentRoot = root;
+       			this.columnWidths.put(root, 0);
        			
        			// persist x pos of column based on current position of pointer 
        			this.columnStartAtX.put(this.currentRoot, this.m_currentPoint.x);
        			
        			// analyze y pos of steps in this column 
        			this.m_currentPoint.y = START_Y;
-       			int columnWidth = 0;
        			List<Integer> encounteredSteps = new LinkedList<>();
        			
-       			columnWidth = this.analyzeColumn(root, encounteredSteps, columnWidth);
+       			int colWidth = this.analyzeColumn(root, encounteredSteps, this.columnWidths.get(root));
+       			this.columnWidths.put(root, colWidth);
+       			
         		
         		// the next root should start after longest vertex in this column
-        		this.m_currentPoint.x += columnWidth + PAD_X;
+        		this.m_currentPoint.x += colWidth + PAD_X;
         	}
         }
 	}
@@ -157,6 +161,8 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 
 	/**
 	 * @param vertex
+	 * @param stepLocationMap
+	 * @param start
 	 */
 	private void addStepLocation(Vertex vertex, HashMap<Integer, Integer> stepLocationMap, boolean start) {
 		// check if it was just skipped by previous columns 
@@ -184,6 +190,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 
 	/**
 	 * @param vertex
+	 * @param stepLocationMap
 	 */
 	private void updateStepLocation(Vertex vertex, HashMap<Integer, Integer> stepLocationMap) {
 		// check if new step y position is bigger then the one we previously found
@@ -222,9 +229,12 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 
 	private void buildLayout() {
 		logger.info("Building time-step oriented layout");
-        Collection<Vertex> roots = ((PlotDirectedSparseGraph) this.graph).getRoots();
+        ArrayList<Vertex> roots = ((PlotDirectedSparseGraph) this.graph).getRoots();
         
         if (roots.size() > 0 && this.graph != null) {
+        	// build step-axis before first col
+        	this.buildYAxis();
+        	
         	// build each column
        		for(Vertex root : roots) {
        			this.currentRoot = root;
@@ -233,6 +243,16 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
         }
     }
 
+	public void buildYAxis() {
+    	Vertex firstColRoot = ((PlotDirectedSparseGraph) this.graph).getRoots().get(0);
+    	int x_pos = this.columnStartAtX.get(firstColRoot) - (this.columnWidths.get(firstColRoot) / 2 + STEP_OFFSET);
+    	
+    	for (Vertex vertex : ((PlotDirectedSparseGraph) this.graph).getAxisVertices()) {
+    		int y_pos = this.stepStartAtY.get(vertex.getStep());
+    		locations.getUnchecked(vertex).setLocation(new Point(x_pos, y_pos));    		
+    	}
+	}
+	
 	private void buildColumn(Vertex vertex, int stepRepeated, int lastStep) {
 		// compute offset for several vertices in one step
 		if (lastStep != vertex.getStep()) {
