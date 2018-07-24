@@ -18,11 +18,8 @@ import java.util.logging.StreamHandler;
 
 import jason.asSemantics.Personality;
 import plotmas.PlotCycle;
-import plotmas.graph.PlotDirectedSparseGraph;
-import plotmas.graph.PlotGraphController;
 import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.graph.isomorphism.FunctionalUnits;
-import plotmas.graph.visitor.EdgeLayoutVisitor;
 import plotmas.helper.PlotFormatter;
 import plotmas.helper.Tellability;
 
@@ -41,7 +38,6 @@ public class RedHenCycle extends PlotCycle {
 	
 	private static boolean hideGui = false;
 	
-	private PlotDirectedSparseGraph bestGraph = null;
 	private double bestTellability = -1f;
 	private Personality[] bestPersonalities = null;
 	
@@ -101,7 +97,7 @@ public class RedHenCycle extends PlotCycle {
 		Handler[] hs = Logger.getLogger("").getHandlers(); 
         for (int i = 0; i < hs.length; i++) {
         	hs[i].close();
-            Logger.getLogger("").removeHandler(hs[i]); 
+        	Logger.getLogger("").removeHandler(hs[i]);
         }
         
         StreamHandler h;
@@ -228,7 +224,6 @@ public class RedHenCycle extends PlotCycle {
 		if(er.getTellability().functionalPolyvalence > bestTellability) {
 			bestTellability = er.getTellability().functionalPolyvalence;
 			log("New best: " + bestTellability);
-			bestGraph = er.getPlotGraph();
 			bestPersonalities = lastPersonalities;
 		}
 		
@@ -241,12 +236,13 @@ public class RedHenCycle extends PlotCycle {
 		lastPersonalities = personalityIterator.next();
 		log("Cycle " + startCycle);
 		lastRunner = new RedHenLauncher();
+		lastRunner.setShowGui(false);
 		// Create a new file logger if the log file name depends on the cycle number.
 		if(logFile.contains("%d")) {
 			setupFileLogger();
 		}
 		startCycle++;
-		return new ReflectResult(lastRunner = new RedHenLauncher(), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		return new ReflectResult(lastRunner, new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
 	}
 	
 	@Override
@@ -258,14 +254,15 @@ public class RedHenCycle extends PlotCycle {
 			log("\t" + p.toString());
 		}
 		
-		// Add best graph to PlotGraphController
-		bestGraph.setName("Plot graph with highest tellability");
-		bestGraph.accept(new EdgeLayoutVisitor(bestGraph, 9));
-		PlotGraphController.getPlotListener().addGraph(bestGraph);
-		
 		// Flush and close file
 		csvOut.flush();
 		csvOut.close();
+		
+		// Close all log handlers
+		Handler[] hs = Logger.getLogger("").getHandlers(); 
+        for (int i = 0; i < hs.length; i++) {
+        	hs[i].close();
+        }
 		
 		if(closeOnComplete) {
 			lastRunner.finish();
@@ -320,7 +317,9 @@ public class RedHenCycle extends PlotCycle {
 	@Override
 	protected ReflectResult createInitialReflectResult() {
 		lastPersonalities = personalityIterator.next();
-		ReflectResult rr = new ReflectResult(lastRunner = new RedHenLauncher(), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		lastRunner = new RedHenLauncher();
+		lastRunner.setShowGui(false);
+		ReflectResult rr = new ReflectResult(lastRunner, new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
 		log("Cycle " + startCycle);
 		// Create a new file logger if the log file name depends on the cycle number.
 		if(logFile.contains("%d")) {

@@ -15,8 +15,6 @@ import plotmas.PlotLauncher;
  * @author Leonid Berov
  */
 public class RedHenLauncher extends PlotLauncher {
-
-	private static boolean showGUI = false;
 	
 	public RedHenLauncher() {
 		ENV_CLASS = FarmEnvironment.class;
@@ -24,16 +22,8 @@ public class RedHenLauncher extends PlotLauncher {
 		BaseCentralisedMAS.runner = this;
 	}
 	
-	@Override
-	public synchronized void setupLogger() {
-		if(showGUI) {
-			super.setupLogger();
-		}
-	}
-	
 	public static void main(String[] args) throws JasonException {
         logger.info("Starting up from Launcher!");
-        showGUI = true;
         ENV_CLASS = FarmEnvironment.class;
         
         runner = new RedHenLauncher();

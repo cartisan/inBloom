@@ -239,7 +239,7 @@ public class PlotLauncher extends PlotControlsLauncher {
 	 * @param usePlotLogger set this to false if you wish to set your own logging output
 	 * @throws JasonException
 	 */
-	public void run(String[] args, ImmutableList<LauncherAgent> agents, String agentFileName, boolean usePlotLogger) throws JasonException  {
+	public void run(String[] args, ImmutableList<LauncherAgent> agents, String agentFileName) throws JasonException  {
 		String defArgs[];
 		boolean debugMode=false;
 		
@@ -265,18 +265,12 @@ public class PlotLauncher extends PlotControlsLauncher {
 		this.create();
         
 		this.initzializePlotEnvironment(agents);
-		if(usePlotLogger) {
-			this.setupPlotLogger();
-		}
+		this.setupPlotLogger();
 		this.initializePlotAgents(agents);
 		
 		this.start();
 		this.waitEnd();
 		this.finish();
-	}
-	
-	public void run(String[] args, ImmutableList<LauncherAgent> agents, String agentFileName) throws JasonException  {
-		this.run(args, agents, agentFileName, true);
 	}
 
 	/**

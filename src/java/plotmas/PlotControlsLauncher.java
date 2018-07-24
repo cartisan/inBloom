@@ -33,12 +33,27 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	private JFrame moodGraph;
 	protected boolean isDraw = false;
 
+	protected boolean showGui = true;
+	
+	public void setShowGui(boolean showGui) {
+		this.showGui = showGui;
+	}
+	
+	@Override
+	public synchronized void setupLogger() {
+		if(showGui) {
+			super.setupLogger();
+		}
+	}
 	
 	/**
 	 * Has to be executed after initialization is complete because it depends
 	 * on PlotEnvironment being already initialized with a plotStartTime.
 	 */
 	public synchronized void setupPlotLogger() {
+		if(!showGui) {
+			return;
+		}
         Handler[] hs = Logger.getLogger("").getHandlers(); 
         for (int i = 0; i < hs.length; i++) { 
             Logger.getLogger("").removeHandler(hs[i]); 
@@ -53,6 +68,9 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	 * plotting) is impossible due to paused Jason console (?).
 	 */
 	public synchronized void setupConsoleLogger() {
+		if(!showGui) {
+			return;
+		}
         Handler[] hs = Logger.getLogger("").getHandlers(); 
         for (int i = 0; i < hs.length; i++) { 
             Logger.getLogger("").removeHandler(hs[i]); 
@@ -68,8 +86,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	    MASConsoleGUI.get().setPause(true);
 	    this.pauseButton.setText("Continue");
 
-	    // FIXME switching to console logger on pauseExecution causes simulation to not pause ?!
-//		setupConsoleLogger();
+		setupConsoleLogger();
 	}
 
 	protected void continueExecution() {
@@ -77,6 +94,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	    MASConsoleGUI.get().setPause(false);
 	    
 	    this.setupPlotLogger();
+	    ((PlotEnvironment<?>) this.env.getUserEnvironment()).wake();
 	}
 
 	protected void drawGraphs() {

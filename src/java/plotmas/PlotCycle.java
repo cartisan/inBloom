@@ -214,7 +214,7 @@ public abstract class PlotCycle implements Runnable {
 		@Override
 		public void run() {
 			try {
-				runner.run(args, agents, agSrc, false);
+				runner.run(args, agents, agSrc);
 			} catch (JasonException e) {
 				log("JasonException!");
 			}
