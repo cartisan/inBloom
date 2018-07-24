@@ -1,6 +1,8 @@
 package plotmas.little_red_hen;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -26,6 +28,7 @@ import plotmas.helper.Tellability;
 public class RedHenCycle extends PlotCycle {
 	
 	private static String outFile = "results.csv";
+	private static String inFile = "";
 	private static String logFile = "";
 	
 	private static int startCycle = 0;
@@ -72,9 +75,47 @@ public class RedHenCycle extends PlotCycle {
 			csvOut.println(header);
 		}
 		
-		// Generate all possible personalities.
-		Personality[] personalitySpace = createPersonalitySpace(new double[] { -1.0, 0, 1.0 });
-		personalityList = createPlotSpace(personalitySpace, 2, true);
+		boolean fileRead = false;
+		
+		if(!inFile.isEmpty()) {
+			try(FileReader fr = new FileReader(inFile);
+				BufferedReader br = new BufferedReader(fr);)
+			{
+				String line;
+				personalityList = new LinkedList<Personality[]>();
+				while((line = br.readLine()) != null) {
+					String[] pd = line.split(",");
+					Personality[] configuration = new Personality[] {
+						new Personality(
+								Double.parseDouble(pd[0]),
+								Double.parseDouble(pd[1]),
+								Double.parseDouble(pd[2]),
+								Double.parseDouble(pd[3]),
+								Double.parseDouble(pd[4])),
+						new Personality(
+								Double.parseDouble(pd[5]),
+								Double.parseDouble(pd[6]),
+								Double.parseDouble(pd[7]),
+								Double.parseDouble(pd[8]),
+								Double.parseDouble(pd[9]))
+					};
+					personalityList.add(configuration);
+				}
+				fileRead = true;
+			} catch(IOException e0) {
+				System.err.println("Could not read input file!");
+			} catch(IndexOutOfBoundsException | NumberFormatException e1) {
+				System.err.println("Input file did not have the correct format.");
+			}
+		}
+		
+		if(!fileRead) {
+			// Generate all possible personalities.
+			Personality[] personalitySpace = createPersonalitySpace(new double[] { -1.0, 0, 1.0 });
+			personalityList = createPlotSpace(personalitySpace, 2, true);
+		}
+		
+		
 		personalityIterator = personalityList.iterator();
 		
 		for(int i = 0; i < startCycle && personalityIterator.hasNext(); i++)
@@ -146,6 +187,9 @@ public class RedHenCycle extends PlotCycle {
 			return -1;
 		}
 		switch(args[i]) {
+			case "-in":
+				inFile = args[i + 1];
+				break;
 			case "-out":
 				outFile = args[i + 1];
 				break;
