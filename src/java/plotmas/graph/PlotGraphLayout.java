@@ -17,15 +17,18 @@ import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
  * @author Leonid Berov
  */
 public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
-    static Logger logger = Logger.getLogger(PlotGraphLayout.class.getName());
+
+	static Logger logger = Logger.getLogger(PlotGraphLayout.class.getName());
     
     // The horizontal/vertical vertex spacing.
-    public static int PAD_X = 50;
-    public static int PAD_Y = 50;
+    public static final int PAD_X = 50;
+    public static final int PAD_Y = 50;
     
     // start point of layout
-    public static int START_X = 200;
-    public static int START_Y = 0;
+    public static final int START_X = 200;
+    public static final int START_Y = 0;
+
+    public static final int STEP_OFFSET = 25;
 	
     protected transient Point m_currentPoint = new Point();
     protected transient Vertex currentRoot;
@@ -57,13 +60,14 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 
 
 	private void computeLayout() {
+		logger.info("Computing time-step oriented layout");
         this.m_currentPoint = new Point(START_X, START_Y);
         Collection<Vertex> roots = ((PlotDirectedSparseGraph) this.graph).getRoots();
         
         if (roots.size() > 0 && this.graph != null) {
         	// analyze each column
        		for(Vertex root : roots) {
-       			logger.info("Column " + root.getLabel());
+       			logger.fine("Column " + root.getLabel());
        			this.currentRoot = root;
        			
        			// persist x pos of column based on current position of pointer 
@@ -83,8 +87,10 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 	}
 
 	protected int analyzeColumn(Vertex vertex, List<Integer> encounteredSteps, int columnWidth) {
-        // update pointer
+    	logger.fine("  step: " + vertex.getStep() +"    vertex: " + vertex.getLabel());
+		// update pointer
         this.m_currentPoint.y += PlotGraphLayout.PAD_Y;
+    	logger.fine("    initial pointer position: " + this.m_currentPoint.y);        
         
         // check if this vertex needs more space than biggest previous vertex in this column
     	int width = Transformers.vertexSizeTransformer.apply(vertex);
@@ -95,12 +101,17 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     	// check if step position along the y axis needs to be updated
     	if (!encounteredSteps.contains(vertex.getStep())) {
     		// this is the first time this step appears in this column, its position is relevant
+    		// add small vertical offset to indicate new step start
+            this.m_currentPoint.y += PlotGraphLayout.STEP_OFFSET;
+            
+            logger.fine("    step relevant for stepStart position in this column");
+            
     		if (this.stepStartAtY.containsKey(vertex.getStep())) {
     			// step was layouted by previous columns
     			updateStepLocation(vertex, this.stepStartAtY); 
     		} else { 
     			// found a step that was not layouted by previous columns
-    			addStepLocation(vertex, this.stepStartAtY);
+    			addStepLocation(vertex, this.stepStartAtY, true);
     		}
 
     		// shift current pointer to reflect y position according to layout, no matter which column is responsible for the layout
@@ -110,8 +121,6 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     		encounteredSteps.add(vertex.getStep());
     	}
     	
-    	logger.info("   vertex: " + vertex.toString() + " y-position: " + this.m_currentPoint.y);
-
     	// continue with traversal of column
         Vertex child = ((PlotDirectedSparseGraph) this.graph).getCharSuccessor(vertex);
         if(!(child == null)) {
@@ -120,21 +129,27 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
         	// check if next vertex has different step
         	if(child.getStep() != vertex.getStep()) {
         		// this is the last vertex of current step, update layout data
+        		logger.fine("    step relevant for stepEnd position in this column");
         		if (this.stepEndAtY.containsKey(vertex.getStep())) {
         			// step was layouted by previous columns
         			updateStepLocation(vertex, this.stepEndAtY); 
         		} else { 
         			// found a step that was not layouted by previous columns
-        			addStepLocation(vertex, this.stepEndAtY);
+        			addStepLocation(vertex, this.stepEndAtY, false);
         		}
         	}
         	
-        	// compute position for child
+        	logger.fine("    new pointer position: " + this.m_currentPoint.y);
+        	
+        	// compute position for children
         	columnWidth = this.analyzeColumn(child, encounteredSteps, columnWidth);
         } else {
+        	logger.fine("  new pointer position: " + this.m_currentPoint.y);
+        	
         	// found last vertex in column --> adopt canvas size
         	this.updateCanvasSize();
-        	logger.info("Column " + this.currentRoot.getLabel() + " steps start at y dict: " + Arrays.toString(this.stepStartAtY.entrySet().toArray()));
+        	logger.fine("Column " + this.currentRoot.getLabel() + " steps start at y, dict: " + Arrays.toString(this.stepStartAtY.entrySet().toArray()));
+        	logger.fine("Column " + this.currentRoot.getLabel() + " steps end at y, dict: " + Arrays.toString(this.stepEndAtY.entrySet().toArray()));
         }
         
         return columnWidth;
@@ -143,14 +158,24 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 	/**
 	 * @param vertex
 	 */
-	private void addStepLocation(Vertex vertex, HashMap<Integer, Integer> stepLocationMap) {
+	private void addStepLocation(Vertex vertex, HashMap<Integer, Integer> stepLocationMap, boolean start) {
 		// check if it was just skipped by previous columns 
+		logger.fine("     adding step position");
 		if (stepLocationMap.keySet().stream().anyMatch(key -> key > vertex.getStep())) {
-			// put the skipped step in the place where previous columns located its successor (or itself, if bigger)
-			int succYKey = stepLocationMap.keySet().stream().filter(key -> key > vertex.getStep())
-														    .mapToInt(x -> x)
-														    .min().getAsInt();
-			this.m_currentPoint.y = Integer.max(stepLocationMap.get(succYKey), this.m_currentPoint.y);
+			if (start) {
+				// put the skipped step in the place where previous columns located its successor (or itself, if bigger)
+				int succYKey = stepLocationMap.keySet().stream().filter(key -> key > vertex.getStep())
+															    .mapToInt(x -> x)
+															    .min().getAsInt();
+				logger.fine("      based on successor step " + succYKey + " present at: " + stepLocationMap.get(succYKey));
+				this.m_currentPoint.y = Integer.max(stepLocationMap.get(succYKey), this.m_currentPoint.y);
+			} else {
+				// finishing adding new steps, delta-y to shift all following steps based on length of new step
+				int diff = this.m_currentPoint.y - this.stepStartAtY.get(vertex.getStep());
+				// starts as well as end of all lower steps are affected
+				updateSucceedingSteps(vertex.getStep(), diff, this.stepStartAtY);
+				updateSucceedingSteps(vertex.getStep(), diff, this.stepEndAtY);				
+			}
 		} 
 		
 		// safe the steps location in the layout
@@ -166,6 +191,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 		if (prevY < this.m_currentPoint.y) {
 			// save new position of step in layout
 			stepLocationMap.put(vertex.getStep(), this.m_currentPoint.y);
+			logger.fine("     new y-position for step " + vertex.getStep() + " is: " + this.m_currentPoint.y);
 			
 			// move all (previously positioned) steps below this step according to newly found delta-y
 			int diff = this.m_currentPoint.y - prevY;
@@ -173,6 +199,9 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 			// starts as well as end of all lower steps are affected
 			updateSucceedingSteps(vertex.getStep(), diff, this.stepStartAtY);
 			updateSucceedingSteps(vertex.getStep(), diff, this.stepEndAtY);
+			logger.fine("     shifting succeeding steps (start/end) down by " + diff);
+		} else {
+			logger.fine("     no new y-position necessary");
 		}
 	}
 
@@ -192,6 +221,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 	}
 
 	private void buildLayout() {
+		logger.info("Building time-step oriented layout");
         Collection<Vertex> roots = ((PlotDirectedSparseGraph) this.graph).getRoots();
         
         if (roots.size() > 0 && this.graph != null) {

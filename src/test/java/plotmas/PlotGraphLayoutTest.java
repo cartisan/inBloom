@@ -68,13 +68,13 @@ public class PlotGraphLayoutTest extends TestCase {
 		// test pos of first root
 		assertEquals(Double.valueOf(PlotGraphLayout.START_X), locations.get(v1).getX());
 		double yv1 = Double.valueOf(PlotGraphLayout.START_Y + PlotGraphLayout.PAD_Y);
-		assertEquals(yv1, locations.get(v1).getY());
+		assertEquals(yv1 + PlotGraphLayout.STEP_OFFSET, locations.get(v1).getY());
 
 		// test pos of next root
 		double xv2 = PlotGraphLayout.START_X + PlotGraphLayout.PAD_X + Transformers.vertexSizeTransformer.apply(v1);
 		double yv2 = Double.valueOf(PlotGraphLayout.START_Y + PlotGraphLayout.PAD_Y);
 		assertEquals(xv2, locations.get(v2).getX());
-		assertEquals(yv2, locations.get(v2).getY());
+		assertEquals(yv2 + PlotGraphLayout.STEP_OFFSET, locations.get(v2).getY());
 	}
 	
 	public void testCanvasGrows() throws Exception  {
@@ -90,7 +90,7 @@ public class PlotGraphLayoutTest extends TestCase {
 		Layout<Vertex, Edge> layout = new PlotGraphLayout(graph);
 		Dimension size = (Dimension) SIZE.get(layout);
 		
-		assertEquals(650, size.height);
+		assertEquals(950, size.height);
 		assertEquals(600, size.width);
 	}
 	
@@ -183,7 +183,7 @@ public class PlotGraphLayoutTest extends TestCase {
 		LoadingCache<Vertex, Point2D> locations = (LoadingCache<Vertex, Point2D>) LOC.get(layout);
 		
 		// test that in first column not only step 2 was shifted down, but also everything below it
-		assertEquals(locations.get(v3).getY() + PlotGraphLayout.PAD_Y, locations.get(v4).getY());
+		assertEquals(locations.get(v3).getY() + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET, locations.get(v4).getY());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -218,7 +218,7 @@ public class PlotGraphLayoutTest extends TestCase {
 		LoadingCache<Vertex, Point2D> locations = (LoadingCache<Vertex, Point2D>) LOC.get(layout);
 		
 		// test that in second column step 2 was shifted down, because its missing in column one but has a successor there 
-		assertEquals(locations.get(v3).getY() + PlotGraphLayout.PAD_Y, locations.get(v7).getY());
+		assertEquals(locations.get(v3).getY() + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET, locations.get(v7).getY());
 	}	
 	
 	@SuppressWarnings("unchecked")
@@ -253,7 +253,7 @@ public class PlotGraphLayoutTest extends TestCase {
 		LoadingCache<Vertex, Point2D> locations = (LoadingCache<Vertex, Point2D>) LOC.get(layout);
 		
 		// test that in first column step 3 was shifted down, because step 2 was detected in second column
-		assertEquals(locations.get(v6).getY() + PlotGraphLayout.PAD_Y, locations.get(v3).getY());
+		assertEquals(locations.get(v6).getY() + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET, locations.get(v3).getY());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -291,10 +291,10 @@ public class PlotGraphLayoutTest extends TestCase {
 		LoadingCache<Vertex, Point2D> locations = (LoadingCache<Vertex, Point2D>) LOC.get(layout);
 		
 		// test that in first column step 3 was shifted down, because step 2 was detected in second column
-		assertEquals(locations.get(v8).getY() + PlotGraphLayout.PAD_Y, locations.get(v4).getY());
+		assertEquals(locations.get(v8).getY() + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET, locations.get(v4).getY());
 		
 		// test that in second column step 2 was shifted down, because its missing in column one but has a successor there 
-		assertEquals(locations.get(v3).getY() + PlotGraphLayout.PAD_Y, locations.get(v7).getY());
+		assertEquals(locations.get(v3).getY() + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET, locations.get(v7).getY());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -332,7 +332,7 @@ public class PlotGraphLayoutTest extends TestCase {
 		LoadingCache<Vertex, Point2D> locations = (LoadingCache<Vertex, Point2D>) LOC.get(layout);
 		
 		// test that in first column step 2 was shifted down, because in second column end of step 1 is lower
-		assertEquals(locations.get(v7).getY() + PlotGraphLayout.PAD_Y, locations.get(v3).getY());
+		assertEquals(locations.get(v7).getY() + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET, locations.get(v3).getY());
 
 	}
 }
