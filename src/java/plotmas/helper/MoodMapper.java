@@ -1,6 +1,7 @@
 package plotmas.helper;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,7 +18,7 @@ import jason.asSemantics.Mood;
  */
 public class MoodMapper {
 //	private HashMap<String, List<Pair<Long,Mood>>> timedMoodMap = new HashMap<>();
-	private Table<String, Long, Mood> timedMoodMap = HashBasedTable.create();
+	private Table<String, Long, List<Mood>> timedMoodMap = HashBasedTable.create();
 	private LinkedList<Long> startTimes = new LinkedList<>();
 	
 	/**
@@ -31,7 +32,12 @@ public class MoodMapper {
 		if(!timedMoodMap.containsRow(agName)) {
 			startTimes.add(time);
 		}
-		timedMoodMap.put(agName, time, mood);
+		
+		if (!timedMoodMap.contains(agName, time)) {
+			timedMoodMap.put(agName, time, new LinkedList<>());
+		}
+		
+		timedMoodMap.get(agName, time).add(mood);
 	}
 	
 	/**
@@ -58,7 +64,7 @@ public class MoodMapper {
 	 * @return time in ms
 	 */
 	public Long latestMoodEntry(String agName) {
-		Map<Long, Mood> timeMoodMap = timedMoodMap.row(agName);
+		Map<Long, List<Mood>> timeMoodMap = timedMoodMap.row(agName);
 		return timeMoodMap.keySet().stream().mapToLong(l -> l).max().getAsLong();
 	}
 	
@@ -69,12 +75,22 @@ public class MoodMapper {
 	 * @return mood value in the interval [-1.0, 1.0]
 	 */
 	public Mood sampleMood(String agName, Long time) {
-		Map<Long, Mood> timeMoodMap = timedMoodMap.row(agName);
+		Map<Long, List<Mood>> timeMoodMap = timedMoodMap.row(agName);
 		
 		// find the last (time, mood) pair before sampling time
 		Long sampleTime = timeMoodMap.keySet().stream().filter(x -> x <= time) //get all pairs before sampling time
-																			.max( (x1, x2) -> Long.compare(x1, x2) ) // get last entry before sampling time
-																			.get();
-		return timeMoodMap.get(sampleTime);
+														.max( (x1, x2) -> Long.compare(x1, x2) ) // get last entry before sampling time
+														.get();
+		
+		List<Mood> moods = timeMoodMap.get(sampleTime);
+		double avgP = moods.stream().map(m -> m.getP()).mapToDouble(l -> l).average().getAsDouble();
+		double avgA = moods.stream().map(m -> m.getA()).mapToDouble(l -> l).average().getAsDouble();
+		double avgD = moods.stream().map(m -> m.getD()).mapToDouble(l -> l).average().getAsDouble();
+
+		return new Mood(avgP, avgA, avgD);
+	}
+	
+	public String toString() {
+		return this.timedMoodMap.toString();
 	}
 }
