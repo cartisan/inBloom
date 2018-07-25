@@ -3,15 +3,25 @@ package plotmas.graph;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
+import javax.imageio.ImageIO;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.jfree.ui.RefineryUtilities;
 
@@ -35,15 +45,23 @@ import plotmas.PlotLauncher.LauncherAgent;
  * @author Leonid Berov
  */
 @SuppressWarnings("serial")
-public class PlotGraphController extends JFrame implements PlotmasGraph {
+public class PlotGraphController extends JFrame implements PlotmasGraph, ActionListener {
     
-	private static PlotGraphController plotListener = null;
-	/**
-	 * Types of plot graph that can be drawn: [0] full graph, [1] analyzed graph
-	 */
-	private static final String[] GRAPH_TYPES = new String[] {"full plot graph", "analyzed plot graph"};
 	protected static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
+	
+	/** Singleton instance used to collect the plot */
+	private static PlotGraphController plotListener = null;
+	
+	/** Types of plot graph that can be drawn: [0] full graph, [1] analyzed graph */
+	private static final String[] GRAPH_TYPES = new String[] {"full plot graph", "analyzed plot graph"};
+	
+	/** Color used to draw background of this graph */
 	public static Color BGCOLOR = Color.WHITE;
+
+	/** Save action command. */
+	public static final String SAVE_COMMAND = "SAVE";
+	/** Change plot view action command. */
+    public static final String CHANGE_VIEW_COMMAND = "CHANGE_VIEW";
 
 
 	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
@@ -52,6 +70,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 	private String selectedGraphType = GRAPH_TYPES[0];
 	public VisualizationViewer<Vertex, Edge> visViewer = null;
 	private GraphZoomScrollPane scrollPane = null; //panel used to display scrolling bars
+	private JPopupMenu popup = null;
 	
 	
 	/**
@@ -90,12 +109,97 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 		    }
 		);
 		
+		this.createPopupMenu();
+		
 		// create and initialize the plot graph the will be created by this listener
 		this.graph = new PlotDirectedSparseGraph();
 		// set up a "named" tree for each character
 		for (LauncherAgent character : characters) {
 			this.addCharacter(character.name);
 		}
+	}
+	
+    /**
+     * Initializes the a popup menu that will appear on left-click.
+     */
+    protected void createPopupMenu() {
+        JPopupMenu result = new JPopupMenu("PlotGraph");
+
+        JMenuItem pngItem = new JMenuItem("Save Graph");
+        pngItem.setActionCommand(SAVE_COMMAND);
+        pngItem.addActionListener(this);
+
+        result.add(pngItem);
+
+        this.popup = result;
+    }
+    
+	/**
+	 * Method which allows this to registered as an ActionListener. Performs the handling of all events
+	 * that result from interactions with UI elements of this JFrame. 
+	 * @param event Event that specifies how to react
+	 */
+	@Override
+	public void actionPerformed(ActionEvent event) {
+        String command = event.getActionCommand();
+        
+        if (command.equals(SAVE_COMMAND)) {
+            try {
+                doSaveAs();
+            }
+            catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "I/O error occurred.", 
+                        "Save Graph", JOptionPane.WARNING_MESSAGE);
+            }
+        } else if (command.equals(CHANGE_VIEW_COMMAND)) {
+	    	@SuppressWarnings("unchecked")
+			JComboBox<String> combo = (JComboBox<String>) event.getSource();
+			String selectedType = (String) combo.getSelectedItem();
+			
+			if(selectedType.equals(GRAPH_TYPES[0])) {
+				Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().graph);
+				PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
+				PlotGraphController.getPlotListener().visViewer.repaint();
+			}
+			else {
+				Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().postProcessThisGraph());
+				PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
+				PlotGraphController.getPlotListener().visViewer.repaint();
+	
+			}
+        }
+	}
+	
+	/**
+	 * Saves currently displayed plot graph as PNG image. Displays a FileChoose to select name and target dir.
+	 * @throws IOException
+	 */
+	private void doSaveAs() throws IOException {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File("~"));
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("PNG_Image_Files", "png");
+        fileChooser.addChoosableFileFilter(filter);
+        fileChooser.setFileFilter(filter);
+
+        int option = fileChooser.showSaveDialog(this);
+        if (option == JFileChooser.APPROVE_OPTION) {
+            String filename = fileChooser.getSelectedFile().getPath();
+            if (!filename.endsWith(".png")) {
+                filename = filename + ".png";
+            }
+            
+            // actually safe image
+    		BufferedImage img = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
+    		Graphics2D g2d = img.createGraphics();
+    		this.printAll(g2d);
+    		g2d.dispose();
+    		ImageIO.write(img, "png", new File(filename));
+        }
+	}
+    
+	
+	public JPopupMenu getPopup() {
+		return this.popup;
 	}
 
 	public void closeGraph() {
@@ -262,28 +366,9 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 		// set up the combo-box for changing displayed plot graphs: first select the currently shown graph type
 		this.graphTypeList.setSelectedItem(this.selectedGraphType);
 		
-		// second: activate a listener that redraws the plot when selection changes. Careful here: order with 1. matters
-		this.graphTypeList.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				@SuppressWarnings("unchecked")
-				JComboBox<String> combo = (JComboBox<String>) event.getSource();
-				String selectedType = (String) combo.getSelectedItem();
-				
-				if(selectedType.equals(GRAPH_TYPES[0])) {
-					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().graph);
-					PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
-					PlotGraphController.getPlotListener().visViewer.repaint();
-				}
-				else {
-					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().postProcessThisGraph());
-					PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
-					PlotGraphController.getPlotListener().visViewer.repaint();
-
-				}
-			}
-		});
-		
+		// second: register a listener that redraws the plot when selection changes. Careful here: order with last command matters
+		this.graphTypeList.setActionCommand(CHANGE_VIEW_COMMAND);
+		this.graphTypeList.addActionListener(this);
 		this.add(graphTypeList, BorderLayout.NORTH);
 		
 		this.getContentPane().add(this.scrollPane);
@@ -295,7 +380,6 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 		
 		return this;
 	}
-	
 	
 	/*************************** for testing purposes ***********************************/
 	private static PlotDirectedSparseGraph createTestGraph() {
@@ -328,4 +412,5 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 		controller.drawnGraph = forest;
 		controller.visualizeGraph();
 	}
+
 }
