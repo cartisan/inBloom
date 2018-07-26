@@ -19,13 +19,14 @@ import jason.runtime.MASConsoleGUI;
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
+import plotmas.helper.EnvironmentListener;
 import plotmas.helper.Tellability;
 
 /**
  * Class which facilitates running a cycle of multiple simulations.
  * @author Sven Wilke
  */
-public abstract class PlotCycle implements Runnable {
+public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	
 	/**
 	 * The names of the agents in this simulation.
@@ -47,8 +48,11 @@ public abstract class PlotCycle implements Runnable {
 	
 	/**
 	 * Timeout in ms before a single simulation is forcibly stopped
+	 * A value of -1 means no timeout.
 	 */
-	private static final long TIMEOUT = 1900;
+	protected static long TIMEOUT = -1;
+	
+	private boolean isRunning = true;
 	
 	/**
 	 * Creates a new cycle object with specified agents.
@@ -121,32 +125,43 @@ public abstract class PlotCycle implements Runnable {
 	 * @param rr ReflectResult containing Personality array with length equal to agent count as well as PlotLauncher instance
 	 * @return EngageResult containing the graph of this simulation and its tellability score.
 	 */
-	@SuppressWarnings("deprecation")
 	protected EngageResult engage(ReflectResult rr) {
 		PlotLauncher runner = rr.getRunner();
 		Personality[] personalities = rr.getPersonalities();
 		Thread t = new Thread(this.new Cycle(runner, new String[0], createAgs(runner, personalities), this.agentSrc));
 		t.start();
 		MASConsoleGUI.get().setPause(false);
-		long startTime = System.currentTimeMillis();
-		while(t.isAlive()) {
+		boolean hasAddedListener = false;
+		while(isRunning) {
 			try {
-				if(MASConsoleGUI.hasConsole()) {
-					//MASConsoleGUI.get().getFrame().setVisible(false);
-					if(!isPaused) {
-						if(MASConsoleGUI.get().isPause() || (System.currentTimeMillis() - startTime > TIMEOUT && PlotEnvironment.getPlotTimeNow() > TIMEOUT)) {
-							t.stop();
-							runner.reset();
+				// This is needed in the loop, because the plot environment is null before starting
+				if(!hasAddedListener) {
+					if(runner.getEnvironmentInfraTier() != null) {
+						if(runner.getEnvironmentInfraTier().getUserEnvironment() != null) {
+							((PlotEnvironment<?>)runner.getEnvironmentInfraTier().getUserEnvironment()).addListener(this);
+							hasAddedListener = true;
 						}
 					}
 				}
+				// Handle the timeout if it was set
+				if(TIMEOUT > -1 && PlotEnvironment.getPlotTimeNow() >= TIMEOUT) {
+					isRunning = false;
+				}
 				Thread.sleep(150);
 			} catch (InterruptedException e) {
-				break;
+			}
+		}
+		while(isPaused) {
+			try {
+				Thread.sleep(150);
+			} catch(InterruptedException e) {
 			}
 		}
 		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
-		return new EngageResult(graph, PlotGraphController.getPlotListener().analyze(graph));
+		EngageResult er = new EngageResult(graph, PlotGraphController.getPlotListener().analyze(graph));
+		runner.reset();
+		isRunning = true;
+		return er;
 	}
 	
 	private ImmutableList<LauncherAgent> createAgs(PlotLauncher runner, Personality[] personalities) {
@@ -159,6 +174,11 @@ public abstract class PlotCycle implements Runnable {
 			agents.add(runner.new LauncherAgent(agentNames[i], personalities[i]));
 		}
 		return ImmutableList.copyOf(agents);
+	}
+	
+	@Override
+	public void onPauseRepeat() {
+		this.isRunning = false;
 	}
 	
 	/**

@@ -21,6 +21,7 @@ import jason.runtime.MASConsoleGUI;
 import jason.util.Pair;
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.graph.PlotGraphController;
+import plotmas.helper.EnvironmentListener;
 import plotmas.helper.TermParser;
 import plotmas.storyworld.Model;
 
@@ -43,6 +44,12 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 	
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
     public static Long startTime = 0L;
+    
+    /**
+     * A list of environment listeners which get called on certain events
+     * in the environment.
+     */
+    private List<EnvironmentListener> listeners = new LinkedList<>();
     
     /**
      * Returns the current plot time in ms, i.e. the time that has passed since simulation was started
@@ -115,6 +122,22 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
     public void initialize(List<LauncherAgent> agents) {
     	PlotEnvironment.startTime = System.nanoTime();
     	initializeActionCounting(agents);
+    }
+    
+    /**
+     * Adds a listener to this plot environment.
+     * @param l
+     */
+    public void addListener(EnvironmentListener l) {
+    	this.listeners.add(l);
+    }
+    
+    /**
+     * Removes a listener from this plot environment.
+     * @param l
+     */
+    public void removeListener(EnvironmentListener l) {
+    	this.listeners.remove(l);
     }
     
 	/**
@@ -340,6 +363,9 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
     				String.valueOf(MAX_REPEATE_NUM) + " of times.");
     		PlotLauncher.runner.pauseExecution();
     		resetAllAgentActionCounts();
+    		for(EnvironmentListener l : listeners) {
+    			l.onPauseRepeat();
+    		}
     	}
     	
     	// new action is same as last action

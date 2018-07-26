@@ -216,6 +216,9 @@ public class RedHenCycle extends PlotCycle {
 			case "-flush":
 				flushInterval = Integer.parseInt(args[i + 1]);
 				break;
+			case "-timeout":
+				PlotCycle.TIMEOUT = Long.parseLong(args[i + 1]);
+				break;
 			default:
 				return -1;
 		}
@@ -225,12 +228,15 @@ public class RedHenCycle extends PlotCycle {
 	private static void printHelp() {
 		System.out.println("The following arguments are valid:");
 		System.out.println("\t[-out <file name>]\tSets the output file to the given file name.");
+		System.out.println("\t[-in <file name>]\tSets the input file to the given file name.");
 		System.out.println("\t[-log <file name>]\tSets the log file to the given file name. Use %d in the file name to create a new log file for each cycle.");
 		System.out.println("\t[-close]\t\tIf given this argument, the application will close upon completion of the last cycle.");
 		System.out.println("\t[-start <cycle>]\tThis lets the application skip all cycles before the provided one.");
 		System.out.println("\t[-end <cycle>]\t\tThis determines the first cycle the application will not complete. Do not use with \"-cycles\".");
 		System.out.println("\t[-cycles <amount>]\tThis determines how many cycles should be run. Do not use with \"-end\".");
 		System.out.println("\t[-flush <interval>]\tSets how many cycles should be run before the output gets written to a file.");
+		System.out.println("\t[-nogui]\tStarts the application in headless mode.");
+		System.out.println("\t[-timeout]\tSets a maximum time for a single simulation to run.");
 	}
 	
 	private void onCycleResult(Personality[] personalities, Tellability tellability) {
