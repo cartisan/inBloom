@@ -132,6 +132,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		t.start();
 		MASConsoleGUI.get().setPause(false);
 		boolean hasAddedListener = false;
+		long startTime = System.currentTimeMillis();
 		while(isRunning) {
 			try {
 				// This is needed in the loop, because the plot environment is null before starting
@@ -144,7 +145,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 					}
 				}
 				// Handle the timeout if it was set
-				if(TIMEOUT > -1 && PlotEnvironment.getPlotTimeNow() >= TIMEOUT) {
+				if(TIMEOUT > -1 && (System.currentTimeMillis() - startTime) >= TIMEOUT && PlotEnvironment.getPlotTimeNow() >= TIMEOUT) {
 					isRunning = false;
 				}
 				Thread.sleep(150);
