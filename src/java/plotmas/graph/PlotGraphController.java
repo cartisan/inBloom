@@ -33,7 +33,6 @@ import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.graph.isomorphism.FunctionalUnits;
 import plotmas.graph.isomorphism.UnitFinder;
 import plotmas.graph.visitor.EdgeLayoutVisitor;
-import plotmas.graph.visitor.PostProcessVisitor;
 import plotmas.helper.Tellability;
 
 /**
@@ -192,7 +191,8 @@ public class PlotGraphController extends JFrame{
 			return analysisResult;
 		}
 		analysisResult = new Tellability();
-		PlotDirectedSparseGraph g = new PostProcessVisitor().apply(this.graph);
+		PlotDirectedSparseGraph g = new FullGraphPPVisitor().apply(this.graph);
+		g.accept(new CompactGraphPPVisitor(g));
 		g.setName("Analyzed Plot Graph");
 		EdgeLayoutVisitor elv = new EdgeLayoutVisitor(g, 9);
 		g.accept(elv);

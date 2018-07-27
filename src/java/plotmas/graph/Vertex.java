@@ -204,6 +204,10 @@ public class Vertex implements Cloneable {
 		this.emotions.add(emo);
 	}
 
+	public void removeEmotion(String emo) {
+		this.emotions.remove(emo);
+	}
+	
 	public boolean hasEmotion(String emo) {
 		return this.emotions.contains(emo);
 	}

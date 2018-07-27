@@ -1,4 +1,4 @@
-package plotmas.graph.visitor;
+package plotmas.graph;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -6,12 +6,19 @@ import java.util.Set;
 
 import jason.asSemantics.Emotion;
 import jason.asSyntax.parser.ParseException;
-import plotmas.graph.Edge;
-import plotmas.graph.PlotDirectedSparseGraph;
-import plotmas.graph.Vertex;
+import plotmas.graph.visitor.EdgeVisitResult;
+import plotmas.graph.visitor.PlotGraphVisitor;
 import plotmas.helper.TermParser;
 
-public class PostProcessVisitor implements PlotGraphVisitor {
+/**
+ * This post-process visitor is intended to be used on the
+ * full ('raw') plot graph as the first post-process visitor.
+ * It will create edges relevant for functional units and
+ * collapse emotions, percepts and events into a single vertex.
+ * @author Sven Wilke
+ *
+ */
+public class FullGraphPPVisitor implements PlotGraphVisitor {
 
 	private static final boolean KEEP_MOTIVATION = true;
 	
