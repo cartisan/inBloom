@@ -2,22 +2,17 @@ package oedipusnew;
 
 import java.util.List;
 
-import jason.asSemantics.Personality;
-import plotmas.PlotEnvironment;
-import plotmas.PlotLauncher.LauncherAgent;
-import plotmas.storyworld.Item;
+import plotmas.LauncherAgent;
 import plotmas.storyworld.Model;
 import plotmas.storyworld.StoryworldAgent;
-import jason.asSemantics.DefaultInternalAction;
-import jason.stdlib.create_agent;
 
-public class OedipusModelNew extends Model {
+public class OedipusModelNew extends Model<OedipusEnvironmentNew> {
 	
 	
 	public int actionCount;
 	public String location; 
 	
-	public OedipusModelNew(List<LauncherAgent> agentList, PlotEnvironment<OedipusModelNew> env) {
+	public OedipusModelNew(List<LauncherAgent> agentList, OedipusEnvironmentNew env) {
 		super(agentList, env);
 		this.actionCount = 0;
 	}

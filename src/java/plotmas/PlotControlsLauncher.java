@@ -26,6 +26,7 @@ import plotmas.helper.PlotFormatter;
  */
 public class PlotControlsLauncher extends RunCentralisedMAS {
 	public static PlotLauncher runner = null;
+	
 	protected static boolean COMPRESS_GRAPH = false;	// used to determine if PlotGraph should be compressed before drawing
 	protected static Level LOG_LEVEL = Level.INFO;
 //	protected static Level LOG_LEVEL = Level.FINE;

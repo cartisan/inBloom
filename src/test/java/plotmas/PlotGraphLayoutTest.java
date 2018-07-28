@@ -12,7 +12,6 @@ import com.google.common.cache.LoadingCache;
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import junit.framework.TestCase;
-import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.graph.Edge;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;

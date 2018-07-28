@@ -4,8 +4,8 @@ import java.util.List;
 
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
+import plotmas.LauncherAgent;
 import plotmas.PlotEnvironment;
-import plotmas.PlotLauncher.LauncherAgent;
 
 public class TutorialEnviroment extends PlotEnvironment<TutorialModel> {
 

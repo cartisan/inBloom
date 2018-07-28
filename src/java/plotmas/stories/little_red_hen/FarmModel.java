@@ -2,7 +2,7 @@ package plotmas.stories.little_red_hen;
 
 import java.util.List;
 
-import plotmas.PlotLauncher.LauncherAgent;
+import plotmas.LauncherAgent;
 import plotmas.storyworld.Item;
 import plotmas.storyworld.Model;
 import plotmas.storyworld.StoryworldAgent;
@@ -12,14 +12,14 @@ import plotmas.storyworld.StoryworldAgent;
  * Custom model of the story-world of the "Tale of the Little Red Hen".
  * @author Leonid Berov
  */
-public class FarmModel extends Model{
+public class FarmModel extends Model<FarmEnvironment>{
 	
 	public static enum WHEAT_STATE {SEED, GROWING, RIPE, HARVESTED, FLOUR;}
 
 	public Wheat wheat;
 
-	private int actionCount;
-		private boolean wheatFound;
+	public int actionCount;
+	public boolean wheatFound;
 	
 	
 	public FarmModel(List<LauncherAgent> agents, FarmEnvironment env) {
@@ -34,14 +34,6 @@ public class FarmModel extends Model{
 	public boolean farmWork(StoryworldAgent agent) {
 		this.actionCount += 1;
 		logger.info("Some farming activity was performed");
-		
-		if ((!wheatFound) && (this.actionCount >= 3) && (agent.name == "hen")) {
-			this.wheat = new Wheat();
-			agent.addToInventory(this.wheat);					//also: [emotion(joy),emotion(gratitude)]
-			this.environment.addEventPerception(agent.name, "found(wheat)[emotion(joy)]");  
-			this.wheatFound = true;
-			logger.info(agent.name + " found wheat grains");
-		}
 		
 		return true;
 	}
@@ -162,7 +154,5 @@ public class FarmModel extends Model{
 		public boolean isEdible() {
 			return true;
 		}
-		
 	}
-	
 }

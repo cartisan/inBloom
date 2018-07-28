@@ -7,8 +7,8 @@ import java.util.logging.Logger;
 import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
+import plotmas.LauncherAgent;
 import plotmas.PlotEnvironment;
-import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.storyworld.StoryworldAgent;
 
 public class CrowEnvironment extends PlotEnvironment<CrowModel> {

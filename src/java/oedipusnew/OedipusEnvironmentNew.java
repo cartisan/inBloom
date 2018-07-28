@@ -6,8 +6,8 @@ import java.util.logging.Logger;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
+import plotmas.LauncherAgent;
 import plotmas.PlotEnvironment;
-import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.storyworld.StoryworldAgent;
 
 public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {

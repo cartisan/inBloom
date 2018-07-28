@@ -20,6 +20,7 @@ import org.jfree.ui.RefineryUtilities;
 
 import plotmas.PlotAwareAg;
 import plotmas.PlotControlsLauncher;
+import plotmas.PlotLauncher;
 
 
 /**
@@ -150,7 +151,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 	public void closeGraph() {
 		this.dispose();
     	
-    	PlotControlsLauncher gui = (PlotControlsLauncher) PlotControlsLauncher.getRunner();
+    	PlotControlsLauncher gui = PlotLauncher.getRunner();
     	gui.graphClosed(this);
 	}
 	

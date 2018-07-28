@@ -1,12 +1,13 @@
 package plotmas.storyworld;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
 import jason.asSemantics.Emotion;
+import plotmas.LauncherAgent;
 import plotmas.PlotEnvironment;
-import plotmas.PlotLauncher.LauncherAgent;
 
 
 /**
@@ -21,11 +22,12 @@ import plotmas.PlotLauncher.LauncherAgent;
  * @see plotmas.stories.little_red_hen.FarmModel
  * @author Leonid Berov
  */
-public abstract class Model {
+public abstract class Model<EType extends PlotEnvironment<?>> {
 	static protected Logger logger = Logger.getLogger(Model.class.getName());
 	
 	public HashMap<String, StoryworldAgent> agents;
-	protected PlotEnvironment<?> environment;
+	protected EType environment;
+	protected List<Happening<Model<EType>>> scheduledHappenings;
 	
 	public static String addEmotion(String... ems) {
     	String result = "[";
@@ -62,9 +64,10 @@ public abstract class Model {
     	return result;
     }
 	
-	public Model(List<LauncherAgent> agentList, PlotEnvironment<?> env) {
+	public Model(List<LauncherAgent> agentList, EType env) {
 		this.environment = env;
-        agents = new HashMap<String, StoryworldAgent>();
+        this.agents = new HashMap<String, StoryworldAgent>();
+        this.scheduledHappenings = new LinkedList<>();
         
         // add all instantiated agents to world model
         for (LauncherAgent agentSetup : agentList) {
@@ -85,5 +88,25 @@ public abstract class Model {
 	
 	public void removeAgent(String agName) {
 		this.agents.remove(agName);
+	}
+	
+	public void executeHappenings() {
+		for (Happening<Model<EType>> h : this.scheduledHappenings ) {
+			if (h.triggered(this)) {
+				h.execute(this);
+			}
+		}
+	}
+	
+	public void scheduleHappening(Happening<Model<EType>> h) {
+		this.scheduledHappenings.add(h);
+	}
+
+	public Logger getLogger() {
+		return logger;
+	}
+
+	public EType getEnvironment() {
+		return this.environment;
 	}
 }

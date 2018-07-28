@@ -4,9 +4,10 @@ import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
 import jason.asSemantics.Personality;
+import plotmas.LauncherAgent;
 import plotmas.PlotLauncher;
 
-public class OedipusLauncherNew extends PlotLauncher {
+public class OedipusLauncherNew extends PlotLauncher<OedipusEnvironmentNew, OedipusModelNew> {
 
 	  public static void main(String[] args) throws JasonException {
 		  logger.info("Starting up from Launcher!");
@@ -17,28 +18,29 @@ public class OedipusLauncherNew extends PlotLauncher {
 		     // runner.new LauncherAgent("oedipus",
 		      //  new Personality(0, 0, 0, 0, 0)
 		     // ),
-		      runner.new LauncherAgent("jocaste",
+		      new LauncherAgent("jocaste",
 				new Personality(0, 0, 0, 0, 0)
 				      ),
-		      runner.new LauncherAgent("laios",
+		      new LauncherAgent("laios",
 				        new Personality(0, 0, 0, 0, 0)
 				      ),
-		      runner.new LauncherAgent("polybos_merope",
+		      new LauncherAgent("polybos_merope",
 				        new Personality(0, 0, 0, 0, 0)
 				      ),
-		      runner.new LauncherAgent("oracle",
+		      new LauncherAgent("oracle",
 				        new Personality(0, 0, 0, 0, 0)
 				      ),
 		     // runner.new LauncherAgent("sphinx",
 				//        new Personality(0, 0, 0, 0, 0)
 				//      ),
-		      runner.new LauncherAgent("shepherd",
+		      new LauncherAgent("shepherd",
 				       new Personality(0, 0, 0, 0, 0)
 				     ) 
 		    );
 
-		    runner.run(args, agents, "agent_oedipusNew"); 
-		  }
+		    runner.initialize(args, agents, "agent_oedipusNew"); 
+		    runner.run(); 
+	  }
     
 }
 

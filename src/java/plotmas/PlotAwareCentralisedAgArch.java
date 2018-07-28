@@ -4,7 +4,6 @@ import java.util.List;
 
 import jason.ReceiverNotFoundException;
 import jason.asSemantics.Message;
-import jason.infra.centralised.BaseCentralisedMAS;
 import jason.infra.centralised.CentralisedAgArch;
 import jason.infra.centralised.MsgListener;
 import plotmas.graph.PlotGraphController;
@@ -26,7 +25,7 @@ public class PlotAwareCentralisedAgArch extends CentralisedAgArch {
     	
     	// actually send the message
         if (m.getSender() == null)  m.setSender(getAgName());
-        PlotAwareCentralisedAgArch rec = (PlotAwareCentralisedAgArch) BaseCentralisedMAS.getRunner().getAg(m.getReceiver());
+        PlotAwareCentralisedAgArch rec = (PlotAwareCentralisedAgArch) PlotLauncher.getRunner().getAg(m.getReceiver());
             
         if (rec == null) {
             if (isRunning())

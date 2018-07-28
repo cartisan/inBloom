@@ -23,7 +23,6 @@ import jason.infra.centralised.CentralisedEnvironment;
 import jason.runtime.MASConsoleGUI;
 import jason.runtime.RuntimeServicesInfraTier;
 import jason.util.Pair;
-import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.graph.PlotGraphController;
 import plotmas.storyworld.Model;
 
@@ -40,7 +39,7 @@ import plotmas.storyworld.Model;
  * @see plotmas.stories.little_red_hen.FarmEnvironment
  * @author Leonid Berov
  */
-public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSteppedEnvironment {
+public abstract class PlotEnvironment<MType extends Model<?>> extends TimeSteppedEnvironment {
 	public static final Integer MAX_REPEATE_NUM = 7;
 	static final String STEP_TIMEOUT = "100";
 	
@@ -55,7 +54,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
     	return (System.nanoTime() - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
     }
     
-    protected DomainModel model;
+    protected MType model;
     
     /**
      * Stores a mapping from agentName to a (String actionName, Integer count) tuple, which stores how many
@@ -130,12 +129,19 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 		return false;
 	}
 	
-	public void setModel(DomainModel model) {
+	@Override
+	protected void stepStarted(int step) {
+		if (this.model != null)
+			this.model.executeHappenings();
+		logger.warning("field model was not set, but a step was started?");
+	}
+	
+	public void setModel(MType model) {
 		this.model = model;
 		updatePercepts();
 	}
 	
-	public DomainModel getModel() {
+	public MType getModel() {
 		return this.model;
 	}
 	
@@ -154,7 +160,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
         	agName = this.getRuntimeServices().createAgent(name, aslFile, PlotAwareAg.class.getName(), agArchs, null, null, null);
 
         	// set the agents personality
-        	AffectiveAgent ag = ((PlotLauncher) PlotLauncher.getRunner()).getPlotAgent(agName);
+        	AffectiveAgent ag = PlotLauncher.getRunner().getPlotAgent(agName);
         	ag.initializePersonality(personality);
 	    } catch (Exception e) {
 	    	e.printStackTrace();
@@ -165,7 +171,6 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
         this.getModel().addAgent(agName);
         
         // enables plot graph to track new agent's actions
-        // TODO: implement an appropriate vertical offset to visualize agent's late arrival
         PlotGraphController.getPlotListener().addCharacter(agName);
         
         // enable action counting for new agent, so it is accounted for in auto-pause feature
@@ -230,7 +235,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 	}
 
 	public void updatePercepts() {
-		for(String name: this.model.agents.keySet()) {
+		for(String name: model.agents.keySet()) {
 			updatePercepts(name);
 		}
 	}

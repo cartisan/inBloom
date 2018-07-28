@@ -2,20 +2,19 @@ package plotmas.stories.crow;
 
 import java.util.List;
 
-import plotmas.PlotEnvironment;
-import plotmas.PlotLauncher.LauncherAgent;
+import plotmas.LauncherAgent;
 import plotmas.storyworld.Item;
 import plotmas.storyworld.Model;
 import plotmas.storyworld.StoryworldAgent;
 
-public class CrowModel extends Model {
+public class CrowModel extends Model<CrowEnvironment> {
 	
 	// public int cheesePosition; 
 	public Cheese cheese;
 	public boolean cheeseSeen;
 	public int actionCount;
 	
-	public CrowModel(List<LauncherAgent> agentList, PlotEnvironment<CrowModel> env) {
+	public CrowModel(List<LauncherAgent> agentList, CrowEnvironment env) {
 		super(agentList, env);
 		this.cheese = new Cheese();
 		this.actionCount = 0;

@@ -24,8 +24,9 @@ import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Message;
 import jason.asSyntax.parser.ParseException;
+import plotmas.LauncherAgent;
 import plotmas.PlotControlsLauncher;
-import plotmas.PlotLauncher.LauncherAgent;
+import plotmas.PlotLauncher;
 
 /**
  * Responsible for maintaining and visualizing the graph that represents the emergent plot of the narrative universe.
@@ -104,7 +105,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 		this.getContentPane().remove(scrollPane);
     	this.dispose();
     	
-    	PlotControlsLauncher gui = (PlotControlsLauncher) PlotControlsLauncher.getRunner();
+    	PlotControlsLauncher gui = PlotLauncher.getRunner();
     	gui.graphClosed(this);
 	}
 	

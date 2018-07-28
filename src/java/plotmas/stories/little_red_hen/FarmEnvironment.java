@@ -8,8 +8,8 @@ import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
+import plotmas.LauncherAgent;
 import plotmas.PlotEnvironment;
-import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.storyworld.StoryworldAgent;
 
 /**
