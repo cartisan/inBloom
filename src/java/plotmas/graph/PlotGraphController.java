@@ -5,18 +5,30 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
+import javax.imageio.ImageIO;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.jfree.ui.RefineryUtilities;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.VisualizationImageServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
@@ -36,15 +48,23 @@ import plotmas.PlotLauncher;
  * @author Leonid Berov
  */
 @SuppressWarnings("serial")
-public class PlotGraphController extends JFrame implements PlotmasGraph {
+public class PlotGraphController extends JFrame implements PlotmasGraph, ActionListener {
     
-	private static PlotGraphController plotListener = null;
-	/**
-	 * Types of plot graph that can be drawn: [0] full graph, [1] analyzed graph
-	 */
-	private static final String[] GRAPH_TYPES = new String[] {"full plot graph", "analyzed plot graph"};
 	protected static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
+	
+	/** Singleton instance used to collect the plot */
+	private static PlotGraphController plotListener = null;
+	
+	/** Types of plot graph that can be drawn: [0] full graph, [1] analyzed graph */
+	private static final String[] GRAPH_TYPES = new String[] {"full plot graph", "analyzed plot graph"};
+	
+	/** Color used to draw background of this graph */
 	public static Color BGCOLOR = Color.WHITE;
+
+	/** Save action command. */
+	public static final String SAVE_COMMAND = "SAVE";
+	/** Change plot view action command. */
+    public static final String CHANGE_VIEW_COMMAND = "CHANGE_VIEW";
 
 
 	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
@@ -53,6 +73,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 	private String selectedGraphType = GRAPH_TYPES[0];
 	public VisualizationViewer<Vertex, Edge> visViewer = null;
 	private GraphZoomScrollPane scrollPane = null; //panel used to display scrolling bars
+	private JPopupMenu popup = null;
 	
 	
 	/**
@@ -91,12 +112,105 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 		    }
 		);
 		
+		this.createPopupMenu();
+		
 		// create and initialize the plot graph the will be created by this listener
 		this.graph = new PlotDirectedSparseGraph();
 		// set up a "named" tree for each character
 		for (LauncherAgent character : characters) {
 			this.addCharacter(character.name);
 		}
+	}
+	
+    /**
+     * Initializes the a popup menu that will appear on left-click.
+     */
+    protected void createPopupMenu() {
+        JPopupMenu result = new JPopupMenu("PlotGraph");
+
+        JMenuItem pngItem = new JMenuItem("Save Graph");
+        pngItem.setActionCommand(SAVE_COMMAND);
+        pngItem.addActionListener(this);
+
+        result.add(pngItem);
+
+        this.popup = result;
+    }
+    
+	/**
+	 * Method which allows this to registered as an ActionListener. Performs the handling of all events
+	 * that result from interactions with UI elements of this JFrame. 
+	 * @param event Event that specifies how to react
+	 */
+	@Override
+	public void actionPerformed(ActionEvent event) {
+        String command = event.getActionCommand();
+        
+        if (command.equals(SAVE_COMMAND)) {
+            try {
+                doSaveAs();
+            }
+            catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "I/O error occurred.", 
+                        "Save Graph", JOptionPane.WARNING_MESSAGE);
+            }
+        } else if (command.equals(CHANGE_VIEW_COMMAND)) {
+	    	@SuppressWarnings("unchecked")
+			JComboBox<String> combo = (JComboBox<String>) event.getSource();
+			String selectedType = (String) combo.getSelectedItem();
+			
+			if(selectedType.equals(GRAPH_TYPES[0])) {
+				Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().graph);
+				PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
+				PlotGraphController.getPlotListener().visViewer.repaint();
+			}
+			else {
+				Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().postProcessThisGraph());
+				PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
+				PlotGraphController.getPlotListener().visViewer.repaint();
+	
+			}
+        }
+	}
+	
+	/**
+	 * Saves currently displayed plot graph as PNG image. Displays a FileChoose to select name and target dir.
+	 * @throws IOException
+	 */
+	private void doSaveAs() throws IOException {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File("~"));
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("PNG_Image_Files", "png");
+        fileChooser.addChoosableFileFilter(filter);
+        fileChooser.setFileFilter(filter);
+
+        int option = fileChooser.showSaveDialog(this);
+        if (option == JFileChooser.APPROVE_OPTION) {
+            String filename = fileChooser.getSelectedFile().getPath();
+            if (!filename.endsWith(".png")) {
+                filename = filename + ".png";
+            }
+            
+            // instantiate and configure image-able visualization viewer
+            VisualizationImageServer<Vertex, Edge> vis =
+            	    new VisualizationImageServer<Vertex, Edge>(this.visViewer.getGraphLayout(),
+            	    										   this.visViewer.getGraphLayout().getSize());
+
+            setUpAppearance(vis);
+
+        	// Create the buffered image
+        	BufferedImage img = (BufferedImage) vis.getImage(
+        	    new Point2D.Double(this.visViewer.getGraphLayout().getSize().getWidth() / 2,
+        	    				   this.visViewer.getGraphLayout().getSize().getHeight() / 2),
+        	    				   new Dimension(this.visViewer.getGraphLayout().getSize()));
+
+            // save image
+    		ImageIO.write(img, "png", new File(filename));
+        }
+	}
+
+	public JPopupMenu getPopup() {
+		return this.popup;
 	}
 
 	public void closeGraph() {
@@ -224,9 +338,6 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 	 * @return the displayed PlotGraphController
 	 */
 	public PlotGraphController visualizeGraph() {
-		// Maybe just implement custom renderer instead of all the transformers?
-		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
-		
 		// Tutorial:
 		// http://www.grotto-networking.com/JUNG/JUNG2-Tutorial.pdf
 		
@@ -234,57 +345,22 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 		
 		// Create a viewing server
 		this.visViewer = new VisualizationViewer<Vertex, Edge>(layout);
-		this.visViewer.setPreferredSize(new Dimension(1500, 600)); // Sets the viewing area
-		this.visViewer.setBackground(BGCOLOR);
+		this.setUpAppearance(visViewer);
 		
 		// Add a mouse to translate the graph.
 		PluggableGraphMouse gm = new PluggableGraphMouse();
 		gm.add(new SelectingTranslatingGraphMousePlugin());
 		this.visViewer.setGraphMouse(gm);
 		
-		// modify vertices
-		this.visViewer.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-		this.visViewer.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
-		this.visViewer.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
-		this.visViewer.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
-		this.visViewer.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
-		this.visViewer.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
-		
-		// modify edges
-		this.visViewer.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
-		this.visViewer.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		this.visViewer.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		this.visViewer.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		this.visViewer.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
-
 		// enable scrolling control bar
 		this.scrollPane = new GraphZoomScrollPane(visViewer);
 
 		// set up the combo-box for changing displayed plot graphs: first select the currently shown graph type
 		this.graphTypeList.setSelectedItem(this.selectedGraphType);
 		
-		// second: activate a listener that redraws the plot when selection changes. Careful here: order with 1. matters
-		this.graphTypeList.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				@SuppressWarnings("unchecked")
-				JComboBox<String> combo = (JComboBox<String>) event.getSource();
-				String selectedType = (String) combo.getSelectedItem();
-				
-				if(selectedType.equals(GRAPH_TYPES[0])) {
-					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().graph);
-					PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
-					PlotGraphController.getPlotListener().visViewer.repaint();
-				}
-				else {
-					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().postProcessThisGraph());
-					PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
-					PlotGraphController.getPlotListener().visViewer.repaint();
-
-				}
-			}
-		});
-		
+		// second: register a listener that redraws the plot when selection changes. Careful here: order with last command matters
+		this.graphTypeList.setActionCommand(CHANGE_VIEW_COMMAND);
+		this.graphTypeList.addActionListener(this);
 		this.add(graphTypeList, BorderLayout.NORTH);
 		
 		this.getContentPane().add(this.scrollPane);
@@ -296,7 +372,30 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 		
 		return this;
 	}
-	
+
+	/**
+	 * Sets up an VisualizationServer instance with all the details and renders defining the graphs appearance. 
+	 * @param vis
+	 */
+	private void setUpAppearance(BasicVisualizationServer<Vertex, Edge> vis) {
+		vis.setBackground(BGCOLOR);
+		vis.setPreferredSize(new Dimension(1500, 600)); // Sets the viewing area
+		
+		// modify vertices
+		vis.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+		vis.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
+		vis.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
+		vis.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
+		vis.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
+		vis.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+		
+		// modify edges
+		vis.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
+		vis.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
+	}
 	
 	/*************************** for testing purposes ***********************************/
 	private static PlotDirectedSparseGraph createTestGraph() {
@@ -329,4 +428,5 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 		controller.drawnGraph = forest;
 		controller.visualizeGraph();
 	}
+
 }

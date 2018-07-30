@@ -63,6 +63,8 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 	public void createData() {
 		this.deleteGraphData();
 		
+		logger.fine("Using following mood data to create mood graph:\n" + PlotAwareAg.moodMapper.toString());
+		
 		Long startTime = PlotAwareAg.moodMapper.latestStartTime();
 		startTime = startTime - (startTime % 10) + 10;		// round up start time to next multiple of 10
 				

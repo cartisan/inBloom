@@ -83,6 +83,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
        			int colWidth = this.analyzeColumn(root, encounteredSteps, this.columnWidths.get(root));
        			this.columnWidths.put(root, colWidth);
        			
+            	this.updateCanvasSize();
         		
         		// the next root should start after longest vertex in this column
         		this.m_currentPoint.x += colWidth + PAD_X;
@@ -151,7 +152,6 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
         	logger.fine("  new pointer position: " + this.m_currentPoint.y);
         	
         	// found last vertex in column --> adopt canvas size
-        	this.updateCanvasSize();
         	logger.fine("Column " + this.currentRoot.getLabel() + " steps start at y, dict: " + Arrays.toString(this.stepStartAtY.entrySet().toArray()));
         	logger.fine("Column " + this.currentRoot.getLabel() + " steps end at y, dict: " + Arrays.toString(this.stepEndAtY.entrySet().toArray()));
         }
@@ -247,6 +247,14 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     	Vertex firstColRoot = ((PlotDirectedSparseGraph) this.graph).getRoots().get(0);
     	int x_pos = this.columnStartAtX.get(firstColRoot) - (this.columnWidths.get(firstColRoot) / 2 + STEP_OFFSET);
     	
+    	// Update x positions of all columns to make place for axis
+    	for (Vertex root : this.columnStartAtX.keySet()) {
+    		this.columnStartAtX.put(root,
+    							    this.columnStartAtX.get(root) - x_pos + PAD_X);
+    	}
+    	this.size.width = this.size.width - x_pos + PAD_X;
+    	x_pos = PAD_X;
+    	
     	for (Vertex vertex : ((PlotDirectedSparseGraph) this.graph).getAxisVertices()) {
     		int y_pos = this.stepStartAtY.get(vertex.getStep());
     		locations.getUnchecked(vertex).setLocation(new Point(x_pos, y_pos));    		
@@ -278,8 +286,9 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 	 */
 	private void updateCanvasSize() {
 		// adopt size if current point outgrows it
-    	if(this.m_currentPoint.x > size.width - PAD_X) 
-    		this.size.width = this.m_currentPoint.x + PAD_X;
+    	if(this.columnStartAtX.get(currentRoot) + this.columnWidths.get(currentRoot)/2 > size.width - PAD_X) { 
+    		this.size.width = this.m_currentPoint.x + this.columnWidths.get(currentRoot)/2 + PAD_X;
+    	}
     	
     	if(this.m_currentPoint.y > size.height - PAD_Y) 
     		this.size.height = this.m_currentPoint.y + PAD_Y;

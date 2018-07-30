@@ -17,9 +17,10 @@ import plotmas.helper.MoodMapper;
  * @author Leonid Berov
  */
 public class PlotAwareAg extends AffectiveAgent {
-	
 	static Logger logger = Logger.getLogger(AffectiveAgent.class.getName());
 	public static MoodMapper moodMapper = new MoodMapper();
+	public static final boolean X_AXIS_IS_TIME = false;		// defines whether moods will be mapped based on plotTim or timeStep
+															// in latter case, average mood will be calculated over all cycles in a timeStep
 	private String name;
 	
     @Override
@@ -55,8 +56,16 @@ public class PlotAwareAg extends AffectiveAgent {
 	
 	private void mapMood(Mood mood) {
 		Long plotTime = PlotEnvironment.getPlotTimeNow();
-
-		moodMapper.addMood(this.name, plotTime, mood);
-		logger.fine("mapping " + this.name + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
+		Integer timeStep = PlotLauncher.runner.getUserEnvironment().getStep();
+		
+		if (X_AXIS_IS_TIME) {
+			// time in ms based mood log
+			moodMapper.addMood(this.name, plotTime, mood);
+			logger.fine("mapping " + this.name + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
+		} else {		
+			// time-step based mood log
+			moodMapper.addMood(this.name, new Long(timeStep), mood);
+			logger.fine("mapping " + this.name + "'s pleasure value: " + mood.getP() + " at time: " + timeStep.toString());
+		}
 	}
 }
