@@ -133,7 +133,8 @@ public abstract class PlotEnvironment<MType extends Model<?>> extends TimeSteppe
 	protected void stepStarted(int step) {
 		if (this.model != null)
 			this.model.executeHappenings();
-		logger.warning("field model was not set, but a step was started?");
+		else 
+			logger.warning("field model was not set, but a step was started?");
 	}
 	
 	public void setModel(MType model) {
