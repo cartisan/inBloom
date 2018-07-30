@@ -3,9 +3,9 @@ package plotmas.graph;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +26,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import org.jfree.ui.RefineryUtilities;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.VisualizationImageServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
@@ -188,16 +190,24 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
                 filename = filename + ".png";
             }
             
-            // actually safe image
-    		BufferedImage img = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_RGB);
-    		Graphics2D g2d = img.createGraphics();
-    		this.printAll(g2d);
-    		g2d.dispose();
+            // instantiate and configure image-able visualization viewer
+            VisualizationImageServer<Vertex, Edge> vis =
+            	    new VisualizationImageServer<Vertex, Edge>(this.visViewer.getGraphLayout(),
+            	    										   this.visViewer.getGraphLayout().getSize());
+
+            setUpAppearance(vis);
+
+        	// Create the buffered image
+        	BufferedImage img = (BufferedImage) vis.getImage(
+        	    new Point2D.Double(this.visViewer.getGraphLayout().getSize().getWidth() / 2,
+        	    				   this.visViewer.getGraphLayout().getSize().getHeight() / 2),
+        	    				   new Dimension(this.visViewer.getGraphLayout().getSize()));
+
+            // save image
     		ImageIO.write(img, "png", new File(filename));
         }
 	}
-    
-	
+
 	public JPopupMenu getPopup() {
 		return this.popup;
 	}
@@ -327,9 +337,6 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	 * @return the displayed PlotGraphController
 	 */
 	public PlotGraphController visualizeGraph() {
-		// Maybe just implement custom renderer instead of all the transformers?
-		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
-		
 		// Tutorial:
 		// http://www.grotto-networking.com/JUNG/JUNG2-Tutorial.pdf
 		
@@ -337,29 +344,13 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		
 		// Create a viewing server
 		this.visViewer = new VisualizationViewer<Vertex, Edge>(layout);
-		this.visViewer.setPreferredSize(new Dimension(1500, 600)); // Sets the viewing area
-		this.visViewer.setBackground(BGCOLOR);
+		this.setUpAppearance(visViewer);
 		
 		// Add a mouse to translate the graph.
 		PluggableGraphMouse gm = new PluggableGraphMouse();
 		gm.add(new SelectingTranslatingGraphMousePlugin());
 		this.visViewer.setGraphMouse(gm);
 		
-		// modify vertices
-		this.visViewer.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-		this.visViewer.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
-		this.visViewer.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
-		this.visViewer.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
-		this.visViewer.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
-		this.visViewer.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
-		
-		// modify edges
-		this.visViewer.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
-		this.visViewer.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		this.visViewer.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		this.visViewer.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		this.visViewer.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
-
 		// enable scrolling control bar
 		this.scrollPane = new GraphZoomScrollPane(visViewer);
 
@@ -379,6 +370,30 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		this.setVisible(true);
 		
 		return this;
+	}
+
+	/**
+	 * Sets up an VisualizationServer instance with all the details and renders defining the graphs appearance. 
+	 * @param vis
+	 */
+	private void setUpAppearance(BasicVisualizationServer<Vertex, Edge> vis) {
+		vis.setBackground(BGCOLOR);
+		vis.setPreferredSize(new Dimension(1500, 600)); // Sets the viewing area
+		
+		// modify vertices
+		vis.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+		vis.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
+		vis.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
+		vis.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
+		vis.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
+		vis.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+		
+		// modify edges
+		vis.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
+		vis.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
 	}
 	
 	/*************************** for testing purposes ***********************************/
