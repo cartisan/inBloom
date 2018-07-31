@@ -1,7 +1,6 @@
 package plotmas.storyworld;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -26,8 +25,9 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	static protected Logger logger = Logger.getLogger(PlotModel.class.getName());
 	
 	public HashMap<String, StoryworldAgent> agents;
+	public HappeningDirector happeningDirector; 
 	protected EnvType environment;
-	protected List<Happening<PlotModel<EnvType>>> scheduledHappenings;
+
 	
 	public static String addEmotion(String... ems) {
     	String result = "[";
@@ -67,12 +67,13 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	public PlotModel(List<LauncherAgent> agentList, EnvType env) {
 		this.environment = env;
         this.agents = new HashMap<String, StoryworldAgent>();
-        this.scheduledHappenings = new LinkedList<>();
         
         // add all instantiated agents to world model
         for (LauncherAgent agentSetup : agentList) {
         	this.addAgent(agentSetup.name);
         }
+
+        this.happeningDirector = new HappeningDirector(this);
 	}
 	
 	public StoryworldAgent getAgent(String name) {
@@ -90,16 +91,20 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		this.agents.remove(agName);
 	}
 	
-	public void executeHappenings() {
-		for (Happening<PlotModel<EnvType>> h : this.scheduledHappenings ) {
-			if (h.triggered(this)) {
-				h.execute(this);
-			}
+	/**
+	 * Called by PlotEnvironment when a new time step is started, before it proceeds with agent action execution.
+	 * This method is responsible for checking whether any happenings are eligible for execution, and executes them. 
+	 */
+	public void stepStarted(int step) {
+		List<Happening<?>> happenings = this.happeningDirector.getTriggeredHappenings(step);
+		
+		for (Happening h : happenings) {
+			h.execute(this);
 		}
 	}
 	
-	public void scheduleHappening(Happening<PlotModel<EnvType>> h) {
-		this.scheduledHappenings.add(h);
+	public void scheduleHappening(Happening<? extends PlotModel<?>> h) {
+		this.happeningDirector.scheduleHappening(h);
 	}
 
 	public Logger getLogger() {

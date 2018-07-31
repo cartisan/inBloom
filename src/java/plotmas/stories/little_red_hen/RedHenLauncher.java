@@ -1,8 +1,5 @@
 package plotmas.stories.little_red_hen;
 
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
@@ -10,8 +7,6 @@ import jason.asSemantics.Personality;
 import plotmas.LauncherAgent;
 import plotmas.PlotControlsLauncher;
 import plotmas.PlotLauncher;
-import plotmas.storyworld.Happening;
-import plotmas.storyworld.StoryworldAgent;
 
 
 /**
@@ -26,28 +21,6 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         ENV_CLASS = FarmEnvironment.class;
         
         PlotControlsLauncher.runner = new RedHenLauncher();
-        
-        Happening<FarmModel> findCorn = new Happening<FarmModel>(
-        		new Predicate<FarmModel>(){ 
-                	public boolean test(FarmModel model) {
-                		if((model.actionCount > 3) & (!model.wheatFound)) {
-                			return true;
-                		}
-                		return false; 
-                	}
-            	},
-        		new Consumer<FarmModel>() {
-                	public void accept(FarmModel model) {
-            			model.wheat = model.new Wheat();
-            			StoryworldAgent agent = model.getAgent("hen");
-            			
-            			agent.addToInventory(model.wheat);
-            			model.getEnvironment().addEventPerception(agent.name, "found(wheat)[emotion(joy)]");  
-            			model.wheatFound = true;
-            			model.getLogger().info(agent.name + " found wheat grains");               		
-                	}
-            	}
-        );
         
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
 							new LauncherAgent("hen",					  // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
@@ -75,10 +48,7 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         
         // Initialize MAS
         runner.initialize(args, agents, "agent");
-        
-        // Schedule happenings to be executed when their preconditions are met
-        runner.getUserEnvironment().getModel().scheduleHappening(findCorn);
-        
+
         // Execute MAS
 		runner.run();
 	}

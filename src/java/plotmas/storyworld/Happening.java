@@ -1,39 +1,22 @@
 package plotmas.storyworld;
 
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.logging.Logger;
 
 public class Happening<T extends PlotModel<?>> {
 
 	static protected Logger logger = Logger.getLogger(Happening.class.getName());
 	
-	private Predicate<T> trigger;
+	private BiPredicate<T, Integer> trigger;
 	private Consumer<T> effect;
-	
-	public Predicate<T> getTrigger() {
-		return trigger;
-	}
-
-	public void setTrigger(Predicate<T> trigger) {
-		this.trigger = trigger;
-	}
-
-	public Consumer<T> getEffect() {
-		return effect;
-	}
-
-	public void setEffect(Consumer<T> effect) {
-		this.effect = effect;
-	}
-
 
 	/**
 	 * Constructor to be used by inplace creation of happenings, using anonymous functions. Example:
 	 *<pre><code>
 	 *{@code Happening<FarmModel> findCorn = new Happening<FarmModel>}( 
-     *    new {@code Predicate<FarmModel>()}{ 
-     *  	public boolean test(FarmModel model) {
+     *    new {@code BiPredicate<FarmModel, Integer>()}{ 
+     *  	public boolean test(FarmModel model, int step) {
      *           if(model.actionCount > 3)
      *           	return true;
      *           return false; 
@@ -46,27 +29,42 @@ public class Happening<T extends PlotModel<?>> {
      *);
      *</code></pre>
 	 */
-	public Happening(Predicate<T> function, Consumer<T> effect) {
+	public Happening(BiPredicate<T, Integer> function, Consumer<T> effect) {
 		this.trigger = function;
 		this.effect = effect;
 	}
 	
 	/**
-	 * Constructor used only to instantiate subclasses, which do not need to set the fields {@link trigger} and 
-	 * {@link effect} but instead can implement their functionality by overriding the methods 
-	 * {@link triggered} and {@link execute}.
+	 * Constructor used only to instantiate subclasses, which do not need to set the field {@link effect} but instead 
+	 * implement its functionality by overriding the corresponding method: {@link execute}.
 	 */
-	public Happening() {
+	public Happening(BiPredicate<T, Integer> trigger) {
 		// subclasses implementing concrete happenings can 
-		this.trigger = null;
+		this.trigger = trigger;
 		this.effect = null; 
 	}
 	
-	public boolean triggered(T model) {
-		return trigger.test(model);
+	public boolean triggered(T model, int step) {
+		return trigger.test(model, step);
 	}
 	
 	public void execute(T model) {
 		effect.accept(model);
 	};
+	
+	public BiPredicate<T, Integer> getTrigger() {
+		return trigger;
+	}
+
+	public void setTrigger(BiPredicate<T, Integer> trigger) {
+		this.trigger = trigger;
+	}
+
+	public Consumer<T> getEffect() {
+		return effect;
+	}
+
+	public void setEffect(Consumer<T> effect) {
+		this.effect = effect;
+	}
 }

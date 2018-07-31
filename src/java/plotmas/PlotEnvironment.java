@@ -132,9 +132,10 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	@Override
 	protected void stepStarted(int step) {
 		if (this.model != null)
-			this.model.executeHappenings();
+			// Give model opportunity to check for and execute happenings
+			this.model.stepStarted(step);
 		else 
-			logger.warning("field model was not set, but a step was started?");
+			logger.warning("field model was not set, but a step " + step + " was started");
 	}
 	
 	public void setModel(ModType model) {
