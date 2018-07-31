@@ -3,9 +3,9 @@ package plotmas.tutorial;
 import java.util.List;
 
 import plotmas.LauncherAgent;
-import plotmas.storyworld.Model;
+import plotmas.storyworld.PlotModel;
 
-public class TutorialModel extends Model<TutorialEnviroment> {
+public class TutorialModel extends PlotModel<TutorialEnviroment> {
 	
 	public TutorialModel(List<LauncherAgent> agentList, TutorialEnviroment env) {
 		super(agentList, env);

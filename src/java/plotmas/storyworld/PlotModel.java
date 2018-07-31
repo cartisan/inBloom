@@ -22,12 +22,12 @@ import plotmas.PlotEnvironment;
  * @see plotmas.stories.little_red_hen.FarmModel
  * @author Leonid Berov
  */
-public abstract class Model<EType extends PlotEnvironment<?>> {
-	static protected Logger logger = Logger.getLogger(Model.class.getName());
+public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
+	static protected Logger logger = Logger.getLogger(PlotModel.class.getName());
 	
 	public HashMap<String, StoryworldAgent> agents;
-	protected EType environment;
-	protected List<Happening<Model<EType>>> scheduledHappenings;
+	protected EnvType environment;
+	protected List<Happening<PlotModel<EnvType>>> scheduledHappenings;
 	
 	public static String addEmotion(String... ems) {
     	String result = "[";
@@ -64,7 +64,7 @@ public abstract class Model<EType extends PlotEnvironment<?>> {
     	return result;
     }
 	
-	public Model(List<LauncherAgent> agentList, EType env) {
+	public PlotModel(List<LauncherAgent> agentList, EnvType env) {
 		this.environment = env;
         this.agents = new HashMap<String, StoryworldAgent>();
         this.scheduledHappenings = new LinkedList<>();
@@ -91,14 +91,14 @@ public abstract class Model<EType extends PlotEnvironment<?>> {
 	}
 	
 	public void executeHappenings() {
-		for (Happening<Model<EType>> h : this.scheduledHappenings ) {
+		for (Happening<PlotModel<EnvType>> h : this.scheduledHappenings ) {
 			if (h.triggered(this)) {
 				h.execute(this);
 			}
 		}
 	}
 	
-	public void scheduleHappening(Happening<Model<EType>> h) {
+	public void scheduleHappening(Happening<PlotModel<EnvType>> h) {
 		this.scheduledHappenings.add(h);
 	}
 
@@ -106,7 +106,7 @@ public abstract class Model<EType extends PlotEnvironment<?>> {
 		return logger;
 	}
 
-	public EType getEnvironment() {
+	public EnvType getEnvironment() {
 		return this.environment;
 	}
 }

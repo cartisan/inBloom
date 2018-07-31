@@ -4,10 +4,10 @@ import java.util.List;
 
 import plotmas.LauncherAgent;
 import plotmas.storyworld.Item;
-import plotmas.storyworld.Model;
+import plotmas.storyworld.PlotModel;
 import plotmas.storyworld.StoryworldAgent;
 
-public class CrowModel extends Model<CrowEnvironment> {
+public class CrowModel extends PlotModel<CrowEnvironment> {
 	
 	// public int cheesePosition; 
 	public Cheese cheese;

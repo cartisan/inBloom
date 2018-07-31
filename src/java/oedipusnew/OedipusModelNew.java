@@ -3,10 +3,10 @@ package oedipusnew;
 import java.util.List;
 
 import plotmas.LauncherAgent;
-import plotmas.storyworld.Model;
+import plotmas.storyworld.PlotModel;
 import plotmas.storyworld.StoryworldAgent;
 
-public class OedipusModelNew extends Model<OedipusEnvironmentNew> {
+public class OedipusModelNew extends PlotModel<OedipusEnvironmentNew> {
 	
 	
 	public int actionCount;

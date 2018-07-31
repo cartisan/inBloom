@@ -24,10 +24,10 @@ import jason.runtime.MASConsoleGUI;
 import jason.runtime.RuntimeServicesInfraTier;
 import jason.util.Pair;
 import plotmas.graph.PlotGraphController;
-import plotmas.storyworld.Model;
+import plotmas.storyworld.PlotModel;
 
 /**
- *  Responsible for relaying action requests from ASL agents to the {@link plotmas.storyworld.Model Storyworld} and
+ *  Responsible for relaying action requests from ASL agents to the {@link plotmas.storyworld.PlotModel Storyworld} and
  *  perceptions from the Storyworld to ASL agents (via {@link jason.asSemantics.AffectiveAgent jason's AffectiveAgent}). 
  *  Each action is reported to the {@link plotmas.graph.PlotGraphController PlotGraphController} for visual representation. <br>
  *  Subclasses need to override {@link #executeAction(String, Structure)} to implement their domain-specific relaying 
@@ -39,7 +39,7 @@ import plotmas.storyworld.Model;
  * @see plotmas.stories.little_red_hen.FarmEnvironment
  * @author Leonid Berov
  */
-public abstract class PlotEnvironment<MType extends Model<?>> extends TimeSteppedEnvironment {
+public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends TimeSteppedEnvironment {
 	public static final Integer MAX_REPEATE_NUM = 7;
 	static final String STEP_TIMEOUT = "100";
 	
@@ -54,7 +54,7 @@ public abstract class PlotEnvironment<MType extends Model<?>> extends TimeSteppe
     	return (System.nanoTime() - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
     }
     
-    protected MType model;
+    protected ModType model;
     
     /**
      * Stores a mapping from agentName to a (String actionName, Integer count) tuple, which stores how many
@@ -137,12 +137,12 @@ public abstract class PlotEnvironment<MType extends Model<?>> extends TimeSteppe
 			logger.warning("field model was not set, but a step was started?");
 	}
 	
-	public void setModel(MType model) {
+	public void setModel(ModType model) {
 		this.model = model;
 		updatePercepts();
 	}
 	
-	public MType getModel() {
+	public ModType getModel() {
 		return this.model;
 	}
 	

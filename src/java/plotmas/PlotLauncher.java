@@ -19,7 +19,7 @@ import jason.infra.centralised.CentralisedAgArch;
 import jason.infra.centralised.RConf;
 import jason.mas2j.AgentParameters;
 import plotmas.graph.PlotGraphController;
-import plotmas.storyworld.Model;
+import plotmas.storyworld.PlotModel;
 
 /**
  * Used to perform a Java-side setup and execution of a Jason MAS. <br>
@@ -33,7 +33,7 @@ import plotmas.storyworld.Model;
  * @see plotmas.stories.little_red_hen.RedHenLauncher
  * @author Leonid Berov
  */
-public class PlotLauncher<T1 extends PlotEnvironment<T2>, T2 extends Model<T1>> extends PlotControlsLauncher {
+public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends PlotControlsLauncher {
 	protected static Logger logger = Logger.getLogger(PlotLauncher.class.getName());
 	public static String DEAULT_FILE_NAME = "launcher.mas2j";
 
@@ -218,7 +218,7 @@ public class PlotLauncher<T1 extends PlotEnvironment<T2>, T2 extends Model<T1>> 
 	}
 	
 	protected void initzializePlotEnvironment(List<LauncherAgent> agents) {
-		PlotEnvironment<T2> env = this.getUserEnvironment();
+		PlotEnvironment<ModType> env = this.getUserEnvironment();
 		env.initialize(agents);
 	}
 	
@@ -285,7 +285,7 @@ public class PlotLauncher<T1 extends PlotEnvironment<T2>, T2 extends Model<T1>> 
 	}
 
 	@SuppressWarnings("unchecked")
-	public T1 getUserEnvironment() {
-		return (T1) this.getEnvironmentInfraTier().getUserEnvironment();
+	public EnvType getUserEnvironment() {
+		return (EnvType) this.getEnvironmentInfraTier().getUserEnvironment();
 	}
 }

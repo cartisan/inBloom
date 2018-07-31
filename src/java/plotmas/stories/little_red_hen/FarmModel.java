@@ -4,7 +4,7 @@ import java.util.List;
 
 import plotmas.LauncherAgent;
 import plotmas.storyworld.Item;
-import plotmas.storyworld.Model;
+import plotmas.storyworld.PlotModel;
 import plotmas.storyworld.StoryworldAgent;
 
 
@@ -12,7 +12,7 @@ import plotmas.storyworld.StoryworldAgent;
  * Custom model of the story-world of the "Tale of the Little Red Hen".
  * @author Leonid Berov
  */
-public class FarmModel extends Model<FarmEnvironment>{
+public class FarmModel extends PlotModel<FarmEnvironment>{
 	
 	public static enum WHEAT_STATE {SEED, GROWING, RIPE, HARVESTED, FLOUR;}
 

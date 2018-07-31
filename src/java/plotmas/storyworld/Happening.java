@@ -4,12 +4,29 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
-public class Happening<T extends Model<?>> {
+public class Happening<T extends PlotModel<?>> {
 
 	static protected Logger logger = Logger.getLogger(Happening.class.getName());
 	
 	private Predicate<T> trigger;
 	private Consumer<T> effect;
+	
+	public Predicate<T> getTrigger() {
+		return trigger;
+	}
+
+	public void setTrigger(Predicate<T> trigger) {
+		this.trigger = trigger;
+	}
+
+	public Consumer<T> getEffect() {
+		return effect;
+	}
+
+	public void setEffect(Consumer<T> effect) {
+		this.effect = effect;
+	}
+
 
 	/**
 	 * Constructor to be used by inplace creation of happenings, using anonymous functions. Example:
