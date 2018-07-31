@@ -16,11 +16,7 @@ public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 	@Override
 	public void initialize(List<LauncherAgent> agents) {
 		super.initialize(agents);
-		OedipusModelNew model = new OedipusModelNew(agents, this);
-		this.setModel(model);
 		this.model.location = null; 
-
-
 	}
 
 		

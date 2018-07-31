@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import jason.asSemantics.Emotion;
+import jason.asSemantics.Personality;
 import plotmas.storyworld.Happening;
 import plotmas.storyworld.HappeningDirector;
+import plotmas.storyworld.ScheduledHappeningDirector;
 import plotmas.storyworld.StoryworldAgent;
 
 
@@ -27,7 +29,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	
 	public HashMap<String, StoryworldAgent> agents;
 	public HappeningDirector happeningDirector; 
-	protected EnvType environment;
+	protected EnvType environment = null;
 
 	
 	public static String addEmotion(String... ems) {
@@ -65,27 +67,40 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
     	return result;
     }
 	
-	public PlotModel(List<LauncherAgent> agentList, EnvType env) {
-		this.environment = env;
+	public PlotModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
         this.agents = new HashMap<String, StoryworldAgent>();
         
         // add all instantiated agents to world model
-        for (LauncherAgent agentSetup : agentList) {
-        	this.addAgent(agentSetup.name);
+        for (LauncherAgent lAgent : agentList) {
+        	this.addAgent(lAgent);
         }
 
-        this.happeningDirector = new HappeningDirector(this);
+        this.happeningDirector = hapDir;
+        hapDir.setModel(this);
 	}
 	
 	public StoryworldAgent getAgent(String name) {
 		return this.agents.get(name);
 	}
 	
-	public void addAgent(String agName) {
+	public void addAgent(LauncherAgent lAgent) {
 		// set up connections between agents, model and environment
-    	StoryworldAgent ag = new StoryworldAgent(agName) ;
-    	agents.put(agName, ag);
-    	ag.setEnvironment(this.environment);		
+    	StoryworldAgent sAgent = new StoryworldAgent(lAgent);
+    	this.addAgent(sAgent);		
+	}
+
+	public void addAgent(String agentName, Personality pers) {
+    	StoryworldAgent sAgent = new StoryworldAgent();
+    	sAgent.setPersonality(pers);
+    	sAgent.name = agentName;
+    
+    	this.addAgent(sAgent);		
+		
+	}
+
+	private void addAgent(StoryworldAgent sAgent) {
+		agents.put(sAgent.name, sAgent);
+    	sAgent.setModel(this);
 	}
 	
 	public void removeAgent(String agName) {
@@ -96,6 +111,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	 * Called by PlotEnvironment when a new time step is started, before it proceeds with agent action execution.
 	 * This method is responsible for checking whether any happenings are eligible for execution, and executes them. 
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void stepStarted(int step) {
 		List<Happening<?>> happenings = this.happeningDirector.getTriggeredHappenings(step);
 		
@@ -104,8 +120,17 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		}
 	}
 	
-	public void scheduleHappening(Happening<? extends PlotModel<?>> h) {
-		this.happeningDirector.scheduleHappening(h);
+	/**
+	 * Helper method that allows domain-specific subclasses to schedule happenings for execution
+	 * @param h
+	 */
+	protected void scheduleHappening(Happening<? extends PlotModel<?>> h) {
+		if(this.happeningDirector.getClass().equals(ScheduledHappeningDirector.class)) {
+			((ScheduledHappeningDirector) this.happeningDirector).scheduleHappening(h);
+		} else {
+			logger.warning("Trying to schedule happenings, but wrong happening director enabled: "
+						   + happeningDirector.getClass().getSimpleName());
+		}
 	}
 
 	public Logger getLogger() {
@@ -114,5 +139,9 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 
 	public EnvType getEnvironment() {
 		return this.environment;
+	}
+	
+	public void setEnvironment(EnvType env) {
+		this.environment = env;
 	}
 }

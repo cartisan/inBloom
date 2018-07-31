@@ -4,6 +4,7 @@ import java.util.List;
 
 import plotmas.LauncherAgent;
 import plotmas.PlotModel;
+import plotmas.storyworld.HappeningDirector;
 import plotmas.storyworld.StoryworldAgent;
 
 public class OedipusModelNew extends PlotModel<OedipusEnvironmentNew> {
@@ -12,8 +13,8 @@ public class OedipusModelNew extends PlotModel<OedipusEnvironmentNew> {
 	public int actionCount;
 	public String location; 
 	
-	public OedipusModelNew(List<LauncherAgent> agentList, OedipusEnvironmentNew env) {
-		super(agentList, env);
+	public OedipusModelNew(List<LauncherAgent> agents, HappeningDirector hapDir) {
+		super(agents, hapDir);
 		this.actionCount = 0;
 	}
 	

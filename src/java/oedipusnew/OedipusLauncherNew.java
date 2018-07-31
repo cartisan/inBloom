@@ -6,6 +6,8 @@ import jason.JasonException;
 import jason.asSemantics.Personality;
 import plotmas.LauncherAgent;
 import plotmas.PlotLauncher;
+import plotmas.stories.little_red_hen.FarmModel;
+import plotmas.storyworld.ScheduledHappeningDirector;
 
 public class OedipusLauncherNew extends PlotLauncher<OedipusEnvironmentNew, OedipusModelNew> {
 
@@ -38,7 +40,11 @@ public class OedipusLauncherNew extends PlotLauncher<OedipusEnvironmentNew, Oedi
 				     ) 
 		    );
 
-		    runner.initialize(args, agents, "agent_oedipusNew"); 
+	        // Initialize MAS with a scheduled happening director
+	        ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
+	        FarmModel model = new FarmModel(agents, hapDir);
+	        
+	        runner.initialize(args, model, agents, "agent_oedipusNew"); 
 		    runner.run(); 
 	  }
     

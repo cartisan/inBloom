@@ -4,6 +4,7 @@ import java.util.List;
 
 import plotmas.LauncherAgent;
 import plotmas.PlotModel;
+import plotmas.storyworld.HappeningDirector;
 import plotmas.storyworld.Item;
 import plotmas.storyworld.StoryworldAgent;
 
@@ -22,8 +23,8 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	public boolean wheatFound;
 	
 	
-	public FarmModel(List<LauncherAgent> agents, FarmEnvironment env) {
-		super(agents, env);
+	public FarmModel(List<LauncherAgent> agents, HappeningDirector hapDir) {
+		super(agents, hapDir);
 
 		this.actionCount = 0;
 		this.wheat = null;

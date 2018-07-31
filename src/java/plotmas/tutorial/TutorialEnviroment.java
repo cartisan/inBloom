@@ -12,9 +12,7 @@ public class TutorialEnviroment extends PlotEnvironment<TutorialModel> {
     @Override
     public void initialize(List<LauncherAgent> agents) {
       super.initialize(agents);
-        TutorialModel model = new TutorialModel(agents, this);
-        this.setModel(model);
-        this.model.position = 0;
+      this.model.position = 0;
     }
 	
     @Override

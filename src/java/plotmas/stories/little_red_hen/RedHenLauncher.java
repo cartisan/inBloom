@@ -7,6 +7,7 @@ import jason.asSemantics.Personality;
 import plotmas.LauncherAgent;
 import plotmas.PlotControlsLauncher;
 import plotmas.PlotLauncher;
+import plotmas.storyworld.ScheduledHappeningDirector;
 
 
 /**
@@ -46,8 +47,11 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 							)
 						);
         
-        // Initialize MAS
-        runner.initialize(args, agents, "agent");
+        // Initialize MAS with a scheduled happening director
+        ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
+        FarmModel model = new FarmModel(agents, hapDir);
+        
+        runner.initialize(args, model, agents, "agent");
 
         // Execute MAS
 		runner.run();

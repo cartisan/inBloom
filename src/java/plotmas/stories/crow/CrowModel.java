@@ -4,6 +4,7 @@ import java.util.List;
 
 import plotmas.LauncherAgent;
 import plotmas.PlotModel;
+import plotmas.storyworld.HappeningDirector;
 import plotmas.storyworld.Item;
 import plotmas.storyworld.StoryworldAgent;
 
@@ -14,8 +15,8 @@ public class CrowModel extends PlotModel<CrowEnvironment> {
 	public boolean cheeseSeen;
 	public int actionCount;
 	
-	public CrowModel(List<LauncherAgent> agentList, CrowEnvironment env) {
-		super(agentList, env);
+	public CrowModel(List<LauncherAgent> agents, HappeningDirector hapDir) {
+		super(agents, hapDir);
 		this.cheese = new Cheese();
 		this.actionCount = 0;
 		this.cheeseSeen = false; 

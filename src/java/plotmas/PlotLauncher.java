@@ -204,9 +204,9 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 	 * @param agents
 	 */
 	protected void initializePlotAgents(ImmutableList<LauncherAgent> agents) {
-		// initialize personalities
 		for (LauncherAgent ag: agents) {
 			if(ag.personality != null) {
+				// initialize personalities
 				PlotAwareAg plotAg = (PlotAwareAg) this.getAg(ag.name).getTS().getAg();
 				try {
 					plotAg.initializePersonality(ag.personality);
@@ -215,12 +215,18 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 					e.printStackTrace();
 				}
 				plotAg.initializeMoodMapper();
+
+				// setup PlotAgent -> StoryWorldAgent connection
+				plotAg.connectToModel();
 			}
 		}
 	}
 	
-	protected void initzializePlotEnvironment(List<LauncherAgent> agents) {
-		PlotEnvironment<ModType> env = this.getUserEnvironment();
+	protected void initzializePlotEnvironment(List<LauncherAgent> agents, ModType model) {
+		EnvType env = this.getUserEnvironment();
+		model.setEnvironment(env);
+		env.setModel(model);
+		
 		env.initialize(agents);
 	}
 	
@@ -231,10 +237,11 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 	 * before executing this method.
 	 * 
 	 * @param args contains the name of the mas2j and potentially {@code -debug} to execute in debug mode
+	 * @param model an instance of a (domain-specific) model sub-class
 	 * @param agents a list of agent parameters used to initialize mas2j, environment and model
 	 * @throws JasonException
 	 */
-	public void initialize (String[] args, ImmutableList<LauncherAgent> agents, String agentFileName) throws JasonException  {
+	public void initialize (String[] args, PlotModel<?> model, ImmutableList<LauncherAgent> agents, String agentFileName) throws JasonException  {
 		String defArgs[];
 		boolean debugMode=false;
 		
@@ -259,7 +266,7 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 		this.init(defArgs);
 		this.create();
         
-		this.initzializePlotEnvironment(agents);
+		this.initzializePlotEnvironment(agents, (ModType) model);
 		this.setupPlotLogger();
 		this.initializePlotAgents(agents);
 	}

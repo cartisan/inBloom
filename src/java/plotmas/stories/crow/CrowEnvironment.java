@@ -7,19 +7,12 @@ import java.util.logging.Logger;
 import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
-import plotmas.LauncherAgent;
 import plotmas.PlotEnvironment;
 import plotmas.storyworld.StoryworldAgent;
 
 public class CrowEnvironment extends PlotEnvironment<CrowModel> {
 
 	static Logger logger = Logger.getLogger(CrowEnvironment.class.getName());
-	@Override
-	public void initialize(List<LauncherAgent> agents) {
-		super.initialize(agents);
-		CrowModel model = new CrowModel(agents, this);
-		this.setModel(model);
-	}
 
 	@Override
 	protected void updateStatePercepts(String agentName) {

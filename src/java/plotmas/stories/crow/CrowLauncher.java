@@ -9,6 +9,8 @@ import jason.JasonException;
 import jason.asSemantics.Personality;
 import plotmas.LauncherAgent;
 import plotmas.PlotLauncher;
+import plotmas.stories.little_red_hen.FarmModel;
+import plotmas.storyworld.ScheduledHappeningDirector;
 
 public class CrowLauncher extends PlotLauncher<CrowEnvironment, CrowModel> {
 
@@ -29,7 +31,11 @@ public class CrowLauncher extends PlotLauncher<CrowEnvironment, CrowModel> {
 		      
 		    );
 
-		    runner.initialize(args, agents, "crowAgent"); 
+	        // Initialize MAS with a scheduled happening director
+	        ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
+	        FarmModel model = new FarmModel(agents, hapDir);
+	        
+	        runner.initialize(args, model, agents, "crowAgent"); 
 		    runner.run(); 
 		  }
     
