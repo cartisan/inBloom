@@ -1,8 +1,11 @@
 package plotmas.graph;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jason.asSemantics.Emotion;
 import jason.asSyntax.parser.ParseException;
@@ -43,6 +46,10 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	@Override
 	public void visitEvent(Vertex vertex) {
 		String label = vertex.getLabel();
+		if(label.startsWith("drop_intention")) {
+			handleDropIntention(vertex);
+			return;
+		}
 		String[] parts = label.split("\\[motivation\\(");
 		if(parts.length > 1) {
 			String motivation = TermParser.removeAnnots(parts[1].substring(0, parts[1].length() - 2));
@@ -57,6 +64,57 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 			}
 		}
 		this.eventList.addFirst(vertex);
+	}
+	
+	public void handleDropIntention(Vertex vertex) {
+		String label = vertex.getLabel();
+		Pattern pattern = Pattern.compile("drop_intention\\((?<drop>.*?)\\)\\[cause\\((?<cause>.*)\\)\\]");
+		Matcher matcher = pattern.matcher(label);
+		
+		// Remove the vertex if it is somehow degenerate (pattern could not be matched)
+		if(!matcher.find()) {
+			this.removeVertex(vertex);
+			return;
+		}
+		String dropString = TermParser.removeAnnots(matcher.group("drop").substring(2));
+		// Determine if the intention drop is relevant
+		// (whether or not the intention that was dropped is in the graph)
+		Vertex droppedIntention = null;
+		for(Vertex drop : this.eventList) {
+			if(drop.getIntention().equals(dropString)) {
+				droppedIntention = drop;
+				break;
+			}
+		}
+		// If it is irrelevant, simply remove the vertex
+		if(droppedIntention == null) {
+			this.removeVertex(vertex);
+			return;
+		}
+		
+		// Look for the cause in previous vertices
+		String causeString = matcher.group("cause").substring(1);
+		Vertex cause = null;
+		for(Vertex potentialCause : this.eventList) {
+			if(potentialCause.getLabel().equals(causeString)) {
+				cause = potentialCause;
+				break;
+			}
+		}
+		
+		if(cause != null) {
+			graph.addEdge(new Edge(Edge.Type.TERMINATION), cause, droppedIntention);
+			this.removeVertex(vertex);
+		} else {
+			if(causeString.startsWith("!")) {
+				vertex.setType(Vertex.Type.INTENTION);
+			} else {
+				vertex.setType(Vertex.Type.PERCEPT);
+			}
+			vertex.setLabel(causeString);
+			graph.addEdge(new Edge(Edge.Type.TERMINATION), vertex, droppedIntention);
+			this.eventList.add(vertex);
+		}
 	}
 
 	@Override
@@ -76,6 +134,34 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 			
 			if((targetEvent.getWithoutAnnotation().equals(emotion.getCause())) 
 					& !(targetEvent.hasEmotion(emotion.getName()))) {
+				boolean hasAnyEmotion = false;
+				for(String emot : Emotion.getAllEmotions()) {
+					if(targetEvent.hasEmotion(emot)) {
+						hasAnyEmotion = true;
+						break;
+					}
+				}
+				if(hasAnyEmotion) {
+					this.removeVertex(vertex);
+					Vertex clonedEvent = targetEvent.clone();
+					Collection<Edge> edges = graph.getOutEdges(targetEvent);
+					Edge temp = null;
+					for(Edge e : edges) {
+						if(e.getType() == Edge.Type.TEMPORAL) {
+							temp = e;
+							break;
+						}
+					}
+					Vertex next = graph.getDest(temp);
+					graph.removeEdge(temp);
+					graph.addVertex(clonedEvent);
+					clonedEvent.addEmotion(emotion.getName());
+					graph.addEdge(new Edge(Edge.Type.TEMPORAL), targetEvent, clonedEvent);
+					graph.addEdge(new Edge(Edge.Type.TEMPORAL), clonedEvent, next);
+					graph.addEdge(new Edge(Edge.Type.EQUIVALENCE), targetEvent, clonedEvent);
+					break;
+				} 
+				
 				targetEvent.addEmotion(emotion.getName());
 				this.removeVertex(vertex);
 				break;

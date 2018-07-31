@@ -16,6 +16,8 @@ import plotmas.graph.visitor.PlotGraphVisitor;
  * The graph should have vertices of emotions and perceptions collapsed
  * into the corresponding action, as well as added edges of the types
  * motivation, termination, actualization.
+ * 
+ * Currently unused.
  * @author Sven Wilke
  *
  */
@@ -34,7 +36,7 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitEvent(Vertex vertex) {
-		boolean hasPositiveP = false;
+		/*boolean hasPositiveP = false;
 		boolean hasNegativeP = false;
 		Set<Emotion> allPositives = new HashSet<Emotion>();
 		for(Supplier<Emotion> emoSupp : Emotion.EMOTIONS.values()) {
@@ -65,7 +67,7 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 				wertex.addEmotion(e.name);
 				vertex.removeEmotion(e.name);
 			}
-		}
+		}*/
 	}
 	
 	private Vertex cloneVertexToPredecessor(Vertex v) {

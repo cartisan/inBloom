@@ -2,6 +2,7 @@ package plotmas;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,8 +34,9 @@ public class PlotAwareAg extends AffectiveAgent {
 	
     @Override
     public void initAg() {
-        super.initAg();
+    	super.initAg();
         this.name = this.getTS().getUserAgArch().getAgName();
+        this.getTS().getC().addEventListener(new PlotCircumstanceListener(this, this.name));
     }
     
     /**
