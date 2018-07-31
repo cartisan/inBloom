@@ -173,7 +173,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
         
         
         // creates a model representation for the new agent
-        this.getModel().addAgent(agName);
+        this.getModel().addAgent(agName, personality);
         
         // enables plot graph to track new agent's actions
         PlotGraphController.getPlotListener().addCharacter(agName);

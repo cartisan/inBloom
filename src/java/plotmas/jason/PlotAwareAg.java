@@ -11,6 +11,7 @@ import plotmas.PlotLauncher;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
 import plotmas.helper.MoodMapper;
+import plotmas.storyworld.StoryworldAgent;
 
 /**
  * A type of affective agent that is responsible for maintaining the data that is relevant for plotmas. It decides which
@@ -24,12 +25,21 @@ public class PlotAwareAg extends AffectiveAgent {
 	public static final boolean X_AXIS_IS_TIME = false;		// defines whether moods will be mapped based on plotTim or timeStep
 															// in latter case, average mood will be calculated over all cycles in a timeStep
 	private String name;
+	private StoryworldAgent modelAgentPendant;
 	
     @Override
     public void initAg() {
         super.initAg();
         this.name = this.getTS().getUserAgArch().getAgName();
     }
+
+	/**
+	 * Called during {@linkplain PlotLauncher#initializePlotAgents}, sets up a link between this (jason agent)
+	 * and the respective model-agent {@linkplain StoryworldAgent}. 
+	 */
+	public void connectToModel() {
+		this.modelAgentPendant = PlotLauncher.runner.getUserEnvironment().getModel().getAgent(this.name);
+	}
         
 	@Override
     public void addEmotion(Emotion emotion, String type) throws JasonException {
@@ -50,6 +60,7 @@ public class PlotAwareAg extends AffectiveAgent {
 	@Override
 	public void updateMoodValue(Mood newMood) {
 		this.mapMood(newMood);
+		this.modelAgentPendant.setMood(newMood);
 	}
 	
 	public void initializeMoodMapper() {
@@ -64,7 +75,7 @@ public class PlotAwareAg extends AffectiveAgent {
 			// time in ms based mood log
 			moodMapper.addMood(this.name, plotTime, mood);
 			logger.fine("mapping " + this.name + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
-		} else {		
+		} else {
 			// time-step based mood log
 			moodMapper.addMood(this.name, new Long(timeStep), mood);
 			logger.fine("mapping " + this.name + "'s pleasure value: " + mood.getP() + " at time: " + timeStep.toString());
