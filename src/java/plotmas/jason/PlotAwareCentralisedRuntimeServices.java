@@ -1,4 +1,4 @@
-package plotmas;
+package plotmas.jason;
 
 import jason.infra.centralised.BaseCentralisedMAS;
 import jason.infra.centralised.CentralisedAgArch;

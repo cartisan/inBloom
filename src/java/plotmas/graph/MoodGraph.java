@@ -18,9 +18,9 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.RefineryUtilities;
 
-import plotmas.PlotAwareAg;
 import plotmas.PlotControlsLauncher;
 import plotmas.PlotLauncher;
+import plotmas.jason.PlotAwareAg;
 
 
 /**

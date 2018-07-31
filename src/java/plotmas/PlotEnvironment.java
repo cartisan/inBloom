@@ -24,6 +24,10 @@ import jason.runtime.MASConsoleGUI;
 import jason.runtime.RuntimeServicesInfraTier;
 import jason.util.Pair;
 import plotmas.graph.PlotGraphController;
+import plotmas.jason.PlotAwareAg;
+import plotmas.jason.PlotAwareAgArch;
+import plotmas.jason.PlotAwareCentralisedAgArch;
+import plotmas.jason.PlotAwareCentralisedRuntimeServices;
 
 /**
  *  Responsible for relaying action requests from ASL agents to the {@link plotmas.PlotModel Storyworld} and

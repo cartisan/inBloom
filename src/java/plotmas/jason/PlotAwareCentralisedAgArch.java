@@ -1,4 +1,4 @@
-package plotmas;
+package plotmas.jason;
 
 import java.util.List;
 
@@ -6,6 +6,7 @@ import jason.ReceiverNotFoundException;
 import jason.asSemantics.Message;
 import jason.infra.centralised.CentralisedAgArch;
 import jason.infra.centralised.MsgListener;
+import plotmas.PlotLauncher;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
 

@@ -1,4 +1,4 @@
-package plotmas;
+package plotmas.jason;
 
 import java.util.logging.Logger;
 
@@ -6,6 +6,8 @@ import jason.JasonException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Mood;
+import plotmas.PlotEnvironment;
+import plotmas.PlotLauncher;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
 import plotmas.helper.MoodMapper;

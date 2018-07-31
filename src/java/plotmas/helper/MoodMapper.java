@@ -12,7 +12,7 @@ import jason.asSemantics.Mood;
 
 /**
  * Helper class that manages the mapping between plot-time and agent's mood changes. Maintained by 
- * {@link plotmas.PlotAwareAg}, which updates the mapping. Used by {@link plotmas.graph.MoodGraph} when it creates the
+ * {@link plotmas.jason.PlotAwareAg}, which updates the mapping. Used by {@link plotmas.graph.MoodGraph} when it creates the
  * graph that shows the development of character's pleasure over time.
  * @author Leonid Berov
  */

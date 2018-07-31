@@ -1,4 +1,4 @@
-package plotmas;
+package plotmas.jason;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import jason.architecture.AgArch;
 import jason.asSyntax.Literal;
+import plotmas.PlotLauncher;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
 
