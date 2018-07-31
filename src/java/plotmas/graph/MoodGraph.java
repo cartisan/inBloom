@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.LongStream;
 
@@ -17,6 +18,8 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.RefineryUtilities;
+
+import com.google.common.collect.ImmutableMap;
 
 import plotmas.PlotControlsLauncher;
 import plotmas.PlotLauncher;
@@ -33,6 +36,10 @@ import plotmas.jason.PlotAwareAg;
 @SuppressWarnings("serial")
 public class MoodGraph extends JFrame implements PlotmasGraph {
 
+	public static final Map<Boolean, String> X_AXIS_LABEL_MAP = ImmutableMap.of(
+		    true, "plot time in ms",
+		    false, "plot time in environment steps"
+	);
 	protected static Logger logger = Logger.getLogger(MoodGraph.class.getName());
 	public static String[] MOOD_DIMS = new String[] {"pleasure", "arousal", "dominance"};
 	private static MoodGraph moodListener = null;
@@ -88,7 +95,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 		
 		JFreeChart lineChart = ChartFactory.createLineChart(
 				title,
-				"plot time in ms", this.selectedMoodDimension,
+				X_AXIS_LABEL_MAP.get(PlotAwareAg.X_AXIS_IS_TIME), this.selectedMoodDimension,
 				data,
 				PlotOrientation.VERTICAL,
 				true,true,false);
