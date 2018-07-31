@@ -1,12 +1,13 @@
-package plotmas.storyworld;
+package plotmas;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
 import jason.asSemantics.Emotion;
-import plotmas.LauncherAgent;
-import plotmas.PlotEnvironment;
+import plotmas.storyworld.Happening;
+import plotmas.storyworld.HappeningDirector;
+import plotmas.storyworld.StoryworldAgent;
 
 
 /**

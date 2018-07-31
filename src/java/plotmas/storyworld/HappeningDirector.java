@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import plotmas.PlotEnvironment;
+import plotmas.PlotModel;
 
 public class HappeningDirector{
 	private List<Happening<?>> scheduledHappenings;

@@ -3,7 +3,7 @@ package plotmas.tutorial;
 import java.util.List;
 
 import plotmas.LauncherAgent;
-import plotmas.storyworld.PlotModel;
+import plotmas.PlotModel;
 
 public class TutorialModel extends PlotModel<TutorialEnviroment> {
 	

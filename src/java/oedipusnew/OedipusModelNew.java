@@ -3,7 +3,7 @@ package oedipusnew;
 import java.util.List;
 
 import plotmas.LauncherAgent;
-import plotmas.storyworld.PlotModel;
+import plotmas.PlotModel;
 import plotmas.storyworld.StoryworldAgent;
 
 public class OedipusModelNew extends PlotModel<OedipusEnvironmentNew> {

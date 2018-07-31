@@ -3,8 +3,8 @@ package plotmas.stories.crow;
 import java.util.List;
 
 import plotmas.LauncherAgent;
+import plotmas.PlotModel;
 import plotmas.storyworld.Item;
-import plotmas.storyworld.PlotModel;
 import plotmas.storyworld.StoryworldAgent;
 
 public class CrowModel extends PlotModel<CrowEnvironment> {

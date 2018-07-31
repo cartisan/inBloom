@@ -4,6 +4,8 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+import plotmas.PlotModel;
+
 public class Happening<T extends PlotModel<?>> {
 
 	static protected Logger logger = Logger.getLogger(Happening.class.getName());

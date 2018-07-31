@@ -24,10 +24,9 @@ import jason.runtime.MASConsoleGUI;
 import jason.runtime.RuntimeServicesInfraTier;
 import jason.util.Pair;
 import plotmas.graph.PlotGraphController;
-import plotmas.storyworld.PlotModel;
 
 /**
- *  Responsible for relaying action requests from ASL agents to the {@link plotmas.storyworld.PlotModel Storyworld} and
+ *  Responsible for relaying action requests from ASL agents to the {@link plotmas.PlotModel Storyworld} and
  *  perceptions from the Storyworld to ASL agents (via {@link jason.asSemantics.AffectiveAgent jason's AffectiveAgent}). 
  *  Each action is reported to the {@link plotmas.graph.PlotGraphController PlotGraphController} for visual representation. <br>
  *  Subclasses need to override {@link #executeAction(String, Structure)} to implement their domain-specific relaying 

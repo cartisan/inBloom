@@ -19,7 +19,6 @@ import jason.infra.centralised.CentralisedAgArch;
 import jason.infra.centralised.RConf;
 import jason.mas2j.AgentParameters;
 import plotmas.graph.PlotGraphController;
-import plotmas.storyworld.PlotModel;
 
 /**
  * Used to perform a Java-side setup and execution of a Jason MAS. <br>
