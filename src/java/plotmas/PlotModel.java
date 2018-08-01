@@ -121,8 +121,9 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	}
 	
 	/**
-	 * Helper method that allows domain-specific subclasses to schedule happenings for execution
-	 * @param h
+	 * Helper method that allows domain-specific subclasses to schedule happenings for execution.
+	 * This is only possible if this model was configured to work with a {@linkplain ScheduledHappeningDirector}.
+	 * @param  h
 	 */
 	protected void scheduleHappening(Happening<? extends PlotModel<?>> h) {
 		if(this.happeningDirector.getClass().equals(ScheduledHappeningDirector.class)) {
