@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import jason.asSemantics.Emotion;
+import jason.asSemantics.Mood;
 import jason.asSemantics.Personality;
+import plotmas.helper.MoodMapper;
 import plotmas.storyworld.Happening;
 import plotmas.storyworld.HappeningDirector;
 import plotmas.storyworld.ScheduledHappeningDirector;
@@ -27,9 +29,13 @@ import plotmas.storyworld.StoryworldAgent;
 public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	static protected Logger logger = Logger.getLogger(PlotModel.class.getName());
 	
+	public static MoodMapper moodMapper = new MoodMapper();
+	public static final boolean X_AXIS_IS_TIME = false;		// defines whether moods will be mapped based on plotTim or timeStep
+															// in latter case, average mood will be calculated over all cycles in a timeStep
+	
 	public HashMap<String, StoryworldAgent> agents;
 	public HappeningDirector happeningDirector; 
-	protected EnvType environment = null;
+	public EnvType environment = null;
 
 	
 	public static String addEmotion(String... ems) {
@@ -131,6 +137,20 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		} else {
 			logger.warning("Trying to schedule happenings, but wrong happening director enabled: "
 						   + happeningDirector.getClass().getSimpleName());
+		}
+	}
+	
+	public void mapMood(String name, Mood mood) {
+		if (X_AXIS_IS_TIME) {
+			// time in ms based mood log
+			Long plotTime = PlotEnvironment.getPlotTimeNow();
+			moodMapper.addMood(name, plotTime, mood);
+			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
+		} else {
+			// time-step based mood log
+			Integer timeStep = PlotLauncher.runner.getUserEnvironment().getStep();
+			moodMapper.addMood(name, new Long(timeStep), mood);
+			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + timeStep.toString());
 		}
 	}
 

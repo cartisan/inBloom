@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableMap;
 
 import plotmas.PlotControlsLauncher;
 import plotmas.PlotLauncher;
-import plotmas.jason.PlotAwareAg;
+import plotmas.PlotModel;
 
 
 /**
@@ -70,19 +70,19 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 	public void createData() {
 		this.deleteGraphData();
 		
-		logger.fine("Using following mood data to create mood graph:\n" + PlotAwareAg.moodMapper.toString());
+		logger.fine("Using following mood data to create mood graph:\n" + PlotModel.moodMapper.toString());
 		
-		Long startTime = PlotAwareAg.moodMapper.latestStartTime();
+		Long startTime = PlotModel.moodMapper.latestStartTime();
 		startTime = startTime - (startTime % 10) + 10;		// round up start time to next multiple of 10
 				
-		for(String agName: PlotAwareAg.moodMapper.mappedAgents()) {
-			Long endTime = PlotAwareAg.moodMapper.latestMoodEntry(agName);
+		for(String agName: PlotModel.moodMapper.mappedAgents()) {
+			Long endTime = PlotModel.moodMapper.latestMoodEntry(agName);
 			
 			// for every 10ms from start time until end time sample mood and put it into the graph
 			Iterator<Long> it = LongStream.iterate(startTime, n -> n+1).limit(endTime / 1 + 1).iterator();
 			while(it.hasNext()) {
 				Long x_val = it.next();
-				Double sampledMood = PlotAwareAg.moodMapper.sampleMood(agName, x_val).get(selectedMoodDimension);
+				Double sampledMood = PlotModel.moodMapper.sampleMood(agName, x_val).get(selectedMoodDimension);
 				this.addMoodPoint(sampledMood, x_val, agName);
 			}
 		}
@@ -95,7 +95,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 		
 		JFreeChart lineChart = ChartFactory.createLineChart(
 				title,
-				X_AXIS_LABEL_MAP.get(PlotAwareAg.X_AXIS_IS_TIME), this.selectedMoodDimension,
+				X_AXIS_LABEL_MAP.get(PlotModel.X_AXIS_IS_TIME), this.selectedMoodDimension,
 				data,
 				PlotOrientation.VERTICAL,
 				true,true,false);

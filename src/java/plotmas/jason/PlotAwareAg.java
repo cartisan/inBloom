@@ -6,11 +6,9 @@ import jason.JasonException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Mood;
-import plotmas.PlotEnvironment;
 import plotmas.PlotLauncher;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
-import plotmas.helper.MoodMapper;
 import plotmas.storyworld.StoryworldAgent;
 
 /**
@@ -21,9 +19,7 @@ import plotmas.storyworld.StoryworldAgent;
  */
 public class PlotAwareAg extends AffectiveAgent {
 	static Logger logger = Logger.getLogger(AffectiveAgent.class.getName());
-	public static MoodMapper moodMapper = new MoodMapper();
-	public static final boolean X_AXIS_IS_TIME = false;		// defines whether moods will be mapped based on plotTim or timeStep
-															// in latter case, average mood will be calculated over all cycles in a timeStep
+
 	private String name;
 	private StoryworldAgent modelAgentPendant;
 	
@@ -59,26 +55,11 @@ public class PlotAwareAg extends AffectiveAgent {
 	
 	@Override
 	public void updateMoodValue(Mood newMood) {
-		this.mapMood(newMood);
+		PlotLauncher.runner.getUserEnvironment().getModel().mapMood(this.name, newMood);
 		this.modelAgentPendant.setMood(newMood);
 	}
 	
 	public void initializeMoodMapper() {
-		this.mapMood(this.getPersonality().defaultMood());
-	}
-	
-	private void mapMood(Mood mood) {
-		Long plotTime = PlotEnvironment.getPlotTimeNow();
-		Integer timeStep = PlotLauncher.runner.getUserEnvironment().getStep();
-		
-		if (X_AXIS_IS_TIME) {
-			// time in ms based mood log
-			moodMapper.addMood(this.name, plotTime, mood);
-			logger.fine("mapping " + this.name + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
-		} else {
-			// time-step based mood log
-			moodMapper.addMood(this.name, new Long(timeStep), mood);
-			logger.fine("mapping " + this.name + "'s pleasure value: " + mood.getP() + " at time: " + timeStep.toString());
-		}
+		PlotLauncher.runner.getUserEnvironment().getModel().mapMood(this.name, this.getPersonality().defaultMood());
 	}
 }
