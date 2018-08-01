@@ -8,7 +8,7 @@ import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import plotmas.LauncherAgent;
 import plotmas.PlotEnvironment;
-import plotmas.storyworld.StoryworldAgent;
+import plotmas.storyworld.Character;
 
 public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 
@@ -31,7 +31,7 @@ public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 	
 	public boolean executeAction(String agentName, Structure action) {
 		boolean result = super.executeAction(agentName, action);
-		StoryworldAgent agent = getModel().getAgent(agentName);
+		Character agent = getModel().getCharacter(agentName);
 		
 		if (action.getFunctor().equals("chilling")) {
 			result = getModel().chilling(agent);
@@ -51,7 +51,7 @@ public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 		if (action.getFunctor().equals("answer_question")) {
 			Term receiverTerm = action.getTerm(0);
 		
-			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
+			Character patient = getModel().getCharacter(receiverTerm.toString());
 			result = getModel().answer_question(agent, patient);
 		}
 		
@@ -65,7 +65,7 @@ public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 		if (action.getFunctor().equals("ask")) {
 			Term receiverTerm = action.getTerm(0);
 			
-			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
+			Character patient = getModel().getCharacter(receiverTerm.toString());
 			result = getModel().ask(agent, patient);
 		}
 		

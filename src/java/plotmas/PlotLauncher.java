@@ -279,10 +279,6 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 	 * 
 	 * <b> Attention: </b> {@linkplain PlotLauncher#initialize(String[], ImmutableList, String)} needs to be executed 
 	 * first.
-	 * 
-	 * @param args contains the name of the mas2j and potentially {@code -debug} to execute in debug mode
-	 * @param agents a list of agent parameters used to initialize mas2j, environment and model
-	 * @throws JasonException
 	 */
 	public void run() {
 		this.start();

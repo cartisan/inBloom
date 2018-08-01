@@ -6,7 +6,7 @@ import plotmas.LauncherAgent;
 import plotmas.PlotModel;
 import plotmas.storyworld.HappeningDirector;
 import plotmas.storyworld.Item;
-import plotmas.storyworld.StoryworldAgent;
+import plotmas.storyworld.Character;
 
 
 /**
@@ -44,14 +44,14 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	}
 
 	
-	public boolean farmWork(StoryworldAgent agent) {
+	public boolean farmWork(Character agent) {
 		this.actionCount += 1;
 		logger.info("Some farming activity was performed");
 		
 		return true;
 	}
 	
-	public boolean plantWheat(StoryworldAgent agent) {
+	public boolean plantWheat(Character agent) {
 		Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 		if (!(wheatItem == null)) {
 				if (wheatItem.state == WHEAT_STATE.SEED) {
@@ -65,7 +65,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		return false;
 	}
 	
-	public boolean tendWheat(StoryworldAgent agent) {
+	public boolean tendWheat(Character agent) {
 		if ((this.wheat.state == WHEAT_STATE.GROWING)){
 			this.wheat.state = WHEAT_STATE.RIPE;
 			logger.info("Wheat has grown and is ripe now");
@@ -76,7 +76,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		return false;
 	}
 	
-	public boolean harvestWheat(StoryworldAgent agent) {
+	public boolean harvestWheat(Character agent) {
 		if ((this.wheat.state == WHEAT_STATE.RIPE)){
 			this.wheat.state = WHEAT_STATE.HARVESTED;
 			logger.info("Wheat was harvested");
@@ -87,7 +87,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		return false;
 	}
 	
-	public boolean grindWheat(StoryworldAgent agent) {
+	public boolean grindWheat(Character agent) {
 		if ((this.wheat.state == WHEAT_STATE.HARVESTED)){
 			this.wheat.state = WHEAT_STATE.FLOUR;
 			logger.info("Wheat was ground to flour");
@@ -98,7 +98,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		return false;
 	}
 
-	public boolean bakeBread(StoryworldAgent agent) {
+	public boolean bakeBread(Character agent) {
 		Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 		if((!(wheatItem == null)) & (wheatItem.state == WHEAT_STATE.FLOUR)) {
 			agent.addToInventory(new Bread());

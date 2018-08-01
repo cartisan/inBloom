@@ -3,7 +3,7 @@ package plotmas.stories.little_red_hen;
 import java.util.function.BiPredicate;
 
 import plotmas.storyworld.Happening;
-import plotmas.storyworld.StoryworldAgent;
+import plotmas.storyworld.Character;
 
 public class FindCornHappening extends Happening<FarmModel> {
 
@@ -14,12 +14,12 @@ public class FindCornHappening extends Happening<FarmModel> {
 	@Override
 	public void execute(FarmModel model) {
 		model.wheat = model.new Wheat();
-		StoryworldAgent agent = model.getAgent("hen");
+		Character chara = model.getCharacter("hen");
 		
-		agent.addToInventory(model.wheat);
-		model.getEnvironment().addEventPerception(agent.name, "found(wheat)[emotion(joy)]");  
+		chara.addToInventory(model.wheat);
+		model.getEnvironment().addEventPerception(chara.name, "found(wheat)[emotion(joy)]");  
 		model.wheatFound = true;
 		
-		model.getLogger().info(agent.name + " found a grain of wheat"); 
+		model.getLogger().info(chara.name + " found a grain of wheat"); 
 	}
 }

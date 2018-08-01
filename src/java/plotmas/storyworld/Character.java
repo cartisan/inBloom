@@ -20,8 +20,8 @@ import plotmas.jason.PlotAwareAg;
  * modify a character's state.
  * @author Leonid Berov
  */
-public class StoryworldAgent {
-    static Logger logger = Logger.getLogger(StoryworldAgent.class.getName());
+public class Character {
+    static Logger logger = Logger.getLogger(Character.class.getName());
 	
     public LinkedList<Item> inventory = new LinkedList<Item>();
     public PlotAwareAg plotAgentPendant;
@@ -29,10 +29,10 @@ public class StoryworldAgent {
 
 	private PlotModel<?> model;
 
-	public StoryworldAgent() {
+	public Character() {
 	}
 	
-	public StoryworldAgent(String name) {
+	public Character(String name) {
 		this.setName(name);
 	}
 	
@@ -83,7 +83,7 @@ public class StoryworldAgent {
 		return null;
 	}
 	
-	public boolean share(String itemType, StoryworldAgent receiver) {
+	public boolean share(String itemType, Character receiver) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			receiver.receive(item, this);
@@ -96,11 +96,11 @@ public class StoryworldAgent {
 		return false;
 	}
 	
-	public boolean share(String itemType, List<StoryworldAgent> receivers) {
+	public boolean share(String itemType, List<Character> receivers) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			
-			for(StoryworldAgent receiver : receivers) {
+			for(Character receiver : receivers) {
 				receiver.receive(item, this);
 			}
 			
@@ -120,7 +120,7 @@ public class StoryworldAgent {
 		return false;
 	}
 	
-	public boolean receive(Item item, StoryworldAgent from) {
+	public boolean receive(Item item, Character from) {
 		this.addToInventory(item);
 		
 		this.model.getEnvironment().addEventPerception(name,

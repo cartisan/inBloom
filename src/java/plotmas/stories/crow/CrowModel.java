@@ -6,7 +6,7 @@ import plotmas.LauncherAgent;
 import plotmas.PlotModel;
 import plotmas.storyworld.HappeningDirector;
 import plotmas.storyworld.Item;
-import plotmas.storyworld.StoryworldAgent;
+import plotmas.storyworld.Character;
 
 public class CrowModel extends PlotModel<CrowEnvironment> {
 	
@@ -22,7 +22,7 @@ public class CrowModel extends PlotModel<CrowEnvironment> {
 		this.cheeseSeen = false; 
 		// this.cheesePosition = 0; //in the beak of the crow
 		
-		for(StoryworldAgent agent: this.agents.values()) {
+		for(Character agent: this.characters.values()) {
 			if( agent.name == "crow") {
 				agent.addToInventory(this.cheese);
 			}
@@ -33,7 +33,7 @@ public class CrowModel extends PlotModel<CrowEnvironment> {
 		return cheeseSeen;
 	}
 	
-	public boolean walkAround(StoryworldAgent agent){
+	public boolean walkAround(Character agent){
 		this.actionCount +=1;
 		
 		if((!cheeseSeen) && (this.actionCount >= 3) && (agent.name == "fox")) {
@@ -45,25 +45,25 @@ public class CrowModel extends PlotModel<CrowEnvironment> {
 		return true; 
 	}
 	
-	public boolean sitAround(StoryworldAgent agent) {
+	public boolean sitAround(Character agent) {
 		//agent.relax();
 		return true;
 	}
 	
-	public boolean askForCheese(StoryworldAgent asking, StoryworldAgent asked) {
+	public boolean askForCheese(Character asking, Character asked) {
 		logger.info(asking.name + " asked "  + asked.name + " for Cheese");
 		this.environment.addEventPerception(asked.name, "wasAsked");
 		return true;
 	}
 	
-	public boolean answerNegatively(StoryworldAgent asked, StoryworldAgent asking) {
+	public boolean answerNegatively(Character asked, Character asking) {
 		logger.info(asked.name + " answered"  + asking.name + " negatively");
 		this.environment.addEventPerception(asking.name, "wasAnsweredNegatively[emotion(anger)]");
 		return true;
 	}
 	
 	
-	public boolean flatter(StoryworldAgent flatterer, StoryworldAgent flattered) {
+	public boolean flatter(Character flatterer, Character flattered) {
 		logger.info(flatterer.name + " flattered " + flattered.name);
 		this.environment.addEventPerception(flattered.name, "wasFlattered[emotion(joy)]");
 		
@@ -76,10 +76,10 @@ public class CrowModel extends PlotModel<CrowEnvironment> {
 		return true;
 	}
 	
-	public boolean pickUpCheese(StoryworldAgent picker) {
+	public boolean pickUpCheese(Character picker) {
 		boolean freeCheese = true; 
 		
-		for(StoryworldAgent agent: this.agents.values()) {
+		for(Character agent: this.characters.values()) {
 			if( agent.has("cheese")) {
 				freeCheese = false;
 			}
@@ -100,7 +100,7 @@ public class CrowModel extends PlotModel<CrowEnvironment> {
 	}
 	
 	
-	public boolean sing(StoryworldAgent singer) {
+	public boolean sing(Character singer) {
 		this.environment.addEventPerception(singer.name, "sang[emotion(joy)]");
 		logger.info(singer.name + " sang");
 		
@@ -108,7 +108,7 @@ public class CrowModel extends PlotModel<CrowEnvironment> {
 			singer.removeFromInventory(this.cheese);
 			logger.info(singer.name + " lost cheese");
 
-			for(StoryworldAgent agent: this.agents.values()) {
+			for(Character agent: this.characters.values()) {
 				if(agent != singer){
 					logger.info(agent + " saw cheese fall");
 					this.environment.addEventPerception(agent.name, "freeCheese");

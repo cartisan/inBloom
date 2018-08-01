@@ -8,7 +8,7 @@ import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import plotmas.PlotEnvironment;
-import plotmas.storyworld.StoryworldAgent;
+import plotmas.storyworld.Character;
 
 public class CrowEnvironment extends PlotEnvironment<CrowModel> {
 
@@ -24,12 +24,12 @@ public class CrowEnvironment extends PlotEnvironment<CrowModel> {
 	@Override
 	public boolean executeAction(String agentName, Structure action) {
 		boolean result = super.executeAction(agentName, action);
-		StoryworldAgent agent = getModel().getAgent(agentName);
+		Character agent = getModel().getCharacter(agentName);
 		
 		if (action.getFunctor().equals("askForCheese")) {
 			Term receiverTerm = action.getTerm(0);
 
-			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
+			Character patient = getModel().getCharacter(receiverTerm.toString());
 			result = getModel().askForCheese(agent, patient); 
 		}
 
@@ -44,7 +44,7 @@ public class CrowEnvironment extends PlotEnvironment<CrowModel> {
 		if (action.getFunctor().equals("flatter")) {
 			Term receiverTerm = action.getTerm(0);
 
-			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
+			Character patient = getModel().getCharacter(receiverTerm.toString());
 			result = getModel().flatter(agent, patient); 
 		}
 		
@@ -52,7 +52,7 @@ public class CrowEnvironment extends PlotEnvironment<CrowModel> {
 			logger.info("in env, asnwerNegativeley");
 			Term receiverTerm = action.getTerm(0);
 
-			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
+			Character patient = getModel().getCharacter(receiverTerm.toString());
 			result = getModel().answerNegatively(agent, patient); 
 		}
 
@@ -70,13 +70,13 @@ public class CrowEnvironment extends PlotEnvironment<CrowModel> {
     		Term receiverTerm = action.getTerm(1);
     		
     		if (receiverTerm.isList()) {
-    			List<StoryworldAgent> receivers = new LinkedList<>();
+    			List<Character> receivers = new LinkedList<>();
     			for (Term rec: (ListTermImpl) receiverTerm) {
-        			receivers.add(getModel().getAgent(rec.toString()));
+        			receivers.add(getModel().getCharacter(rec.toString()));
     			}
     			result = agent.share(item, receivers);
     		} else {
-    			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
+    			Character patient = getModel().getCharacter(receiverTerm.toString());
     			result = agent.share(item, patient);
     			
     		}

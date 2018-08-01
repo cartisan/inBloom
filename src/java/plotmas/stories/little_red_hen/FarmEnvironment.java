@@ -9,7 +9,7 @@ import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import plotmas.PlotEnvironment;
-import plotmas.storyworld.StoryworldAgent;
+import plotmas.storyworld.Character;
 
 /**
  * Custom controller for the "Tale of the Little Red Hen", managed by {@link RedHenLauncher}.
@@ -36,7 +36,7 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     public boolean executeAction(String agentName, Structure action) {
 		// let the PlotEnvironment update the plot graph, initializes result as false
 		boolean result = super.executeAction(agentName, action);
-    	StoryworldAgent agent = getModel().getAgent(agentName);
+    	Character agent = getModel().getCharacter(agentName);
     	
     	if (action.getFunctor().equals("farm_work")) {
     		result = getModel().farmWork(agent);
@@ -76,13 +76,13 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     		Term receiverTerm = action.getTerm(1);
     		
     		if (receiverTerm.isList()) {
-    			List<StoryworldAgent> receivers = new LinkedList<>();
+    			List<Character> receivers = new LinkedList<>();
     			for (Term rec: (ListTermImpl) receiverTerm) {
-        			receivers.add(getModel().getAgent(rec.toString()));
+        			receivers.add(getModel().getCharacter(rec.toString()));
     			}
     			result = agent.share(item, receivers);
     		} else {
-    			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
+    			Character patient = getModel().getCharacter(receiverTerm.toString());
     			result = agent.share(item, patient);
     			
     		}

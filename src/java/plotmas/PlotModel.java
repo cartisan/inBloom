@@ -11,7 +11,7 @@ import plotmas.stories.little_red_hen.RedHenLauncher;
 import plotmas.storyworld.Happening;
 import plotmas.storyworld.HappeningDirector;
 import plotmas.storyworld.ScheduledHappeningDirector;
-import plotmas.storyworld.StoryworldAgent;
+import plotmas.storyworld.Character;
 
 
 /**
@@ -20,7 +20,7 @@ import plotmas.storyworld.StoryworldAgent;
  * {@link plotmas.PlotEnvironment environment subclass}. <br>
  * Your subclass should maintain the current state of all the objects and agents in the story world. This class
  * provides you with domain-independent model functionality. For now this is just a collection of
- * {@link StoryworldAgent agent models}.
+ * {@link Character agent models}.
  * 
  * 
  * @see plotmas.stories.little_red_hen.FarmModel
@@ -33,7 +33,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	public static final boolean X_AXIS_IS_TIME = false;		// defines whether moods will be mapped based on plotTim or timeStep
 															// in latter case, average mood will be calculated over all cycles in a timeStep
 	
-	public HashMap<String, StoryworldAgent> agents;
+	public HashMap<String, Character> characters;
 	public HappeningDirector happeningDirector; 
 	public EnvType environment = null;
 
@@ -74,11 +74,11 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
     }
 	
 	public PlotModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
-        this.agents = new HashMap<String, StoryworldAgent>();
+        this.characters = new HashMap<String, Character>();
         
         // add all instantiated agents to world model
         for (LauncherAgent lAgent : agentList) {
-        	this.addAgent(lAgent);
+        	this.addCharacter(lAgent);
         }
 
         this.happeningDirector = hapDir;
@@ -87,26 +87,26 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	
 	public void initialize(List<LauncherAgent> agentList) {
         for (LauncherAgent lAgent : agentList) {
-        	this.getAgent(lAgent.name).initialize(lAgent);
-        	this.getAgent(lAgent.name).setModel(this);
+        	this.getCharacter(lAgent.name).initialize(lAgent);
+        	this.getCharacter(lAgent.name).setModel(this);
         }		
 	}
 	
-	public StoryworldAgent getAgent(String name) {
-		return this.agents.get(name);
+	public Character getCharacter(String name) {
+		return this.characters.get(name);
 	}
 	
 	/**
 	 * Creates a new character in the model.
 	 * Used during MAS setup, when the model is created. E.g. see {@linkplain RedHenLauncher#main(String[])}. Characters
-	 * created like this are not ready to be used, a call to {@linkplain StoryworldAgent#initialize(LauncherAgent)} is
+	 * created like this are not ready to be used, a call to {@linkplain Character#initialize(LauncherAgent)} is
 	 * required, first. This is performed during MAS setuo, too, see: {@linkplain PlotLauncher#initializePlotModel(List)}.
 	 * @param lAgent
 	 */
-	public void addAgent(LauncherAgent lAgent) {
+	public void addCharacter(LauncherAgent lAgent) {
 		// set up connections between agents, model and environment
-    	StoryworldAgent sAgent = new StoryworldAgent();
-		this.agents.put(lAgent.name, sAgent);	
+    	Character character = new Character();
+		this.characters.put(lAgent.name, character);	
 	}
 
 	/**
@@ -115,14 +115,14 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	 * {@linkplain PlotEnvironment#createAgent(String, String, jason.asSemantics.Personality)}
 	 * @param agentName
 	 */
-	public void addAgent(String agentName) {
-    	StoryworldAgent sAgent = new StoryworldAgent(agentName);
-		this.agents.put(sAgent.name, sAgent);
+	public void addCharacter(String agentName) {
+    	Character character = new Character(agentName);
+		this.characters.put(character.name, character);
 		
 	}
 
-	public void removeAgent(String agName) {
-		this.agents.remove(agName);
+	public void removeCharacter(String agName) {
+		this.characters.remove(agName);
 	}
 	
 	/**

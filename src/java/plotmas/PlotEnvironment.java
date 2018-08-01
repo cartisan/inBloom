@@ -173,7 +173,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
         
         
         // creates a model representation for the new agent
-        this.getModel().addAgent(agName);
+        this.getModel().addCharacter(agName);
         
         // enables plot graph to track new agent's actions
         PlotGraphController.getPlotListener().addCharacter(agName);
@@ -201,7 +201,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		PlotGraphController.getPlotListener().addEvent(agName, "died", getStep());
 		
 		// remove character from story-world model
-		this.model.removeAgent(agName);
+		this.model.removeCharacter(agName);
 	}
 
 	/**
@@ -240,7 +240,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	}
 
 	public void updatePercepts() {
-		for(String name: model.agents.keySet()) {
+		for(String name: model.characters.keySet()) {
 			updatePercepts(name);
 		}
 	}
@@ -263,14 +263,14 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     protected void updateStatePercepts(String agentName) {
     	// update list of present agents (excluding self)
     	removePerceptsByUnif(agentName, Literal.parseLiteral("agents(X)"));
-    	Set<String> presentAgents = new HashSet<>(this.model.agents.keySet());
+    	Set<String> presentAgents = new HashSet<>(this.model.characters.keySet());
     	presentAgents.remove(agentName);
     	List<Term> agentList = presentAgents.stream().map(ASSyntax::createAtom).collect(Collectors.toList());
     	addPercept(agentName, ASSyntax.createLiteral("agents", ASSyntax.createList(agentList)));
     	
     	// update inventory state for each agents
     	removePerceptsByUnif(agentName, Literal.parseLiteral("has(X)"));
-    	for (String literal : this.model.agents.get(agentName).createInventoryPercepts()) {
+    	for (String literal : this.model.characters.get(agentName).createInventoryPercepts()) {
     		addPercept(agentName, Literal.parseLiteral(literal));    		
     	}    		
     }

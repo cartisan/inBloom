@@ -5,7 +5,7 @@ import java.util.List;
 import plotmas.LauncherAgent;
 import plotmas.PlotModel;
 import plotmas.storyworld.HappeningDirector;
-import plotmas.storyworld.StoryworldAgent;
+import plotmas.storyworld.Character;
 
 public class OedipusModelNew extends PlotModel<OedipusEnvironmentNew> {
 	
@@ -19,7 +19,7 @@ public class OedipusModelNew extends PlotModel<OedipusEnvironmentNew> {
 	}
 	
 	
-	public boolean chilling(StoryworldAgent agent){
+	public boolean chilling(Character agent){
 		this.actionCount +=1;
 		logger.info("Someone was chilling");
 		
@@ -30,7 +30,7 @@ public class OedipusModelNew extends PlotModel<OedipusEnvironmentNew> {
 		
 	}
 	
-	public boolean working(StoryworldAgent agent){
+	public boolean working(Character agent){
 		this.actionCount +=1;
 		logger.info("Someone was working");
 		
@@ -45,7 +45,7 @@ public class OedipusModelNew extends PlotModel<OedipusEnvironmentNew> {
 		return true; 
 	}
 	
-	public boolean ask(StoryworldAgent asker, StoryworldAgent asked){
+	public boolean ask(Character asker, Character asked){
 		this.actionCount +=1;
 		logger.info(asker.name +" asked "+ asked.name);
 		this.environment.addEventPerception(asked.name, "wasAsked");
@@ -53,7 +53,7 @@ public class OedipusModelNew extends PlotModel<OedipusEnvironmentNew> {
 		return true;
 	}
 	
-	public boolean answer_question(StoryworldAgent answerer, StoryworldAgent answered){
+	public boolean answer_question(Character answerer, Character answered){
 		this.actionCount +=1;
 		logger.info(answerer.name +" answered "+ answered.name);
 		if (answered.name == "laios") {
@@ -63,7 +63,7 @@ public class OedipusModelNew extends PlotModel<OedipusEnvironmentNew> {
 		return true;
 	}
 	
-	public boolean goToPlace(StoryworldAgent agent, String new_location ) {
+	public boolean goToPlace(Character agent, String new_location ) {
 		this.actionCount +=1;
 		location = new_location;
 		logger.info(agent.name + " went to" + location);
