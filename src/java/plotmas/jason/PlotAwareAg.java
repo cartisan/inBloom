@@ -9,7 +9,6 @@ import jason.asSemantics.Mood;
 import plotmas.PlotLauncher;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
-import plotmas.storyworld.StoryworldAgent;
 
 /**
  * A type of affective agent that is responsible for maintaining the data that is relevant for plotmas. It decides which
@@ -21,7 +20,6 @@ public class PlotAwareAg extends AffectiveAgent {
 	static Logger logger = Logger.getLogger(AffectiveAgent.class.getName());
 
 	private String name;
-	private StoryworldAgent modelAgentPendant;
 	
     @Override
     public void initAg() {
@@ -29,14 +27,6 @@ public class PlotAwareAg extends AffectiveAgent {
         this.name = this.getTS().getUserAgArch().getAgName();
     }
 
-	/**
-	 * Called during {@linkplain PlotLauncher#initializePlotAgents}, sets up a link between this (jason agent)
-	 * and the respective model-agent {@linkplain StoryworldAgent}. 
-	 */
-	public void connectToModel() {
-		this.modelAgentPendant = PlotLauncher.runner.getUserEnvironment().getModel().getAgent(this.name);
-	}
-        
 	@Override
     public void addEmotion(Emotion emotion, String type) throws JasonException {
         super.addEmotion(emotion, type);
@@ -55,11 +45,10 @@ public class PlotAwareAg extends AffectiveAgent {
 	
 	@Override
 	public void updateMoodValue(Mood newMood) {
-		PlotLauncher.runner.getUserEnvironment().getModel().mapMood(this.name, newMood);
-		this.modelAgentPendant.setMood(newMood);
+		PlotLauncher.runner.getUserModel().mapMood(this.name, newMood);
 	}
 	
 	public void initializeMoodMapper() {
-		PlotLauncher.runner.getUserEnvironment().getModel().mapMood(this.name, this.getPersonality().defaultMood());
+		PlotLauncher.runner.getUserModel().mapMood(this.name, this.getPersonality().defaultMood());
 	}
 }

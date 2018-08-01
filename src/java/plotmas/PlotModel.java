@@ -6,8 +6,8 @@ import java.util.logging.Logger;
 
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Mood;
-import jason.asSemantics.Personality;
 import plotmas.helper.MoodMapper;
+import plotmas.stories.little_red_hen.RedHenLauncher;
 import plotmas.storyworld.Happening;
 import plotmas.storyworld.HappeningDirector;
 import plotmas.storyworld.ScheduledHappeningDirector;
@@ -85,30 +85,42 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
         hapDir.setModel(this);
 	}
 	
+	public void initialize(List<LauncherAgent> agentList) {
+        for (LauncherAgent lAgent : agentList) {
+        	this.getAgent(lAgent.name).initialize(lAgent);
+        	this.getAgent(lAgent.name).setModel(this);
+        }		
+	}
+	
 	public StoryworldAgent getAgent(String name) {
 		return this.agents.get(name);
 	}
 	
+	/**
+	 * Creates a new character in the model.
+	 * Used during MAS setup, when the model is created. E.g. see {@linkplain RedHenLauncher#main(String[])}. Characters
+	 * created like this are not ready to be used, a call to {@linkplain StoryworldAgent#initialize(LauncherAgent)} is
+	 * required, first. This is performed during MAS setuo, too, see: {@linkplain PlotLauncher#initializePlotModel(List)}.
+	 * @param lAgent
+	 */
 	public void addAgent(LauncherAgent lAgent) {
 		// set up connections between agents, model and environment
-    	StoryworldAgent sAgent = new StoryworldAgent(lAgent);
-    	this.addAgent(sAgent);		
+    	StoryworldAgent sAgent = new StoryworldAgent();
+		this.agents.put(lAgent.name, sAgent);	
 	}
 
-	public void addAgent(String agentName, Personality pers) {
-    	StoryworldAgent sAgent = new StoryworldAgent();
-    	sAgent.setPersonality(pers);
-    	sAgent.name = agentName;
-    
-    	this.addAgent(sAgent);		
+	/**
+	 * Creates a new character in the model.
+	 * To be used only during MAS execution (after setup/initialize), when a new agent is created. E.g. see 
+	 * {@linkplain PlotEnvironment#createAgent(String, String, jason.asSemantics.Personality)}
+	 * @param agentName
+	 */
+	public void addAgent(String agentName) {
+    	StoryworldAgent sAgent = new StoryworldAgent(agentName);
+		this.agents.put(sAgent.name, sAgent);
 		
 	}
 
-	private void addAgent(StoryworldAgent sAgent) {
-		agents.put(sAgent.name, sAgent);
-    	sAgent.setModel(this);
-	}
-	
 	public void removeAgent(String agName) {
 		this.agents.remove(agName);
 	}

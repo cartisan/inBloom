@@ -8,7 +8,9 @@ import java.util.stream.Collectors;
 import jason.asSemantics.Mood;
 import jason.asSemantics.Personality;
 import plotmas.LauncherAgent;
+import plotmas.PlotLauncher;
 import plotmas.PlotModel;
+import plotmas.jason.PlotAwareAg;
 
 
 /**
@@ -21,23 +23,21 @@ import plotmas.PlotModel;
 public class StoryworldAgent {
     static Logger logger = Logger.getLogger(StoryworldAgent.class.getName());
 	
-    public String name;
     public LinkedList<Item> inventory = new LinkedList<Item>();
+    public PlotAwareAg plotAgentPendant;
+    public String name;
 
-    private Personality personality;
-	private Mood mood;
 	private PlotModel<?> model;
 
 	public StoryworldAgent() {
-		this.name = null;
-		this.personality = null;
-		this.mood = null;
 	}
 	
-	public StoryworldAgent(LauncherAgent lAgent) {
-		this.name = lAgent.name;
-		this.personality = lAgent.personality;
-		this.mood = this.personality.defaultMood();
+	public StoryworldAgent(String name) {
+		this.setName(name);
+	}
+	
+	public void initialize(LauncherAgent lAgent) {
+		this.setName(lAgent.name);
 	}
 	
 	/**
@@ -168,20 +168,24 @@ public class StoryworldAgent {
 		this.model = model;
 	}
 
-	public void setMood(Mood newMood) {
-		this.mood = newMood;
-	}
-	
-	public void setPersonality(Personality pers) {
-		this.personality = pers;
-		this.mood = pers.defaultMood();
-	}
-
 	public Personality getPersonality() {
-		return personality;
+		return this.plotAgentPendant.getPersonality();
 	}
 	
 	public Mood getMood() {
-		return mood;
+		return this.plotAgentPendant.getMood();
+	}
+
+	public void setName(String agentName) {
+		this.name = agentName;
+		this.plotAgentPendant = PlotLauncher.runner.getPlotAgent(this.name);
+	}
+	
+	public String getName() {
+		return this.name;
+	}
+	
+	public void setPlotAgentPendant(PlotAwareAg pAgent) {
+		this.plotAgentPendant = pAgent;
 	}
 }

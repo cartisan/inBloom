@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
-import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Agent;
 import jason.bb.DefaultBeliefBase;
 import jason.infra.centralised.BaseCentralisedMAS;
@@ -215,19 +214,20 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 					e.printStackTrace();
 				}
 				plotAg.initializeMoodMapper();
-
-				// setup PlotAgent -> StoryWorldAgent connection
-				plotAg.connectToModel();
 			}
 		}
 	}
 	
-	protected void initzializePlotEnvironment(List<LauncherAgent> agents, ModType model) {
+	protected void initializePlotEnvironment(List<LauncherAgent> agentList, ModType model) {
 		EnvType env = this.getUserEnvironment();
 		model.setEnvironment(env);
 		env.setModel(model);
 		
-		env.initialize(agents);
+		env.initialize(agentList);
+	}
+	
+	protected void initializePlotModel(List<LauncherAgent> agentList) {
+		this.getUserModel().initialize(agentList);
 	}
 	
 	
@@ -266,9 +266,10 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 		this.init(defArgs);
 		this.create();
         
-		this.initzializePlotEnvironment(agents, (ModType) model);
 		this.setupPlotLogger();
+		this.initializePlotEnvironment(agents, (ModType) model);
 		this.initializePlotAgents(agents);
+		this.initializePlotModel(agents);
 	}
 	
 	
@@ -289,12 +290,16 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 		this.finish();
 	}
 	
-	public AffectiveAgent getPlotAgent(String agName) {
+	public PlotAwareAg getPlotAgent(String agName) {
 		return AG_CLASS.cast(PlotLauncher.getRunner().getAg(agName).getTS().getAg());
 	}
 
 	@SuppressWarnings("unchecked")
 	public EnvType getUserEnvironment() {
 		return (EnvType) this.getEnvironmentInfraTier().getUserEnvironment();
+	}
+	
+	public ModType getUserModel() {
+		return (ModType) this.getUserEnvironment().getModel();
 	}
 }
