@@ -98,15 +98,22 @@ public class FunctionalUnits {
 	}
 	
 	private static Vertex makePositive() {
-		return new Vertex("[(+)]");
+		Vertex vertex = new Vertex("+");
+		vertex.addEmotion("love");
+		return vertex;
 	}
 	
 	private static Vertex makeNegative() {
-		return new Vertex("[(-)]");
+		Vertex vertex = new Vertex("-");
+		vertex.addEmotion("hate");
+		return vertex;
 	}
 	
 	private static Vertex makeWild() {
-		return new Vertex("[(*)]");
+		Vertex vertex = new Vertex("*");
+		vertex.addEmotion("love");
+		vertex.addEmotion("hate");
+		return vertex;
 	}
 	
 	private static Edge makeCommunication() {

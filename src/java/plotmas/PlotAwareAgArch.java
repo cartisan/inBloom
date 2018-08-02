@@ -26,7 +26,7 @@ public class PlotAwareAgArch extends AgArch {
 
         for(Literal p:perceptions.orElse(new LinkedList<Literal>())) {
         	if(!(null == p.getAnnot("emotion"))) {
-	    		PlotGraphController.getPlotListener().addEvent(name, p.toString(), Vertex.Type.PERCEPT);
+	    		PlotGraphController.getPlotListener().addEvent(name, "+" + p.toString(), Vertex.Type.PERCEPT);
 	            logger.info(name + " - added perception: " + p.toString());
         	}
         }

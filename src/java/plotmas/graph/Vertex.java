@@ -2,6 +2,7 @@ package plotmas.graph;
 
 import java.util.LinkedList;
 import java.util.UUID;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -114,6 +115,9 @@ public class Vertex implements Cloneable {
 	public String getFunctor() {
 		String removedAnnots = TermParser.removeAnnots(getLabel());
 		String removedTerms = removedAnnots.split("\\(")[0];
+		if(removedTerms.startsWith("+") || removedTerms.startsWith("-")) {
+			removedTerms = removedTerms.substring(1);
+		}
 		if(removedTerms.startsWith("!")) {
 			removedTerms = removedTerms.substring(1);
 		}
@@ -139,6 +143,26 @@ public class Vertex implements Cloneable {
 		}
 		return removedAnnots;
 	}
+	
+	/**
+	 * Returns the source of this vertex.
+	 * Example: <br />
+	 * <pre>
+	 * {@code
+	 * 	eat(bread)[source(self)] -> self
+	 * }
+	 * </pre>
+	 * 
+	 * @return
+	 */
+	public String getSource() {
+		Pattern pattern = Pattern.compile("source\\((?<src>.+)\\)");
+		Matcher matcher = pattern.matcher(this.getLabel());
+		if(!matcher.find()) {
+			return "";
+		}
+		return matcher.group("src");
+	}
 
 	/**
 	 * Implements the string representations of the vertex depending on its type. This determines how vertices will be
@@ -159,7 +183,7 @@ public class Vertex implements Cloneable {
 		case PERCEPT: 	/*Matcher m = NO_ANNOT_PATTERN.matcher(result);
 				        if (m.find())
 				            result = "+" + m.group(1);*/
-						result = "+" + TermParser.removeAnnots(result);
+						result = /*"+" +*/ TermParser.removeAnnots(result);
 						result = appendEmotions(result);
 						break;
 		case EMOTION: 	try {

@@ -31,7 +31,7 @@ public class EdgeLayoutVisitor implements PlotGraphVisitor {
 		}
 		Collection<Edge> termEdges = this.graph.getInEdges(vertex);
 		for(Edge tEdge : termEdges) {
-			if(tEdge.getType() == Edge.Type.TERMINATION) {
+			if(tEdge.getType() == Edge.Type.TERMINATION || tEdge.getType() == Edge.Type.EQUIVALENCE) {
 				Vertex terminationSource = this.graph.getSource(tEdge);
 				int lane = this.getFreeLaneRight();
 				this.occupanceRight[lane] = terminationSource;

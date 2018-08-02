@@ -4,6 +4,7 @@ import jason.asSemantics.CircumstanceListener;
 import jason.asSemantics.Event;
 import jason.asSemantics.Intention;
 import plotmas.graph.PlotGraphController;
+import plotmas.graph.Vertex;
 
 public class PlotCircumstanceListener implements CircumstanceListener {
 
@@ -16,7 +17,23 @@ public class PlotCircumstanceListener implements CircumstanceListener {
 	}
 	
 	@Override
-	public void eventAdded(Event e) { }
+	public void eventAdded(Event e) {
+		if(!e.getTrigger().isAchvGoal()) {
+			String toAdd = "";
+			String source = "";
+			// If it has source(self) (i.e. is mental note) and has an intention (i.e. a source within the agent's reasoning)
+			// then change the source from self to whatever the source is.
+			if(e.getTrigger().toString().endsWith("[source(self)]") && e.getIntention() != null) {
+				toAdd = e.getTrigger().toString().split("\\[source\\(self\\)\\]")[0];
+				source = String.format("[source(%s)]",
+						e.getIntention().peek().getTrigger().getLiteral().toString());
+				toAdd += source;
+			} else {
+				toAdd = e.getTrigger().toString();
+			}
+			PlotGraphController.getPlotListener().addEvent(name, toAdd, Vertex.Type.PERCEPT);
+		}
+	}
 
 	@Override
 	public void intentionAdded(Intention i) { }

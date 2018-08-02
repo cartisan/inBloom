@@ -396,28 +396,12 @@ public class State {
 		UnitVertexType t1 = UnitVertexType.typeOf(plotVertex);
         UnitVertexType t2 = UnitVertexType.typeOf(g2.getVertex(v2));
         if(t2 == UnitVertexType.WILDCARD) {
-        	return t1 == UnitVertexType.POSITIVE || t1 == UnitVertexType.NEGATIVE;
+        	return t1 != UnitVertexType.INTENTION;
         }
-        Collection<UnitVertexType> equivalenceTypes = new HashSet<UnitVertexType>();
-        findUnitVertexTypeEquivalence(plotVertex, equivalenceTypes);
-        
-        for(UnitVertexType type : equivalenceTypes) {
-        	if(type != UnitVertexType.NONE && type == t2) {
-        		return true;
-        	}
+        if(t1 == UnitVertexType.WILDCARD) {
+        	return t2 != UnitVertexType.INTENTION;
         }
         return t1 != UnitVertexType.NONE && t1 == t2;
-	}
-	
-	private void findUnitVertexTypeEquivalence(Vertex v, Collection<UnitVertexType> result) {
-		Collection<Edge> outEdges = g1.getOutEdges(v);
-        for(Edge e : outEdges) {
-        	if(e.getType() == Edge.Type.EQUIVALENCE) {
-        		Vertex source = g1.getDest(e);
-        		result.add(UnitVertexType.typeOf(source));
-        		findUnitVertexTypeEquivalence(source, result);
-        	}
-        }
 	}
 	
 	private boolean checkEdgeCompatibility(int v1, int v2) {

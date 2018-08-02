@@ -1,5 +1,6 @@
 package plotmas.graph.isomorphism;
 
+import jason.asSemantics.Emotion;
 import plotmas.graph.Vertex;
 
 enum UnitVertexType {
@@ -9,16 +10,22 @@ enum UnitVertexType {
 		if(!v.getIntention().isEmpty()) {
 			return UnitVertexType.INTENTION;
 		}
-		String vs = v.toString();
-		char valence = vs.charAt(vs.length() - 3);
-		if(valence == '+') {
+		boolean hasPositive = false;
+		boolean hasNegative = false;
+		for(String emotion : Emotion.getAllEmotions()) {
+			if(v.hasEmotion(emotion)) {
+				hasPositive |= Emotion.getEmotion(emotion).getP() > 0;
+				hasNegative |= Emotion.getEmotion(emotion).getP() < 0;
+			}
+		}
+		if(hasPositive && hasNegative) {
+			return UnitVertexType.WILDCARD;
+		}
+		if(hasPositive) {
 			return UnitVertexType.POSITIVE;
 		}
-		if(valence == '-') {
+		if(hasNegative) {
 			return UnitVertexType.NEGATIVE;
-		}
-		if(valence == '*') {
-			return UnitVertexType.WILDCARD;
 		}
 		return UnitVertexType.NONE;
 	}

@@ -1,6 +1,5 @@
 package plotmas.graph;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -132,35 +131,12 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 				continue;
 			}
 			
-			if((targetEvent.getWithoutAnnotation().equals(emotion.getCause())) 
+			String targetString = targetEvent.getWithoutAnnotation();
+			if(targetString.startsWith("-") || targetString.startsWith("+")) {
+				targetString = targetString.substring(1);
+			}
+			if((targetString.equals(emotion.getCause())) 
 					& !(targetEvent.hasEmotion(emotion.getName()))) {
-				boolean hasAnyEmotion = false;
-				for(String emot : Emotion.getAllEmotions()) {
-					if(targetEvent.hasEmotion(emot)) {
-						hasAnyEmotion = true;
-						break;
-					}
-				}
-				if(hasAnyEmotion) {
-					this.removeVertex(vertex);
-					Vertex clonedEvent = targetEvent.clone();
-					Collection<Edge> edges = graph.getOutEdges(targetEvent);
-					Edge temp = null;
-					for(Edge e : edges) {
-						if(e.getType() == Edge.Type.TEMPORAL) {
-							temp = e;
-							break;
-						}
-					}
-					Vertex next = graph.getDest(temp);
-					graph.removeEdge(temp);
-					graph.addVertex(clonedEvent);
-					clonedEvent.addEmotion(emotion.getName());
-					graph.addEdge(new Edge(Edge.Type.TEMPORAL), targetEvent, clonedEvent);
-					graph.addEdge(new Edge(Edge.Type.TEMPORAL), clonedEvent, next);
-					graph.addEdge(new Edge(Edge.Type.EQUIVALENCE), targetEvent, clonedEvent);
-					break;
-				} 
 				
 				targetEvent.addEmotion(emotion.getName());
 				this.removeVertex(vertex);
@@ -173,7 +149,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	public void visitPercept(Vertex vertex) {
 		if(!this.eventList.isEmpty()) {
 			for(Vertex targetEvent : this.eventList) {
-				if(targetEvent.getType() == Vertex.Type.EVENT &&
+				if(targetEvent.getType() != Vertex.Type.PERCEPT &&
 					targetEvent.getFunctor().equals(vertex.getFunctor())) {
 					this.removeVertex(vertex);
 					return;
@@ -190,7 +166,17 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	
 	@Override
 	public void visitIntention(Vertex vertex) {
+		this.lookForPerseverance(vertex);
 		this.attachMotivation(vertex);
+	}
+	
+	private void lookForPerseverance(Vertex vertex) {
+		for(Vertex target : this.eventList) {
+			if(target.getIntention().equals(vertex.getIntention())) {
+				graph.addEdge(new Edge(Edge.Type.EQUIVALENCE), vertex, target);
+				return;
+			}
+		}
 	}
 	
 	private void attachMotivation(Vertex vertex) {
