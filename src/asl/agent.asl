@@ -154,7 +154,7 @@ wish(relax).
 
 +punished(L) : true <- 
 	-punished(L);
-	.succeed_goal(punished(_)).
+	.drop_intention(punished(_)).
 	
 /********************************************/
 /***** Plans  *******************************/
