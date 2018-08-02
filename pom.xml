@@ -20,6 +20,11 @@
   		<artifactId>guava</artifactId>
   		<version>21.0</version>
   	</dependency>
+    <dependency>
+        <groupId>org.freehep</groupId>
+        <artifactId>freehep-graphicsio</artifactId>
+	    <version>2.4</version>
+    </dependency>	
   	<dependency>
   		<groupId>net.sf.jung</groupId>
   		<artifactId>jung-graph-impl</artifactId>
@@ -29,6 +34,21 @@
   		<groupId>net.sf.jung</groupId>
   		<artifactId>jung-visualization</artifactId>
   		<version>2.1.1</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.freehep</groupId>
+  		<artifactId>freehep-graphicsio-svg</artifactId>
+  		<version>2.4</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.freehep</groupId>
+  		<artifactId>freehep-graphicsio-pdf</artifactId>
+  		<version>2.4</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.freehep</groupId>
+  		<artifactId>freehep-graphicsio-emf</artifactId>
+  		<version>2.4</version>
   	</dependency>
   </dependencies>
 </project>
