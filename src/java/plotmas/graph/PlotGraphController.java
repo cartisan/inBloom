@@ -5,24 +5,19 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
-import javax.imageio.ImageIO;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.freehep.graphicsbase.util.export.ExportDialog;
 import org.jfree.ui.RefineryUtilities;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
@@ -178,35 +173,15 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	 * @throws IOException
 	 */
 	private void doSaveAs() throws IOException {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(new File("~"));
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("PNG_Image_Files", "png");
-        fileChooser.addChoosableFileFilter(filter);
-        fileChooser.setFileFilter(filter);
+        // instantiate and configure image-able visualization viewer
+        VisualizationImageServer<Vertex, Edge> vis =
+        	    new VisualizationImageServer<Vertex, Edge>(this.visViewer.getGraphLayout(),
+        	    										   this.visViewer.getGraphLayout().getSize());
 
-        int option = fileChooser.showSaveDialog(this);
-        if (option == JFileChooser.APPROVE_OPTION) {
-            String filename = fileChooser.getSelectedFile().getPath();
-            if (!filename.endsWith(".png")) {
-                filename = filename + ".png";
-            }
-            
-            // instantiate and configure image-able visualization viewer
-            VisualizationImageServer<Vertex, Edge> vis =
-            	    new VisualizationImageServer<Vertex, Edge>(this.visViewer.getGraphLayout(),
-            	    										   this.visViewer.getGraphLayout().getSize());
+        setUpAppearance(vis);
 
-            setUpAppearance(vis);
-
-        	// Create the buffered image
-        	BufferedImage img = (BufferedImage) vis.getImage(
-        	    new Point2D.Double(this.visViewer.getGraphLayout().getSize().getWidth() / 2,
-        	    				   this.visViewer.getGraphLayout().getSize().getHeight() / 2),
-        	    				   new Dimension(this.visViewer.getGraphLayout().getSize()));
-
-            // save image
-    		ImageIO.write(img, "png", new File(filename));
-        }
+        ExportDialog export = new ExportDialog();
+        export.showExportDialog(vis, "Export view as ...", vis, "export");
 	}
 
 	public JPopupMenu getPopup() {
