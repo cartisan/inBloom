@@ -33,10 +33,9 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     }
     
 	@Override
-    public boolean executeAction(String agentName, Structure action) {
-		// let the PlotEnvironment update the plot graph, initializes result as false
-		boolean result = super.executeAction(agentName, action);
-    	Character agent = getModel().getCharacter(agentName);
+    protected boolean doExecuteAction(String agentName, Structure action) {
+		boolean result = false;
+		Character agent = getModel().getCharacter(agentName);
     	
     	if (action.getFunctor().equals("farm_work")) {
     		result = getModel().farmWork(agent);
@@ -92,7 +91,6 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
 			result = agent.relax();
     	}
     	
-    	pauseOnRepeat(agentName, action);
     	return result;
     }
 }

@@ -114,11 +114,18 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     }
     
 	/**
-	 * Override this method in your subclass in order to relay ASL agent's action requests to the appropriate
-	 * method in the {@link plotmas.storyworld.model Model}, which will decide if it succeeds and how if affects the
-	 * storyworld.
-	 * 
-	 * @see plotmas.stories.little_red_hen.FarmEnvironment
+	 * This method is called by the Jason framework in order to determine, which result an agent's action has, and 
+	 * to compute potentially effects on the model.<br>
+	 * It performs the following managing tasks:
+	 * <ul>
+	 *  <li>checking whether pause mode is on and execution needs to wait</li>
+	 *  <li>relay action to the plot graph</li>
+	 *  <li>execute the action</li>
+	 *  <li>allow model to check if its state changed due to action execution</li> 
+	 *  <li>switch to pause mode if nothing interesting happens</li>
+	 * </ul>
+	 * Do not override it to implement domain-specific action handling, for that see 
+	 * {@linkplain #doExecuteAction(String, Structure)}.
 	 */
 	@Override
     public boolean executeAction(String agentName, Structure action) {
@@ -127,16 +134,44 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		
     	// add attempted action to plot graph
     	PlotGraphController.getPlotListener().addEvent(agentName, action.toString(), getStep());
+    	
+    	// let the domain specific subclass handle the actual action execution
+    	// ATTENTION: this is were domain-specific action handling code goes
+    	boolean result = this.doExecuteAction(agentName, action);
     	logger.info(String.format("%s performed %s", agentName, action.toString()));
+    	
+    	// allow model to see if action resulted in state change
+    	this.getModel().noteStateChanges(agentName, action.toString());
+		
+    	// switch on pause mode if nothing happens
+    	pauseOnRepeat(agentName, action);
+    	
+		return result;
+	}
+
+	/**
+	 * You need to override this method in your subclass in order to relay ASL agent's action requests to the appropriate
+	 * method in the {@link plotmas PlotModel}, which will decide if it succeeds and how if affects the storyworld.
+	 * 
+	 * This methods gets called by {@linkplain #executeAction(String, Structure)}, which in turn is triggered by Jason. 
+	 * 
+	 * @see plotmas.stories.little_red_hen.FarmEnvironment
+	 */
+	protected boolean doExecuteAction(String agentName, Structure action) {
+		PlotLauncher.runner.pauseExecution();
+		logger.severe("SEVERE: doExecuteAction method is not implemented in PlotEnvironment, it's subclass responsibility to implement it");
+		logger.severe("Stopping simulation execution...");
+		PlotLauncher.runner.finish();
 		
 		return false;
 	}
-	
+
 	@Override
 	protected void stepStarted(int step) {
+		logger.info("Step started for environment");
 		if (this.model != null)
 			// Give model opportunity to check for and execute happenings
-			this.model.stepStarted(step);
+			this.model.checkHappenings(step);
 		else 
 			logger.warning("field model was not set, but a step " + step + " was started");
 	}
