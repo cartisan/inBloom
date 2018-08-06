@@ -1,5 +1,6 @@
 package plotmas.graph;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,8 +32,9 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
   
     static Logger logger = Logger.getLogger(PlotDirectedSparseGraph.class.getName());
 	
-	private List<Vertex> roots = Lists.newArrayList();
+	private ArrayList<Vertex> roots = Lists.newArrayList();
 	private HashMap<String, Vertex> lastVertexMap = new HashMap<>();			// maps: agentName --> vertex
+	private HashMap<Integer, Vertex> yAxis = new HashMap<>();					// maps: time step --> vertex
 	private Table<String, String, Vertex> senderMap = HashBasedTable.create();	// maps: agentName, message --> vertex
 	
 	/**
@@ -68,29 +70,49 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
      * Returns a list of nodes that represent the roots of each character subgraph.
      * @return
      */
-    public List<Vertex> getRoots() {
+    public ArrayList<Vertex> getRoots() {
 		if (roots.size() > 0) {
 			return roots;
 		}
-		
 		throw new IllegalStateException("Graph was not initialised with root nodes") ;
 	}
+		
+    public Collection<Vertex> getAxisVertices() {
+    	return yAxis.values();
+    }
+    
+	/**
+	 * Creates a new vertex that will be used to represent time-step labels
+	 */
+	private void addToAxis(int step, String label) {
+		Vertex labelV = new Vertex(label, Type.AXIS_LABEL, step);
+		yAxis.put(step, labelV);
+		this.addVertex(labelV);
+	}
 
-	public boolean addRoot(Vertex vertex) {
-    	boolean result = this.addVertex(vertex);
+	public Vertex addRoot(String agName) {
+		Vertex root = new Vertex(agName, Type.ROOT, 0);
+		
+    	boolean result = this.addVertex(root);
     	if (result) {
-    		this.roots.add(vertex);
+    		this.roots.add(root);
+    		this.lastVertexMap.put(root.getLabel(), root);
+    		
+    		// add appropriate label to yAxis
+    		if (!yAxis.containsKey(root.getStep())) {
+    			this.addToAxis(root.getStep(), "time step");
     	}
     	
-    	this.lastVertexMap.put(vertex.getLabel(), vertex);
+    		return root;
+    	}
     	
     	this.vertexAgentMap.put(vertex, vertex.getLabel());
     	
-    	return result;
+    	return null;
     }
 	
-	public synchronized Vertex addEvent(String root, String event, Vertex.Type eventType, Edge.Type linkType) {
-		Vertex newVertex = new Vertex(event, eventType);
+	public synchronized Vertex addEvent(String root, String event, int step, Vertex.Type eventType, Edge.Type linkType) {
+		Vertex newVertex = new Vertex(event, eventType, step);
 		Vertex parent = lastVertexMap.get(root);
 		
 		if (parent.getType() == Vertex.Type.ROOT) {
@@ -102,25 +124,31 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		
 		this.vertexAgentMap.put(newVertex, root);
 		
+		// add appropriate label to yAxis
+		if (!yAxis.containsKey(step)) {
+			this.addToAxis(step, String.valueOf(step));
+		}
+		
+		
 		return newVertex;
 	}
 	
-	public Vertex addMsgSend(String sender, String message) {
+	public Vertex addMsgSend(String sender, String message, int step) {
 		Vertex sendV;
 		// if same message was already send before, use old vertex
 		// helps reusing vertex when multiple recipients
 		if(senderMap.contains(sender, message)) {
 			sendV = senderMap.get(sender, message);
 		} else {
-			sendV = addEvent(sender, message, Vertex.Type.SPEECHACT, Edge.Type.TEMPORAL);
+			sendV = addEvent(sender, message, step, Vertex.Type.SPEECHACT, Edge.Type.TEMPORAL);
 			senderMap.put(sender, message, sendV);
 		}
 		
 		return sendV;
 	}
 	
-	public Vertex addMsgReceive(String receiver, String message, Vertex sendV) {
-		Vertex recV = addEvent(receiver, message, Vertex.Type.LISTEN,  Edge.Type.TEMPORAL);
+	public Vertex addMsgReceive(String receiver, String message, Vertex sendV, int step) {
+		Vertex recV = addEvent(receiver, message, step, Vertex.Type.LISTEN,  Edge.Type.TEMPORAL);
 		this.addEdge(new Edge(Edge.Type.COMMUNICATION), sendV, recV);
 		this.vertexAgentMap.put(recV, receiver);
 		return recV;
@@ -266,19 +294,34 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 */
 	public PlotDirectedSparseGraph cloneInto(PlotDirectedSparseGraph dest) {
 		// BEWARE: lastVertexMap is not cloned, the returned graph is not useable for continuing plotting 
-		
+		PlotDirectedSparseGraph dest = new PlotDirectedSparseGraph();
+				
 		// clone vertices and add them to cloned graph
 		HashMap<Vertex,Vertex> cloneMap = new HashMap<>();		// maps old vertex -> cloned vertex
-	    for (Vertex v : this.getVertices()) {
-	        Vertex clone = v.clone();
+		
+		// clone roots in right order
+		for (Vertex root : roots) {
+	        Vertex clone = root.clone();
 	    	dest.addVertex(clone);
-    		cloneMap.put(v, clone);
+    		cloneMap.put(root, clone);
     		
-    		// if cloned vertex is a root, note that in roots list 
-    		if(clone.getType()==Type.ROOT)
-    			dest.roots.add(clone);
+			dest.roots.add(clone);
+			dest.vertexAgentMap.put(clone, vertexAgentMap.get(v));
+		}
+		
+	    for (Vertex v : this.getVertices()) {
+	    	if (!(v.getType() == Type.ROOT)) {
+	        	Vertex clone = v.clone();
+	    		dest.addVertex(clone);
+    			cloneMap.put(v, clone);
     		
-    		dest.vertexAgentMap.put(clone, vertexAgentMap.get(v));
+    			dest.vertexAgentMap.put(clone, vertexAgentMap.get(v));
+    			
+    			// if cloned vertex is an axis, note that in axis map
+	    		if(this.yAxis.containsValue(v)) {
+	    			dest.yAxis.put(v.getStep(), clone);
+	    		}
+    		}
 	    }
 
 	    // clone edges, make sure that incident vertices are translated into their cloned counterparts

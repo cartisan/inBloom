@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,17 +19,24 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 
 import org.jfree.ui.RefineryUtilities;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.VisualizationImageServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import jason.asSemantics.Message;
-import plotmas.PlotLauncher.LauncherAgent;
+import plotmas.LauncherAgent;
+import plotmas.PlotControlsLauncher;
+import plotmas.PlotLauncher;
 import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.graph.isomorphism.FunctionalUnits;
 import plotmas.graph.isomorphism.UnitFinder;
@@ -43,18 +51,22 @@ import plotmas.helper.Tellability;
  * @author Leonid Berov
  */
 @SuppressWarnings("serial")
-public class PlotGraphController extends JFrame{
+public class PlotGraphController extends JFrame implements PlotmasGraph, ActionListener {
     
+	protected static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
+    
+	/** Singleton instance used to collect the plot */
 	private static PlotGraphController plotListener = null;
 
-	protected static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
+
 	public static Color BGCOLOR = Color.WHITE;
 	
 	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
 	private JComboBox<PlotDirectedSparseGraph> graphTypeList = new JComboBox<>();	// ComboBox that is displayed on the graph to change display type
 	public VisualizationViewer<Vertex, Edge> visViewer = null;
 	private JPanel infoPanel = new JPanel(); // parent of information JLabels
-	
+	private GraphZoomScrollPane scrollPane = null; //panel used to display scrolling bars
+	private JPopupMenu popup = null;	
 	private Tellability analysisResult = null;
 	
 	/**
@@ -89,10 +101,12 @@ public class PlotGraphController extends JFrame{
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		        	PlotGraphController.getPlotListener().dispose();
+					PlotGraphController.getPlotListener().closeGraph();
 		        }
 		    }
 		);
+		
+		this.createPopupMenu();
 		
 		// create and initialize the plot graph the will be created by this listener
 		this.graph = new PlotDirectedSparseGraph();
@@ -100,8 +114,7 @@ public class PlotGraphController extends JFrame{
 		
 		// set up a "named" tree for each character
 		for (LauncherAgent character : characters) {
-			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
-			graph.addRoot(root);
+			this.addCharacter(character.name);
 		}
 		
 		// Initialize functional unit combo box
@@ -132,28 +145,114 @@ public class PlotGraphController extends JFrame{
 		addGraph(FunctionalUnits.ALL_UNITS_GRAPH);
 	}
 	
-	public void addEvent(String character, String event) {
-		this.graph.addEvent(character, event, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
+	
+    /**
+     * Initializes the a popup menu that will appear on left-click.
+     */
+    protected void createPopupMenu() {
+        JPopupMenu result = new JPopupMenu("PlotGraph");
+
+        JMenuItem pngItem = new JMenuItem("Save Graph");
+        pngItem.setActionCommand(SAVE_COMMAND);
+        pngItem.addActionListener(this);
+
+        result.add(pngItem);
+
+        this.popup = result;
+    }
+    
+	/**
+	 * Method which allows this to registered as an ActionListener. Performs the handling of all events
+	 * that result from interactions with UI elements of this JFrame. 
+	 * @param event Event that specifies how to react
+	 */
+	@Override
+	public void actionPerformed(ActionEvent event) {
+        String command = event.getActionCommand();
+        
+        if (command.equals(SAVE_COMMAND)) {
+            try {
+                doSaveAs();
+            }
+            catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "I/O error occurred.", 
+                        "Save Graph", JOptionPane.WARNING_MESSAGE);
+            }
+        } else if (command.equals(CHANGE_VIEW_COMMAND)) {
+	    	@SuppressWarnings("unchecked")
+			JComboBox<String> combo = (JComboBox<String>) event.getSource();
+			String selectedType = (String) combo.getSelectedItem();
+			
+			if(selectedType.equals(GRAPH_TYPES[0])) {
+				Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().graph);
+				PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
+				PlotGraphController.getPlotListener().visViewer.repaint();
+			}
+			else {
+				Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().postProcessThisGraph());
+				PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
+				PlotGraphController.getPlotListener().visViewer.repaint();
+	
+			}
+        }
 	}
 	
-	public void addEvent(String character, String event, Vertex.Type eventType) {
-		this.graph.addEvent(character, event, eventType, Edge.Type.TEMPORAL);
+	/**
+	 * Saves currently displayed plot graph as PNG image. Displays a FileChoose to select name and target dir.
+	 * @throws IOException
+	 */
+	private void doSaveAs() throws IOException {
+        // instantiate and configure image-able visualization viewer
+        VisualizationImageServer<Vertex, Edge> vis =
+        	    new VisualizationImageServer<Vertex, Edge>(this.visViewer.getGraphLayout(),
+        	    										   this.visViewer.getGraphLayout().getSize());
+
+        setUpAppearance(vis);
+
+        ExportDialog export = new ExportDialog();
+        export.showExportDialog(vis, "Export view as ...", vis, "export");
+	}
+
+	public JPopupMenu getPopup() {
+		return this.popup;
+	}
+
+	public void closeGraph() {
+		logger.info("Closing and reseting plot graph view");
+		
+		this.getContentPane().remove(scrollPane);
+    	this.dispose();
+    	
+    	PlotControlsLauncher gui = PlotLauncher.getRunner();
+    	gui.graphClosed(this);
 	}
 	
-	public void addEvent(String character, String event, Edge.Type linkType) {
-		this.graph.addEvent(character, event, Vertex.Type.EVENT, linkType);
+	public void addCharacter(String agName) {
+		this.graph.addRoot(agName);		
+	}	
+	
+	public void addEvent(String character, String event, int step) {
+		this.graph.addEvent(character, event, step, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
 	}
 	
-	public Vertex addMsgSend(Message m, String motivation) {
+	public void addEvent(String character, String event, Vertex.Type eventType, int step) {
+		this.graph.addEvent(character, event, step, eventType, Edge.Type.TEMPORAL);
+	}
+	
+	public void addEvent(String character, String event, Edge.Type linkType, int step) {
+		this.graph.addEvent(character, event, step, Vertex.Type.EVENT, linkType);
+	}
+	
+	public Vertex addMsgSend(Message m, String motivation, int step) {
 		// Format message to intention format, i.e. "!performative(content)"
-		Vertex senderV = this.graph.addMsgSend(m.getSender(), "!" + m.getIlForce() + "(" + m.getPropCont().toString() + ")" + motivation);
+		Vertex senderV = this.graph.addMsgSend(m.getSender(), "!" + m.getIlForce() + "(" + m.getPropCont().toString() + ")" + motivation, step);
 		return senderV;
 	}
 
-	public Vertex addMsgReceive(Message m, Vertex senderV) {
+	public Vertex addMsgReceive(Message m, Vertex senderV, int step) {
 		// Add an "!" to the content if message was an achieve performative
 		// "+", to have the percept format, is added in Vertex#toString
-		Vertex recV = this.graph.addMsgReceive(m.getReceiver(), (m.getIlForce().startsWith("achieve") ? "!" : "") + m.getPropCont().toString(), senderV);
+		Vertex recV = this.graph.addMsgReceive(m.getReceiver(), (m.getIlForce().startsWith("achieve") ? "!" : "") + m.getPropCont().toString(), senderV, step);
 		return recV;
 	}
 	
@@ -249,64 +348,33 @@ public class PlotGraphController extends JFrame{
 	 * Plots and displays the graph that is selected by {@code this.drawnGraph}.
 	 * @return the displayed JFrame
 	 */
-	public JFrame visualizeGraph() {
-		// Maybe just implement custom renderer instead of all the transformers?
-		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
-		
-		// Tutorial:
-		// http://www.grotto-networking.com/JUNG/JUNG2-Tutorial.pdf
-		
+	public PlotGraphController visualizeGraph() {
 		Layout<Vertex, Edge> layout = new PlotGraphLayout((PlotDirectedSparseGraph)this.graphTypeList.getSelectedItem());
 		
 		// Create a viewing server
 		this.visViewer = new VisualizationViewer<Vertex, Edge>(layout);
-		this.visViewer.setPreferredSize(new Dimension(1500, 600)); // Sets the viewing area
-		this.visViewer.setBackground(BGCOLOR);
+		this.setUpAppearance(visViewer);
 		
 		// Add a mouse to translate the graph.
 		PluggableGraphMouse gm = new PluggableGraphMouse();
 		gm.add(new SelectingTranslatingGraphMousePlugin());
 		this.visViewer.setGraphMouse(gm);
-		
-		// modify vertices
-		this.visViewer.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-		this.visViewer.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
-		this.visViewer.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
-		this.visViewer.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
-		this.visViewer.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
-		this.visViewer.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
-		
-		// modify edges
-		this.visViewer.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
-		this.visViewer.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		this.visViewer.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		this.visViewer.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		this.visViewer.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
 
 		// enable scrolling control bar
-		GraphZoomScrollPane scrollPane = new GraphZoomScrollPane(visViewer);
+		this.scrollPane = new GraphZoomScrollPane(visViewer);
 
 		// c information panel
 		infoPanel.setLayout(new FlowLayout(SwingConstants.LEADING, 15, 5));
 		
-		// second: activate a listener that redraws the plot when selection changes. Careful here: order with 1. matters
-		this.graphTypeList.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				@SuppressWarnings("unchecked")
-				JComboBox<PlotDirectedSparseGraph> combo = (JComboBox<PlotDirectedSparseGraph>) event.getSource();
-				PlotDirectedSparseGraph selectedGraph = (PlotDirectedSparseGraph) combo.getSelectedItem();
-				
-				Layout<Vertex, Edge> layout = new PlotGraphLayout(selectedGraph);
-				PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
-				PlotGraphController.getPlotListener().visViewer.repaint();
-			}
-		});
+		// second: register a listener that redraws the plot when selection changes. Careful here: order with last command matters
+		this.graphTypeList.setActionCommand(CHANGE_VIEW_COMMAND);
+		this.graphTypeList.addActionListener(this);
+		this.add(graphTypeList, BorderLayout.NORTH);
 		
 		this.add(graphTypeList, BorderLayout.NORTH);	
 		this.add(infoPanel, BorderLayout.SOUTH);
 		
-		this.getContentPane().add(scrollPane);
+		this.getContentPane().add(this.scrollPane);
 		this.pack();
 		
 		RefineryUtilities.positionFrameOnScreen(this, 0.0, 0.2);
@@ -315,4 +383,62 @@ public class PlotGraphController extends JFrame{
 		
 		return this;
 	}
+	
+
+	/**
+	 * Sets up an VisualizationServer instance with all the details and renders defining the graphs appearance. 
+	 * @param vis
+	 */
+	private void setUpAppearance(BasicVisualizationServer<Vertex, Edge> vis) {
+		vis.setBackground(BGCOLOR);
+		vis.setPreferredSize(new Dimension(1500, 600)); // Sets the viewing area
+		
+		// modify vertices
+		vis.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+		vis.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
+		vis.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
+		vis.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
+		vis.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
+		vis.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+		
+		// modify edges
+		vis.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
+		vis.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
+	}
+	
+	/*************************** for testing purposes ***********************************/
+	private static PlotDirectedSparseGraph createTestGraph() {
+		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
+		
+		// Create Trees for each agent and add the roots
+		Vertex v1 = graph.addRoot("hen");
+		Vertex v2 = graph.addRoot("dog");
+		Vertex v3 = graph.addRoot("cow"); 
+		
+		Vertex v4 = new Vertex("cazzegiare", 1); 
+		Vertex v5 = new Vertex("cazzegiare", 1); 
+		Vertex v6 = new Vertex("askHelp(plant(wheat))", 1);
+		Vertex v7 = new Vertex("plant(wheat)", 2);
+		
+		// simulate adding vertices later
+		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v6);
+		graph.addEdge(new Edge(), v6, v7);
+		graph.addEdge(new Edge(Edge.Type.ROOT), v2, v4);
+		graph.addEdge(new Edge(Edge.Type.ROOT), v3, v5);
+		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), v6, v5);
+		
+		return graph;
+	}
+	
+	public static void main(String[] args) {
+		PlotDirectedSparseGraph forest = createTestGraph();
+		PlotGraphController.instantiatePlotListener(new ArrayList<LauncherAgent>());
+		PlotGraphController controller = PlotGraphController.getPlotListener();
+		controller.drawnGraph = forest;
+		controller.visualizeGraph();
+	}
+		
 }

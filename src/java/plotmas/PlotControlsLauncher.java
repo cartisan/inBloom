@@ -2,6 +2,8 @@ package plotmas;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -9,12 +11,12 @@ import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
 import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotGraphController;
+import plotmas.graph.PlotmasGraph;
 import plotmas.helper.PlotFormatter;
 
 /**
@@ -23,14 +25,15 @@ import plotmas.helper.PlotFormatter;
  * @author Leonid Berov
  */
 public class PlotControlsLauncher extends RunCentralisedMAS {
-	public static PlotLauncher runner = null;
+	public static PlotLauncher<?,?> runner = null;
+	
+	protected static boolean COMPRESS_GRAPH = true;	// used to determine if PlotGraph should be compressed before drawing
 	protected static Level LOG_LEVEL = Level.INFO;
 //	protected static Level LOG_LEVEL = Level.FINE;
 	
 	private JButton pauseButton;
 	private JButton drawButton;
-	private JFrame plotGraph;
-	private JFrame moodGraph;
+	private LinkedList<PlotmasGraph> graphs = new LinkedList<PlotmasGraph>();
 	protected boolean isDraw = false;
 
 	protected boolean showGui = true;
@@ -98,31 +101,44 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	}
 
 	protected void drawGraphs() {
-		this.drawButton.setText("Close Graphs");
-		this.pauseExecution();
+		if(!MASConsoleGUI.get().isPause())
+			this.pauseExecution();
 		
 		// create and visualize plot graph
-		this.plotGraph = PlotGraphController.getPlotListener().visualizeGraph();
+		this.graphs.add(PlotGraphController.getPlotListener().visualizeGraph(COMPRESS_GRAPH));
 		
 		// create and visualize mood graph
 		MoodGraph.getMoodListener().createData();
-		this.moodGraph = MoodGraph.getMoodListener().visualizeGraph();
+		this.graphs.add(MoodGraph.getMoodListener().visualizeGraph());
 		
 		this.isDraw = true;
+		this.drawButton.setText("Close Graphs");
 	}
 
+	
+	public void graphClosed(PlotmasGraph g) {
+		this.graphs.remove(g);
+		if(this.graphs.isEmpty()) {
+			this.resetGraphView();
+		}
+
+	}
+	
 	protected void closeGraphs() {
-		this.drawButton.setText("Show Graphs");
-		
 		// close windows graph
-		this.plotGraph.dispose();
-		this.moodGraph.dispose();
+		Iterator<PlotmasGraph> it = this.graphs.iterator();
+		while(it.hasNext()){
+			PlotmasGraph g = it.next();
+			it.remove();
+			g.closeGraph();
+		}
+	}
 		
-		this.isDraw = false;
-		
+	public void resetGraphView() {
 		// release pointers
-		this.plotGraph = null;
-		this.moodGraph = null;
+		this.graphs = new LinkedList<PlotmasGraph>();
+		this.isDraw = false;
+		this.drawButton.setText("Show Graphs");
 	}
 
 	@Override

@@ -7,6 +7,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 
+import javax.swing.JPopupMenu;
+
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
@@ -72,6 +74,13 @@ public class SelectingTranslatingGraphMousePlugin extends TranslatingGraphMouseP
 			
             e.consume();
 		}
+    	
+    	if (e.isPopupTrigger()) {
+    		JPopupMenu popup = PlotGraphController.getPlotListener().getPopup(); 
+            if (popup != null) {
+            	popup.show(PlotGraphController.getPlotListener(), e.getX(), e.getY());
+            }
+        }
 	}
 
 
@@ -95,5 +104,12 @@ public class SelectingTranslatingGraphMousePlugin extends TranslatingGraphMouseP
 			
             e.consume();
 		}
+		
+    	if (e.isPopupTrigger()) {
+    		JPopupMenu popup = PlotGraphController.getPlotListener().getPopup(); 
+            if (popup != null) {
+            	popup.show(PlotGraphController.getPlotListener(), e.getX(), e.getY());
+            }
+        }
     }
 }

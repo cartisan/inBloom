@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.LongStream;
 
@@ -18,7 +19,11 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.RefineryUtilities;
 
-import plotmas.PlotAwareAg;
+import com.google.common.collect.ImmutableMap;
+
+import plotmas.PlotControlsLauncher;
+import plotmas.PlotLauncher;
+import plotmas.PlotModel;
 
 
 /**
@@ -29,8 +34,12 @@ import plotmas.PlotAwareAg;
  * @author Leonid Berov
  */
 @SuppressWarnings("serial")
-public class MoodGraph extends JFrame {
+public class MoodGraph extends JFrame implements PlotmasGraph {
 
+	public static final Map<Boolean, String> X_AXIS_LABEL_MAP = ImmutableMap.of(
+		    true, "plot time in ms",
+		    false, "plot time in environment steps"
+	);
 	protected static Logger logger = Logger.getLogger(MoodGraph.class.getName());
 	public static String[] MOOD_DIMS = new String[] {"pleasure", "arousal", "dominance"};
 	private static MoodGraph moodListener = null;
@@ -61,17 +70,19 @@ public class MoodGraph extends JFrame {
 	public void createData() {
 		this.deleteGraphData();
 		
-		Long startTime = PlotAwareAg.moodMapper.latestStartTime();
+		logger.fine("Using following mood data to create mood graph:\n" + PlotModel.moodMapper.toString());
+		
+		Long startTime = PlotModel.moodMapper.latestStartTime();
 		startTime = startTime - (startTime % 10) + 10;		// round up start time to next multiple of 10
 				
-		for(String agName: PlotAwareAg.moodMapper.mappedAgents()) {
-			Long endTime = PlotAwareAg.moodMapper.latestMoodEntry(agName);
+		for(String agName: PlotModel.moodMapper.mappedAgents()) {
+			Long endTime = PlotModel.moodMapper.latestMoodEntry(agName);
 			
 			// for every 10ms from start time until end time sample mood and put it into the graph
 			Iterator<Long> it = LongStream.iterate(startTime, n -> n+1).limit(endTime / 1 + 1).iterator();
 			while(it.hasNext()) {
 				Long x_val = it.next();
-				Double sampledMood = PlotAwareAg.moodMapper.sampleMood(agName, x_val).get(selectedMoodDimension);
+				Double sampledMood = PlotModel.moodMapper.sampleMood(agName, x_val).get(selectedMoodDimension);
 				this.addMoodPoint(sampledMood, x_val, agName);
 			}
 		}
@@ -84,7 +95,7 @@ public class MoodGraph extends JFrame {
 		
 		JFreeChart lineChart = ChartFactory.createLineChart(
 				title,
-				"plot time in ms", this.selectedMoodDimension,
+				X_AXIS_LABEL_MAP.get(PlotModel.X_AXIS_IS_TIME), this.selectedMoodDimension,
 				data,
 				PlotOrientation.VERTICAL,
 				true,true,false);
@@ -96,11 +107,11 @@ public class MoodGraph extends JFrame {
 		this.moodData.clear();
 	}
 	
-	public JFrame visualizeGraph() {
+	public MoodGraph visualizeGraph() {
 		return this.visualizeGraph(this.moodData);
 	}
 	
-	public JFrame visualizeGraph(DefaultCategoryDataset data) {
+	public MoodGraph visualizeGraph(DefaultCategoryDataset data) {
 		// create line chart
 		this.createChart(data);
 		ChartPanel chartPanel = new ChartPanel(this.chart);
@@ -133,7 +144,7 @@ public class MoodGraph extends JFrame {
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		        	MoodGraph.getMoodListener().dispose();
+		        	MoodGraph.getMoodListener().closeGraph();
 		        }
 		    }
 		);
@@ -145,6 +156,13 @@ public class MoodGraph extends JFrame {
 		return this;
 	}
 
+	
+	public void closeGraph() {
+		this.dispose();
+    	
+    	PlotControlsLauncher gui = PlotLauncher.getRunner();
+    	gui.graphClosed(this);
+	}
 	
 	private void addMoodPoint(Double value, Long time, String agName) {
 		this.moodData.addValue(value, agName, time);

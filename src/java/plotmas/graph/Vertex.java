@@ -17,14 +17,17 @@ import plotmas.helper.TermParser;
  */
 public class Vertex implements Cloneable {
 
+	static protected Logger logger = Logger.getLogger(Vertex.class.getName());
+	
 	//removes annotations from literal-style stings
 	public static Pattern NO_ANNOT_PATTERN = Pattern.compile("(.+?\\(.+?\\))");
 	
-	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, LISTEN, PERCEPT, INTENTION }
+	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, LISTEN, PERCEPT, INTENTION, AXIS_LABEL }
 
 	private String id;
 	private String label;
 	private Type type;
+	private int step;
 	
 	private LinkedList<String> emotions = new LinkedList<>();
 	
@@ -33,10 +36,6 @@ public class Vertex implements Cloneable {
 	 * in the plot graph visualisation. Set by EdgeLayoutVisitor.
 	 */
 	public int minWidth;
-	
-	public void setType(Type type) {
-		this.type = type;
-	}
 
 	/**
 	 * Returns the label of this string if it is an intention.
@@ -66,8 +65,8 @@ public class Vertex implements Cloneable {
 	 * Creates a default instance of vertex, with type {@link Vertex.Type#EVENT}.
 	 * @param label vertex content
 	 */
-	public Vertex(String label) {
-		this(label, Vertex.Type.EVENT);
+	public Vertex(String label, int step) {
+		this(label, Vertex.Type.EVENT, step);
 	}
 	
 	/**
@@ -75,10 +74,11 @@ public class Vertex implements Cloneable {
 	 * @param label vertex content
 	 * @param type possible types see {@link Vertex.Type}
 	 */
-	public Vertex(String label, Type type) {
+	public Vertex(String label, Type type, int step) {
 		this.label = label;
 		this.id = UUID.randomUUID().toString();
 		this.type = type;
+		this.step = step;
 	}
 	
 	public String getId() {
@@ -99,6 +99,14 @@ public class Vertex implements Cloneable {
 	
 	public Type getType() {
 		return type;
+	}
+
+	public void setType(Type type) {
+		this.type = type;
+	}
+	
+	public int getStep() {
+		return step;
 	}
 
 	/**
@@ -206,7 +214,7 @@ public class Vertex implements Cloneable {
 	
 	@Override
 	public Vertex clone() {
-		return new Vertex(this.label, this.type);
+		return new Vertex(this.label, this.type, this.step);
 	}
 
 	/**
