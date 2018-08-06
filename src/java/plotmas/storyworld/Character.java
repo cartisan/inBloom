@@ -10,6 +10,7 @@ import jason.asSemantics.Personality;
 import plotmas.LauncherAgent;
 import plotmas.PlotLauncher;
 import plotmas.PlotModel;
+import plotmas.helper.PerceptAnnotation;
 import plotmas.jason.PlotAwareAg;
 
 
@@ -87,9 +88,9 @@ public class Character {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			receiver.receive(item, this);
-			this.model.getEnvironment().addEventPerception(name,
-					String.format("shared(%s,%s)" + PlotModel.addTargetedEmotion("pride", "self"),
-								  item.literal(), receiver.name));
+			this.model.getEnvironment().addEventPerception(name, 
+														   String.format("shared(%s,%s)", item.literal(), receiver.name),
+														   new PerceptAnnotation().addTargetedEmotion("pride", "self"));
 			return true;
 		}
 		
@@ -109,8 +110,8 @@ public class Character {
 											   .toString();
 			
 			this.model.getEnvironment().addEventPerception(name,
-					String.format("share(%s,%s)" + PlotModel.addTargetedEmotion("pride", "self"),
-								  item.literal(), recList));
+														   String.format("share(%s,%s)", item.literal(), recList),
+														   new PerceptAnnotation().addTargetedEmotion("pride", "self"));
 			
 			logger.info(this.name + " shared some " + item.literal() + ".");
 			
@@ -124,8 +125,8 @@ public class Character {
 		this.addToInventory(item);
 		
 		this.model.getEnvironment().addEventPerception(name,
-				String.format("receive(%s)" + PlotModel.addTargetedEmotion("gratitude", "self"),
-							  item.literal(), this.name));
+													   String.format("receive(%s,%s)", item.literal(), this.name),
+													   new PerceptAnnotation().addTargetedEmotion("gratitude", "self"));
 		
 		//logger.info(this.name + " received some " + item.literal() + ".");
 		logger.info(this.name + " received some " + item.getItemName() + ".");
@@ -141,7 +142,8 @@ public class Character {
 			if (item.isEdible()) {
 				this.removeFromInventory(item);
 				this.model.getEnvironment().addEventPerception(name, 
-						String.format("eat(%s)" + PlotModel.addEmotion("satisfaction"), item.literal()));
+															   String.format("eat(%s)", item.literal()),
+															   PerceptAnnotation.fromEmotion("satisfaction"));
 				
 				// in theory: here double dispatch
 				// so food can affect agent in specific
@@ -156,7 +158,7 @@ public class Character {
 	}
 	
 	public boolean relax() {
-		this.model.getEnvironment().addEventPerception(name, "relax" + PlotModel.addEmotion("joy"));
+		this.model.getEnvironment().addEventPerception(name, "relax", PerceptAnnotation.fromEmotion("joy"));
 		return true;
 	}
 	

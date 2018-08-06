@@ -24,6 +24,7 @@ import jason.runtime.MASConsoleGUI;
 import jason.runtime.RuntimeServicesInfraTier;
 import jason.util.Pair;
 import plotmas.graph.PlotGraphController;
+import plotmas.helper.PerceptAnnotation;
 import plotmas.jason.PlotAwareAg;
 import plotmas.jason.PlotAwareAgArch;
 import plotmas.jason.PlotAwareCentralisedAgArch;
@@ -374,15 +375,26 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	}
 
 	/**
-	 * Adds 'event' to the list of events that need to be added to agentName's perception list this reasoning step.
+	 * Adds 'percept' to the list of events that need to be added to agentName's perception list this reasoning step.
 	 */	
-	public void addEventPerception(String agentName, String event) {
-		List<String> eventList = this.getListCurrentEvents(agentName);		
-		eventList.add(event);
+	public void addEventPerception(String agentName, String percept) {
+		List<String> eventList = this.getListCurrentEvents(agentName);
+		eventList.add(percept);
 		this.currentEventsMap.put(agentName, eventList);
 	}
 	
-    
+	/**
+	 * Adds 'percept' to the list of events that need to be added to agentName's perception list this reasoning step.
+	 */	
+	public void addEventPerception(String agentName, String percept, PerceptAnnotation annot) {
+		List<String> eventList = this.getListCurrentEvents(agentName);
+		
+		String event = percept + annot.toString();
+		
+		eventList.add(event);
+		this.currentEventsMap.put(agentName, eventList);
+	}
+
     /********************** Methods for pausing and continuing the environment *****************************/
 	/* necessary, because Jason's pause mode sets the GUI waiting, which means no logging output is possible
 	 * However, we want to be logging while processing graphs in pause mode, so we reroute logging output to

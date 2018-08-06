@@ -2,6 +2,7 @@ package plotmas.graph;
 
 import java.util.LinkedList;
 import java.util.UUID;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -16,6 +17,8 @@ import jason.asSyntax.parser.ParseException;
  */
 public class Vertex implements Cloneable {
 
+	static protected Logger logger = Logger.getLogger(Vertex.class.getName());
+	
 	//removes annotations from literal-style stings
 	public static Pattern NO_ANNOT_PATTERN = Pattern.compile("(.+?\\(.+?\\))");
 	

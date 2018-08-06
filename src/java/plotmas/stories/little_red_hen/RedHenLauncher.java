@@ -50,9 +50,10 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         // Initialize MAS with a scheduled happening director
         ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
         FarmModel model = new FarmModel(agents, hapDir);
-        
-        // Execute MAS
-        runner.initialize(args, model, agents, "agent");
+
+		// Execute MAS
+		runner.initialize(args, model, agents, "agent");
 		runner.run();
+        
 	}
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import plotmas.LauncherAgent;
 import plotmas.PlotModel;
+import plotmas.helper.PerceptAnnotation;
 import plotmas.storyworld.HappeningDirector;
 import plotmas.storyworld.Item;
 import plotmas.storyworld.Character;
@@ -18,27 +19,27 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	public static enum WHEAT_STATE {SEED, GROWING, RIPE, HARVESTED, FLOUR;}
 
 	public Wheat wheat;
-
 	public int actionCount;
 	public boolean wheatFound;
 	
 	
 	public FarmModel(List<LauncherAgent> agents, HappeningDirector hapDir) {
 		super(agents, hapDir);
-
+		
 		this.actionCount = 0;
 		this.wheat = null;
 		this.wheatFound = false;
 		
 		FindCornHappening findCorn = new FindCornHappening(
 			// hen finds wheat after 4 farm work actions
-			(FarmModel model, Integer step) -> {
-            		if((this.actionCount > 3) & (!model.wheatFound)) {
+			(FarmModel model) -> {
+            		if((model.actionCount > 3) & (!model.wheatFound)) {
             			return true;
             		}
             		return false; 
-    		}
-        );
+    		},
+			"hen",
+			"actionCount");
 		
 		this.scheduleHappening(findCorn);
 	}
@@ -47,7 +48,6 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	public boolean farmWork(Character agent) {
 		this.actionCount += 1;
 		logger.info("Some farming activity was performed");
-		
 		return true;
 	}
 	
@@ -56,7 +56,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		if (!(wheatItem == null)) {
 				if (wheatItem.state == WHEAT_STATE.SEED) {
 					this.wheat.state = WHEAT_STATE.GROWING;
-					this.environment.addEventPerception(agent.name, "planted(wheat)[emotion(pride)]");
+					this.environment.addEventPerception(agent.name, "planted(wheat)", PerceptAnnotation.fromEmotion("pride"));
 					logger.info("Wheat planted");
 					return true;
 				}
@@ -69,7 +69,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		if ((this.wheat.state == WHEAT_STATE.GROWING)){
 			this.wheat.state = WHEAT_STATE.RIPE;
 			logger.info("Wheat has grown and is ripe now");
-			this.environment.addEventPerception(agent.name, "tended(wheat)[emotion(pride)]");
+			this.environment.addEventPerception(agent.name, "tended(wheat)", PerceptAnnotation.fromEmotion("pride"));
 			return true;
 		}
 		
@@ -80,7 +80,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		if ((this.wheat.state == WHEAT_STATE.RIPE)){
 			this.wheat.state = WHEAT_STATE.HARVESTED;
 			logger.info("Wheat was harvested");
-			this.environment.addEventPerception(agent.name, "harvested(wheat)[emotion(pride)]");
+			this.environment.addEventPerception(agent.name, "harvested(wheat)", PerceptAnnotation.fromEmotion("pride"));
 			return true;
 		}
 		
@@ -92,7 +92,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 			this.wheat.state = WHEAT_STATE.FLOUR;
 			logger.info("Wheat was ground to flour");
 			this.wheat = null;
-			this.environment.addEventPerception(agent.name, "ground(wheat)[emotion(pride)]");
+			this.environment.addEventPerception(agent.name, "ground(wheat)", PerceptAnnotation.fromEmotion("pride"));
 			return true;
 		}
 		return false;
@@ -105,7 +105,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 			agent.removeFromInventory(wheatItem);
 			
 			logger.info(agent.name + ": baked some bread.");
-			this.environment.addEventPerception(agent.name, "baked(bread)[emotion(pride),emotion(joy)]");
+			this.environment.addEventPerception(agent.name, "baked(bread)", new PerceptAnnotation("pride", "joy"));
 			return true;
 		}
 		

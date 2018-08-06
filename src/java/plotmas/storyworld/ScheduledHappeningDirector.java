@@ -19,10 +19,11 @@ public class ScheduledHappeningDirector implements HappeningDirector{
 	 */
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
+	// TODO: happenings are to fire only once!
 	public List<Happening<?>> getTriggeredHappenings(int step) {
 		List<Happening<?>> triggeredHapps = new LinkedList<>();
 		for (Happening h : this.scheduledHappenings) {
-			if (h.triggered(this.model, step)) {
+			if (h.triggered(this.model)) {
 				triggeredHapps.add(h);
 			}
 		}

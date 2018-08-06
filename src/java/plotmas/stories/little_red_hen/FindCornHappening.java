@@ -1,26 +1,28 @@
 package plotmas.stories.little_red_hen;
 
-import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
-import plotmas.storyworld.Happening;
-import plotmas.PlotModel;
+import plotmas.helper.PerceptAnnotation;
 import plotmas.storyworld.Character;
+import plotmas.storyworld.Happening;
 
 public class FindCornHappening extends Happening<FarmModel> {
 
-	public FindCornHappening(BiPredicate<FarmModel, Integer> trigger) {
-		super(trigger);
+	public FindCornHappening(Predicate<FarmModel> trigger, String patient, String cause){
+		// setup how this event will be perceived
+		super(trigger, cause, "found(wheat)");
+		this.patient = patient;
+		this.annotation = PerceptAnnotation.fromEmotion("joy");
 	}
 
 	@Override
 	public void execute(FarmModel model) {
+		Character chara = model.getCharacter(this.getPatient());
+
 		model.wheat = model.new Wheat();
-		Character chara = model.getCharacter("hen");
-		
 		chara.addToInventory(model.wheat);
-		model.getEnvironment().addEventPerception(chara.name, "found(wheat)" + PlotModel.addEmotion("joy"));  
 		model.wheatFound = true;
 		
-		model.getLogger().info(chara.name + " found a grain of wheat"); 
+		model.getLogger().info(this.getPatient() + " found a grain of wheat"); 
 	}
 }

@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
-import jason.asSemantics.Emotion;
 import jason.asSemantics.Mood;
 import plotmas.helper.MoodMapper;
 import plotmas.stories.little_red_hen.RedHenLauncher;
@@ -54,42 +53,6 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	 *  <b>mapping:</b> (characterName, fieldName) --> action*/
 	private Table<String, String, String> causalityTable;
 
-	
-	public static String addEmotion(String... ems) {
-    	String result = "[";
-    	for(String em: ems) {
-    		if (Emotion.getAllEmotions().contains(em)) {
-    			result += Emotion.ANNOTATION_FUNCTOR + "(" + em + "),";
-    		}
-    		else{
-    			logger.warning("Error: Trying to add an invalid emotion to a percept: " + em);
-    			throw new RuntimeException("Trying to add an invalid emotion to a percept: " + em);
-    		}
-    	}
-    	
-    	// remove comma after last emotion
-    	result = result.substring(0, result.length() - 1);
-    	result += "]";
-    	
-    	return result;
-    }
-	
-	public static String addTargetedEmotion(String em, String target) {
-    	String result = "[";
-		
-    	if (Emotion.getAllEmotions().contains(em)) {
-			result += Emotion.ANNOTATION_FUNCTOR + "(" + em + "," + target + ")";
-		}
-		else {
-			logger.warning("Error: Trying to add an invalid emotion to a percept: " + em);
-			throw new RuntimeException("Trying to add an invalid emotion to a percept: " + em);
-		}
-
-		result += "]";
-    	
-    	return result;
-    }
-	
 	public PlotModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
         this.characters = new HashMap<String, Character>();
         
@@ -161,14 +124,17 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void checkHappenings(int step) {
-		logger.info("Executing happenings if present");
+		logger.fine("Executing happenings if present");
 		List<Happening<?>> happenings = this.happeningDirector.getTriggeredHappenings(step);
 		
 		for (Happening h : happenings) {
+			h.identifyCause(this.causalityTable);
 			h.execute(this);
+			this.environment.addEventPerception(h.getPatient(), h.getEventPercept());
+			
 		}
 		
-    	// update saved storyworld state, but do not enter the happenings as causes if it changed,
+    	// update saved storyworld state, but do not enter the happenings as causes for the change,
 		// because happenings are not present in agents embedded narrative plot graphs
     	this.noteStateChanges();
 	}
@@ -201,7 +167,14 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		}
 	}
 	
-	public synchronized void noteStateChanges(String agentName, String action) {
+	/**
+	 * Checks whether the state of the storyworld, represented by the values of all the fields of the model instance, 
+	 * changed due to an action executed by causer. This needs to be checked after each agent action.
+	 * 
+	 * @param causer Name of agent responsible for action (i.e. in whose plot graph cause will be present)
+	 * @param action Term representing the action that should be noted as cause for state change
+	 */
+	public synchronized void noteStateChanges(String causer, String action) {
 		try {
 	        for (Field f: this.getClass().getDeclaredFields()) {
 	        	Object oldV = fieldValueStore.get(f.getName());
@@ -209,12 +182,12 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	        	
 	        	if((currentV != null) && (!currentV.equals(oldV))) {
 	        		// take note that the value of field f changed because of agentName's action
-	        		this.causalityTable.put(agentName, f.getName(), action);
+	        		this.causalityTable.put(causer, f.getName(), action);
 	        		
 	        		// update new field value in our dict
 	        		fieldValueStore.put(f.getName(), currentV);
 	        		
-	        		logger.fine("Storyworld changed due to " + agentName + "'s action: " + action + " (property: " + f.getName() + ")");
+	        		logger.fine("Storyworld changed due to " + causer + "'s action: " + action + " (property: " + f.getName() + ")");
 	        	}
 	        }
 		} catch (Exception e) {
@@ -222,7 +195,12 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
         	e.printStackTrace();		
 		}
 	}
-
+	
+	/**
+	 * Checks whether the state of the storyworld, represented by the values of all the fields of the model instance, 
+	 * changed due to a happening. If this is the case it resets any actions that have been noted as causally responsible
+	 * for the state.  
+	 */
 	public synchronized void noteStateChanges() {
 		try {
 	        for (Field f: this.getClass().getDeclaredFields()) {
@@ -257,5 +235,9 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	
 	public void setEnvironment(EnvType env) {
 		this.environment = env;
+	}
+	
+	public int getStep() {
+		return this.environment.getStep();
 	}
 }
