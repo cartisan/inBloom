@@ -106,7 +106,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
     		return root;
     	}
     	
-    	this.vertexAgentMap.put(vertex, vertex.getLabel());
+    	this.vertexAgentMap.put(root, root.getLabel());
     	
     	return null;
     }
@@ -294,8 +294,6 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 */
 	public PlotDirectedSparseGraph cloneInto(PlotDirectedSparseGraph dest) {
 		// BEWARE: lastVertexMap is not cloned, the returned graph is not useable for continuing plotting 
-		PlotDirectedSparseGraph dest = new PlotDirectedSparseGraph();
-				
 		// clone vertices and add them to cloned graph
 		HashMap<Vertex,Vertex> cloneMap = new HashMap<>();		// maps old vertex -> cloned vertex
 		
@@ -306,7 +304,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
     		cloneMap.put(root, clone);
     		
 			dest.roots.add(clone);
-			dest.vertexAgentMap.put(clone, vertexAgentMap.get(v));
+			dest.vertexAgentMap.put(clone, vertexAgentMap.get(root));
 		}
 		
 	    for (Vertex v : this.getVertices()) {

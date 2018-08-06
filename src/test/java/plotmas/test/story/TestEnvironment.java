@@ -1,26 +1,16 @@
 package plotmas.test.story;
 
-import java.util.List;
-
 import jason.asSyntax.Structure;
 import plotmas.PlotEnvironment;
-import plotmas.PlotLauncher.LauncherAgent;
-import plotmas.storyworld.StoryworldAgent;
+import plotmas.storyworld.Character;
 
 public class TestEnvironment extends PlotEnvironment<TestModel> {
-	
-	@Override
-    public void initialize(List<LauncherAgent> agents) {
-    	super.initialize(agents);
-        TestModel model = new TestModel(agents, this);
-        this.setModel(model);
-    }
 	
 	@Override
     public boolean executeAction(String agentName, Structure action) {
 		// let the PlotEnvironment update the plot graph, initializes result as false
 		boolean result = super.executeAction(agentName, action);
-    	StoryworldAgent agent = getModel().getAgent(agentName);
+    	Character agent = getModel().getCharacter(agentName);
     	synchronized(getModel()) {
 	    	if (action.getFunctor().equals("do_stuff")) {
 	    		result = getModel().doStuff(agent);

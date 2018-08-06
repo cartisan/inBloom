@@ -105,7 +105,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 			this.pauseExecution();
 		
 		// create and visualize plot graph
-		this.graphs.add(PlotGraphController.getPlotListener().visualizeGraph(COMPRESS_GRAPH));
+		this.graphs.add(PlotGraphController.getPlotListener().visualizeGraph());
 		
 		// create and visualize mood graph
 		MoodGraph.getMoodListener().createData();

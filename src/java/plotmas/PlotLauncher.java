@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,13 +12,15 @@ import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
 import jason.asSemantics.Agent;
-import jason.asSemantics.Personality;
 import jason.bb.DefaultBeliefBase;
 import jason.infra.centralised.BaseCentralisedMAS;
 import jason.infra.centralised.CentralisedAgArch;
 import jason.infra.centralised.RConf;
 import jason.mas2j.AgentParameters;
 import plotmas.graph.PlotGraphController;
+import plotmas.jason.PlotAwareAg;
+import plotmas.jason.PlotAwareAgArch;
+import plotmas.jason.PlotAwareCentralisedAgArch;
 
 /**
  * Used to perform a Java-side setup and execution of a Jason MAS. <br>

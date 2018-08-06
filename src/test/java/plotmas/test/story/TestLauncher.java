@@ -5,10 +5,13 @@ import com.google.common.collect.ImmutableList;
 import jason.JasonException;
 import jason.asSemantics.Personality;
 import jason.infra.centralised.BaseCentralisedMAS;
+import plotmas.LauncherAgent;
 import plotmas.PlotControlsLauncher;
 import plotmas.PlotLauncher;
+import plotmas.stories.little_red_hen.FarmModel;
+import plotmas.storyworld.ScheduledHappeningDirector;
 
-public class TestLauncher extends PlotLauncher {
+public class TestLauncher extends PlotLauncher<TestEnvironment, TestModel> {
 
 	public TestLauncher() {
 		ENV_CLASS = TestEnvironment.class;
@@ -23,11 +26,17 @@ public class TestLauncher extends PlotLauncher {
         runner = new TestLauncher();
 
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
-							runner.new LauncherAgent("jeremy",
+							new LauncherAgent("jeremy",
 									new Personality(0,  1,  0.7,  0.3, 0.3)
 							)
 						);
-        
-		runner.run(args, agents, "test_agent");
+  
+        // Initialize MAS with a scheduled happening director
+        ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
+        FarmModel model = new FarmModel(agents, hapDir);
+
+		// Execute MAS
+		runner.initialize(args, model, agents, "test_agent");
+		runner.run();
 	}
 }

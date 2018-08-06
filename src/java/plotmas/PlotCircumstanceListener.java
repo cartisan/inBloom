@@ -5,6 +5,7 @@ import jason.asSemantics.Event;
 import jason.asSemantics.Intention;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
+import plotmas.jason.PlotAwareAg;
 
 public class PlotCircumstanceListener implements CircumstanceListener {
 
@@ -31,7 +32,7 @@ public class PlotCircumstanceListener implements CircumstanceListener {
 			} else {
 				toAdd = e.getTrigger().toString();
 			}
-			PlotGraphController.getPlotListener().addEvent(name, toAdd, Vertex.Type.PERCEPT);
+			PlotGraphController.getPlotListener().addEvent(name, toAdd, Vertex.Type.PERCEPT, PlotLauncher.getRunner().getUserEnvironment().getStep());
 		}
 	}
 
@@ -46,7 +47,7 @@ public class PlotCircumstanceListener implements CircumstanceListener {
 		if(!i.isFinished()) {
 			String drop = "" + i.peek().getTrigger();
 			String cause = "" + this.agent.getTS().getC().getSelectedOption().getPlan().getTrigger();
-			PlotGraphController.getPlotListener().addEvent(this.name, "drop_intention(" + drop + ")[cause(" + cause + ")]");
+			PlotGraphController.getPlotListener().addEvent(this.name, "drop_intention(" + drop + ")[cause(" + cause + ")]", PlotLauncher.getRunner().getUserEnvironment().getStep());
 		}
 	}	
 

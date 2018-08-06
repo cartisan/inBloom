@@ -16,7 +16,6 @@ import com.google.common.collect.ImmutableList;
 import jason.JasonException;
 import jason.asSemantics.Personality;
 import jason.runtime.MASConsoleGUI;
-import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
 import plotmas.helper.EnvironmentListener;
@@ -172,7 +171,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		}
 		List<LauncherAgent> agents = new LinkedList<LauncherAgent>();
 		for(int i = 0; i < agentNames.length; i++) {
-			agents.add(runner.new LauncherAgent(agentNames[i], personalities[i]));
+			agents.add(new LauncherAgent(agentNames[i], personalities[i]));
 		}
 		return ImmutableList.copyOf(agents);
 	}
@@ -235,7 +234,8 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		@Override
 		public void run() {
 			try {
-				runner.run(args, agents, agSrc);
+				runner.initialize(args, model, agents, agSrc);
+				runner.run();
 			} catch (JasonException e) {
 				log("JasonException!");
 			}
