@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
@@ -254,10 +255,17 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     	}
     	this.size.width = this.size.width - x_pos + PAD_X;
     	x_pos = PAD_X;
-    	
+
     	for (Vertex vertex : ((PlotDirectedSparseGraph) this.graph).getAxisVertices()) {
-    		int y_pos = this.stepStartAtY.get(vertex.getStep());
-    		locations.getUnchecked(vertex).setLocation(new Point(x_pos, y_pos));    		
+    		int y_pos = 0;
+    		
+    		if(this.stepStartAtY.containsKey(vertex.getStep())) {
+    			y_pos = this.stepStartAtY.get(vertex.getStep());
+    		} else {
+    			this.graph.removeVertex(vertex);
+    		}
+
+			locations.getUnchecked(vertex).setLocation(new Point(x_pos, y_pos));	
     	}
 	}
 	

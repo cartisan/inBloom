@@ -15,6 +15,7 @@ import jason.asSemantics.Unifier;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Plan;
 import jason.asSyntax.PlanBody;
+import plotmas.PlotCircumstanceListener;
 import plotmas.PlotLauncher;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
@@ -34,6 +35,7 @@ public class PlotAwareAg extends AffectiveAgent {
     public void initAg() {
         super.initAg();
         this.name = this.getTS().getUserAgArch().getAgName();
+        this.getTS().getC().addEventListener(new PlotCircumstanceListener(this, this.name));
     }
 
     /**
