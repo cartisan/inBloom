@@ -21,7 +21,7 @@ public class FunctionalUnits {
 	static {
 		ALL = new FunctionalUnit[3];
 		
-		Vertex v1, v2, v3;
+		Vertex v1, v2, v3, v4;
 		
 		PlotDirectedSparseGraph deniedRequest = new PlotDirectedSparseGraph();
 
@@ -57,9 +57,9 @@ public class FunctionalUnits {
 		v2 = makeIntention(3);
 		v3 = makeIntention(5);
 		retaliation.addEdge(makeMotivation(), v1, v2);
+		v4 = makePositive(4);
+		retaliation.addEdge(makeActualization(), v2, v4);
 		retaliation.addEdge(makeMotivation(), v1, v3);
-		v1 = makePositive(4);
-		retaliation.addEdge(makeActualization(), v2, v1);
 		v1 = makeNegative(5);
 		retaliation.addEdge(makeCommunication(), v3, v1);
 		RETALIATION = new FunctionalUnit("Retaliation", retaliation);
