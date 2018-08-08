@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import plotmas.graph.Edge;
 import plotmas.graph.PlotDirectedSparseGraph;
@@ -82,13 +81,6 @@ public class FunctionalUnit {
 		if(displayGraph.getIncidentEdges(root2).isEmpty()) {
 			displayGraph.removeVertex(root2);
 			displayGraph.getRoots().remove(root2);
-		} else {
-			Logger.getGlobal().info("++++++++++++ root " + root2.toString());
-			for (Edge e: displayGraph.getIncidentEdges(root2)) {
-				Logger.getGlobal().info("type " + e.getType().toString());
-				Logger.getGlobal().info("src " + displayGraph.getSource(e).toString());
-				Logger.getGlobal().info("dest " + displayGraph.getDest(e).toString());
-			}
 		}
 		
 		displayGraph.setName(this.getName());
