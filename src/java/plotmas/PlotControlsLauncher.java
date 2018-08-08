@@ -25,8 +25,9 @@ import plotmas.helper.PlotFormatter;
  * @author Leonid Berov
  */
 public class PlotControlsLauncher extends RunCentralisedMAS {
-	public static PlotLauncher runner = null;
-	protected static boolean COMPRESS_GRAPH = false;	// used to determine if PlotGraph should be compressed before drawing
+	public static PlotLauncher<?,?> runner = null;
+	
+	protected static boolean COMPRESS_GRAPH = true;	// used to determine if PlotGraph should be compressed before drawing
 	protected static Level LOG_LEVEL = Level.INFO;
 //	protected static Level LOG_LEVEL = Level.FINE;
 	
@@ -35,12 +36,27 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	private LinkedList<PlotmasGraph> graphs = new LinkedList<PlotmasGraph>();
 	protected boolean isDraw = false;
 
+	protected boolean showGui = true;
+	
+	public void setShowGui(boolean showGui) {
+		this.showGui = showGui;
+	}
+	
+	@Override
+	public synchronized void setupLogger() {
+		if(showGui) {
+			super.setupLogger();
+		}
+	}
 	
 	/**
 	 * Has to be executed after initialization is complete because it depends
 	 * on PlotEnvironment being already initialized with a plotStartTime.
 	 */
 	public synchronized void setupPlotLogger() {
+		if(!showGui) {
+			return;
+		}
         Handler[] hs = Logger.getLogger("").getHandlers(); 
         for (int i = 0; i < hs.length; i++) { 
             Logger.getLogger("").removeHandler(hs[i]); 
@@ -55,6 +71,9 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	 * plotting) is impossible due to paused Jason console (?).
 	 */
 	public synchronized void setupConsoleLogger() {
+		if(!showGui) {
+			return;
+		}
         Handler[] hs = Logger.getLogger("").getHandlers(); 
         for (int i = 0; i < hs.length; i++) { 
             Logger.getLogger("").removeHandler(hs[i]); 
@@ -70,8 +89,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	    MASConsoleGUI.get().setPause(true);
 	    this.pauseButton.setText("Continue");
 
-	    // FIXME switching to console logger on pauseExecution causes simulation to not pause ?!
-//		setupConsoleLogger();
+		setupConsoleLogger();
 	}
 
 	protected void continueExecution() {
@@ -79,6 +97,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	    MASConsoleGUI.get().setPause(false);
 	    
 	    this.setupPlotLogger();
+	    ((PlotEnvironment<?>) this.env.getUserEnvironment()).wake();
 	}
 
 	protected void drawGraphs() {
@@ -86,7 +105,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 			this.pauseExecution();
 		
 		// create and visualize plot graph
-		this.graphs.add(PlotGraphController.getPlotListener().visualizeGraph(COMPRESS_GRAPH));
+		this.graphs.add(PlotGraphController.getPlotListener().visualizeGraph());
 		
 		// create and visualize mood graph
 		MoodGraph.getMoodListener().createData();
@@ -114,7 +133,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 			g.closeGraph();
 		}
 	}
-
+		
 	public void resetGraphView() {
 		// release pointers
 		this.graphs = new LinkedList<PlotmasGraph>();
@@ -131,6 +150,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	@Override
 	protected void createButtons() {
 		createDrawButton();
+		createAnalysisButton();
 		super.createButtons();
 	}
 
@@ -150,6 +170,20 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 		
 		MASConsoleGUI.get().addButton(btDraw);
 		this.drawButton = btDraw;
+	}
+	
+	protected void createAnalysisButton() {
+		JButton btAnalyze = new JButton("Analyze Graph");
+		btAnalyze.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				if(MASConsoleGUI.get().isPause()) {
+					PlotGraphController.getPlotListener().analyze();
+				}
+			}
+	
+		});
+		
+		MASConsoleGUI.get().addButton(btAnalyze);
 	}
 
 	@Override
