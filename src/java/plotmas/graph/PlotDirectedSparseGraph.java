@@ -309,16 +309,21 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		
 	    for (Vertex v : this.getVertices()) {
 	    	if (!(v.getType() == Type.ROOT)) {
-	        	Vertex clone = v.clone();
+	    		Vertex clone = v.clone();
+
+	    		// if cloned vertex is an axis, note that in axis map
+	    		if(this.yAxis.containsValue(v)) {
+	    			if(!dest.yAxis.containsKey(v.getStep())) {
+	    				dest.yAxis.put(v.getStep(), clone);
+	    			} else {
+	    				cloneMap.put(v, v);
+	    				continue;
+	    			}
+	    		}
 	    		dest.addVertex(clone);
     			cloneMap.put(v, clone);
     		
     			dest.vertexAgentMap.put(clone, vertexAgentMap.get(v));
-    			
-    			// if cloned vertex is an axis, note that in axis map
-	    		if(this.yAxis.containsValue(v)) {
-	    			dest.yAxis.put(v.getStep(), clone);
-	    		}
     		}
 	    }
 
@@ -445,6 +450,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		case SPEECHACT: visitor.visitSpeech(vertex); 	break;
 		case LISTEN: 	visitor.visitListen(vertex); 	break;
 		case INTENTION: visitor.visitIntention(vertex); break;
+		case AXIS_LABEL: break;
 		default:
 			throw new RuntimeException("Unknown vertex type. Aborting visit!");
 		}

@@ -1,7 +1,5 @@
 package plotmas;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,8 +9,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import jason.asSemantics.AffectiveAgent;
-import jason.asSemantics.Personality;
 import jason.asSemantics.ActionExec;
 import jason.asSemantics.Intention;
 import jason.asSyntax.ASSyntax;
@@ -21,17 +17,12 @@ import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
-import jason.infra.centralised.CentralisedEnvironment;
 import jason.runtime.MASConsoleGUI;
 import jason.util.Pair;
 import plotmas.graph.PlotGraphController;
 import plotmas.helper.EnvironmentListener;
-import plotmas.helper.TermParser;
 import plotmas.helper.PerceptAnnotation;
-import plotmas.jason.PlotAwareAg;
-import plotmas.jason.PlotAwareAgArch;
-import plotmas.jason.PlotAwareCentralisedAgArch;
-import plotmas.jason.PlotAwareCentralisedRuntimeServices;
+import plotmas.helper.TermParser;
 
 /**
  *  Responsible for relaying action requests from ASL agents to the {@link plotmas.PlotModel Storyworld} and

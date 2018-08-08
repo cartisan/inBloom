@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
 import jason.asSemantics.Personality;
+import jason.infra.centralised.BaseCentralisedMAS;
 import plotmas.LauncherAgent;
 import plotmas.PlotControlsLauncher;
 import plotmas.PlotLauncher;
@@ -16,10 +17,15 @@ import plotmas.storyworld.ScheduledHappeningDirector;
  * @author Leonid Berov
  */
 public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
-
+	
+	public RedHenLauncher() {
+		ENV_CLASS = FarmEnvironment.class;
+		PlotControlsLauncher.runner = this;
+		BaseCentralisedMAS.runner = this;
+	}
+	
 	public static void main(String[] args) throws JasonException {
         logger.info("Starting up from Launcher!");
-        ENV_CLASS = FarmEnvironment.class;
         
         PlotControlsLauncher.runner = new RedHenLauncher();
         

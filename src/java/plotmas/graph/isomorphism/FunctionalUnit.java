@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import plotmas.graph.Edge;
 import plotmas.graph.PlotDirectedSparseGraph;
@@ -60,9 +61,10 @@ public class FunctionalUnit {
 	
 	private void createDisplayGraph() {
 		displayGraph = unitGraph.clone();
+		Vertex root2 = null;
 		Vertex[] roots = new Vertex[] {
-			new Vertex(this.name + " Agent 1", Vertex.Type.ROOT),
-			new Vertex(this.name + " Agent 2", Vertex.Type.ROOT)
+			displayGraph.addRoot(this.name + " Agent 1"),
+			root2 = displayGraph.addRoot(this.name + " Agent 2")
 		};
 		
 		Vertex startVertex = null;
@@ -75,12 +77,18 @@ public class FunctionalUnit {
 		
 		assert startVertex != null;
 		
-		displayGraph.addRoot(roots[0]);
-		displayGraph.addRoot(roots[1]);
 		connect(startVertex, roots, 0);
 		
-		if(displayGraph.getIncidentEdges(roots[1]).isEmpty()) {
-			displayGraph.removeVertex(roots[1]);
+		if(displayGraph.getIncidentEdges(root2).isEmpty()) {
+			displayGraph.removeVertex(root2);
+			displayGraph.getRoots().remove(root2);
+		} else {
+			Logger.getGlobal().info("++++++++++++ root " + root2.toString());
+			for (Edge e: displayGraph.getIncidentEdges(root2)) {
+				Logger.getGlobal().info("type " + e.getType().toString());
+				Logger.getGlobal().info("src " + displayGraph.getSource(e).toString());
+				Logger.getGlobal().info("dest " + displayGraph.getDest(e).toString());
+			}
 		}
 		
 		displayGraph.setName(this.getName());
@@ -126,6 +134,10 @@ public class FunctionalUnit {
 	}
 	
 	private boolean isStartVertex(Vertex v, PlotDirectedSparseGraph g) {
+		if ((v.getType()==Vertex.Type.AXIS_LABEL) | (v.getType()==Vertex.Type.ROOT)) {
+			return false;
+		}
+		
 		Collection<Edge> inEdges = g.getInEdges(v);
 		if(!inEdges.isEmpty()) {
 			for(Edge e : inEdges) {

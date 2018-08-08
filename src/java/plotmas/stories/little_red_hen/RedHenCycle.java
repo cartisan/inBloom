@@ -19,11 +19,13 @@ import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
 import jason.asSemantics.Personality;
+import plotmas.LauncherAgent;
 import plotmas.PlotCycle;
 import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.graph.isomorphism.FunctionalUnits;
 import plotmas.helper.PlotFormatter;
 import plotmas.helper.Tellability;
+import plotmas.storyworld.ScheduledHappeningDirector;
 
 public class RedHenCycle extends PlotCycle {
 	
@@ -279,7 +281,7 @@ public class RedHenCycle extends PlotCycle {
 		
 		// Stop cycle if there are no other personality combinations
 		if(!personalityIterator.hasNext() || startCycle >= endCycle) {
-			return new ReflectResult(null, null, false);
+			return new ReflectResult(null, null, null, false);
 		}
 		
 		// Start the next cycle
@@ -292,7 +294,7 @@ public class RedHenCycle extends PlotCycle {
 			setupFileLogger();
 		}
 		startCycle++;
-		return new ReflectResult(lastRunner, new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		return new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
 	}
 	
 	@Override
@@ -369,7 +371,7 @@ public class RedHenCycle extends PlotCycle {
 		lastPersonalities = personalityIterator.next();
 		lastRunner = new RedHenLauncher();
 		lastRunner.setShowGui(false);
-		ReflectResult rr = new ReflectResult(lastRunner, new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		ReflectResult rr = new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
 		log("Cycle " + startCycle);
 		// Create a new file logger if the log file name depends on the cycle number.
 		if(logFile.contains("%d")) {

@@ -7,7 +7,6 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,8 +59,12 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	/** Singleton instance used to collect the plot */
 	private static PlotGraphController plotListener = null;
 
-
 	public static Color BGCOLOR = Color.WHITE;
+
+	/** Save action command. */
+	public static final String SAVE_COMMAND = "SAVE";
+	/** Change plot view action command. */
+    public static final String CHANGE_VIEW_COMMAND = "CHANGE_VIEW";
 	
 	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
 	private JComboBox<PlotDirectedSparseGraph> graphTypeList = new JComboBox<>();	// ComboBox that is displayed on the graph to change display type
@@ -181,21 +184,13 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
                         "Save Graph", JOptionPane.WARNING_MESSAGE);
             }
         } else if (command.equals(CHANGE_VIEW_COMMAND)) {
-	    	@SuppressWarnings("unchecked")
-			JComboBox<String> combo = (JComboBox<String>) event.getSource();
-			String selectedType = (String) combo.getSelectedItem();
+			@SuppressWarnings("unchecked")
+			JComboBox<PlotDirectedSparseGraph> combo = (JComboBox<PlotDirectedSparseGraph>) event.getSource();
+			PlotDirectedSparseGraph selectedGraph = (PlotDirectedSparseGraph) combo.getSelectedItem();
 			
-			if(selectedType.equals(GRAPH_TYPES[0])) {
-				Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().graph);
-				PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
-				PlotGraphController.getPlotListener().visViewer.repaint();
-			}
-			else {
-				Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().postProcessThisGraph());
-				PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
-				PlotGraphController.getPlotListener().visViewer.repaint();
-	
-			}
+			Layout<Vertex, Edge> layout = new PlotGraphLayout(selectedGraph);
+			PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
+			PlotGraphController.getPlotListener().visViewer.repaint();
         }
 	}
 	
@@ -410,37 +405,4 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		vis.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
 		vis.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
 	}
-	
-	/*************************** for testing purposes ***********************************/
-	private static PlotDirectedSparseGraph createTestGraph() {
-		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
-		
-		// Create Trees for each agent and add the roots
-		Vertex v1 = graph.addRoot("hen");
-		Vertex v2 = graph.addRoot("dog");
-		Vertex v3 = graph.addRoot("cow"); 
-		
-		Vertex v4 = new Vertex("cazzegiare", 1); 
-		Vertex v5 = new Vertex("cazzegiare", 1); 
-		Vertex v6 = new Vertex("askHelp(plant(wheat))", 1);
-		Vertex v7 = new Vertex("plant(wheat)", 2);
-		
-		// simulate adding vertices later
-		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v6);
-		graph.addEdge(new Edge(), v6, v7);
-		graph.addEdge(new Edge(Edge.Type.ROOT), v2, v4);
-		graph.addEdge(new Edge(Edge.Type.ROOT), v3, v5);
-		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), v6, v5);
-		
-		return graph;
-	}
-	
-	public static void main(String[] args) {
-		PlotDirectedSparseGraph forest = createTestGraph();
-		PlotGraphController.instantiatePlotListener(new ArrayList<LauncherAgent>());
-		PlotGraphController controller = PlotGraphController.getPlotListener();
-		controller.drawnGraph = forest;
-		controller.visualizeGraph();
-	}
-		
 }

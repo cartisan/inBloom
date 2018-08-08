@@ -3,6 +3,7 @@ package plotmas.jason;
 import java.util.List;
 
 import jason.ReceiverNotFoundException;
+import jason.asSemantics.Intention;
 import jason.asSemantics.Message;
 import jason.infra.centralised.CentralisedAgArch;
 import jason.infra.centralised.MsgListener;
@@ -22,7 +23,15 @@ public class PlotAwareCentralisedAgArch extends CentralisedAgArch {
         // insert message send into plot graph before message is actually send, 
     	// necessary because super.sendMsd calls receiveMsg and sometimes results in race conditions in plot graph
         int step = PlotLauncher.runner.getUserEnvironment().getStep();
-    	Vertex senderV = PlotGraphController.getPlotListener().addMsgSend(m, step);
+        
+    	// Receive motivation for the speech act.
+    	Intention sourceIntention = this.getTS().getC().getSelectedIntention();
+    	String motivation = "";
+    	if(sourceIntention != null) {
+    		 motivation = String.format("[motivation(%1s)]", sourceIntention.peek().getTrigger().getTerm(1).toString());
+    	}
+        
+    	Vertex senderV = PlotGraphController.getPlotListener().addMsgSend(m, motivation, step);
     	
     	// actually send the message
         if (m.getSender() == null)  m.setSender(getAgName());

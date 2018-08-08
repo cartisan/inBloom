@@ -125,9 +125,9 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 * @return EngageResult containing the graph of this simulation and its tellability score.
 	 */
 	protected EngageResult engage(ReflectResult rr) {
-		PlotLauncher runner = rr.getRunner();
+		PlotLauncher<?,?> runner = rr.getRunner();
 		Personality[] personalities = rr.getPersonalities();
-		Thread t = new Thread(this.new Cycle(runner, new String[0], createAgs(runner, personalities), this.agentSrc));
+		Thread t = new Thread(this.new Cycle(runner, rr.getModel(), new String[0], createAgs(runner, personalities), this.agentSrc));
 		t.start();
 		MASConsoleGUI.get().setPause(false);
 		boolean hasAddedListener = false;
@@ -164,7 +164,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		return er;
 	}
 	
-	private ImmutableList<LauncherAgent> createAgs(PlotLauncher runner, Personality[] personalities) {
+	private ImmutableList<LauncherAgent> createAgs(PlotLauncher<?,?>  runner, Personality[] personalities) {
 		if(personalities.length != this.agentNames.length) {
 			throw new IllegalArgumentException("There should be as many personalities as there are agents."
 					+ "(Expected: " + agentNames.length + ", Got: " + personalities.length + ")");
@@ -219,13 +219,18 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 */
 	private class Cycle implements Runnable {
 		
-		private PlotLauncher runner;
+		private PlotLauncher<?, ?> runner;
+		private PlotModel<?> model;
 		private String[] args;
 		private ImmutableList<LauncherAgent> agents;
 		private String agSrc;
 		
-		Cycle(PlotLauncher runner, String[] args, ImmutableList<LauncherAgent> agents, String agSrc) {
+		Cycle(PlotLauncher<?, ?> runner, PlotModel<?> model, String[] args, ImmutableList<LauncherAgent> agents, String agSrc) {
 			this.runner = runner;
+			this.model = model;
+			for(LauncherAgent ag : agents) {
+				model.addCharacter(ag);
+			}
 			this.args = args;
 			this.agents = agents;
 			this.agSrc = agSrc;
@@ -252,7 +257,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		 * Instance of the PlotLauncher for
 		 * the story in question.
 		 */
-		private PlotLauncher runner;
+		private PlotLauncher<?, ?> runner;
 		/**
 		 * Personalities which are used for the agents.
 		 * Will be in used in the same order as the
@@ -260,24 +265,35 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		 */
 		private Personality[] personalities;
 		/**
+		 * Instance of PlotModel for the
+		 * next simulation. Will add
+		 * agents automatically.
+		 */
+		private PlotModel<?> model;
+		/**
 		 * If this is false, the cycle will not execute another
 		 * simulation and call finish().
 		 * runner and personalities do not matter in this case.
 		 */
 		private boolean shouldContinue;
 		
-		public ReflectResult(PlotLauncher runner, Personality[] personalities) {
-			this(runner, personalities, true);
+		public ReflectResult(PlotLauncher<?, ?> runner, PlotModel<?> model, Personality[] personalities) {
+			this(runner, model, personalities, true);
 		}
 		
-		public ReflectResult(PlotLauncher runner, Personality[] personalities, boolean shouldContinue) {
+		public ReflectResult(PlotLauncher<?, ?> runner, PlotModel<?> model, Personality[] personalities, boolean shouldContinue) {
 			this.runner = runner;
+			this.model = model;
 			this.personalities = personalities;
 			this.shouldContinue = shouldContinue;
 		}
 		
-		public PlotLauncher getRunner() {
+		public PlotLauncher<?, ?> getRunner() {
 			return this.runner;
+		}
+		
+		public PlotModel<?> getModel() {
+			return this.model;
 		}
 		
 		public Personality[] getPersonalities() {
