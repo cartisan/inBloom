@@ -48,7 +48,7 @@ public class EdgeLayoutVisitor implements PlotGraphVisitor {
 		if(type == Edge.Type.TEMPORAL || type == Edge.Type.ROOT) {
 			return EdgeVisitResult.CONTINUE;
 		}
-		if(type == Edge.Type.MOTIVATION) {
+		if(type == Edge.Type.MOTIVATION || type == Edge.Type.CAUSALITY) {
 			int lane = getFreeLaneLeft();
 			this.occupanceLeft[lane] = graph.getDest(edge);
 			int offset = EDGE_SPACING + lane * EDGE_SPACING;

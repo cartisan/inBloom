@@ -147,6 +147,8 @@ public class Transformers {
         		return Color.CYAN.darker();
         	case TERMINATION:
         		return Color.getHSBColor(0f, .65f, .85f);
+        	case CAUSALITY:
+        		return Color.getHSBColor(.6f, .73f, .95f);
     		default:
     			return Color.BLACK;
         	}

@@ -147,8 +147,13 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitPercept(Vertex vertex) {
+		String cause = vertex.getCause();
 		if(!this.eventList.isEmpty()) {
 			for(Vertex targetEvent : this.eventList) {
+				if(targetEvent.getLabel().equals(cause)) {
+					this.graph.addEdge(new Edge(Edge.Type.CAUSALITY), targetEvent, vertex);
+					cause = "";
+				}
 				if(targetEvent.getType() != Vertex.Type.PERCEPT &&
 					targetEvent.getFunctor().equals(vertex.getFunctor())) {
 					this.removeVertex(vertex);
