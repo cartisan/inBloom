@@ -3,7 +3,6 @@ package plotmas.graph;
 import java.util.LinkedList;
 import java.util.UUID;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -165,12 +164,22 @@ public class Vertex implements Cloneable {
 	 * @return
 	 */
 	public String getSource() {
-		Pattern pattern = Pattern.compile("source\\((?<src>.+)\\)");
-		Matcher matcher = pattern.matcher(this.getLabel());
-		if(!matcher.find()) {
-			return "";
-		}
-		return matcher.group("src");
+		return TermParser.getAnnotation(getLabel(), "source");
+	}
+	
+	/**
+	 * Returns the cause of this vertex.
+	 * Example: <br />
+	 * <pre>
+	 * {@code
+	 * 	eat(bread)[source(self)] -> self
+	 * }
+	 * </pre>
+	 * 
+	 * @return
+	 */
+	public String getCause() {
+		return TermParser.getAnnotation(getLabel(), "cause");
 	}
 
 	/**
