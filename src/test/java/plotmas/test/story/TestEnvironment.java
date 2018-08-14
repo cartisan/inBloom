@@ -7,9 +7,9 @@ import plotmas.storyworld.Character;
 public class TestEnvironment extends PlotEnvironment<TestModel> {
 	
 	@Override
-    public boolean executeAction(String agentName, Structure action) {
+    public boolean doExecuteAction(String agentName, Structure action) {
 		// let the PlotEnvironment update the plot graph, initializes result as false
-		boolean result = super.executeAction(agentName, action);
+		boolean result = false;
     	Character agent = getModel().getCharacter(agentName);
     	synchronized(getModel()) {
 	    	if (action.getFunctor().equals("do_stuff")) {
@@ -20,8 +20,7 @@ public class TestEnvironment extends PlotEnvironment<TestModel> {
 	    		result = getModel().search(agent, action.getTerm(0).toString());
 	    	}
     	}
-    	
-    	pauseOnRepeat(agentName, action);
+
     	return result;
     }
 }
