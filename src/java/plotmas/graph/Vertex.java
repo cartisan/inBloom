@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jason.asSemantics.Emotion;
-import jason.asSyntax.parser.ParseException;
 import plotmas.helper.TermParser;
 
 /**
@@ -195,7 +194,7 @@ public class Vertex implements Cloneable {
 //		case SPEECHACT:	result = "SPEECH>>" + result;
 //						result = appendEmotions(result);
 //						break;
-		case LISTEN:	result = "+" + result;
+		case LISTEN:	//result = "+" result;
 						result = appendEmotions(result);
 						break;
 		case PERCEPT: 	/*Matcher m = NO_ANNOT_PATTERN.matcher(result);
@@ -204,13 +203,13 @@ public class Vertex implements Cloneable {
 						result = /*"+" +*/ TermParser.removeAnnots(result);
 						result = appendEmotions(result);
 						break;
-		case EMOTION: 	try {
+		case EMOTION: 	/*try {
 							Emotion em = Emotion.parseString(result);
 							result = em.toString();
 						} catch (ParseException e) {
 							e.printStackTrace();
 							return null;
-						}
+						}*/
 						break;
 		default: 		result = appendEmotions(result);
 						break;

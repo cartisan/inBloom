@@ -1,10 +1,33 @@
 package plotmas.helper;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import jason.asSemantics.Emotion;
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import jason.asSyntax.parser.ParseException;
 
 public class TermParser {
+	
+	private static final Pattern EmotionPattern = Pattern.compile("(?<emotion>\\w*)\\[cause\\((?<cause>.*)\\)\\]\\(.\\)");
+	/**
+	 * Creates an emotion object from a textual representation of an emotion
+	 * as it is created by {@link Emotion#toString()}. This means that the
+	 * resulting emotion does not contain the {@link Emotion#target} of the
+	 * original emotion.
+	 * @param emo
+	 * @return Emotion object
+	 */
+	public static Emotion emotionFromString(String emo) {
+		Matcher matcher = EmotionPattern.matcher(emo);
+		if(matcher.find()) {
+			Emotion emotion = Emotion.getEmotion(matcher.group("emotion").toLowerCase());
+			emotion.setCause(matcher.group("cause"));
+			return emotion;
+		}
+		return null;
+	}
 	
 	/**
 	 * Retrieves the content of an annotation of a term with

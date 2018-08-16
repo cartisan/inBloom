@@ -24,7 +24,7 @@ public class FunctionalUnits {
 		Vertex v1, v2, v3, v4;
 		
 		PlotDirectedSparseGraph deniedRequest = new PlotDirectedSparseGraph();
-
+		/* Old denied Request
 		v1 = makeIntention(1);
 		v2 = makeNegative(1);
 		deniedRequest.addEdge(makeCommunication(), v1, v2);
@@ -38,6 +38,16 @@ public class FunctionalUnits {
 		v3 = makeNegative(3);
 		deniedRequest.addEdge(makeCommunication(), v2, v3);
 		deniedRequest.addEdge(makeTermination(), v3, v1);
+		*/
+		v1 = makeIntention(1);
+		v2 = makeIntention(1);
+		deniedRequest.addEdge(makeCommunication(), v1, v2);
+
+		v3 = makeIntention(2);
+		deniedRequest.addEdge(makeMotivation(), v2, v3);
+
+		v2 = makeNegative(3);
+		deniedRequest.addEdge(makeCommunication(), v3, v2);
 		DENIED_REQUEST = new FunctionalUnit("Denied Request", deniedRequest);
 		
 		PlotDirectedSparseGraph nestedGoal = new PlotDirectedSparseGraph();
@@ -60,8 +70,10 @@ public class FunctionalUnits {
 		v4 = makePositive(4);
 		retaliation.addEdge(makeActualization(), v2, v4);
 		retaliation.addEdge(makeMotivation(), v1, v3);
-		v1 = makeNegative(5);
+		v1 = makeIntention(5);
 		retaliation.addEdge(makeCommunication(), v3, v1);
+		v2 = makeNegative(6);
+		retaliation.addEdge(makeActualization(), v1, v2);
 		RETALIATION = new FunctionalUnit("Retaliation", retaliation);
 		
 		ALL[0] = DENIED_REQUEST;
