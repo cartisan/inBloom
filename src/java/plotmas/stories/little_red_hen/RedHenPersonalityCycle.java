@@ -1,0 +1,71 @@
+package plotmas.stories.little_red_hen;
+
+import java.util.ArrayList;
+
+import jason.asSemantics.Personality;
+import plotmas.LauncherAgent;
+import plotmas.PersonalitySpaceSearchCycle;
+import plotmas.storyworld.ScheduledHappeningDirector;
+
+public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
+	
+	protected RedHenPersonalityCycle() {
+		// Create PlotCycle with needed agents.
+		super(new String[] { "hen", "dog", "cow", "pig" }, "agent", 2);
+	}
+
+	@Override
+	protected ReflectResult reflect(EngageResult er) {
+		onCycleResult(lastPersonalities, er.getTellability());
+		
+		// Save tellability, graph and hen personality if it was better than the best before
+		if(er.getTellability().functionalPolyvalence > bestTellability) {
+			bestTellability = er.getTellability().functionalPolyvalence;
+			log("New best: " + bestTellability);
+			bestPersonalities = lastPersonalities;
+		}
+		
+		// Stop cycle if there are no other personality combinations
+		if(!personalityIterator.hasNext() || startCycle >= endCycle) {
+			return new ReflectResult(null, null, null, false);
+		}
+		
+		// Start the next cycle
+		lastPersonalities = personalityIterator.next();
+		log("Cycle " + startCycle);
+		lastRunner = new RedHenLauncher();
+		lastRunner.setShowGui(false);
+		// Create a new file logger if the log file name depends on the cycle number.
+		if(logFile.contains("%d")) {
+			setupFileLogger();
+		}
+		startCycle++;
+		return new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+	}
+
+	@Override
+	protected ReflectResult createInitialReflectResult() {
+		lastPersonalities = personalityIterator.next();
+		lastRunner = new RedHenLauncher();
+		lastRunner.setShowGui(false);
+		ReflectResult rr = new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		
+		log("Cycle " + startCycle);
+		
+		// Create a new file logger if the log file name depends on the cycle number.
+		if(logFile.contains("%d")) {
+			setupFileLogger();
+		}
+		
+		startCycle++;
+		return rr;
+	}
+
+	
+	public static void main(String[] args) {
+		PersonalitySpaceSearchCycle.main(args);
+		
+		RedHenPersonalityCycle cycle = new RedHenPersonalityCycle();
+		cycle.run();
+	}
+}
