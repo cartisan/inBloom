@@ -11,8 +11,6 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import com.google.common.collect.ImmutableList;
-
 import jason.JasonException;
 import jason.asSemantics.Personality;
 import jason.runtime.MASConsoleGUI;
@@ -30,7 +28,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	/**
 	 * The names of the agents in this simulation.
 	 */
-	private String[] agentNames;
+	protected String[] agentNames;
 	/**
 	 * The source file of the agent code.
 	 */
@@ -50,6 +48,8 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 * A value of -1 means no timeout.
 	 */
 	protected static long TIMEOUT = -1;
+	
+	protected static int currentCycle = 0;
 	
 	private boolean isRunning = true;
 	
@@ -126,9 +126,10 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 */
 	protected EngageResult engage(ReflectResult rr) {
 		PlotLauncher<?,?> runner = rr.getRunner();
-		Personality[] personalities = rr.getPersonalities();
-		Thread t = new Thread(this.new Cycle(runner, rr.getModel(), new String[0], createAgs(runner, personalities), this.agentSrc));
+
+		Thread t = new Thread(this.new Cycle(runner, rr.getModel(), new String[0], rr.getAgents(), this.agentSrc));
 		t.start();
+		
 		MASConsoleGUI.get().setPause(false);
 		boolean hasAddedListener = false;
 		long startTime = System.currentTimeMillis();
@@ -164,7 +165,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		return er;
 	}
 	
-	private ImmutableList<LauncherAgent> createAgs(PlotLauncher<?,?>  runner, Personality[] personalities) {
+	protected List<LauncherAgent> createAgs(Personality[] personalities) {
 		if(personalities.length != this.agentNames.length) {
 			throw new IllegalArgumentException("There should be as many personalities as there are agents."
 					+ "(Expected: " + agentNames.length + ", Got: " + personalities.length + ")");
@@ -173,7 +174,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		for(int i = 0; i < agentNames.length; i++) {
 			agents.add(new LauncherAgent(agentNames[i], personalities[i]));
 		}
-		return ImmutableList.copyOf(agents);
+		return agents;
 	}
 	
 	@Override
@@ -187,7 +188,10 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	@Override
 	public void run() {
 		ReflectResult rr = this.createInitialReflectResult();
+
 		while(rr.shouldContinue) {
+			++currentCycle;
+			log("Running cycle: " + currentCycle + "...");
 			EngageResult er = engage(rr);
 			rr = this.reflect(er);
 		}
@@ -222,15 +226,17 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		private PlotLauncher<?, ?> runner;
 		private PlotModel<?> model;
 		private String[] args;
-		private ImmutableList<LauncherAgent> agents;
+		private List<LauncherAgent> agents;
 		private String agSrc;
 		
-		Cycle(PlotLauncher<?, ?> runner, PlotModel<?> model, String[] args, ImmutableList<LauncherAgent> agents, String agSrc) {
+		Cycle(PlotLauncher<?, ?> runner, PlotModel<?> model, String[] args, List<LauncherAgent> agents, String agSrc) {
 			this.runner = runner;
 			this.model = model;
+			
 			for(LauncherAgent ag : agents) {
 				model.addCharacter(ag);
 			}
+			
 			this.args = args;
 			this.agents = agents;
 			this.agSrc = agSrc;
@@ -260,11 +266,11 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		 */
 		private PlotLauncher<?, ?> runner;
 		/**
-		 * Personalities which are used for the agents.
-		 * Will be in used in the same order as the
-		 * agentNames array passed to the PlotCycle constructor.
+		 * Agents that will be used by the runner 
+		 * to generate characters. Personalities
+		 * should be set appropriately already.
 		 */
-		private Personality[] personalities;
+		private List<LauncherAgent> agents;
 		/**
 		 * Instance of PlotModel for the
 		 * next simulation. Will add
@@ -278,15 +284,15 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		 */
 		private boolean shouldContinue;
 		
-		public ReflectResult(PlotLauncher<?, ?> runner, PlotModel<?> model, Personality[] personalities) {
-			this(runner, model, personalities, true);
+		public ReflectResult(PlotLauncher<?, ?> runner, PlotModel<?> model, List<LauncherAgent> agents) {
+			this(runner, model, agents, true);
 		}
 		
-		public ReflectResult(PlotLauncher<?, ?> runner, PlotModel<?> model, Personality[] personalities, boolean shouldContinue) {
+		public ReflectResult(PlotLauncher<?, ?> runner, PlotModel<?> model, List<LauncherAgent> agents, boolean shouldContinue) {
 			this.runner = runner;
 			this.model = model;
-			this.personalities = personalities;
 			this.shouldContinue = shouldContinue;
+			this.agents = agents;
 		}
 		
 		public PlotLauncher<?, ?> getRunner() {
@@ -297,8 +303,8 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 			return this.model;
 		}
 		
-		public Personality[] getPersonalities() {
-			return this.personalities;
+		public List<LauncherAgent> getAgents() {
+			return this.agents;
 		}
 		
 		public boolean shouldContinue() {

@@ -216,7 +216,7 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 	 * we can initialize personality from mas2j files.
 	 * @param agents
 	 */
-	protected void initializePlotAgents(ImmutableList<LauncherAgent> agents) {
+	protected void initializePlotAgents(List<LauncherAgent> agents) {
 		for (LauncherAgent ag: agents) {
 			if(ag.personality != null) {
 				// initialize personalities
@@ -256,7 +256,7 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 	 * @param usePlotLogger set this to false if you wish to set your own logging output
 	 * @throws JasonException
 	 */
-	public void initialize (String[] args, PlotModel<?> model, ImmutableList<LauncherAgent> agents, String agentFileName) throws JasonException  {
+	public void initialize (String[] args, PlotModel<?> model, List<LauncherAgent> agents, String agentFileName) throws JasonException  {
 		String defArgs[];
 		boolean debugMode=false;
 		

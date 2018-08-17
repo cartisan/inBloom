@@ -1,6 +1,7 @@
 package plotmas.stories.little_red_hen;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import jason.asSemantics.Personality;
 import plotmas.LauncherAgent;
@@ -26,21 +27,21 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 		}
 		
 		// Stop cycle if there are no other personality combinations
-		if(!personalityIterator.hasNext() || startCycle >= endCycle) {
+		if(!personalityIterator.hasNext() || currentCycle >= endCycle) {
 			return new ReflectResult(null, null, null, false);
 		}
 		
 		// Start the next cycle
 		lastPersonalities = personalityIterator.next();
-		log("Cycle " + startCycle);
 		lastRunner = new RedHenLauncher();
 		lastRunner.setShowGui(false);
 		// Create a new file logger if the log file name depends on the cycle number.
 		if(logFile.contains("%d")) {
 			setupFileLogger();
 		}
-		startCycle++;
-		return new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		
+		List<LauncherAgent> agents = createAgs(new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		return new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), agents);
 	}
 
 	@Override
@@ -48,16 +49,17 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 		lastPersonalities = personalityIterator.next();
 		lastRunner = new RedHenLauncher();
 		lastRunner.setShowGui(false);
-		ReflectResult rr = new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
 		
-		log("Cycle " + startCycle);
+		List<LauncherAgent> agents = createAgs(new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		ReflectResult rr = new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), agents);
+		
+		log("Cycle " + currentCycle);
 		
 		// Create a new file logger if the log file name depends on the cycle number.
 		if(logFile.contains("%d")) {
 			setupFileLogger();
 		}
 		
-		startCycle++;
 		return rr;
 	}
 

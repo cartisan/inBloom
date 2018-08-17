@@ -30,7 +30,6 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 	protected static String inFile = "";
 	protected static String logFile = "";
 	
-	protected static int startCycle = 0;
 	protected static int endCycle = -1;
 	protected static int cycleNum = -1;
 	
@@ -74,7 +73,7 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 				outFile = args[i + 1];
 				break;
 			case "-start":
-				startCycle = Integer.parseInt(args[i + 1]);
+				currentCycle = Integer.parseInt(args[i + 1]);
 				break;
 			case "-end":
 				if(endCycle > -1) {
@@ -125,7 +124,7 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 
 		// Open a file for writing results
 		try {
-			FileWriter fw = new FileWriter(outFile, startCycle > 0);
+			FileWriter fw = new FileWriter(outFile, currentCycle > 0);
 		    BufferedWriter bw = new BufferedWriter(fw);
 		    csvOut = new PrintWriter(bw);
 		} catch(IOException e) {
@@ -139,7 +138,7 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 		}
 		
 		// Print CSV header
-		if(startCycle == 0) {
+		if(currentCycle == 0) {
 			String header = "tellability,functional_units_total,";
 			for(FunctionalUnit unit : FunctionalUnits.ALL) {
 				header += unit.getName().toLowerCase().replace(' ', '_') + "s,";
@@ -200,7 +199,7 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 		}
 
 		// Log how many personalities there are.
-		log("Running " + (endCycle - startCycle) + " cycles...");
+		log("Running " + (endCycle - currentCycle) + " cycles...");
 	}
 
 	public List<Personality[]> createPlotSpace(Personality[] personalitySpace, int characters, boolean repeat) {
@@ -263,7 +262,7 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 		csv.deleteCharAt(csv.length() - 1);
 		csvOut.println(csv);
 		f.close();
-		if(startCycle % flushInterval == 0) {
+		if(currentCycle % flushInterval == 0) {
 			csvOut.flush();
 		}
 	}
@@ -287,7 +286,7 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 			if(logFile.isEmpty()) {
 				h = new StreamHandler();
 			} else {
-				h = new FileHandler(String.format(logFile, startCycle));
+				h = new FileHandler(String.format(logFile, currentCycle));
 			}
 			h.setFormatter(new PlotFormatter());
 		    Logger.getLogger("").addHandler(h);
@@ -333,7 +332,7 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 			return;
 		}
 		if(cycleNum > -1) {
-			endCycle = startCycle + cycleNum;
+			endCycle = currentCycle + cycleNum;
 		}
 	}
 }

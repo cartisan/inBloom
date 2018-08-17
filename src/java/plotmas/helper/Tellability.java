@@ -20,4 +20,12 @@ public class Tellability {
 	// Suspense
 	
 	// Dynamic Points
+	
+	/**
+	 * Computes the overall tellability score.
+	 * @return
+	 */
+	public double compute() {
+		return functionalPolyvalence;
+	}
 }
