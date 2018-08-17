@@ -127,7 +127,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	protected EngageResult engage(ReflectResult rr) {
 		PlotLauncher<?,?> runner = rr.getRunner();
 		Personality[] personalities = rr.getPersonalities();
-		Thread t = new Thread(this.new Cycle(runner, rr.getModel(), new String[0], createAgs(runner, personalities), this.agentSrc));
+		Thread t = new Thread(new Cycle(runner, rr.getModel(), new String[0], createAgs(runner, personalities), this.agentSrc));
 		t.start();
 		MASConsoleGUI.get().setPause(false);
 		boolean hasAddedListener = false;
@@ -217,7 +217,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	/**
 	 * Runnable for a single simulation.
 	 */
-	private class Cycle implements Runnable {
+	public static class Cycle implements Runnable {
 		
 		private PlotLauncher<?, ?> runner;
 		private PlotModel<?> model;
@@ -225,7 +225,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		private ImmutableList<LauncherAgent> agents;
 		private String agSrc;
 		
-		Cycle(PlotLauncher<?, ?> runner, PlotModel<?> model, String[] args, ImmutableList<LauncherAgent> agents, String agSrc) {
+		public Cycle(PlotLauncher<?, ?> runner, PlotModel<?> model, String[] args, ImmutableList<LauncherAgent> agents, String agSrc) {
 			this.runner = runner;
 			this.model = model;
 			for(LauncherAgent ag : agents) {
@@ -242,7 +242,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 				runner.initialize(args, model, agents, agSrc);
 				runner.run();
 			} catch (JasonException e) {
-				log("JasonException!");
+				e.printStackTrace();
 			}
 		}
 	}

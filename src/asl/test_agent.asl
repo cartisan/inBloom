@@ -50,7 +50,7 @@ is_important(wallet).
 
 -has(X) <-
 	if(is_important(X)) {
-		.appraise_emotion(fear, "self", "has(X)[source(percept)]");
+		.appraise_emotion(fear, "self", "has(X)[source(percept)]", false);
 		+self(has_purpose);
 	};
 	+lost(X).
