@@ -17,6 +17,8 @@ import plotmas.graph.Vertex;
  */
 public class FunctionalUnit {
 	
+	static Logger logger = Logger.getLogger(FunctionalUnit.class.getName());
+	
 	private String name;
 	private PlotDirectedSparseGraph unitGraph;
 	private PlotDirectedSparseGraph displayGraph;

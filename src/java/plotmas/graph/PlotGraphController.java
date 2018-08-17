@@ -282,16 +282,29 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		return analyze(null);
 	}
 	
+	/**
+	 * Analyzes the plot graph, computes the plots tellability and returns it.
+	 * <ul>
+	 *  <li> Analyzing a plot graph includes merging related vertices and specifying the edge types from mere temporal to
+	 * ones with more appropriate semantics so all primitive plot units can be represented. The resulting <b> new plot
+	 * graph is stored in analyzedGraphContainer </b> for displaying and further analyzes e.g. by the ER cycle.</li>
+	 *  <li> Computing the tellability atm includes just computing functional polyvalence and dispalying the results
+	 *  in the info panel. </li>
+	 *  </ul>
+	 * @param analyzedGraphContainer an (empty) plot graph that will be sued to store the analyesed graph
+	 * @return
+	 */
 	public Tellability analyze(PlotDirectedSparseGraph analyzedGraphContainer) {
 		if(analysisResult != null) {
 			return analysisResult;
 		}
+		
 		analysisResult = new Tellability();
+		
 		PlotDirectedSparseGraph g = new FullGraphPPVisitor().apply(this.graph);
 		g.accept(new CompactGraphPPVisitor(g));
+		g.accept(new EdgeLayoutVisitor(g, 9));
 		g.setName("Analyzed Plot Graph");
-		EdgeLayoutVisitor elv = new EdgeLayoutVisitor(g, 9);
-		g.accept(elv);
 		
 		Map<Vertex, Integer> vertexUnitCount = new HashMap<>();
 		

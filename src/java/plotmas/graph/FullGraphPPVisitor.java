@@ -16,7 +16,7 @@ import plotmas.helper.TermParser;
  * This post-process visitor is intended to be used on the
  * full ('raw') plot graph as the first post-process visitor.
  * It will create edges relevant for functional units and
- * collapse emotions, percepts and events into a single vertex.
+ * collapse emotions, percepts and action into a single vertex.
  * @author Sven Wilke
  *
  */

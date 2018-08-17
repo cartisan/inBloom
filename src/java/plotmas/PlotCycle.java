@@ -138,7 +138,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 				if(!hasAddedListener) {
 					if(runner.getEnvironmentInfraTier() != null) {
 						if(runner.getEnvironmentInfraTier().getUserEnvironment() != null) {
-							((PlotEnvironment<?>)runner.getEnvironmentInfraTier().getUserEnvironment()).addListener(this);
+							runner.getUserEnvironment().addListener(this);
 							hasAddedListener = true;
 						}
 					}
@@ -243,6 +243,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 				runner.run();
 			} catch (JasonException e) {
 				log("JasonException!");
+				log(e.getMessage());
 			}
 		}
 	}
