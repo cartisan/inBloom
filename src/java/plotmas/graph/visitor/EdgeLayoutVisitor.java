@@ -38,6 +38,7 @@ public class EdgeLayoutVisitor implements PlotGraphVisitor {
 				int offset = EDGE_SPACING + lane * EDGE_SPACING;
 				tEdge.setOffset(offset);
 				vertex.minWidth = Math.max(vertex.minWidth, offset);
+				terminationSource.minWidth = Math.max(terminationSource.minWidth, offset);
 			}
 		}
 	}
@@ -53,8 +54,10 @@ public class EdgeLayoutVisitor implements PlotGraphVisitor {
 			this.occupanceLeft[lane] = graph.getDest(edge);
 			int offset = EDGE_SPACING + lane * EDGE_SPACING;
 			edge.setOffset(offset);
-			Vertex vertex = this.graph.getDest(edge);
-			vertex.minWidth = Math.max(vertex.minWidth, offset);
+			Vertex vertexA = this.graph.getDest(edge);
+			Vertex vertexB = this.graph.getSource(edge);
+			vertexA.minWidth = Math.max(vertexA.minWidth, offset);
+			vertexB.minWidth = Math.max(vertexB.minWidth, offset);
 		}
 		return EdgeVisitResult.TERMINATE;
 	}

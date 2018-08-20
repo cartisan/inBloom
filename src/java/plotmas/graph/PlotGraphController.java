@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -299,6 +300,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		UnitFinder finder = new UnitFinder();
 		int polyvalentVertices = 0;
 		int unitInstances = 0;
+		Set<Vertex> polyvalentVertexSet = new HashSet<Vertex>();
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, unit.getGraph());
 			unitInstances += mappings.size();
@@ -314,13 +316,19 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 						count++;
 						if(count == 2) {
 							polyvalentVertices++;
-							v.setLabel("* " + v.getLabel());
+							polyvalentVertexSet.add(v);
 						}
 						vertexUnitCount.put(v, count);
 					}
 				}
 			}
 		}
+		
+		// Mark polyvalent vertices with asterisk
+		for(Vertex v : polyvalentVertexSet) {
+			v.setLabel("* " + v.getLabel());
+		}
+		
 		long time = System.currentTimeMillis() - start;
 		addInformation("Time taken: " + time + "ms");
 		addInformation("Units found: " + unitInstances);

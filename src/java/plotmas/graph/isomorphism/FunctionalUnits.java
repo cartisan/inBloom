@@ -13,6 +13,8 @@ public class FunctionalUnits {
 	public static final FunctionalUnit DENIED_REQUEST;
 	public static final FunctionalUnit RETALIATION;
 	
+	public static final FunctionalUnit HONORED_REQUEST;
+	
 	public static final FunctionalUnit INTENTIONAL_PROBLEM_RESOLUTION;
 	public static final FunctionalUnit FORTUITOUS_PROBLEM_RESOLUTION;
 	public static final FunctionalUnit SUCCESS_BORN_OF_ADVERSITY;
@@ -27,7 +29,7 @@ public class FunctionalUnits {
 	public static final PlotDirectedSparseGraph ALL_UNITS_GRAPH;
 	
 	static {
-		ALL = new FunctionalUnit[10];
+		ALL = new FunctionalUnit[11];
 		
 		Vertex v1, v2, v3, v4;
 		
@@ -145,6 +147,18 @@ public class FunctionalUnits {
 		sacrifice.addEdge(makeTermination(), v3, v1);
 		SACRIFICE = new FunctionalUnit("Sacrifice", sacrifice);
 		
+		PlotDirectedSparseGraph honoredRequest = new PlotDirectedSparseGraph();
+		v1 = makeIntention(1);
+		v2 = makeIntention(1);
+		honoredRequest.addEdge(makeCommunication(), v1, v2);
+
+		v3 = makeIntention(2);
+		honoredRequest.addEdge(makeMotivation(), v2, v3);
+
+		v2 = makePositive(3);
+		honoredRequest.addEdge(makeCommunication(), v3, v2);
+		HONORED_REQUEST = new FunctionalUnit("Honored Request", honoredRequest);
+		
 		ALL[0] = DENIED_REQUEST;
 		ALL[1] = NESTED_GOAL;
 		ALL[2] = RETALIATION;
@@ -155,6 +169,7 @@ public class FunctionalUnits {
 		ALL[7] = STARTING_OVER;
 		ALL[8] = GIVING_UP;
 		ALL[9] = SACRIFICE;
+		ALL[10] = HONORED_REQUEST;
 		
 		PlotDirectedSparseGraph allUnitsGraph = ALL[0].getDisplayGraph();
 		for(int i = 1; i < ALL.length; i++) {
