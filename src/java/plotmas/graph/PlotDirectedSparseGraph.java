@@ -296,6 +296,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		// BEWARE: lastVertexMap is not cloned, the returned graph is not useable for continuing plotting 
 		// clone vertices and add them to cloned graph
 		HashMap<Vertex,Vertex> cloneMap = new HashMap<>();		// maps old vertex -> cloned vertex
+		dest.name = this.name;
 		
 		// clone roots in right order
 		for (Vertex root : roots) {

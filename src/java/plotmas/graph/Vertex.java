@@ -215,7 +215,15 @@ public class Vertex implements Cloneable {
 	
 	@Override
 	public Vertex clone() {
-		return new Vertex(this.label, this.type, this.step);
+		Vertex clone = new Vertex(this.label, this.type, this.step);
+		
+		clone.minWidth = this.minWidth;
+		
+		for (String e: this.emotions) {
+			clone.addEmotion(e);
+		}
+		
+		return clone;
 	}
 
 	/**

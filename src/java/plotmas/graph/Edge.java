@@ -53,6 +53,9 @@ public class Edge implements Cloneable {
 	
 	@Override
 	public Edge clone() {
-		return new Edge(this.type);
+		Edge clone = new Edge(this.type);
+		clone.setOffset(this.offset);
+		
+		return clone;
 	}
 }

@@ -160,6 +160,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		}
 		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
 		EngageResult er = new EngageResult(graph, PlotGraphController.getPlotListener().analyze(graph));
+		graph.setName("ER Cycle, engagement step " + currentCycle);
 		runner.reset();
 		isRunning = true;
 		return er;
@@ -188,21 +189,22 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	@Override
 	public void run() {
 		ReflectResult rr = this.createInitialReflectResult();
-
+		EngageResult er = null;
+		
 		while(rr.shouldContinue) {
 			++currentCycle;
 			log("Running cycle: " + currentCycle + "...");
-			EngageResult er = engage(rr);
+			er = engage(rr);
 			rr = this.reflect(er);
 		}
-		this.finish();
+		this.finish(er);
 	}
 	
 	/**
 	 * Can be overridden by subclass.
 	 * This is called after the last simulation was run.
 	 */
-	protected void finish() {
+	protected void finish(EngageResult er) {
 	}
 	
 	/**
