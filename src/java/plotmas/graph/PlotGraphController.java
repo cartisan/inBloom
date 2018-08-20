@@ -94,24 +94,24 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	
 
 	/**
+	 * Creates a PlotGraphController instance that can be used to display graph.
+	 * <b>Attention</b>: Overwrites the plotListener singleton, so that all future plot events
+	 * will be directed to this very graph.
+	 * @param graph Graph to be displayed
+	 * @return the new PlotGraphListener instance
+	 */
+	public static PlotGraphController fromGraph(PlotDirectedSparseGraph graph) {
+		PlotGraphController.plotListener = new PlotGraphController(graph);
+		return PlotGraphController.plotListener;
+	}
+	
+	/**
 	 * Creates a new instance of {@link PlotDirectedSparseGraph}, which is used to capture new events.
 	 * Sets up a subgraphs for each character agent.
 	 * @param characters a collection of all acting character agents
 	 */
 	public PlotGraphController(Collection<LauncherAgent> characters) {
 		super("Plot Graph");
-
-		// Set up controls of plot graph
-		// Closing this window doesn't stop simulation
-		this.addWindowListener(new java.awt.event.WindowAdapter() {
-		    @Override
-		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-					PlotGraphController.getPlotListener().closeGraph();
-		        }
-		    }
-		);
-		
-		this.createPopupMenu();
 		
 		// create and initialize the plot graph the will be created by this listener
 		this.graph = new PlotDirectedSparseGraph();
@@ -121,6 +121,38 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		for (LauncherAgent character : characters) {
 			this.addCharacter(character.name);
 		}
+
+		setUp();
+	}
+
+	/**
+	 * Creates a new instance of {@link PlotDirectedSparseGraph}, which is used to capture new events.
+	 * Sets up a subgraphs for each character agent.
+	 * @param characters a collection of all acting character agents
+	 */
+	public PlotGraphController(PlotDirectedSparseGraph graph) {
+		super("Plot Graph");
+
+		// create and initialize the plot graph the will be created by this listener
+		this.graph = graph;
+		setUp();
+	}
+	
+	/**
+	 * Sets up an instance of this class, after {@code this.graph} has been set in the constructor.
+	 */
+	private void setUp() {
+		// Set up controls of plot graph
+		// Closing this window doesn't stop simulation
+		this.addWindowListener(new java.awt.event.WindowAdapter() {
+			@Override
+			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+				PlotGraphController.getPlotListener().closeGraph();
+			}
+		}
+				);
+		
+		this.createPopupMenu();
 		
 		// Initialize functional unit combo box
 		JComboBox<FunctionalUnit> unitComboBox = new JComboBox<FunctionalUnit>(FunctionalUnits.ALL);
@@ -141,15 +173,13 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 			}
 		});
 		addInformation("Highlight Unit:");
+		addInformation("Agents: " + graph.getRoots().size());
 		this.infoPanel.add(unitComboBox);
 		
-		addInformation("Agents: " + characters.size());
+		addGraph(FunctionalUnits.ALL_UNITS_GRAPH);
 		addGraph(this.graph);
 		graphTypeList.setSelectedItem(this.graph);
-		
-		addGraph(FunctionalUnits.ALL_UNITS_GRAPH);
 	}
-	
 	
     /**
      * Initializes the a popup menu that will appear on left-click.
@@ -278,6 +308,14 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		graphTypeList.repaint();
 	}
 	
+	/**
+	 * Uses the combobox graphTypeList to select graph g. Results in {@linkplain #visualizeGraph} showing this graph.
+	 * @param g
+	 */
+	public void setSelectedGraph(PlotDirectedSparseGraph g) { 
+		graphTypeList.setSelectedItem(g);
+	}
+	
 	public Tellability analyze() {
 		return analyze(null);
 	}
@@ -291,7 +329,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	 *  <li> Computing the tellability atm includes just computing functional polyvalence and dispalying the results
 	 *  in the info panel. </li>
 	 *  </ul>
-	 * @param analyzedGraphContainer an (empty) plot graph that will be sued to store the analyesed graph
+	 * @param analyzedGraphContainer an (empty) plot graph that will be used to store the analyzed graph
 	 * @return
 	 */
 	public Tellability analyze(PlotDirectedSparseGraph analyzedGraphContainer) {
@@ -355,7 +393,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	}
 	
 	/**
-	 * Plots and displays the graph that is selected by {@code this.drawnGraph}.
+	 * Plots and displays the graph that is selected by {@code this.graphTypeList}.
 	 * @return the displayed JFrame
 	 */
 	public PlotGraphController visualizeGraph() {

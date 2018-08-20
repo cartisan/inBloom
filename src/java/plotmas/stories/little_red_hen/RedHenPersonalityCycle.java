@@ -63,6 +63,18 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 		return rr;
 	}
 
+	@Override
+	protected void finish(EngageResult er) {
+		// Print results
+		log("Best tellability: " + bestTellability);
+		log("Personalities:");
+		for(Personality p : bestPersonalities) {
+			log("\t" + p.toString());
+		}
+		
+		// flush and close handled by super implementation
+		super.finish(er);
+	}
 	
 	public static void main(String[] args) {
 		PersonalitySpaceSearchCycle.main(args);

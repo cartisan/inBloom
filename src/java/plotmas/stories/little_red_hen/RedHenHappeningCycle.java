@@ -8,6 +8,7 @@ import plotmas.LauncherAgent;
 import plotmas.PlotCycle;
 import plotmas.PlotLauncher;
 import plotmas.graph.PlotDirectedSparseGraph;
+import plotmas.graph.PlotGraphController;
 import plotmas.helper.Tellability;
 import plotmas.storyworld.ScheduledHappeningDirector;
 
@@ -67,9 +68,12 @@ public class RedHenHappeningCycle extends PlotCycle {
 	}
 
 	@Override
-	protected void finish() {
+	protected void finish(EngageResult er) {
 		log("Le fin");
-		// TODO: Execute and show final results
+		log("Displaying resulting story...");
+		
+		PlotGraphController graphView = PlotGraphController.fromGraph(er.getPlotGraph());
+		graphView.visualizeGraph();
 	}
 	
 	public static void main(String[] args) {

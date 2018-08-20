@@ -298,14 +298,7 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 	
 	
 	@Override
-	protected void finish() {
-		// Print results
-		log("Best tellability: " + bestTellability);
-		log("Personalities:");
-		for(Personality p : bestPersonalities) {
-			log("\t" + p.toString());
-		}
-		
+	protected void finish(EngageResult er) {
 		// Flush and close file
 		csvOut.flush();
 		csvOut.close();
