@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -89,7 +90,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * This relaying is necessary, because the action needs to be plotted when it is executed,
      * and not when it is scheduled, otherwise the graph would get out of order.
      */
-    private HashMap<String, HashMap<Structure, Intention>> actionIntentionMap = new HashMap<>();
+    private ConcurrentHashMap<String, HashMap<Structure, Intention>> actionIntentionMap = new ConcurrentHashMap<>();
     
     /**
      * Jason-internal initialization executed by the framwork during 
