@@ -244,8 +244,12 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     }
 
 	public void buildYAxis() {
-    	Vertex firstColRoot = ((PlotDirectedSparseGraph) this.graph).getRoots().get(0);
-    	int x_pos = this.columnStartAtX.get(firstColRoot) - (this.columnWidths.get(firstColRoot) / 2 + STEP_OFFSET);
+		PlotDirectedSparseGraph graph = ((PlotDirectedSparseGraph) this.graph);
+		
+    	Vertex firstColRoot = graph.getRoots().get(0);
+    	int x_pos = this.columnStartAtX.get(firstColRoot) - (this.columnWidths.get(firstColRoot) / 2
+    														 + Transformers.vertexSizeTransformer.apply(graph.yAxis.get(firstColRoot.getStep())) / 2 
+    														 + STEP_OFFSET);
     	
     	// Update x positions of all columns to make place for axis
     	for (Vertex root : this.columnStartAtX.keySet()) {
