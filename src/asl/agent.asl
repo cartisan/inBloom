@@ -56,7 +56,7 @@ wish(relax).
 /********************************************/
 
 +rejected_request(help_with(Req))[source(Name)] <-
-	.appraise_emotion(anger, Name, "rejected_request(help_with(Req))[source(Name)]");
+	.appraise_emotion(anger, Name, "rejected_request(help_with(Req))[source(Name)]", true);
 	.abolish(rejected_request(help_with(Req)));
 	-asking(help_with(Req), Name);
 	if(not asking(help_with(Req), _)) {
@@ -64,7 +64,7 @@ wish(relax).
 	}.
 	
 +accepted_request(help_with(Req))[source(Name)] <-
-	.appraise_emotion(gratitude, Name, "accepted_request(help_with(Req))[source(Name)]");
+	.appraise_emotion(gratitude, Name, "accepted_request(help_with(Req))[source(Name)]", true);
 	.abolish(accepted_help_request(help_with(Req)));
 	-asking(help_with(Req), Name);
 	if(not asking(help_with(Req), _)) {
@@ -214,16 +214,10 @@ wish(relax).
 	bake(bread).
 
 @eat_1[atomic]	
-+!eat(X) : has(X) <- 
++!eat(X) <-
 	eat(X);
 	-has(X);
 	.succeed_goal(eat(X)).
-
-@eat_2
-+!eat(X) <- 
-	.print("Can't eat ", X, ", I don't have any! :( ");
-	.appraise_emotion(disappointment,"self","eat(X)[source(self)]");
-	.suspend(eat(X)).
 	
 +!share(X, Anims) <-
 	share(X, Anims).	
