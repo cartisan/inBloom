@@ -11,9 +11,9 @@ import plotmas.storyworld.Item;
 
 public class TestModel extends PlotModel<TestEnvironment> {
 
-	private int step = 0;
+	public int step = 0;
 
-	private Wallet wallet = new Wallet();
+	public Wallet wallet = new Wallet();
 
 	public TestModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		super(agentList, hapDir);

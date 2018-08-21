@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -93,7 +94,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * This relaying is necessary, because the action needs to be plotted when it is executed,
      * and not when it is scheduled, otherwise the graph would get out of order.
      */
-    private HashMap<String, Intention> actionIntentionMap = new HashMap<>();
+    private ConcurrentHashMap<String, HashMap<Structure, Intention>> actionIntentionMap = new ConcurrentHashMap<>();
     
     private boolean initialized = false;
     
@@ -164,13 +165,13 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     public boolean executeAction(String agentName, Structure action) {
     	// add attempted action to plot graph
 		String motivation = "[motivation(%s)]";
-		Intention intent = actionIntentionMap.get(agentName);
+		Intention intent = actionIntentionMap.get(agentName).get(action);
 		if(intent != null) {
 			motivation = String.format(motivation, TermParser.removeAnnots(intent.peek().getTrigger().getTerm(1).toString()));
 		} else {
 			motivation = "";
 		}
-		actionIntentionMap.remove(agentName);
+		actionIntentionMap.get(agentName).remove(action);
 		
 		PlotGraphController.getPlotListener().addEvent(agentName, action.toString() + motivation, getStep());
 		
@@ -179,6 +180,10 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	boolean result = this.doExecuteAction(agentName, action);		
     	logger.info(String.format("%s performed %s", agentName, action.toString()));
 		
+    	// appraise negative emotion if action failed.
+    	if(!result) {
+    		this.addEventPerception(agentName, action.toString(), PerceptAnnotation.fromEmotion("disappointment"));
+    	}
     	
     	// allow model to see if action resulted in state change
     	this.getModel().noteStateChanges(agentName, action.toString());
@@ -212,7 +217,10 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	@Override
 	public void scheduleAction(String agName, Structure action, Object infraData) {
 		Intention intent = ((ActionExec)infraData).getIntention();
-		actionIntentionMap.put(agName, intent);
+		if(!actionIntentionMap.containsKey(agName)) {
+			actionIntentionMap.put(agName, new HashMap<>());
+		}
+		actionIntentionMap.get(agName).put(action, intent);
 		super.scheduleAction(agName, action, infraData);
 	}
 	

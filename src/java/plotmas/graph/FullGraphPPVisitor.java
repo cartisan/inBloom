@@ -3,11 +3,11 @@ package plotmas.graph;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jason.asSemantics.Emotion;
-import jason.asSyntax.parser.ParseException;
 import plotmas.graph.visitor.EdgeVisitResult;
 import plotmas.graph.visitor.PlotGraphVisitor;
 import plotmas.helper.TermParser;
@@ -119,12 +119,18 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	@Override
 	public void visitEmotion(Vertex vertex) {
 		Emotion emotion;
-		try {
-			emotion = Emotion.parseString(vertex.getLabel());
-		} catch(ParseException e) {
+		
+		// Create emotion from toString() representation of emotion
+		// (instead of previously used literal representation)
+		emotion = TermParser.emotionFromString(vertex.getLabel());
+		
+		if(emotion == null) {
+			Logger.getGlobal().info("Emotion in PP was invalid. " + vertex.toString());
 			return;
 		}
 		
+		String cause = TermParser.removeAnnots(emotion.getCause());
+
 		for(Vertex targetEvent : this.eventList) {
 			
 			if(!targetEvent.getIntention().isEmpty()) {
@@ -132,10 +138,10 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 			}
 			
 			String targetString = targetEvent.getWithoutAnnotation();
-			if(targetString.startsWith("-") || targetString.startsWith("+")) {
-				targetString = targetString.substring(1);
-			}
-			if((targetString.equals(emotion.getCause())) 
+
+			// Needs to match with and without '+'
+			// with for percepts, without for actions
+			if(((targetString.equals(cause) || targetString.equals("+" + cause))) 
 					& !(targetEvent.hasEmotion(emotion.getName()))) {
 				
 				targetEvent.addEmotion(emotion.getName());
@@ -147,8 +153,13 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitPercept(Vertex vertex) {
+		String cause = vertex.getCause();
 		if(!this.eventList.isEmpty()) {
 			for(Vertex targetEvent : this.eventList) {
+				if(targetEvent.getLabel().equals(cause)) {
+					this.graph.addEdge(new Edge(Edge.Type.CAUSALITY), targetEvent, vertex);
+					cause = "";
+				}
 				if(targetEvent.getType() != Vertex.Type.PERCEPT &&
 					targetEvent.getFunctor().equals(vertex.getFunctor())) {
 					this.removeVertex(vertex);
@@ -222,7 +233,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitListen(Vertex vertex) {
-		if(vertex.getFunctor().equals("rejected_request")) {
+		/*if(vertex.getFunctor().equals("rejected_request")) {
 			String label = vertex.getLabel();
 			String request = "";
 			int reqStart = label.indexOf('(');
@@ -256,7 +267,18 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 					}
 				}
 			}
+		}*/
+		Vertex successor = this.graph.getCharSuccessor(vertex);
+		String checkTell = "+" + vertex.toString();
+		String checkAchieve = vertex.toString();
+		while(successor != null && !(successor.toString().equals(checkTell) || TermParser.removeAnnots(successor.getLabel()).equals(checkAchieve))) {
+			successor = this.graph.getCharSuccessor(successor);
 		}
+		if(successor == null)
+			return;
+		vertex.setLabel(successor.getLabel());
+		vertex.setType(successor.getType());
+		this.removeVertex(successor);
 		this.eventList.addFirst(vertex);
 	}
 	
