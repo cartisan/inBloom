@@ -21,7 +21,6 @@ public class TestEnvironment extends PlotEnvironment<TestModel> {
 	    	}
     	}
     	
-    	pauseOnRepeat(agentName, action);
     	return result;
     }
 }

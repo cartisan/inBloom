@@ -38,7 +38,11 @@ import plotmas.helper.TermParser;
  * @author Leonid Berov
  */
 public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends TimeSteppedEnvironment {
-	public static final Integer MAX_REPEATE_NUM = 7;
+	/* number of times all agents need to repeat an action, before system is paused; -1 to switch off*/
+	public static final Integer MAX_REPEATE_NUM = -1;
+	/* number of steps, before system is automatically pauses; -1 to switch off*/
+	public static final Integer MAX_STEP_NUM = -1;
+	
 	static final String STEP_TIMEOUT = "100";
 	
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
@@ -91,6 +95,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      */
     private HashMap<String, Intention> actionIntentionMap = new HashMap<>();
     
+    private boolean initialized = false;
+    
     /**
      * Jason-internal initialization executed by the framwork during 
      * {@link jason.infra.centralised.CentralisedEnvironment#CentralisedEnvironment(jason.mas2j.ClassParameters,
@@ -121,6 +127,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     public void initialize(List<LauncherAgent> agents) {
     	PlotEnvironment.startTime = System.nanoTime();
     	initializeActionCounting(agents);
+    	this.initialized = true;
     }
     
     /**
@@ -176,8 +183,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	// allow model to see if action resulted in state change
     	this.getModel().noteStateChanges(agentName, action.toString());
 		
-    	// switch on pause mode if nothing happens
-    	pauseOnRepeat(agentName, action);
+    	// make provisions for pause mode
+    	this.updateActionCount(agentName, action);
     	
 		return result;
 	}
@@ -214,7 +221,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		// check if pause mode is enabled, wait with execution while it is
 		this.waitWhilePause();
 		
-		logger.info("Step started for environment");
+		logger.info("Step " + this.getStep() + " started for environment");
 		if (this.model != null)
 			// Give model opportunity to check for and execute happenings
 			this.model.checkHappenings(step);
@@ -388,6 +395,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 * until its woken up again.
 	 */
 	synchronized void waitWhilePause() {
+		this.checkPause();
+		
         try {
             while (MASConsoleGUI.get().isPause()) {
             	logger.info("Execution paused, switching to logger output");
@@ -413,22 +422,39 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	agentActionCount.put(agName, new Pair<String, Integer>("", 1));
     }
 	
-	protected void pauseOnRepeat(String agentName, Structure action) {
+	protected void checkPause() {
+		if (this.initialized) {
+			// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
+	    	if ((MAX_REPEATE_NUM > -1) && (allAgentsRepeating())) {
+	    		// reset counter
+	    		logger.severe("Auto-paused execution of simulation, because all agents repeated their last action for " +
+	    				String.valueOf(MAX_REPEATE_NUM) + " of times.");
+	    		resetAllAgentActionCounts();
+	
+	    		PlotLauncher.runner.pauseExecution();
+	    		for(EnvironmentListener l : listeners) {
+	    			l.onPauseRepeat();
+	    		}
+	    	}
+	    	if ((MAX_STEP_NUM > -1) && (this.getStep() % MAX_STEP_NUM == 0)) {
+	    		logger.severe("Auto-paused execution of simulation, because system ran for 50 steps.");
+	    		
+	    		PlotLauncher.runner.pauseExecution();
+	    		for(EnvironmentListener l : listeners) {
+	    			l.onPauseRepeat();
+	    		}
+	    	}
+		}
+	}
+
+	/**
+	 * @param agentName
+	 * @param action
+	 */
+	private void updateActionCount(String agentName, Structure action) {
 		Pair<String, Integer> actionCountPair = agentActionCount.get(agentName);
 		
-		// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
-    	if (allAgentsRepeating()) {
-    		// reset counter
-    		logger.severe("Auto-paused execution of simulation because all agents repeated their last action for " +
-    				String.valueOf(MAX_REPEATE_NUM) + " of times.");
-    		PlotLauncher.runner.pauseExecution();
-    		resetAllAgentActionCounts();
-    		for(EnvironmentListener l : listeners) {
-    			l.onPauseRepeat();
-    		}
-    	}
-    	
-    	// new action is same as last action
+		// new action is same as last action
     	if (actionCountPair.getFirst().equals(action.toString())) {
     		agentActionCount.put(agentName, new Pair<String, Integer>(action.toString(),
     																  actionCountPair.getSecond()+1));

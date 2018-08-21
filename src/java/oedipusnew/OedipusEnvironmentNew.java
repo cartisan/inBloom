@@ -87,7 +87,6 @@ public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 		
 		
 		
-		pauseOnRepeat(agentName, action); 
 		return result;
 		
 		

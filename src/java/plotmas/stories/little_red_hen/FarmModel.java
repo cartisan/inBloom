@@ -29,19 +29,6 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		this.actionCount = 0;
 		this.wheat = null;
 		this.wheatFound = false;
-		
-		FindCornHappening findCorn = new FindCornHappening(
-			// hen finds wheat after 4 farm work actions
-			(FarmModel model) -> {
-            		if((model.actionCount > 3) & (!model.wheatFound)) {
-            			return true;
-            		}
-            		return false; 
-    		},
-			"hen",
-			"actionCount");
-		
-		this.scheduleHappening(findCorn);
 	}
 
 	
