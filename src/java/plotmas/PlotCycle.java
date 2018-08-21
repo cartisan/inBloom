@@ -125,6 +125,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 * @return EngageResult containing the graph of this simulation and its tellability score.
 	 */
 	protected EngageResult engage(ReflectResult rr) {
+		log("Engaging...");
 		PlotLauncher<?,?> runner = rr.getRunner();
 
 		Thread t = new Thread(this.new Cycle(runner, rr.getModel(), new String[0], rr.getAgents(), this.agentSrc));
@@ -193,7 +194,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		
 		while(rr.shouldContinue) {
 			++currentCycle;
-			log("Running cycle: " + currentCycle + "...");
+			log("Running cycle: " + currentCycle);
 			er = engage(rr);
 			rr = this.reflect(er);
 		}

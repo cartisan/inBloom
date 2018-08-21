@@ -14,7 +14,7 @@ import plotmas.storyworld.ScheduledHappeningDirector;
 
 public class RedHenHappeningCycle extends PlotCycle {
 
-	public static final double THRESHOLD = 0;
+	public static final double THRESHOLD = -1;
 	
 	public RedHenHappeningCycle(String[] agentNames, String agentSrc) {
 		// Create PlotCycle with needed agents.
@@ -23,11 +23,15 @@ public class RedHenHappeningCycle extends PlotCycle {
 	
 	@Override
 	protected ReflectResult reflect(EngageResult er) {
+		log("Reflecting...");
 		Tellability tellability = er.getTellability();
 		PlotDirectedSparseGraph story = er.getPlotGraph();
 		
+		log("tellability of last engagement result: " + tellability.compute());
+		
 		// Check if we found an appropriate story
 		if(tellability.compute() > THRESHOLD) {
+			// signal ER cycle to stop
 			return new ReflectResult(null, null, null, false);
 		}
 		
@@ -59,7 +63,7 @@ public class RedHenHappeningCycle extends PlotCycle {
 		FarmModel model = new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector());
 		
 		// start with neutral personalities
-		List<LauncherAgent> startAgents = this.createAgs(new Personality[] {new Personality(0, 1, 0, 0, 0),
+		List<LauncherAgent> startAgents = this.createAgs(new Personality[] {new Personality(0, 0, 0, 0, 0),
 															  				new Personality(0, 0, 0, 0, 0),
 															  				new Personality(0, 0, 0, 0, 0), 
 															  				new Personality(0, 0, 0, 0, 0)});
@@ -77,6 +81,7 @@ public class RedHenHappeningCycle extends PlotCycle {
 	}
 	
 	public static void main(String[] args) {
+		TIMEOUT = 1000;
 		RedHenHappeningCycle cycle = new RedHenHappeningCycle(new String[] { "hen", "dog", "cow", "pig" },
 															  "agent");
 		cycle.run();

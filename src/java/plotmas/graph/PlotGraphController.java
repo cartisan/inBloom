@@ -343,6 +343,10 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		g.accept(new CompactGraphPPVisitor(g));
 		g.accept(new EdgeLayoutVisitor(g, 9));
 		g.setName("Analyzed Plot Graph");
+
+		ConflictVisitor confVis = new ConflictVisitor().apply(g);
+		analysisResult.productiveConflicts = confVis.getProductiveConflictNumber();
+		analysisResult.suspense = confVis.getSuspense();
 		
 		Map<Vertex, Integer> vertexUnitCount = new HashMap<>();
 		
