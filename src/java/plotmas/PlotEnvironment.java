@@ -155,9 +155,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 */
 	@Override
     public boolean executeAction(String agentName, Structure action) {
-		// check if pause mode is enabled, wait with execution while it is
-		this.waitWhilePause();
-		
     	// add attempted action to plot graph
 		String motivation = "[motivation(%s)]";
 		Intention intent = actionIntentionMap.get(agentName);
@@ -214,6 +211,9 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	
 	@Override
 	protected void stepStarted(int step) {
+		// check if pause mode is enabled, wait with execution while it is
+		this.waitWhilePause();
+		
 		logger.info("Step started for environment");
 		if (this.model != null)
 			// Give model opportunity to check for and execute happenings
