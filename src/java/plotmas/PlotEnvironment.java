@@ -410,7 +410,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		
         try {
             while (MASConsoleGUI.get().isPause()) {
-            	logger.info("Execution paused, switching to logger output");
+            	logger.info("Execution paused, switching to console output");
                 wait();
             }
         } catch (Exception e) { }

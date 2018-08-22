@@ -27,7 +27,6 @@ import plotmas.helper.PlotFormatter;
 public class PlotControlsLauncher extends RunCentralisedMAS {
 	public static PlotLauncher<?,?> runner = null;
 	
-	protected static boolean COMPRESS_GRAPH = true;	// used to determine if PlotGraph should be compressed before drawing
 	protected static Level LOG_LEVEL = Level.INFO;
 //	protected static Level LOG_LEVEL = Level.FINE;
 	
@@ -57,12 +56,23 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 		if(!showGui) {
 			return;
 		}
+		
+		// reset old handlers
         Handler[] hs = Logger.getLogger("").getHandlers(); 
         for (int i = 0; i < hs.length; i++) { 
             Logger.getLogger("").removeHandler(hs[i]); 
         }
+        
+        // set console handler to display important messages, so they don't get lost
+        Handler ch = new ConsoleHandler();
+        ch.setLevel(Level.WARNING);
+        ch.setFormatter(new PlotFormatter()); 
+        Logger.getLogger("").addHandler(ch);
+        
+        // everything should also be logged in the GUI
         Handler h = PlotFormatter.handler();
         Logger.getLogger("").addHandler(h);
+
         Logger.getLogger("").setLevel(LOG_LEVEL);
 	}
 	
