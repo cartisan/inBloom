@@ -23,6 +23,14 @@ public class TestModel extends PlotModel<TestEnvironment> {
 		}
 	}
 	
+	@Override
+	public void initialize(List<LauncherAgent> agentList) {
+		super.initialize(agentList);
+		for(Character ag : this.characters.values()) {
+			ag.addToInventory(wallet);
+		}	
+	}
+	
 	public boolean doStuff(Character agent) {
 		
 		logger.info("Doing stuff.");
