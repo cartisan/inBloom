@@ -8,10 +8,15 @@ import java.util.UUID;
  */
 public class Edge implements Cloneable {
 	
-	public enum Type { ROOT, TEMPORAL, MOTIVATION, COMMUNICATION }
+	public enum Type { ROOT, TEMPORAL, MOTIVATION, COMMUNICATION, ACTUALIZATION, TERMINATION, EQUIVALENCE, CAUSALITY }
 	
 	private String id;
 	private Type type;
+	
+	// This is just used for rendering.
+	// Should be seperated into a class
+	// responsible for view.
+	private int offset;
 	
 	public Edge() {
 		this(Type.TEMPORAL);
@@ -20,6 +25,14 @@ public class Edge implements Cloneable {
 	public Edge(Type type) {
 		this.id = UUID.randomUUID().toString();
 		this.type = type;
+	}
+	
+	public void setOffset(int offset) {
+		this.offset = offset;
+	}
+	
+	public int getOffset() {
+		return this.offset;
 	}
 	
 	public String getId() {
@@ -40,6 +53,9 @@ public class Edge implements Cloneable {
 	
 	@Override
 	public Edge clone() {
-		return new Edge(this.type);
+		Edge clone = new Edge(this.type);
+		clone.setOffset(this.offset);
+		
+		return clone;
 	}
 }

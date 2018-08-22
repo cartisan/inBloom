@@ -55,7 +55,8 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	-wish(create(X));
 	!eat(X).
 	
-+has(X) : has(X) <-
+//+has(X) : has(X) <-
++found(X) : has(X) <-
 	-wish(create(X));
 	?creatable_from(X,Y);
 	?is_useful(Y,Z)
@@ -76,19 +77,19 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 /*****      Emotion management **************/
 /********************************************/
 
-+rejected_help_request(Req)[source(Name)] <-
-	.appraise_emotion(anger, Name, "rejected_help_request(Req)[source(Name)]");
-	.abolish(rejected_help_request(Req));
-	-asking(Req, Name);
-	if(not asking(Req, _)) {
++rejected_request(help_with(Req))[source(Name)] <-
+	.appraise_emotion(anger, Name, "rejected_request(help_with(Req))[source(Name)]", true);
+	.abolish(rejected_request(help_with(Req)));
+	-asking(help_with(Req), Name);
+	if(not asking(help_with(Req), _)) {
 		.resume(Req);
 	}.
 	
-+accepted_help_request(Req)[source(Name)] <-
-	.appraise_emotion(gratitude, Name, "accepted_help_request");
-	.abolish(accepted_help_request(Req));
-	-asking(Req, Name);
-	if(not asking(Req, _)) {
++accepted_request(help_with(Req))[source(Name)] <-
+	.appraise_emotion(gratitude, Name, "accepted_request(help_with(Req))[source(Name)]", true);
+	.abolish(accepted_help_request(help_with(Req)));
+	-asking(help_with(Req), Name);
+	if(not asking(help_with(Req), _)) {
 		.resume(Req);
 	}.
 
@@ -105,7 +106,7 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	for (.member(Animal, Animals)) {
 		.print("Asking ", Animal, " to help with ", X)
 		.send(Animal, achieve, help_with(X));
-		+asking(X, Animal);
+		+asking(help_with(X), Animal);
 	}
 	.suspend(X);
 	!X.
@@ -133,11 +134,11 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 @default_activity_3
 +!default_activity <-
 	.random(R);
-	if(R>0.5) {
+//	if(R>0.5) {
 		?wish(X);
-	} else {
-		?obligation(X);
-	}
+//	} else {
+//		?obligation(X);
+//	}
 	!X;
 	!default_activity.	
 
@@ -145,15 +146,14 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 /****** Mood  *******************************/
 /********************************************/
 +mood(hostile) <-
-	?affect_target(Anims);
-	!!punished(Anims).
+	!punish.
 
 // begin declarative goal  (p. 174; Bordini,2007)*/
-+!punished(L) : punished(L) <- true.
++!punish : punished(L) <- true.
 
 // insert all actual punishment plans
 @punished_plan_1[atomic]	
-+!punished(_) : mood(hostile) & has(X) & is_pleasant(eat(X)) <-
++!punish : mood(hostile) & has(X) & is_pleasant(eat(X)) <-
 	?affect_target(Anims);
 	if (.empty(Anims)) {
 		!eat(X);
@@ -166,17 +166,16 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	}.
 	
 // blind commitment: if no means to punish present now, keep trying
-+!punished(_) : true <- 
-	?affect_target(Anims);	
-	!!punished(Anims).
++!punish : true <- 
+	!punish.
 
 // relativised commitment: finish desire if not in hostile mood anymore, or punishment done
 -mood(hostile) <-
-	.succeed_goal(punished(_)).
+	.succeed_goal(punish).
 
 +punished(L) : true <- 
 	-punished(L);
-	.succeed_goal(punished(_)).
+	.drop_intention(punished(_)).
 	
 /********************************************/
 /***** Plans  *******************************/
@@ -217,18 +216,18 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 @reject_request_1[affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]
 +!help_with(X)[source(Name)] : is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
-	.send(Name, tell, rejected_help_request(X)).
+	.send(Name, tell, rejected_request(help_with(X))).
 
 // Reject helping others if "anti-social tendencies" and feeling strong
 @reject_request_2[affect(and(personality(conscientiousness,negative), mood(dominance,high)))]
 +!help_with(X)[source(Name)] : is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
-	.send(Name, tell, rejected_help_request(X)).
+	.send(Name, tell, rejected_request(help_with(X))).
 
 @accept_request
 +!help_with(X)[source(Name)] <-
 	.print("I'll help you with ", X, ", ", Name);
-	.send(Name, tell, accepted_help_request(X));
+	.send(Name, tell, accepted_request(help_with(X)));
 	help(Name).
 	
 
@@ -262,11 +261,5 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	-has(X);
 	.succeed_goal(eat(X)).
 
-@eat_2
-+!eat(X) <- 
-	.print("Can't eat ", X, ", I don't have any! :( ");
-	.appraise_emotion(disappointment,"","eat(X)[source(self)]");
-	.suspend(eat(X)).
-	
 +!share(X, Anims) <-
 	share(X, Anims).	

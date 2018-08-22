@@ -3,29 +3,47 @@ package plotmas.graph;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingConstants;
 
+import org.freehep.graphicsbase.util.export.ExportDialog;
 import org.jfree.ui.RefineryUtilities;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.VisualizationImageServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
-import jason.asSemantics.Emotion;
 import jason.asSemantics.Message;
-import jason.asSyntax.parser.ParseException;
+import plotmas.LauncherAgent;
 import plotmas.PlotControlsLauncher;
-import plotmas.PlotLauncher.LauncherAgent;
+import plotmas.PlotLauncher;
+import plotmas.graph.isomorphism.FunctionalUnit;
+import plotmas.graph.isomorphism.FunctionalUnits;
+import plotmas.graph.isomorphism.UnitFinder;
+import plotmas.graph.visitor.EdgeLayoutVisitor;
+import plotmas.helper.Tellability;
 
 /**
  * Responsible for maintaining and visualizing the graph that represents the emergent plot of the narrative universe.
@@ -35,24 +53,27 @@ import plotmas.PlotLauncher.LauncherAgent;
  * @author Leonid Berov
  */
 @SuppressWarnings("serial")
-public class PlotGraphController extends JFrame implements PlotmasGraph {
+public class PlotGraphController extends JFrame implements PlotmasGraph, ActionListener {
     
-	private static PlotGraphController plotListener = null;
-	/**
-	 * Types of plot graph that can be drawn: [0] full graph, [1] analyzed graph
-	 */
-	private static final String[] GRAPH_TYPES = new String[] {"full plot graph", "analyzed plot graph"};
 	protected static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
+    
+	/** Singleton instance used to collect the plot */
+	private static PlotGraphController plotListener = null;
+
 	public static Color BGCOLOR = Color.WHITE;
 
-
-	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
-	protected PlotDirectedSparseGraph drawnGraph = null;	// graph that is currently being drawn
-	private JComboBox<String> graphTypeList = new JComboBox<>(GRAPH_TYPES);			// ComboBox that is displayed on the graph to change display type
-	private String selectedGraphType = GRAPH_TYPES[0];
-	public VisualizationViewer<Vertex, Edge> visViewer = null;
-	private GraphZoomScrollPane scrollPane = null; //panel used to display scrolling bars
+	/** Save action command. */
+	public static final String SAVE_COMMAND = "SAVE";
+	/** Change plot view action command. */
+    public static final String CHANGE_VIEW_COMMAND = "CHANGE_VIEW";
 	
+	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
+	private JComboBox<PlotDirectedSparseGraph> graphTypeList = new JComboBox<>();	// ComboBox that is displayed on the graph to change display type
+	public VisualizationViewer<Vertex, Edge> visViewer = null;
+	private JPanel infoPanel = new JPanel(); // parent of information JLabels
+	private GraphZoomScrollPane scrollPane = null; //panel used to display scrolling bars
+	private JPopupMenu popup = null;	
+	private Tellability analysisResult = null;
 	
 	/**
 	 * System-wide method for getting access to the active PlotGraph instance that collects events
@@ -72,6 +93,19 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 		PlotGraphController.plotListener = new PlotGraphController(characters);
 	}
 	
+
+	/**
+	 * Creates a PlotGraphController instance that can be used to display graph.
+	 * <b>Attention</b>: Overwrites the plotListener singleton, so that all future plot events
+	 * will be directed to this very graph.
+	 * @param graph Graph to be displayed
+	 * @return the new PlotGraphListener instance
+	 */
+	public static PlotGraphController fromGraph(PlotDirectedSparseGraph graph) {
+		PlotGraphController.plotListener = new PlotGraphController(graph);
+		return PlotGraphController.plotListener;
+	}
+	
 	/**
 	 * Creates a new instance of {@link PlotDirectedSparseGraph}, which is used to capture new events.
 	 * Sets up a subgraphs for each character agent.
@@ -79,207 +113,326 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 	 */
 	public PlotGraphController(Collection<LauncherAgent> characters) {
 		super("Plot Graph");
-
-		// Set up controls of plot graph
-		// Closing this window doesn't stop simulation
-		this.addWindowListener(new java.awt.event.WindowAdapter() {
-		    @Override
-		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-					PlotGraphController.getPlotListener().closeGraph();
-		        }
-		    }
-		);
 		
 		// create and initialize the plot graph the will be created by this listener
 		this.graph = new PlotDirectedSparseGraph();
+		this.graph.setName("Full Plot Graph");
+		
 		// set up a "named" tree for each character
 		for (LauncherAgent character : characters) {
-			Vertex root = new Vertex(character.name, Vertex.Type.ROOT);
-			graph.addRoot(root);
+			this.addCharacter(character.name);
 		}
+
+		setUp();
 	}
 
-	public void closeGraph() {
-		this.getContentPane().remove(scrollPane);
-    	this.dispose();
-    	
-    	PlotControlsLauncher gui = (PlotControlsLauncher) PlotControlsLauncher.getRunner();
-    	gui.graphClosed(this);
-	}
-	
-	public void addEvent(String character, String event) {
-		this.graph.addEvent(character, event, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
-	}
-	
-	public void addEvent(String character, String event, Vertex.Type eventType) {
-		this.graph.addEvent(character, event, eventType, Edge.Type.TEMPORAL);
-	}
-	
-	public void addEvent(String character, String event, Edge.Type linkType) {
-		this.graph.addEvent(character, event, Vertex.Type.EVENT, linkType);
-	}
-	
-	public Vertex addMsgSend(Message m) {
-		Vertex senderV = this.graph.addMsgSend(m.getSender(), m.getPropCont().toString());
-		return senderV;
-	}
+	/**
+	 * Creates a new instance of {@link PlotDirectedSparseGraph}, which is used to capture new events.
+	 * Sets up a subgraphs for each character agent.
+	 * @param characters a collection of all acting character agents
+	 */
+	public PlotGraphController(PlotDirectedSparseGraph graph) {
+		super("Plot Graph");
 
-	public Vertex addMsgReceive(Message m, Vertex senderV) {
-		Vertex recV = this.graph.addMsgReceive(m.getReceiver(), m.getPropCont().toString(), senderV);
-		return recV;
+		// create and initialize the plot graph the will be created by this listener
+		this.graph = graph;
+		setUp();
 	}
 	
 	/**
-	 * Clones this.graph and conflates the copy to reduce redundant information. 
-	 * Conflation removes from the graph: 
-	 *   - perceptions that are reporting the results of an agent action
- 	 *   - emotions that are caused by actions or perceptions
- 	 * The removed emotions are incorporated into the vertex of causing
- 	 * 
-	 * @return a clone of this.graph with removed redundant vertices
+	 * Sets up an instance of this class, after {@code this.graph} has been set in the constructor.
 	 */
-	private PlotDirectedSparseGraph postProcessThisGraph() {
-		logger.info("Start analzing and compressing the plot graph");
-		// For each subgraph, conflate action->perception->emotion vertices into one vertex
-		PlotDirectedSparseGraph cleanG = this.graph.clone();
+	private void setUp() {
+		// Set up controls of plot graph
+		// Closing this window doesn't stop simulation
+		this.addWindowListener(new java.awt.event.WindowAdapter() {
+			@Override
+			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+				PlotGraphController.getPlotListener().closeGraph();
+			}
+		}
+				);
 		
-		for(Vertex root : cleanG.getRoots()) {
-			LinkedList<Vertex> eventList = new LinkedList<>();
+		this.createPopupMenu();
+		
+		// Initialize functional unit combo box
+		JComboBox<FunctionalUnit> unitComboBox = new JComboBox<FunctionalUnit>(FunctionalUnits.ALL);
+		unitComboBox.addItem(null);
+		unitComboBox.setSelectedItem(null);
+		unitComboBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				@SuppressWarnings("unchecked")
+				JComboBox<FunctionalUnit> combo = (JComboBox<FunctionalUnit>) event.getSource();
+				FunctionalUnit selectedUnit = (FunctionalUnit) combo.getSelectedItem();
+				if(selectedUnit == null) {
+					Transformers.HIGHLIGHT = null;
+				} else {
+					Transformers.HIGHLIGHT = ((PlotDirectedSparseGraph)graphTypeList.getSelectedItem()).getUnitVertices(selectedUnit);
+				}
+				PlotGraphController.getPlotListener().visViewer.repaint();
+			}
+		});
+		addInformation("Highlight Unit:");
+		addInformation("Agents: " + graph.getRoots().size());
+		this.infoPanel.add(unitComboBox);
+		
+		addGraph(FunctionalUnits.ALL_UNITS_GRAPH);
+		addGraph(this.graph);
+		graphTypeList.setSelectedItem(this.graph);
+	}
+	
+    /**
+     * Initializes the a popup menu that will appear on left-click.
+     */
+    protected void createPopupMenu() {
+        JPopupMenu result = new JPopupMenu("PlotGraph");
+
+        JMenuItem pngItem = new JMenuItem("Save Graph");
+        pngItem.setActionCommand(SAVE_COMMAND);
+        pngItem.addActionListener(this);
+
+        result.add(pngItem);
+
+        this.popup = result;
+    }
+    
+	/**
+	 * Method which allows this to registered as an ActionListener. Performs the handling of all events
+	 * that result from interactions with UI elements of this JFrame. 
+	 * @param event Event that specifies how to react
+	 */
+	@Override
+	public void actionPerformed(ActionEvent event) {
+        String command = event.getActionCommand();
+        
+        if (command.equals(SAVE_COMMAND)) {
+            try {
+                doSaveAs();
+            }
+            catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "I/O error occurred.", 
+                        "Save Graph", JOptionPane.WARNING_MESSAGE);
+            }
+        } else if (command.equals(CHANGE_VIEW_COMMAND)) {
+			@SuppressWarnings("unchecked")
+			JComboBox<PlotDirectedSparseGraph> combo = (JComboBox<PlotDirectedSparseGraph>) event.getSource();
+			PlotDirectedSparseGraph selectedGraph = (PlotDirectedSparseGraph) combo.getSelectedItem();
 			
-			for(Vertex v : cleanG.getCharSubgraph(root)){
-				switch(v.getType()) {
-					case PERCEPT: {
-						//if this perception is just the result of a previous action, remove it and start removal process
-						//format: relax(.*)[emotion(.+)+]
-						if(!eventList.isEmpty() &&
-								(eventList.getFirst().getType() == Vertex.Type.EVENT) &&
-									eventList.getFirst().getFunctor().equals(v.getFunctor())) {
-							
-							// remove perception from graph
-							Vertex lastV = eventList.isEmpty() ? root : eventList.getFirst();
-							cleanG.removeVertexAndPatchGraph(v, lastV);
-							
-						// otherwise keep it and continue
-						} else {
-							eventList.addFirst(v);
+			Layout<Vertex, Edge> layout = new PlotGraphLayout(selectedGraph);
+			PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
+			PlotGraphController.getPlotListener().visViewer.repaint();
+        }
+	}
+	
+	/**
+	 * Saves currently displayed plot graph as PNG image. Displays a FileChoose to select name and target dir.
+	 * @throws IOException
+	 */
+	private void doSaveAs() throws IOException {
+        // instantiate and configure image-able visualization viewer
+        VisualizationImageServer<Vertex, Edge> vis =
+        	    new VisualizationImageServer<Vertex, Edge>(this.visViewer.getGraphLayout(),
+        	    										   this.visViewer.getGraphLayout().getSize());
+
+        setUpAppearance(vis);
+
+        ExportDialog export = new ExportDialog();
+        export.showExportDialog(vis, "Export view as ...", vis, "export");
+	}
+
+	public JPopupMenu getPopup() {
+		return this.popup;
+	}
+
+	public void closeGraph() {
+		logger.info("Closing and reseting plot graph view");
+		
+		this.getContentPane().remove(scrollPane);
+    	this.dispose();
+    	
+    	PlotControlsLauncher gui = PlotLauncher.getRunner();
+    	gui.graphClosed(this);
+	}
+	
+	public void addCharacter(String agName) {
+		this.graph.addRoot(agName);		
+	}	
+	
+	public void addEvent(String character, String event, int step) {
+		this.graph.addEvent(character, event, step, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
+	}
+	
+	public void addEvent(String character, String event, Vertex.Type eventType, int step) {
+		this.graph.addEvent(character, event, step, eventType, Edge.Type.TEMPORAL);
+	}
+	
+	public void addEvent(String character, String event, Edge.Type linkType, int step) {
+		this.graph.addEvent(character, event, step, Vertex.Type.EVENT, linkType);
+	}
+	
+	public Vertex addMsgSend(Message m, String motivation, int step) {
+		// Format message to intention format, i.e. "!performative(content)"
+		Vertex senderV = this.graph.addMsgSend(m.getSender(), "!" + m.getIlForce() + "(" + m.getPropCont().toString() + ")" + motivation, step);
+		return senderV;
+	}
+
+	public Vertex addMsgReceive(Message m, Vertex senderV, int step) {
+		// Add an "!" to the content if message was an achieve performative
+		// "+", to have the percept format, is added in Vertex#toString
+		Vertex recV = this.graph.addMsgReceive(m.getReceiver(), (m.getIlForce().startsWith("achieve") ? "!" : "") + m.getPropCont().toString(), senderV, step);
+		return recV;
+	}
+	
+	public void addInformation(String info) {
+		infoPanel.add(new JLabel(info));
+		infoPanel.validate();
+		infoPanel.repaint();
+	}
+	
+	/**
+	 * Adds a graph to the graph type list.
+	 * If a graph with the same name is already in the list,
+	 * the new one will replace it.
+	 * @param g Graph to add
+	 */
+	public void addGraph(PlotDirectedSparseGraph g) {
+		for(int i = 0; i < graphTypeList.getItemCount(); i++) {
+			String n = graphTypeList.getItemAt(i).toString();
+			if(n.equals(g.toString())) {
+				graphTypeList.removeItemAt(i);
+				graphTypeList.addItem(g);
+				return;
+			}
+		}
+		graphTypeList.addItem(g);
+		graphTypeList.repaint();
+	}
+	
+	/**
+	 * Uses the combobox graphTypeList to select graph g. Results in {@linkplain #visualizeGraph} showing this graph.
+	 * @param g
+	 */
+	public void setSelectedGraph(PlotDirectedSparseGraph g) { 
+		graphTypeList.setSelectedItem(g);
+	}
+	
+	public Tellability analyze() {
+		return analyze(null);
+	}
+	
+	/**
+	 * Analyzes the plot graph, computes the plots tellability and returns it.
+	 * <ul>
+	 *  <li> Analyzing a plot graph includes merging related vertices and specifying the edge types from mere temporal to
+	 * ones with more appropriate semantics so all primitive plot units can be represented. The resulting <b> new plot
+	 * graph is stored in analyzedGraphContainer </b> for displaying and further analyzes e.g. by the ER cycle.</li>
+	 *  <li> Computing the tellability atm includes just computing functional polyvalence and dispalying the results
+	 *  in the info panel. </li>
+	 *  </ul>
+	 * @param analyzedGraphContainer an (empty) plot graph that will be used to store the analyzed graph
+	 * @return
+	 */
+	public Tellability analyze(PlotDirectedSparseGraph analyzedGraphContainer) {
+		if(analysisResult != null) {
+			return analysisResult;
+		}
+		
+		analysisResult = new Tellability();
+		
+		PlotDirectedSparseGraph g = new FullGraphPPVisitor().apply(this.graph);
+		g.accept(new CompactGraphPPVisitor(g));
+		g.accept(new EdgeLayoutVisitor(g, 9));
+		g.setName("Analyzed Plot Graph");
+
+		ConflictVisitor confVis = new ConflictVisitor().apply(g);
+		analysisResult.productiveConflicts = confVis.getProductiveConflictNumber();
+		analysisResult.suspense = confVis.getSuspense();
+		
+		Map<Vertex, Integer> vertexUnitCount = new HashMap<>();
+		
+		long start = System.currentTimeMillis();
+		UnitFinder finder = new UnitFinder();
+		int polyvalentVertices = 0;
+		int unitInstances = 0;
+		Set<Vertex> polyvalentVertexSet = new HashSet<Vertex>();
+		for(FunctionalUnit unit : FunctionalUnits.ALL) {
+			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, unit.getGraph());
+			unitInstances += mappings.size();
+			this.analysisResult.functionalUnitCount.put(unit, mappings.size());
+			logger.log(Level.INFO, "Found '" + unit.getName() + "' " + mappings.size() + " times.");
+			for(Map<Vertex, Vertex> map : mappings) {
+				for(Vertex v : map.keySet()) {
+					g.markVertexAsUnit(v, unit);
+					if(!vertexUnitCount.containsKey(v)) {
+						vertexUnitCount.put(v, 1);
+					} else {
+						int count = vertexUnitCount.get(v);
+						count++;
+						if(count == 2) {
+							polyvalentVertices++;
+							polyvalentVertexSet.add(v);
 						}
-					}; break; 
-					case EMOTION: {
-							//don't show emotion vertices in clean graph, add them to last causing vertex
-							Emotion em;
-							try {
-								em = Emotion.parseString(v.getLabel());
-							} catch (ParseException e) {
-								break;
-							}
-							
-							for(Vertex targetEvent:eventList) {
-								if((targetEvent.getWithoutAnnotation().equals(em.getCause())) & !(targetEvent.hasEmotion(em.getName()))) {
-									// safe emotion in corresponding action
-									targetEvent.addEmotion(em.getName());
-									
-									// remove emotion vertex
-									Vertex lastV = eventList.isEmpty() ? root : eventList.getFirst();
-									cleanG.removeVertexAndPatchGraph(v, lastV);
-									break;
-								}
-							}
-					}; break;
-					default: {
-						eventList.addFirst(v);;
+						vertexUnitCount.put(v, count);
 					}
 				}
 			}
 		}
 		
-		return cleanG;
+		// Mark polyvalent vertices with asterisk
+		for(Vertex v : polyvalentVertexSet) {
+			v.setLabel("* " + v.getLabel());
+		}
+		
+		long time = System.currentTimeMillis() - start;
+		addInformation("Time taken: " + time + "ms");
+		addInformation("Units found: " + unitInstances);
+		addInformation("Polyvalence: " + polyvalentVertices);
+		double tellability = (double)polyvalentVertices / (double)g.getVertexCount();
+		addInformation("Tellability: " + tellability);
+		this.addGraph(g);
+		this.graphTypeList.setSelectedItem(g);
+		
+		this.analysisResult.numFunctionalUnits = unitInstances;
+		this.analysisResult.numPolyvalentVertices = polyvalentVertices;
+		this.analysisResult.functionalPolyvalence = tellability;
+		
+		if(analyzedGraphContainer != null) {
+			g.cloneInto(analyzedGraphContainer);
+		}
+		
+		return analysisResult;
 	}
 	
 	/**
-	 * Draws the current state of the plot graph in a JFrame. 
-	 * @param compress true if conflated view (more compact by applying {@link #postProcessThisGraph()}) is to be 
-	 * 	displayed
+	 * Plots and displays the graph that is selected by {@code this.graphTypeList}.
 	 * @return the displayed JFrame
 	 */
-	public PlotGraphController visualizeGraph(boolean compress) {
-		if(compress) {
-			this.drawnGraph = this.postProcessThisGraph();
-			this.selectedGraphType  = GRAPH_TYPES[1];
-		}
-		else { 
-			this.drawnGraph = this.graph;
-			this.selectedGraphType = GRAPH_TYPES[0];
-		}
-		return this.visualizeGraph();
-	}
-	
-	/**
-	 * Plots and displays the graph that is selected by {@code this.drawnGraph}.
-	 * @return the displayed PlotGraphController
-	 */
 	public PlotGraphController visualizeGraph() {
-		// Maybe just implement custom renderer instead of all the transformers?
-		// https://www.vainolo.com/2011/02/15/learning-jung-3-changing-the-vertexs-shape/
-		
-		// Tutorial:
-		// http://www.grotto-networking.com/JUNG/JUNG2-Tutorial.pdf
-		
-		Layout<Vertex, Edge> layout = new PlotGraphLayout(this.drawnGraph);
+		Layout<Vertex, Edge> layout = new PlotGraphLayout((PlotDirectedSparseGraph)this.graphTypeList.getSelectedItem());
 		
 		// Create a viewing server
 		this.visViewer = new VisualizationViewer<Vertex, Edge>(layout);
-		this.visViewer.setPreferredSize(new Dimension(1500, 600)); // Sets the viewing area
-		this.visViewer.setBackground(BGCOLOR);
+		this.setUpAppearance(visViewer);
 		
 		// Add a mouse to translate the graph.
 		PluggableGraphMouse gm = new PluggableGraphMouse();
 		gm.add(new SelectingTranslatingGraphMousePlugin());
 		this.visViewer.setGraphMouse(gm);
-		
-		// modify vertices
-		this.visViewer.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-		this.visViewer.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
-		this.visViewer.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
-		this.visViewer.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
-		this.visViewer.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
-		this.visViewer.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
-		
-		// modify edges
-		this.visViewer.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
-		this.visViewer.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		this.visViewer.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		this.visViewer.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
-		this.visViewer.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
 
 		// enable scrolling control bar
 		this.scrollPane = new GraphZoomScrollPane(visViewer);
 
-		// set up the combo-box for changing displayed plot graphs: first select the currently shown graph type
-		this.graphTypeList.setSelectedItem(this.selectedGraphType);
+		// c information panel
+		infoPanel.setLayout(new FlowLayout(SwingConstants.LEADING, 15, 5));
 		
-		// second: activate a listener that redraws the plot when selection changes. Careful here: order with 1. matters
-		this.graphTypeList.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				@SuppressWarnings("unchecked")
-				JComboBox<String> combo = (JComboBox<String>) event.getSource();
-				String selectedType = (String) combo.getSelectedItem();
-				
-				if(selectedType.equals(GRAPH_TYPES[0])) {
-					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().graph);
-					PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
-					PlotGraphController.getPlotListener().visViewer.repaint();
-				}
-				else {
-					Layout<Vertex, Edge> layout = new PlotGraphLayout(PlotGraphController.getPlotListener().postProcessThisGraph());
-					PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
-					PlotGraphController.getPlotListener().visViewer.repaint();
-
-				}
-			}
-		});
-		
+		// second: register a listener that redraws the plot when selection changes. Careful here: order with last command matters
+		this.graphTypeList.setActionCommand(CHANGE_VIEW_COMMAND);
+		this.graphTypeList.addActionListener(this);
 		this.add(graphTypeList, BorderLayout.NORTH);
+		
+		this.add(graphTypeList, BorderLayout.NORTH);	
+		this.add(infoPanel, BorderLayout.SOUTH);
 		
 		this.getContentPane().add(this.scrollPane);
 		this.pack();
@@ -291,36 +444,28 @@ public class PlotGraphController extends JFrame implements PlotmasGraph {
 		return this;
 	}
 	
-	
-	/*************************** for testing purposes ***********************************/
-	private static PlotDirectedSparseGraph createTestGraph() {
-		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
+
+	/**
+	 * Sets up an VisualizationServer instance with all the details and renders defining the graphs appearance. 
+	 * @param vis
+	 */
+	private void setUpAppearance(BasicVisualizationServer<Vertex, Edge> vis) {
+		vis.setBackground(BGCOLOR);
+		vis.setPreferredSize(new Dimension(1500, 600)); // Sets the viewing area
 		
-		// Create Trees for each agent and add the roots
-		Vertex v1 = new Vertex("hen", Vertex.Type.ROOT); Vertex v2 = new Vertex("dog", Vertex.Type.ROOT); 
-		Vertex v3 = new Vertex("cow", Vertex.Type.ROOT); Vertex v4 = new Vertex("cazzegiare"); 
-		Vertex v5 = new Vertex("cazzegiare"); Vertex v6 = new Vertex("askHelp(plant(wheat))");
-		Vertex v7 = new Vertex("plant(wheat)");
+		// modify vertices
+		vis.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+		vis.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
+		vis.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
+		vis.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
+		vis.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
+		vis.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
 		
-		graph.addRoot(v1);
-		graph.addRoot(v2);
-		graph.addRoot(v3);
-		
-		// simulate adding vertices later
-		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v6);
-		graph.addEdge(new Edge(), v6, v7);
-		graph.addEdge(new Edge(Edge.Type.ROOT), v2, v4);
-		graph.addEdge(new Edge(Edge.Type.ROOT), v3, v5);
-		graph.addEdge(new Edge(Edge.Type.COMMUNICATION), v6, v5);
-		
-		return graph;
-	}
-	
-	public static void main(String[] args) {
-		PlotDirectedSparseGraph forest = createTestGraph();
-		PlotGraphController.instantiatePlotListener(new ArrayList<LauncherAgent>());
-		PlotGraphController controller = PlotGraphController.getPlotListener();
-		controller.drawnGraph = forest;
-		controller.visualizeGraph();
+		// modify edges
+		vis.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
+		vis.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
 	}
 }

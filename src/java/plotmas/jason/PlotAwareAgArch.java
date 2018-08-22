@@ -1,4 +1,4 @@
-package plotmas;
+package plotmas.jason;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import jason.architecture.AgArch;
 import jason.asSyntax.Literal;
+import plotmas.PlotLauncher;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
 
@@ -26,7 +27,8 @@ public class PlotAwareAgArch extends AgArch {
 
         for(Literal p:perceptions.orElse(new LinkedList<Literal>())) {
         	if(!(null == p.getAnnot("emotion"))) {
-	    		PlotGraphController.getPlotListener().addEvent(name, p.toString(), Vertex.Type.PERCEPT);
+                int step = PlotLauncher.runner.getUserEnvironment().getStep();
+	    		PlotGraphController.getPlotListener().addEvent(name, p.toString(), Vertex.Type.PERCEPT, step);
 	            logger.info(name + " - added perception: " + p.toString());
         	}
         }
