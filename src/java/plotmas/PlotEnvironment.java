@@ -40,9 +40,9 @@ import plotmas.helper.TermParser;
  */
 public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends TimeSteppedEnvironment {
 	/* number of times all agents need to repeat an action, before system is paused; -1 to switch off*/
-	public static final Integer MAX_REPEATE_NUM = 7;
+	public static Integer MAX_REPEATE_NUM = 7;
 	/* number of steps, before system is automatically pauses; -1 to switch off*/
-	public static final Integer MAX_STEP_NUM = 50;
+	public static Integer MAX_STEP_NUM = 50;
 	
 	static final String STEP_TIMEOUT = "100";
 	
@@ -229,7 +229,10 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		// check if pause mode is enabled, wait with execution while it is
 		this.waitWhilePause();
 		
-		logger.info("Step " + this.getStep() + " started for environment");
+		if(!PlotLauncher.getRunner().isDebug()) {
+			logger.info("Step " + this.getStep() + " started for environment");
+		}
+		
 		if (this.model != null)
 			// Give model opportunity to check for and execute happenings
 			this.model.checkHappenings(step);

@@ -272,6 +272,9 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
         	assert args[0] == "-debug";
         	defArgs = new String[] {PlotLauncher.DEAULT_FILE_NAME, "-debug"};
         	debugMode = true;
+        	
+        	// make sure plotmas environment doesn't pause while slowly stepping through reasoning cycles
+        	PlotEnvironment.MAX_STEP_NUM = -1;
         }
         
         
