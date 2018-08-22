@@ -48,6 +48,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
     public static Long startTime = 0L;
+    private static Long pauseDuration = 0L;
     
     /**
      * A list of environment listeners which get called on certain events
@@ -60,7 +61,11 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * @return time in ms (Long)
      */
     public static Long getPlotTimeNow() {
-    	return (System.nanoTime() - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
+    	return (System.nanoTime() - PlotEnvironment.pauseDuration - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
+    }
+    
+    public static void notePause(Long duration) {
+    	pauseDuration += duration;
     }
     
     protected ModType model;

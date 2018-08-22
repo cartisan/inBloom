@@ -33,6 +33,8 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	private JButton pauseButton;
 	private JButton drawButton;
 	private LinkedList<PlotmasGraph> graphs = new LinkedList<PlotmasGraph>();
+	private Long pauseStart = 0L;
+	
 	protected boolean isDraw = false;
 
 	protected boolean showGui = true;
@@ -100,6 +102,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	    this.pauseButton.setText("Continue");
 
 		setupConsoleLogger();
+		this.pauseStart = System.nanoTime();
 	}
 
 	protected void continueExecution() {
@@ -107,6 +110,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	    MASConsoleGUI.get().setPause(false);
 	    
 	    this.setupPlotLogger();
+	    PlotEnvironment.notePause(System.nanoTime() - this.pauseStart);	    
 	    ((PlotEnvironment<?>) this.env.getUserEnvironment()).wake();
 	}
 
