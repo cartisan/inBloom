@@ -24,11 +24,11 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     	
     	// update publicly known wheat state
     	if (!(getModel().wheat == null)) {
-    		removePerceptsByUnif(agentName, Literal.parseLiteral("wheat(X)"));
-    		addPercept(agentName, Literal.parseLiteral(getModel().wheat.literal()));
+    		removePerceptsByUnif(agentName, Literal.parseLiteral("existant(wheat[X])"));
+    		addPercept(agentName, Literal.parseLiteral("existant(" + getModel().wheat.literal() + ")"));
     	}
     	else {
-    		removePerceptsByUnif(agentName, Literal.parseLiteral("wheat(X)"));
+    		removePerceptsByUnif(agentName, Literal.parseLiteral("existant(wheat[X])"));
     	}
     }
     
