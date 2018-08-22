@@ -183,10 +183,12 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	// let the domain specific subclass handle the actual action execution
     	// ATTENTION: this is were domain-specific action handling code goes
     	boolean result = this.doExecuteAction(agentName, action);		
-    	logger.info(String.format("%s performed %s", agentName, action.toString()));
 		
-    	// appraise negative emotion if action failed.
-    	if(!result) {
+    	if(result) {
+    		logger.info(String.format("%s performed %s", agentName, action.toString()));
+    	}
+    	else {
+    		// appraise negative emotion if action failed.
     		this.addEventPerception(agentName, action.toString(), PerceptAnnotation.fromEmotion("disappointment"));
     	}
     	

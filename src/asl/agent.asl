@@ -220,4 +220,6 @@ wish(relax).
 	.succeed_goal(eat(X)).
 	
 +!share(X, Anims) <-
-	share(X, Anims).	
+	share(X, Anims).
+	
+-!X[_] <- .print("I failed while trying to ", X).	
