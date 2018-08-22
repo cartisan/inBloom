@@ -57,8 +57,8 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 			this.wheat.state = WHEAT_STATE.RIPE;
 			logger.info("Wheat has grown and is ripe now");
 			this.environment.addEventPerception(agent.name, "tend(wheat)", PerceptAnnotation.fromEmotion("pride"));
-//			return true;
-			return false;
+			return true;
+//			return false;
 		}
 		
 		return false;

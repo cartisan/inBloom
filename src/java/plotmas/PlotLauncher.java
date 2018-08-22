@@ -256,6 +256,7 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 	 * @param usePlotLogger set this to false if you wish to set your own logging output
 	 * @throws JasonException
 	 */
+	@SuppressWarnings("unchecked")
 	public void initialize (String[] args, PlotModel<?> model, List<LauncherAgent> agents, String agentFileName) throws JasonException  {
 		String defArgs[];
 		boolean debugMode=false;
