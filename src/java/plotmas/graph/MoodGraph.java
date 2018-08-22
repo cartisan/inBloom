@@ -3,10 +3,8 @@ package plotmas.graph;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.stream.LongStream;
 
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -79,9 +77,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 			Long endTime = PlotModel.moodMapper.latestMoodEntry(agName);
 			
 			// for every 10ms from start time until end time sample mood and put it into the graph
-			Iterator<Long> it = LongStream.iterate(startTime, n -> n+1).limit(endTime / 1 + 1).iterator();
-			while(it.hasNext()) {
-				Long x_val = it.next();
+			for (Long x_val = startTime; x_val < endTime + 1; x_val += 10) {
 				Double sampledMood = PlotModel.moodMapper.sampleMood(agName, x_val).get(selectedMoodDimension);
 				this.addMoodPoint(sampledMood, x_val, agName);
 			}
