@@ -5,9 +5,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
 import jason.util.Pair;
 import plotmas.graph.visitor.EdgeVisitResult;
 import plotmas.graph.visitor.PlotGraphVisitor;
+import plotmas.helper.Triple;
 
 public class ConflictVisitor implements PlotGraphVisitor {
     
@@ -15,9 +19,11 @@ public class ConflictVisitor implements PlotGraphVisitor {
 	
 	public HashMap<String, Integer> conflictCounter;
 	public HashMap<String, List<Pair<Vertex, Vertex>>> productiveConflicts;  // agentName --> [(Intention, Resolution), (...), ...]
+	public Table<String, Vertex, List<Vertex>> motivationChains = HashBasedTable.create();
 	
 	private String currentRoot;
 	private PlotDirectedSparseGraph graph;
+	private Triple<String, Vertex, Vertex> mostSuspensefulIntention;
 	
 	public ConflictVisitor apply(PlotDirectedSparseGraph graph) {
 		conflictCounter = new HashMap<>();
@@ -56,10 +62,28 @@ public class ConflictVisitor implements PlotGraphVisitor {
 			this.productiveConflicts.get(this.currentRoot).add(new Pair<>(graph.getSource(edge), graph.getDest(edge)));
 		}
 		
-		if(type == Edge.Type.ACTUALIZATION || type == Edge.Type.TERMINATION) {
+		if(type == Edge.Type.TERMINATION) {
 			this.productiveConflicts.get(this.currentRoot).add(new Pair<>(graph.getDest(edge), graph.getSource(edge)));
 		}
-		
+
+		if(type == Edge.Type.MOTIVATION) {
+			Vertex src =  graph.getSource(edge);
+			Vertex dest = graph.getDest(edge);
+			
+			// note the motivator of this vertex
+			LinkedList<Vertex> motivators = new LinkedList<>();
+			motivators.add(src);
+			
+			// append all motivators, that the motivator might have had
+			// this is where recursive intentions like !relax in RedHen get filtered out: src in that case is the
+			// later intention, whose motivators where not yet processes
+			if (motivationChains.contains(this.currentRoot, src)) {
+				List<Vertex> previousMotivators = motivationChains.get(this.currentRoot, src);
+				motivators.addAll(previousMotivators);
+			}
+			
+			motivationChains.put(this.currentRoot, dest, motivators);
+		}
 		return EdgeVisitResult.TERMINATE;		
 	}
 
@@ -112,12 +136,32 @@ public class ConflictVisitor implements PlotGraphVisitor {
 	public int getSuspense(){
 		int suspense  = 0;
 		
-		for (List<Pair<Vertex, Vertex>> confPairs : this.productiveConflicts.values()) {
-			int localSuspense = confPairs.stream().mapToInt(pair -> pair.getSecond().getStep() - pair.getFirst().getStep()).max().orElse(0);
-			suspense = (suspense > localSuspense ? suspense : localSuspense);
+		for (String agent : this.productiveConflicts.keySet()) {
+			List<Pair<Vertex, Vertex>> confPairs = this.productiveConflicts.get(agent);
+			
+			for (Pair<Vertex, Vertex> pair: confPairs) {
+				Vertex intention = pair.getFirst();
+				Vertex action = pair.getSecond();
+				
+				if (motivationChains.contains(agent, intention)) {
+					List<Vertex> motivations = motivationChains.get(agent, intention); 
+					intention = motivations.get(motivations.size() - 1);
+				}
+				
+				int localSuspense = action.getStep() - intention.getStep();
+				
+				if (suspense < localSuspense) {
+					suspense = localSuspense;
+					mostSuspensefulIntention = new Triple<>(agent, intention, action);
+				}
+			}
 		}
 		
-		logger.info("Maximal suspense: " + suspense);
+		logger.info("Maximal suspense: " + suspense + ": " +
+					mostSuspensefulIntention.getFirst() + "'s (" + 
+					mostSuspensefulIntention.getSecond().toString() + ", " +
+					mostSuspensefulIntention.getThird().toString() + ")");
+		
 		return suspense;
 	}
 }
