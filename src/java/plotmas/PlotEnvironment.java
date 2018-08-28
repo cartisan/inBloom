@@ -42,7 +42,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	/* number of times all agents need to repeat an action, before system is paused; -1 to switch off*/
 	public static Integer MAX_REPEATE_NUM = 7;
 	/* number of steps, before system is automatically pauses; -1 to switch off*/
-	public static Integer MAX_STEP_NUM = 50;
+	public static Integer MAX_STEP_NUM = -1;
 	
 	static final String STEP_TIMEOUT = "100";
 	

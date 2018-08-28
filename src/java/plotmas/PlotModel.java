@@ -157,13 +157,13 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		if (X_AXIS_IS_TIME) {
 			// time in ms based mood log
 			Long plotTime = PlotEnvironment.getPlotTimeNow();
-			moodMapper.addMood(name, plotTime, mood);
 			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
+			moodMapper.addMood(name, plotTime, mood);
 		} else {
 			// time-step based mood log
 			Integer timeStep = PlotLauncher.runner.getUserEnvironment().getStep();
-			moodMapper.addMood(name, new Long(timeStep), mood);
 			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + timeStep.toString());
+			moodMapper.addMood(name, new Long(timeStep), mood);
 		}
 	}
 	

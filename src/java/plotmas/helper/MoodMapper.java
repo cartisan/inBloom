@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -17,6 +18,8 @@ import jason.asSemantics.Mood;
  * @author Leonid Berov
  */
 public class MoodMapper {
+	static protected Logger logger = Logger.getLogger(MoodMapper.class.getName());
+	
 //	private HashMap<String, List<Pair<Long,Mood>>> timedMoodMap = new HashMap<>();
 	private Table<String, Long, List<Mood>> timedMoodMap = HashBasedTable.create();
 	private LinkedList<Long> startTimes = new LinkedList<>();

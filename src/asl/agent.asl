@@ -172,14 +172,12 @@ wish(relax).
 @reject_request_1[affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]
 +!help_with(X)[source(Name)] : is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
-	.appraise_emotion(reproach, Name, "help_with(X)[source(Name)]");
 	.send(Name, tell, rejected_request(help_with(X))).
 
 // Reject helping others if "anti-social tendencies" and feeling strong
 @reject_request_2[affect(and(personality(conscientiousness,negative), mood(dominance,high)))]
 +!help_with(X)[source(Name)] : is_work(X) <-
 	.print("can't help you! ", X, " is too much work for me!");
-	.appraise_emotion(reproach, Name, "help_with(X)[source(Name)]");
 	.send(Name, tell, rejected_request(help_with(X))).
 
 @accept_request
@@ -222,4 +220,4 @@ wish(relax).
 +!share(X, Anims) <-
 	share(X, Anims).
 	
--!X[_] <- .print("I failed while trying to ", X).	
+//-!X[_] <- .print("I failed while trying to ", X).

@@ -163,22 +163,4 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 	private void addMoodPoint(Double value, Long time, String agName) {
 		this.moodData.addValue(value, agName, time);
 	}
-
-	/*************************** for testing purposes ***********************************/	
-	public static void main( String[ ] args ) {
-		MoodGraph chart = new MoodGraph();
-
-		DefaultCategoryDataset dataset = new DefaultCategoryDataset( );
-		dataset.addValue( 15 , "schools" , "1970" );
-		dataset.addValue( 30 , "schools" , "1980" );
-		dataset.addValue( 60 , "schools" ,  "1990" );
-		dataset.addValue( 120 , "schools" , "2000" );
-		dataset.addValue( 240 , "schools" , "2010" );
-		dataset.addValue( 300 , "schools" , "2014" );
-		dataset.addValue( 100 , "trains" , "2000" );
-		dataset.addValue( 200 , "trains" , "2010" );
-		dataset.addValue( 300 , "trains" , "2014" );
-		
-		chart.visualizeGraph(dataset);
-	}
 }
