@@ -31,31 +31,14 @@ public class FunctionalUnits {
 	static {
 		ALL = new FunctionalUnit[11];
 		
-		Vertex v1, v2, v3, v4;
+		Vertex v1, v2, v3;
 		
 		PlotDirectedSparseGraph deniedRequest = new PlotDirectedSparseGraph();
-		/* Old denied Request
-		v1 = makeIntention(1);
-		v2 = makeNegative(1);
-		deniedRequest.addEdge(makeCommunication(), v1, v2);
-
-		v3 = makeIntention(2);
-		deniedRequest.addEdge(makeMotivation(), v2, v3);
-
-		v2 = makeIntention(3);
-		deniedRequest.addEdge(makeMotivation(), v3, v2);
-
-		v3 = makeNegative(3);
-		deniedRequest.addEdge(makeCommunication(), v2, v3);
-		deniedRequest.addEdge(makeTermination(), v3, v1);
-		*/
 		v1 = makeIntention(1);
 		v2 = makeIntention(1);
 		deniedRequest.addEdge(makeCommunication(), v1, v2);
-
 		v3 = makeIntention(2);
 		deniedRequest.addEdge(makeMotivation(), v2, v3);
-
 		v2 = makeNegative(3);
 		deniedRequest.addEdge(makeCommunication(), v3, v2);
 		DENIED_REQUEST = new FunctionalUnit("Denied Request", deniedRequest);
@@ -63,26 +46,22 @@ public class FunctionalUnits {
 		PlotDirectedSparseGraph nestedGoal = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1);
 		v2 = makeIntention(2);
-		v3 = makeWild(3);
+		v3 = makePolyemotional(3);
 		nestedGoal.addEdge(makeMotivation(), v1, v2);
 		nestedGoal.addEdge(makeActualization(), v2, v3);
 		NESTED_GOAL = new FunctionalUnit("Nested Goal", nestedGoal);
 		
 		PlotDirectedSparseGraph retaliation = new PlotDirectedSparseGraph();
-		v1 = makeIntention(1);
+		v1 = makeWildcard(1);
 		v2 = makeNegative(1);
 		retaliation.addEdge(makeCommunication(), v1, v2);
-		v1 = makeIntention(2);
-		retaliation.addEdge(makeMotivation(), v2, v1);
-		v2 = makeIntention(3);
-		v3 = makeIntention(5);
-		retaliation.addEdge(makeMotivation(), v1, v2);
-		v4 = makePositive(4);
-		retaliation.addEdge(makeActualization(), v2, v4);
-		retaliation.addEdge(makeMotivation(), v1, v3);
-		v1 = makeIntention(5);
-		retaliation.addEdge(makeCommunication(), v3, v1);
-		v2 = makeNegative(6);
+		v3 = makeIntention(2);
+		retaliation.addEdge(makeMotivation(), v2, v3);
+		v2 = makeWildcard(3);
+		retaliation.addEdge(makeMotivation(), v3, v2);
+		v1 = makeIntention(3);
+		retaliation.addEdge(makeCommunication(), v2, v1);
+		v2 = makeNegative(4);
 		retaliation.addEdge(makeActualization(), v1, v2);
 		RETALIATION = new FunctionalUnit("Retaliation", retaliation);
 		
@@ -185,13 +164,13 @@ public class FunctionalUnits {
 		 */
 		PlotDirectedSparseGraph speech = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1);
-		v2 = makeWild(2);
+		v2 = makePolyemotional(2);
 		speech.addEdge(makeCommunication(), v1, v2);
 		DEBUG_SPEECH = new FunctionalUnit("Debug Speech", speech);
 		
 		PlotDirectedSparseGraph termination = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1);
-		v2 = makeWild(2);
+		v2 = makePolyemotional(2);
 		termination.addEdge(makeTermination(), v2, v1);
 		DEBUG_TERMINATION = new FunctionalUnit("Debug Termination", termination);
 	}
@@ -212,10 +191,15 @@ public class FunctionalUnits {
 		return vertex;
 	}
 	
-	private static Vertex makeWild(int step) {
+	private static Vertex makePolyemotional(int step) {
 		Vertex vertex = new Vertex("*", step);
 		vertex.addEmotion("love");
 		vertex.addEmotion("hate");
+		return vertex;
+	}
+	
+	private static Vertex makeWildcard(int step) {
+		Vertex vertex = new Vertex("?", Vertex.Type.WILDCARD, step);
 		return vertex;
 	}
 	

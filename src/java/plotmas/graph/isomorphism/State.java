@@ -396,9 +396,12 @@ public class State {
 		UnitVertexType t1 = UnitVertexType.typeOf(plotVertex);
         UnitVertexType t2 = UnitVertexType.typeOf(g2.getVertex(v2));
         if(t2 == UnitVertexType.WILDCARD) {
+        	return true;
+        }
+        if(t2 == UnitVertexType.POLYEMOTIONAL) {
         	return t1 != UnitVertexType.INTENTION;
         }
-        if(t1 == UnitVertexType.WILDCARD) {
+        if(t1 == UnitVertexType.POLYEMOTIONAL) {
         	return t2 != UnitVertexType.INTENTION;
         }
         return t1 != UnitVertexType.NONE && t1 == t2;
@@ -412,17 +415,20 @@ public class State {
 				Vertex vm1 = g2.getVertex(v2);
 				Vertex vm2 = g2.getVertex(m);
 				
+				boolean isWildcard = UnitVertexType.typeOf(vm1) == UnitVertexType.WILDCARD
+								  || UnitVertexType.typeOf(vm2) == UnitVertexType.WILDCARD;
+				
 				Collection<Edge> nEdges = getEdges(g1, vn1, vn2);
 				Collection<Edge> mEdges = getEdges(g2, vm1, vm2);
 				
-				if(!checkEdgeSetCompatibility(nEdges, mEdges)) {
+				if(!checkEdgeSetCompatibility(nEdges, mEdges, isWildcard)) {
 					return false;
 				}
 				
 				nEdges = getEdges(g1, vn2, vn1);
 				mEdges = getEdges(g2, vm2, vm1);
 				
-				if(!checkEdgeSetCompatibility(nEdges, mEdges)) {
+				if(!checkEdgeSetCompatibility(nEdges, mEdges, isWildcard)) {
 					return false;
 				}
 			}
@@ -430,8 +436,15 @@ public class State {
 		return true;
 	}
 	
-	private boolean checkEdgeSetCompatibility(Collection<Edge> plotEdges, Collection<Edge> unitEdges) {
-		LinkedList<Edge.Type> edgeTypes = new LinkedList<Edge.Type>(); 
+	private boolean checkEdgeSetCompatibility(Collection<Edge> plotEdges, Collection<Edge> unitEdges, boolean isWildcard) {
+		// If the unit vertex is a wildcard, simply check the amount of edges,
+		// effectively making use of "wildcard edges"
+		if(isWildcard) {
+			return plotEdges.size() == unitEdges.size();
+		}
+		
+		LinkedList<Edge.Type> edgeTypes = new LinkedList<Edge.Type>();
+
 		for(Edge e : unitEdges) {
 			edgeTypes.add(e.getType());
 		}

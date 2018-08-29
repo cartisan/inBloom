@@ -21,7 +21,7 @@ public class Vertex implements Cloneable {
 	//removes annotations from literal-style stings
 	public static Pattern NO_ANNOT_PATTERN = Pattern.compile("(.+?\\(.+?\\))");
 	
-	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, LISTEN, PERCEPT, INTENTION, AXIS_LABEL }
+	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, LISTEN, PERCEPT, INTENTION, AXIS_LABEL, WILDCARD }
 
 	private String id;
 	private String label;
