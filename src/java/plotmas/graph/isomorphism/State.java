@@ -440,7 +440,18 @@ public class State {
 		// If the unit vertex is a wildcard, simply check the amount of edges,
 		// effectively making use of "wildcard edges"
 		if(isWildcard) {
-			return plotEdges.size() == unitEdges.size();
+			int crossCharacterCount = 0;
+			for(Edge e : unitEdges) {
+				if(e.getType() == Edge.Type.COMMUNICATION) {
+					crossCharacterCount++;
+				}
+			}
+			for(Edge e : plotEdges) {
+				if(e.getType() == Edge.Type.COMMUNICATION) {
+					crossCharacterCount--;
+				}
+			}
+			return crossCharacterCount == 0 && plotEdges.size() == unitEdges.size();
 		}
 		
 		LinkedList<Edge.Type> edgeTypes = new LinkedList<Edge.Type>();
