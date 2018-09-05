@@ -256,6 +256,7 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 	 * @param usePlotLogger set this to false if you wish to set your own logging output
 	 * @throws JasonException
 	 */
+	@SuppressWarnings("unchecked")
 	public void initialize (String[] args, PlotModel<?> model, List<LauncherAgent> agents, String agentFileName) throws JasonException  {
 		String defArgs[];
 		boolean debugMode=false;
@@ -272,6 +273,9 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
         	assert args[0] == "-debug";
         	defArgs = new String[] {PlotLauncher.DEAULT_FILE_NAME, "-debug"};
         	debugMode = true;
+        	
+        	// make sure plotmas environment doesn't pause while slowly stepping through reasoning cycles
+        	PlotEnvironment.MAX_STEP_NUM = -1;
         }
         
         

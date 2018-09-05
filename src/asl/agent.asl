@@ -225,4 +225,6 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	.succeed_goal(eat(X)).
 
 +!share(X, Anims) <-
-	share(X, Anims).	
+	share(X, Anims).
+	
+//-!X[_] <- .print("I failed while trying to ", X).

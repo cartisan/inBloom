@@ -13,7 +13,7 @@ import plotmas.PlotLauncher;
  */
 public class PlotFormatter extends MASConsoleLogFormatter {
 
-    public String format(LogRecord record) {
+    public synchronized String format(LogRecord record) {
         StringBuilder builder = new StringBuilder(1000);
         builder.append("[").append(MASConsoleLogFormatter.getAgName(record));
         if (PlotLauncher.getRunner() != null) {

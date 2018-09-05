@@ -40,14 +40,15 @@ import plotmas.helper.TermParser;
  */
 public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends TimeSteppedEnvironment {
 	/* number of times all agents need to repeat an action, before system is paused; -1 to switch off*/
-	public static final Integer MAX_REPEATE_NUM = 7;
+	public static Integer MAX_REPEATE_NUM = 7;
 	/* number of steps, before system is automatically pauses; -1 to switch off*/
-	public static final Integer MAX_STEP_NUM = 50;
+	public static Integer MAX_STEP_NUM = -1;
 	
 	static final String STEP_TIMEOUT = "100";
 	
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
     public static Long startTime = 0L;
+    private static Long pauseDuration = 0L;
     
     /**
      * A list of environment listeners which get called on certain events
@@ -60,7 +61,11 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * @return time in ms (Long)
      */
     public static Long getPlotTimeNow() {
-    	return (System.nanoTime() - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
+    	return (System.nanoTime() - PlotEnvironment.pauseDuration - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
+    }
+    
+    public static void notePause(Long duration) {
+    	pauseDuration += duration;
     }
     
     protected ModType model;
@@ -178,10 +183,12 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	// let the domain specific subclass handle the actual action execution
     	// ATTENTION: this is were domain-specific action handling code goes
     	boolean result = this.doExecuteAction(agentName, action);		
-    	logger.info(String.format("%s performed %s", agentName, action.toString()));
 		
-    	// appraise negative emotion if action failed.
-    	if(!result) {
+    	if(result) {
+    		logger.info(String.format("%s performed %s", agentName, action.toString()));
+    	}
+    	else {
+    		// appraise negative emotion if action failed.
     		this.addEventPerception(agentName, action.toString(), PerceptAnnotation.fromEmotion("disappointment"));
     	}
     	
@@ -229,7 +236,10 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		// check if pause mode is enabled, wait with execution while it is
 		this.waitWhilePause();
 		
-		logger.info("Step " + this.getStep() + " started for environment");
+		if(!PlotLauncher.getRunner().isDebug()) {
+			logger.info("Step " + this.getStep() + " started for environment");
+		}
+		
 		if (this.model != null)
 			// Give model opportunity to check for and execute happenings
 			this.model.checkHappenings(step);
@@ -407,7 +417,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		
         try {
             while (MASConsoleGUI.get().isPause()) {
-            	logger.info("Execution paused, switching to logger output");
+            	logger.info("Execution paused, switching to console output");
                 wait();
             }
         } catch (Exception e) { }
