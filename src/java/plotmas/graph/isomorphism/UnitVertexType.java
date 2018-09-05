@@ -4,9 +4,12 @@ import jason.asSemantics.Emotion;
 import plotmas.graph.Vertex;
 
 enum UnitVertexType {
-	NONE, INTENTION, POSITIVE, NEGATIVE, WILDCARD;
+	NONE, INTENTION, POSITIVE, NEGATIVE, POLYEMOTIONAL, WILDCARD;
 	
 	static UnitVertexType typeOf(Vertex v) {
+		if(v.getType() == Vertex.Type.WILDCARD) {
+			return UnitVertexType.WILDCARD;
+		}
 		if(!v.getIntention().isEmpty()) {
 			return UnitVertexType.INTENTION;
 		}
@@ -19,7 +22,7 @@ enum UnitVertexType {
 			}
 		}
 		if(hasPositive && hasNegative) {
-			return UnitVertexType.WILDCARD;
+			return UnitVertexType.POLYEMOTIONAL;
 		}
 		if(hasPositive) {
 			return UnitVertexType.POSITIVE;

@@ -271,7 +271,15 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 		Vertex successor = this.graph.getCharSuccessor(vertex);
 		String checkTell = "+" + vertex.toString();
 		String checkAchieve = vertex.toString();
-		while(successor != null && !(successor.toString().equals(checkTell) || TermParser.removeAnnots(successor.getLabel()).equals(checkAchieve))) {
+		while(successor != null) {
+			if(successor.getType() == Vertex.Type.PERCEPT || successor.getType() == Vertex.Type.INTENTION) {
+				if(successor.toString().equals(checkTell)) {
+					break;
+				}
+				if(TermParser.removeAnnots(successor.getLabel()).equals(checkAchieve)) {
+					break;
+				}
+			}
 			successor = this.graph.getCharSuccessor(successor);
 		}
 		if(successor == null)
