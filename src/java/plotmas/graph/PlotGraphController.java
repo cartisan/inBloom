@@ -267,10 +267,6 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		this.graph.addEvent(character, event, step, eventType, Edge.Type.TEMPORAL);
 	}
 	
-	public void addEvent(String character, String event, Edge.Type linkType, int step) {
-		this.graph.addEvent(character, event, step, Vertex.Type.EVENT, linkType);
-	}
-	
 	public Vertex addMsgSend(Message m, String motivation, int step) {
 		// Format message to intention format, i.e. "!performative(content)"
 		Vertex senderV = this.graph.addMsgSend(m.getSender(), "!" + m.getIlForce() + "(" + m.getPropCont().toString() + ")" + motivation, step);
@@ -330,28 +326,23 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	 *  <li> Computing the tellability atm includes just computing functional polyvalence and dispalying the results
 	 *  in the info panel. </li>
 	 *  </ul>
-	 * @param analyzedGraphContainer an (empty) plot graph that will be used to store the analyzed graph
+	 * @param analyzedGraphContainer an (empty) plot graph that will be used to store the analyzed graph, or null
 	 * @return
 	 */
 	public Tellability analyze(PlotDirectedSparseGraph analyzedGraphContainer) {
 		if(analysisResult != null) {
 			return analysisResult;
 		}
-		
 		analysisResult = new Tellability();
 		
+		// Create analysed graph with semantically interpretable edges and collapsed vertices
 		PlotDirectedSparseGraph g = new FullGraphPPVisitor().apply(this.graph);
-		g.accept(new CompactGraphPPVisitor(g));
-		g.accept(new EdgeLayoutVisitor(g, 9));
 		g.setName("Analyzed Plot Graph");
+		g.accept(new CompactGraphPPVisitor(g));
 
-		ConflictVisitor confVis = new ConflictVisitor().apply(g);
-		analysisResult.productiveConflicts = confVis.getProductiveConflictNumber();
-		analysisResult.suspense = confVis.getSuspense();
-		
+		// Find Functional Units and polyvalent Vertices
 		Map<Vertex, Integer> vertexUnitCount = new HashMap<>();
 		
-		long start = System.currentTimeMillis();
 		UnitFinder finder = new UnitFinder();
 		int polyvalentVertices = 0;
 		int unitInstances = 0;
@@ -383,19 +374,27 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		for(Vertex v : polyvalentVertexSet) {
 			v.setLabel("* " + v.getLabel());
 		}
+
+		// Perform quantitative analysis of plot
+		CountingVisitor countingVis = new CountingVisitor().apply(g);
+		analysisResult.productiveConflicts = countingVis.getProductiveConflictNumber();
+		analysisResult.suspense = countingVis.getSuspense();
+		analysisResult.plotLength = countingVis.getPlotLength();
+		analysisResult.numAllVertices = countingVis.getVertexNum();
+		analysisResult.numFunctionalUnits = unitInstances;
+		analysisResult.numPolyvalentVertices = polyvalentVertices;
 		
-		long time = System.currentTimeMillis() - start;
-		addInformation("Time taken: " + time + "ms");
-		addInformation("Units found: " + unitInstances);
-		addInformation("Polyvalence: " + polyvalentVertices);
-		double tellability = (double)polyvalentVertices / (double)g.getVertexCount();
-		addInformation("Tellability: " + tellability);
+		// Create GUI representation of analysis
+		addInformation("#Functional Units: " + this.analysisResult.numFunctionalUnits);
+		addInformation("#Polyvalent Vertices: " + this.analysisResult.numPolyvalentVertices);
+		addInformation("Suspense: " + this.analysisResult.suspense);
+		addInformation("Tellability: " + this.analysisResult.compute());
+		
+		// Insert spacing between motivation edges
+		g.accept(new EdgeLayoutVisitor(g, 9));
+		
 		this.addGraph(g);
 		this.graphTypeList.setSelectedItem(g);
-		
-		this.analysisResult.numFunctionalUnits = unitInstances;
-		this.analysisResult.numPolyvalentVertices = polyvalentVertices;
-		this.analysisResult.functionalPolyvalence = tellability;
 		
 		if(analyzedGraphContainer != null) {
 			g.cloneInto(analyzedGraphContainer);

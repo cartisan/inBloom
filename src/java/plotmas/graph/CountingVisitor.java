@@ -13,19 +13,22 @@ import plotmas.graph.visitor.EdgeVisitResult;
 import plotmas.graph.visitor.PlotGraphVisitor;
 import plotmas.helper.Triple;
 
-public class ConflictVisitor implements PlotGraphVisitor {
+public class CountingVisitor implements PlotGraphVisitor {
     
-	protected static Logger logger = Logger.getLogger(ConflictVisitor.class.getName());
+	protected static Logger logger = Logger.getLogger(CountingVisitor.class.getName());
 	
-	public HashMap<String, Integer> conflictCounter;
+	public HashMap<String, Integer> conflictCounter;						 // agentName --> conflictNum
 	public HashMap<String, List<Pair<Vertex, Vertex>>> productiveConflicts;  // agentName --> [(Intention, Resolution), (...), ...]
 	public Table<String, Vertex, List<Vertex>> motivationChains = HashBasedTable.create();
+	
+	private int highestStep = 0;		// highest environment step encountered in story (= plot length in steps)
+	private int vertexNum = 0;		// overall number of events in the plot  
 	
 	private String currentRoot;
 	private PlotDirectedSparseGraph graph;
 	private Triple<String, Vertex, Vertex> mostSuspensefulIntention;
 	
-	public ConflictVisitor apply(PlotDirectedSparseGraph graph) {
+	public CountingVisitor apply(PlotDirectedSparseGraph graph) {
 		conflictCounter = new HashMap<>();
 		productiveConflicts = new HashMap<>();
 		
@@ -46,9 +49,36 @@ public class ConflictVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitIntention(Vertex vertex) {
+		updateSimpleVertexCounts(vertex);
+		
 		// each intention demonstrates a conflict
 		conflictCounter.put(this.currentRoot,
 							conflictCounter.get(this.currentRoot) + 1);
+	}
+
+	@Override
+	public void visitEvent(Vertex vertex) {
+		updateSimpleVertexCounts(vertex);
+	}
+
+	@Override
+	public void visitPercept(Vertex vertex) {
+		updateSimpleVertexCounts(vertex);
+	}
+
+	@Override
+	public void visitSpeech(Vertex vertex) {
+		updateSimpleVertexCounts(vertex);
+	}
+
+	@Override
+	public void visitListen(Vertex vertex) {
+		updateSimpleVertexCounts(vertex);
+	}
+	
+	@Override
+	public void visitEmotion(Vertex vertex) {
+		// Nothing to do here, war emotions should not be found in analyzed graphs
 	}
 	
 	@Override
@@ -87,31 +117,10 @@ public class ConflictVisitor implements PlotGraphVisitor {
 		return EdgeVisitResult.TERMINATE;		
 	}
 
-	@Override
-	public void visitEvent(Vertex vertex) {
-		// Nothing to do here
-	}
-
-	@Override
-	public void visitEmotion(Vertex vertex) {
-		// Nothing to do here
-	}
-
-	@Override
-	public void visitPercept(Vertex vertex) {
-		// Nothing to do here
-	}
-
-	@Override
-	public void visitSpeech(Vertex vertex) {
-		// Nothing to do here
-	}
-
-	@Override
-	public void visitListen(Vertex vertex) {
-		// Nothing to do here
-	}
-	
+	/**
+	 * Returns the number of conflicts in a plot, equivalent to the number of intentions of all agents.
+	 * @return number of conflicts in the plot
+	 */
 	public int getConflictNumber() {
 		int confNum = 0;
 		
@@ -122,6 +131,11 @@ public class ConflictVisitor implements PlotGraphVisitor {
 		return confNum;
 	}
 
+	/**
+	 * Returns the number of conflicts in a plot, equivalent to the number of intentions of all agents that have been
+	 * either actualized or terminated.
+	 * @return number of productive conflicts in the plot
+	 */
 	public int getProductiveConflictNumber() {
 		int confNum = 0;
 		
@@ -133,6 +147,10 @@ public class ConflictVisitor implements PlotGraphVisitor {
 		return confNum;
 	}
 	
+	/**
+	 * Returns the biggest number of environment steps that was necessary to resolve an intention.
+	 * @return
+	 */
 	public int getSuspense(){
 		int suspense  = 0;
 		
@@ -163,5 +181,24 @@ public class ConflictVisitor implements PlotGraphVisitor {
 					mostSuspensefulIntention.getThird().toString() + ")");
 		
 		return suspense;
+	}
+
+	public int getVertexNum() {
+		return this.vertexNum;
+	}
+	
+	public int getPlotLength() {
+		return this.highestStep;
+	}
+	
+
+	/**
+	 * Updates all counts that aggregate statistics over all vertices in an analyzed plot graph
+	 * @param vertex Vertex to be included into simple plot statistics
+	 */
+	private void updateSimpleVertexCounts(Vertex vertex) {
+		this.vertexNum += 1;
+		if (vertex.getStep() > this.highestStep)
+			this.highestStep = vertex.getStep();
 	}
 }

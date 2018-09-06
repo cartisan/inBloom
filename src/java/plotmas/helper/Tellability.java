@@ -12,7 +12,7 @@ public class Tellability {
 	// Functional Polyvalence
 	public int numFunctionalUnits;
 	public int numPolyvalentVertices;
-	public double functionalPolyvalence;
+	public int numAllVertices;
 	public Map<FunctionalUnit, Integer> functionalUnitCount = new HashMap<>();
 
 	
@@ -22,11 +22,13 @@ public class Tellability {
 	
 	// Suspense
 	public int suspense;
+	public int plotLength;
 	
 	// Dynamic Points
 	
 	/**
-	 * Computes the overall tellability score.
+	 * Computes the overall tellability score, by normalizing all features into a range of (0,1) and adding them,
+	 * which amounts to assigning each feature equal weight.
 	 * @return
 	 */
 	public double compute() {
@@ -35,6 +37,7 @@ public class Tellability {
 			return 0;
 		}
 		
-		return functionalPolyvalence;
+		return (double) this.numPolyvalentVertices / this.numAllVertices + 
+			   (double) this.suspense / this.plotLength;
 	}
 }

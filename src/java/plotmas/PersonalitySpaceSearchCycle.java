@@ -250,7 +250,7 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 	protected void onCycleResult(Personality[] personalities, Tellability tellability) {
 		StringBuilder csv = new StringBuilder();
 		Formatter f = new Formatter(csv);
-		f.format(Locale.ENGLISH, "%f,%d,", tellability.functionalPolyvalence, tellability.numFunctionalUnits);
+		f.format(Locale.ENGLISH, "%f,%d,", tellability.compute(), tellability.numFunctionalUnits);
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
 			f.format("%d,", tellability.functionalUnitCount.get(unit));
 		}
