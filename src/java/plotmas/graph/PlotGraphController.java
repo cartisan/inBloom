@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -94,24 +95,24 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	
 
 	/**
+	 * Creates a PlotGraphController instance that can be used to display graph.
+	 * <b>Attention</b>: Overwrites the plotListener singleton, so that all future plot events
+	 * will be directed to this very graph.
+	 * @param graph Graph to be displayed
+	 * @return the new PlotGraphListener instance
+	 */
+	public static PlotGraphController fromGraph(PlotDirectedSparseGraph graph) {
+		PlotGraphController.plotListener = new PlotGraphController(graph);
+		return PlotGraphController.plotListener;
+	}
+	
+	/**
 	 * Creates a new instance of {@link PlotDirectedSparseGraph}, which is used to capture new events.
 	 * Sets up a subgraphs for each character agent.
 	 * @param characters a collection of all acting character agents
 	 */
 	public PlotGraphController(Collection<LauncherAgent> characters) {
 		super("Plot Graph");
-
-		// Set up controls of plot graph
-		// Closing this window doesn't stop simulation
-		this.addWindowListener(new java.awt.event.WindowAdapter() {
-		    @Override
-		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-					PlotGraphController.getPlotListener().closeGraph();
-		        }
-		    }
-		);
-		
-		this.createPopupMenu();
 		
 		// create and initialize the plot graph the will be created by this listener
 		this.graph = new PlotDirectedSparseGraph();
@@ -121,6 +122,38 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		for (LauncherAgent character : characters) {
 			this.addCharacter(character.name);
 		}
+
+		setUp();
+	}
+
+	/**
+	 * Creates a new instance of {@link PlotDirectedSparseGraph}, which is used to capture new events.
+	 * Sets up a subgraphs for each character agent.
+	 * @param characters a collection of all acting character agents
+	 */
+	public PlotGraphController(PlotDirectedSparseGraph graph) {
+		super("Plot Graph");
+
+		// create and initialize the plot graph the will be created by this listener
+		this.graph = graph;
+		setUp();
+	}
+	
+	/**
+	 * Sets up an instance of this class, after {@code this.graph} has been set in the constructor.
+	 */
+	private void setUp() {
+		// Set up controls of plot graph
+		// Closing this window doesn't stop simulation
+		this.addWindowListener(new java.awt.event.WindowAdapter() {
+			@Override
+			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+				PlotGraphController.getPlotListener().closeGraph();
+			}
+		}
+				);
+		
+		this.createPopupMenu();
 		
 		// Initialize functional unit combo box
 		JComboBox<FunctionalUnit> unitComboBox = new JComboBox<FunctionalUnit>(FunctionalUnits.ALL);
@@ -141,15 +174,13 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 			}
 		});
 		addInformation("Highlight Unit:");
+		addInformation("Agents: " + graph.getRoots().size());
 		this.infoPanel.add(unitComboBox);
 		
-		addInformation("Agents: " + characters.size());
+		addGraph(FunctionalUnits.ALL_UNITS_GRAPH);
 		addGraph(this.graph);
 		graphTypeList.setSelectedItem(this.graph);
-		
-		addGraph(FunctionalUnits.ALL_UNITS_GRAPH);
 	}
-	
 	
     /**
      * Initializes the a popup menu that will appear on left-click.
@@ -278,20 +309,45 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		graphTypeList.repaint();
 	}
 	
+	/**
+	 * Uses the combobox graphTypeList to select graph g. Results in {@linkplain #visualizeGraph} showing this graph.
+	 * @param g
+	 */
+	public void setSelectedGraph(PlotDirectedSparseGraph g) { 
+		graphTypeList.setSelectedItem(g);
+	}
+	
 	public Tellability analyze() {
 		return analyze(null);
 	}
 	
+	/**
+	 * Analyzes the plot graph, computes the plots tellability and returns it.
+	 * <ul>
+	 *  <li> Analyzing a plot graph includes merging related vertices and specifying the edge types from mere temporal to
+	 * ones with more appropriate semantics so all primitive plot units can be represented. The resulting <b> new plot
+	 * graph is stored in analyzedGraphContainer </b> for displaying and further analyzes e.g. by the ER cycle.</li>
+	 *  <li> Computing the tellability atm includes just computing functional polyvalence and dispalying the results
+	 *  in the info panel. </li>
+	 *  </ul>
+	 * @param analyzedGraphContainer an (empty) plot graph that will be used to store the analyzed graph
+	 * @return
+	 */
 	public Tellability analyze(PlotDirectedSparseGraph analyzedGraphContainer) {
 		if(analysisResult != null) {
 			return analysisResult;
 		}
+		
 		analysisResult = new Tellability();
+		
 		PlotDirectedSparseGraph g = new FullGraphPPVisitor().apply(this.graph);
 		g.accept(new CompactGraphPPVisitor(g));
+		g.accept(new EdgeLayoutVisitor(g, 9));
 		g.setName("Analyzed Plot Graph");
-		EdgeLayoutVisitor elv = new EdgeLayoutVisitor(g, 9);
-		g.accept(elv);
+
+		ConflictVisitor confVis = new ConflictVisitor().apply(g);
+		analysisResult.productiveConflicts = confVis.getProductiveConflictNumber();
+		analysisResult.suspense = confVis.getSuspense();
 		
 		Map<Vertex, Integer> vertexUnitCount = new HashMap<>();
 		
@@ -299,6 +355,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		UnitFinder finder = new UnitFinder();
 		int polyvalentVertices = 0;
 		int unitInstances = 0;
+		Set<Vertex> polyvalentVertexSet = new HashSet<Vertex>();
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, unit.getGraph());
 			unitInstances += mappings.size();
@@ -314,13 +371,19 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 						count++;
 						if(count == 2) {
 							polyvalentVertices++;
-							v.setLabel("* " + v.getLabel());
+							polyvalentVertexSet.add(v);
 						}
 						vertexUnitCount.put(v, count);
 					}
 				}
 			}
 		}
+		
+		// Mark polyvalent vertices with asterisk
+		for(Vertex v : polyvalentVertexSet) {
+			v.setLabel("* " + v.getLabel());
+		}
+		
 		long time = System.currentTimeMillis() - start;
 		addInformation("Time taken: " + time + "ms");
 		addInformation("Units found: " + unitInstances);
@@ -342,7 +405,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	}
 	
 	/**
-	 * Plots and displays the graph that is selected by {@code this.drawnGraph}.
+	 * Plots and displays the graph that is selected by {@code this.graphTypeList}.
 	 * @return the displayed JFrame
 	 */
 	public PlotGraphController visualizeGraph() {
@@ -403,6 +466,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		vis.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
 		vis.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
 		vis.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setEdgeArrowPredicate(Transformers.edgeArrowPredicate);
 		vis.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
 	}
 }

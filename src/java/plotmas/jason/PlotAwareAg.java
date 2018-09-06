@@ -15,6 +15,7 @@ import jason.asSemantics.Unifier;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Plan;
 import jason.asSyntax.PlanBody;
+import plotmas.PlotCircumstanceListener;
 import plotmas.PlotLauncher;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
@@ -34,6 +35,7 @@ public class PlotAwareAg extends AffectiveAgent {
     public void initAg() {
         super.initAg();
         this.name = this.getTS().getUserAgArch().getAgName();
+        this.getTS().getC().addEventListener(new PlotCircumstanceListener(this, this.name));
     }
 
     /**
@@ -90,7 +92,9 @@ public class PlotAwareAg extends AffectiveAgent {
         			if(isPlanRecursive((Plan) o.getPlan().clone(), o.getUnifier().clone())) {
         				return o;
         			} else {
-        				motivation = (Literal)event.getTrigger().getLiteral().clone();
+//        				return o;
+//        				motivation = (Literal)event.getTrigger().getLiteral().clone();
+        				motivation = null;
         			}
         		}
         	}
@@ -169,8 +173,8 @@ public class PlotAwareAg extends AffectiveAgent {
         
         // add emotion to plot graph
         int step = PlotLauncher.runner.getUserEnvironment().getStep();
-        PlotGraphController.getPlotListener().addEvent(this.name, emotion.toLiteral().toString(), Vertex.Type.EMOTION, step);
-        logger.info(this.name + " - appraised emotion: " + emotion.toLiteral().toString());
+        PlotGraphController.getPlotListener().addEvent(this.name, emotion.toString(), Vertex.Type.EMOTION, step);
+        logger.info(this.name + " - appraised emotion: " + emotion.toString());
     }
 	
 	@Override

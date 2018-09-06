@@ -244,8 +244,12 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     }
 
 	public void buildYAxis() {
-    	Vertex firstColRoot = ((PlotDirectedSparseGraph) this.graph).getRoots().get(0);
-    	int x_pos = this.columnStartAtX.get(firstColRoot) - (this.columnWidths.get(firstColRoot) / 2 + STEP_OFFSET);
+		PlotDirectedSparseGraph graph = ((PlotDirectedSparseGraph) this.graph);
+		
+    	Vertex firstColRoot = graph.getRoots().get(0);
+    	int x_pos = this.columnStartAtX.get(firstColRoot) - (this.columnWidths.get(firstColRoot) / 2
+    														 + Transformers.vertexSizeTransformer.apply(graph.yAxis.get(firstColRoot.getStep())) / 2 
+    														 + STEP_OFFSET);
     	
     	// Update x positions of all columns to make place for axis
     	for (Vertex root : this.columnStartAtX.keySet()) {
@@ -254,10 +258,17 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     	}
     	this.size.width = this.size.width - x_pos + PAD_X;
     	x_pos = PAD_X;
-    	
+
     	for (Vertex vertex : ((PlotDirectedSparseGraph) this.graph).getAxisVertices()) {
-    		int y_pos = this.stepStartAtY.get(vertex.getStep());
-    		locations.getUnchecked(vertex).setLocation(new Point(x_pos, y_pos));    		
+    		int y_pos = 0;
+    		
+    		if(this.stepStartAtY.containsKey(vertex.getStep())) {
+    			y_pos = this.stepStartAtY.get(vertex.getStep());
+    		} else {
+    			this.graph.removeVertex(vertex);
+    		}
+
+			locations.getUnchecked(vertex).setLocation(new Point(x_pos, y_pos));	
     	}
 	}
 	

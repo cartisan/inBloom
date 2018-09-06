@@ -31,11 +31,12 @@ import plotmas.graph.visitor.RemovedEdge;
 public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Edge> implements Cloneable {
   
     static Logger logger = Logger.getLogger(PlotDirectedSparseGraph.class.getName());
+    public static final String AXIS_LABEL = "time step";
 	
 	private ArrayList<Vertex> roots = Lists.newArrayList();
 	private HashMap<String, Vertex> lastVertexMap = new HashMap<>();			// maps: agentName --> vertex
-	private HashMap<Integer, Vertex> yAxis = new HashMap<>();					// maps: time step --> vertex
 	private Table<String, String, Vertex> senderMap = HashBasedTable.create();	// maps: agentName, message --> vertex
+	public HashMap<Integer, Vertex> yAxis = new HashMap<>();					// maps: time step --> vertex
 	
 	/**
 	 * The name of this graph.
@@ -100,7 +101,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
     		
     		// add appropriate label to yAxis
     		if (!yAxis.containsKey(root.getStep())) {
-    			this.addToAxis(root.getStep(), "time step");
+    			this.addToAxis(root.getStep(), AXIS_LABEL);
     	}
     	
     		return root;
@@ -296,6 +297,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		// BEWARE: lastVertexMap is not cloned, the returned graph is not useable for continuing plotting 
 		// clone vertices and add them to cloned graph
 		HashMap<Vertex,Vertex> cloneMap = new HashMap<>();		// maps old vertex -> cloned vertex
+		dest.name = this.name;
 		
 		// clone roots in right order
 		for (Vertex root : roots) {
@@ -451,6 +453,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		case LISTEN: 	visitor.visitListen(vertex); 	break;
 		case INTENTION: visitor.visitIntention(vertex); break;
 		case AXIS_LABEL: break;
+		case WILDCARD:	visitor.visitEvent(vertex);		break;
 		default:
 			throw new RuntimeException("Unknown vertex type. Aborting visit!");
 		}

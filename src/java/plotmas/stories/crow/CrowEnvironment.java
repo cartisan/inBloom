@@ -88,7 +88,6 @@ public class CrowEnvironment extends PlotEnvironment<CrowModel> {
     		result = agent.eat(item);
 		}
 		
-		pauseOnRepeat(agentName, action);
 		return result;
 		
 		

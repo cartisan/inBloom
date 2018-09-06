@@ -38,7 +38,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	static protected Logger logger = Logger.getLogger(PlotModel.class.getName());
 	
 	public static MoodMapper moodMapper = new MoodMapper();
-	public static final boolean X_AXIS_IS_TIME = false;		// defines whether moods will be mapped based on plotTim or timeStep
+	public static final boolean X_AXIS_IS_TIME = true;		// defines whether moods will be mapped based on plotTim or timeStep
 															// in latter case, average mood will be calculated over all cycles in a timeStep
 	
 	public HashMap<String, Character> characters = null;
@@ -157,13 +157,13 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		if (X_AXIS_IS_TIME) {
 			// time in ms based mood log
 			Long plotTime = PlotEnvironment.getPlotTimeNow();
-			moodMapper.addMood(name, plotTime, mood);
 			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
+			moodMapper.addMood(name, plotTime, mood);
 		} else {
 			// time-step based mood log
 			Integer timeStep = PlotLauncher.runner.getUserEnvironment().getStep();
-			moodMapper.addMood(name, new Long(timeStep), mood);
 			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + timeStep.toString());
+			moodMapper.addMood(name, new Long(timeStep), mood);
 		}
 	}
 	

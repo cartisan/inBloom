@@ -11,9 +11,9 @@ import plotmas.storyworld.Item;
 
 public class TestModel extends PlotModel<TestEnvironment> {
 
-	private int step = 0;
+	public int step = 0;
 
-	private Wallet wallet = new Wallet();
+	public Wallet wallet = new Wallet();
 
 	public TestModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		super(agentList, hapDir);
@@ -21,6 +21,14 @@ public class TestModel extends PlotModel<TestEnvironment> {
 		for(Character ag : this.characters.values()) {
 			ag.addToInventory(wallet);
 		}
+	}
+	
+	@Override
+	public void initialize(List<LauncherAgent> agentList) {
+		super.initialize(agentList);
+		for(Character ag : this.characters.values()) {
+			ag.addToInventory(wallet);
+		}	
 	}
 	
 	public boolean doStuff(Character agent) {

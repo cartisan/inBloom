@@ -3,10 +3,8 @@ package plotmas.graph;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.stream.LongStream;
 
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -79,9 +77,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 			Long endTime = PlotModel.moodMapper.latestMoodEntry(agName);
 			
 			// for every 10ms from start time until end time sample mood and put it into the graph
-			Iterator<Long> it = LongStream.iterate(startTime, n -> n+1).limit(endTime / 1 + 1).iterator();
-			while(it.hasNext()) {
-				Long x_val = it.next();
+			for (Long x_val = startTime; x_val < endTime + 1; x_val += 10) {
 				Double sampledMood = PlotModel.moodMapper.sampleMood(agName, x_val).get(selectedMoodDimension);
 				this.addMoodPoint(sampledMood, x_val, agName);
 			}
@@ -166,23 +162,5 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 	
 	private void addMoodPoint(Double value, Long time, String agName) {
 		this.moodData.addValue(value, agName, time);
-	}
-
-	/*************************** for testing purposes ***********************************/	
-	public static void main( String[ ] args ) {
-		MoodGraph chart = new MoodGraph();
-
-		DefaultCategoryDataset dataset = new DefaultCategoryDataset( );
-		dataset.addValue( 15 , "schools" , "1970" );
-		dataset.addValue( 30 , "schools" , "1980" );
-		dataset.addValue( 60 , "schools" ,  "1990" );
-		dataset.addValue( 120 , "schools" , "2000" );
-		dataset.addValue( 240 , "schools" , "2010" );
-		dataset.addValue( 300 , "schools" , "2014" );
-		dataset.addValue( 100 , "trains" , "2000" );
-		dataset.addValue( 200 , "trains" , "2010" );
-		dataset.addValue( 300 , "trains" , "2014" );
-		
-		chart.visualizeGraph(dataset);
 	}
 }

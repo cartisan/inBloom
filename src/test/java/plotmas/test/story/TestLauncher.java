@@ -8,7 +8,6 @@ import jason.infra.centralised.BaseCentralisedMAS;
 import plotmas.LauncherAgent;
 import plotmas.PlotControlsLauncher;
 import plotmas.PlotLauncher;
-import plotmas.stories.little_red_hen.FarmModel;
 import plotmas.storyworld.ScheduledHappeningDirector;
 
 public class TestLauncher extends PlotLauncher<TestEnvironment, TestModel> {
@@ -33,7 +32,7 @@ public class TestLauncher extends PlotLauncher<TestEnvironment, TestModel> {
   
         // Initialize MAS with a scheduled happening director
         ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
-        FarmModel model = new FarmModel(agents, hapDir);
+        TestModel model = new TestModel(agents, hapDir);
 
 		// Execute MAS
 		runner.initialize(args, model, agents, "test_agent");

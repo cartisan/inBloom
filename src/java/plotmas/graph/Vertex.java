@@ -3,12 +3,10 @@ package plotmas.graph;
 import java.util.LinkedList;
 import java.util.UUID;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jason.asSemantics.Emotion;
-import jason.asSyntax.parser.ParseException;
 import plotmas.helper.TermParser;
 
 /**
@@ -23,7 +21,7 @@ public class Vertex implements Cloneable {
 	//removes annotations from literal-style stings
 	public static Pattern NO_ANNOT_PATTERN = Pattern.compile("(.+?\\(.+?\\))");
 	
-	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, LISTEN, PERCEPT, INTENTION, AXIS_LABEL }
+	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, LISTEN, PERCEPT, INTENTION, AXIS_LABEL, WILDCARD }
 
 	private String id;
 	private String label;
@@ -165,12 +163,22 @@ public class Vertex implements Cloneable {
 	 * @return
 	 */
 	public String getSource() {
-		Pattern pattern = Pattern.compile("source\\((?<src>.+)\\)");
-		Matcher matcher = pattern.matcher(this.getLabel());
-		if(!matcher.find()) {
-			return "";
-		}
-		return matcher.group("src");
+		return TermParser.getAnnotation(getLabel(), "source");
+	}
+	
+	/**
+	 * Returns the cause of this vertex.
+	 * Example: <br />
+	 * <pre>
+	 * {@code
+	 * 	eat(bread)[source(self)] -> self
+	 * }
+	 * </pre>
+	 * 
+	 * @return
+	 */
+	public String getCause() {
+		return TermParser.getAnnotation(getLabel(), "cause");
 	}
 
 	/**
@@ -186,7 +194,7 @@ public class Vertex implements Cloneable {
 //		case SPEECHACT:	result = "SPEECH>>" + result;
 //						result = appendEmotions(result);
 //						break;
-		case LISTEN:	result = "+" + result;
+		case LISTEN:	//result = "+" result;
 						result = appendEmotions(result);
 						break;
 		case PERCEPT: 	/*Matcher m = NO_ANNOT_PATTERN.matcher(result);
@@ -195,13 +203,13 @@ public class Vertex implements Cloneable {
 						result = /*"+" +*/ TermParser.removeAnnots(result);
 						result = appendEmotions(result);
 						break;
-		case EMOTION: 	try {
+		case EMOTION: 	/*try {
 							Emotion em = Emotion.parseString(result);
 							result = em.toString();
 						} catch (ParseException e) {
 							e.printStackTrace();
 							return null;
-						}
+						}*/
 						break;
 		default: 		result = appendEmotions(result);
 						break;
@@ -215,7 +223,15 @@ public class Vertex implements Cloneable {
 	
 	@Override
 	public Vertex clone() {
-		return new Vertex(this.label, this.type, this.step);
+		Vertex clone = new Vertex(this.label, this.type, this.step);
+		
+		clone.minWidth = this.minWidth;
+		
+		for (String e: this.emotions) {
+			clone.addEmotion(e);
+		}
+		
+		return clone;
 	}
 
 	/**

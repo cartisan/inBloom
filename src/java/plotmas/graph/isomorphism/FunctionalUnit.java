@@ -1,9 +1,13 @@
 package plotmas.graph.isomorphism;
 
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import plotmas.graph.Edge;
@@ -16,6 +20,8 @@ import plotmas.graph.Vertex;
  * @author Sven Wilke
  */
 public class FunctionalUnit {
+	
+	static Logger logger = Logger.getLogger(FunctionalUnit.class.getName());
 	
 	private String name;
 	private PlotDirectedSparseGraph unitGraph;
@@ -66,87 +72,116 @@ public class FunctionalUnit {
 			displayGraph.addRoot(this.name + " Agent 1"),
 			root2 = displayGraph.addRoot(this.name + " Agent 2")
 		};
-		
-		Vertex startVertex = null;
-		for(Vertex v : displayGraph.getVertices()) {
-			if(isStartVertex(v, displayGraph)) {
-				startVertex = v;
-				break;
-			}
-		}
-		
-		assert startVertex != null;
-		
-		connect(startVertex, roots, 0);
-		
+
+		connect(roots);
+
 		if(displayGraph.getIncidentEdges(root2).isEmpty()) {
 			displayGraph.removeVertex(root2);
 			displayGraph.getRoots().remove(root2);
-		} else {
-			Logger.getGlobal().info("++++++++++++ root " + root2.toString());
-			for (Edge e: displayGraph.getIncidentEdges(root2)) {
-				Logger.getGlobal().info("type " + e.getType().toString());
-				Logger.getGlobal().info("src " + displayGraph.getSource(e).toString());
-				Logger.getGlobal().info("dest " + displayGraph.getDest(e).toString());
-			}
 		}
 		
 		displayGraph.setName(this.getName());
 	}
 	
 	/**
-	 * Connects v with con[agent] if v != con[agent] and then
-	 * recursively connects the whole graph with temporal
-	 * edges.
+	 * Connects the display graph temporally using the steps
+	 * of the vertices. Assumes that for each character,
+	 * exactly one vertex at step 1 exists.
+	 * @param roots
 	 */
-	private void connect(Vertex v, Vertex[] con, int agent) {
-		Collection<Edge> outEdges = displayGraph.getOutEdges(v);
-		if(con[agent] != v) {
-			displayGraph.addEdge(new Edge(con[agent].getType() == Vertex.Type.ROOT ? Edge.Type.ROOT : Edge.Type.TEMPORAL), con[agent], v);
-			con[agent] = v;
-		}
-		
-		Map<Edge.Type, Collection<Edge>> typedEdges = new HashMap<>();
-		for(Edge.Type type : Edge.Type.values()) {
-			typedEdges.put(type, new HashSet<Edge>());
-		}
-		for(Edge e : outEdges) {
-			typedEdges.get(e.getType()).add(e);
-		}
-		
-		for(Edge e : typedEdges.get(Edge.Type.ACTUALIZATION)) {
-			Vertex w = displayGraph.getDest(e);
-			displayGraph.addEdge(new Edge(Edge.Type.TEMPORAL), con[agent], w);
-			con[agent] = w;
-		}
-		
-		for(Edge e : typedEdges.get(Edge.Type.MOTIVATION)) {
-			Vertex w = displayGraph.getDest(e);
-			displayGraph.addEdge(new Edge(Edge.Type.TEMPORAL), con[agent], w);
-			con[agent] = w;
-			connect(w, con, agent);
-		}
-		
-		for(Edge e : typedEdges.get(Edge.Type.COMMUNICATION)) {
-			Vertex w = displayGraph.getDest(e);
-			connect(w, con, agent == 0 ? 1 : 0);
-		}
-	}
-	
-	private boolean isStartVertex(Vertex v, PlotDirectedSparseGraph g) {
-		if ((v.getType()==Vertex.Type.AXIS_LABEL) | (v.getType()==Vertex.Type.ROOT)) {
-			return false;
-		}
-		
-		Collection<Edge> inEdges = g.getInEdges(v);
-		if(!inEdges.isEmpty()) {
-			for(Edge e : inEdges) {
-				if(e.getType() != Edge.Type.TERMINATION) {
-					return false;
+	private void connect(Vertex[] roots) {
+		Vertex[] starts = {null, null};
+		for(Vertex v : displayGraph.getVertices()) {
+			if(v.getType() != Vertex.Type.AXIS_LABEL && v.getStep() == 1) {
+				if(starts[0] == null) {
+					starts[0] = v;
+				} else {
+					starts[1] = v;
+					break;
 				}
 			}
 		}
-		return true;
+		List<Vertex> vertexDump0 = new ArrayList<Vertex>();
+		List<Vertex> vertexDump1 = new ArrayList<Vertex>();
+		vertexDump0.add(starts[0]);
+		vertexDump1.add(starts[1]);
+		Set<Vertex> vertices0 = new HashSet<Vertex>();
+		Set<Vertex> vertices1 = new HashSet<Vertex>();
+		boolean allIn0, allIn1;
+		do {
+			allIn0 = true;
+			allIn1 = true;
+			for(Vertex v : vertexDump0) {
+				if(!vertices0.contains(v)) {
+					allIn0 = false;
+					collectSubVertices(v, vertices0, vertexDump1);
+				}
+			}
+			if(starts[1] != null) {
+				for(Vertex v : vertexDump1) {
+					if(!vertices1.contains(v)) {
+						allIn1 = false;
+						collectSubVertices(v, vertices1, vertexDump0);
+					}
+				}
+			}
+		} while(!(allIn0 && allIn1));
+		
+		Comparator<Vertex> stepComparator = new Comparator<Vertex>() {
+			@Override
+			public int compare(Vertex o1, Vertex o2) {
+				return o1.getStep() - o2.getStep();
+			}
+		};
+		
+		Vertex[] sortVertices0 = new Vertex[vertices0.size()];
+		Vertex[] sortVertices1 = new Vertex[vertices1.size()];
+		vertices0.toArray(sortVertices0);
+		if(starts[1] != null)
+			vertices1.toArray(sortVertices1);
+		Arrays.sort(sortVertices0, stepComparator);
+		if(starts[1] != null)
+			Arrays.sort(sortVertices1, stepComparator);
+		
+		for(int i = 0; i < sortVertices0.length; i++) {
+			if(i == 0) {
+				displayGraph.addEdge(new Edge(Edge.Type.ROOT), roots[0], sortVertices0[0]);
+			} else {
+				displayGraph.addEdge(new Edge(Edge.Type.TEMPORAL), sortVertices0[i - 1], sortVertices0[i]);
+			}
+		}
+		
+		if(starts[1] != null)
+			for(int i = 0; i < sortVertices1.length; i++) {
+				if(i == 0) {
+					displayGraph.addEdge(new Edge(Edge.Type.ROOT), roots[1], sortVertices1[0]);
+				} else {
+					displayGraph.addEdge(new Edge(Edge.Type.TEMPORAL), sortVertices1[i - 1], sortVertices1[i]);
+				}
+			}
+	}
+	
+	private void collectSubVertices(Vertex start, Set<Vertex> vertices, List<Vertex> dump) {
+		Queue<Vertex> queue = new LinkedList<Vertex>();
+		queue.add(start);
+		while(!queue.isEmpty()) {
+			Vertex vert = queue.remove();
+			if(!vertices.contains(vert)) {
+				vertices.add(vert);
+				for(Edge e : displayGraph.getIncidentEdges(vert)) {
+					
+					Vertex toAdd = displayGraph.getSource(e);
+					if(toAdd == vert) {
+						toAdd = displayGraph.getDest(e);
+					}
+					if(e.getType() == Edge.Type.COMMUNICATION) {
+						dump.add(toAdd);
+					} else {
+						queue.add(toAdd);
+					}
+				}
+			}
+		}
 	}
 	
 	@Override

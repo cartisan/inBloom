@@ -76,7 +76,7 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitPercept(Vertex vertex) {
-		boolean isInvolved = handlePositiveTradeoff(vertex);
+		boolean isInvolved = handleTradeoff(vertex);
 		for(String emotion : Emotion.getAllEmotions()) {
 			if(vertex.hasEmotion(emotion)) {
 				handleAffectiveState(vertex);
@@ -93,9 +93,9 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 		handleLossAndResolution(vertex);
 	}
 	
-	private boolean handlePositiveTradeoff(Vertex vertex) {
+	private boolean handleTradeoff(Vertex vertex) {
 		String source = vertex.getSource();
-		if(source.isEmpty()) {
+		if(source.isEmpty() || vertex.getLabel().startsWith("+")) {
 			return false;
 		}
 		
@@ -105,28 +105,19 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 		// Look for source
 		for(Vertex target : stateList) {
 			if(TermParser.removeAnnots(target.getLabel()).substring(1).equals(source)) {
-				// Source found! We only need it if it's positive though!
-				for(String emotion : Emotion.getAllEmotions()) {
-					if(target.hasEmotion(emotion) && Emotion.getEmotion(emotion).getP() > 0) {
-						src = target;
-						break;
-					}
-				}
+				// Source found! We take every source!
+				src = target;
+				break;
 			}
 		}
 		if(src != null) {
-			// Let's find an opposite mental note (addition if this is subtraction and vice-versa).
+			// Let's find the corresponding addition of this mental note.
 			for(Vertex target : stateList) {
 				if(target.getWithoutAnnotation().substring(1).equals(vertex.getWithoutAnnotation().substring(1))) {
-					if(!target.getWithoutAnnotation().substring(0, 1).equals(vertex.getWithoutAnnotation().substring(0, 1))) {
-						// Great, they are opposite. Now let's look whether the opposite one has a positive emotion as well
-						for(String emotion : Emotion.getAllEmotions()) {
-							if(target.hasEmotion(emotion) && Emotion.getEmotion(emotion).getP() > 0) {
-								// It actually has one! We found a positive tradeoff!
-								graph.addEdge(new Edge(Edge.Type.TERMINATION), src, target);
-								return false;
-							}
-						}
+					if(target.getWithoutAnnotation().substring(0, 1).equals("+")) {
+						// Great, found the addition!
+						graph.addEdge(new Edge(Edge.Type.TERMINATION), src, target);
+						return true;
 					}
 				}
 			}
