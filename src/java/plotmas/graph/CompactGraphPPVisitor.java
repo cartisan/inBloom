@@ -16,9 +16,10 @@ import plotmas.helper.TermParser;
  * into the corresponding action, as well as added edges of the types
  * motivation, termination, actualization.
  * 
- * Currently unused.
+ * Used to perform and insert further analysis into the graph, like 
+ * terminatination relations between believes.
+ *   
  * @author Sven Wilke
- *
  */
 public class CompactGraphPPVisitor implements PlotGraphVisitor {
 	
@@ -39,7 +40,6 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 	@Override
 	public void visitEvent(Vertex vertex) { }
 	
-	@SuppressWarnings("unused")
 	private Vertex cloneVertexToPredecessor(Vertex v) {
 		Collection<Edge> edgesIn = this.graph.getInEdges(v);
 		Collection<Edge> edgesOut = this.graph.getOutEdges(v);

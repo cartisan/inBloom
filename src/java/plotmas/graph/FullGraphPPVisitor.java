@@ -18,7 +18,6 @@ import plotmas.helper.TermParser;
  * It will create edges relevant for functional units and
  * collapse emotions, percepts and action into a single vertex.
  * @author Sven Wilke
- *
  */
 public class FullGraphPPVisitor implements PlotGraphVisitor {
 

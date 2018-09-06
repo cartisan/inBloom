@@ -447,13 +447,13 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		switch(vertex.getType()) {
 		case ROOT: 		visitor.visitRoot(vertex); 		break;
 		case EVENT: 	visitor.visitEvent(vertex); 	break;
+		case WILDCARD:	visitor.visitEvent(vertex);		break;
 		case EMOTION: 	visitor.visitEmotion(vertex); 	break;
 		case PERCEPT: 	visitor.visitPercept(vertex); 	break;
 		case SPEECHACT: visitor.visitSpeech(vertex); 	break;
 		case LISTEN: 	visitor.visitListen(vertex); 	break;
 		case INTENTION: visitor.visitIntention(vertex); break;
 		case AXIS_LABEL: break;
-		case WILDCARD:	visitor.visitEvent(vertex);		break;
 		default:
 			throw new RuntimeException("Unknown vertex type. Aborting visit!");
 		}
