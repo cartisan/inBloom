@@ -74,6 +74,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	private GraphZoomScrollPane scrollPane = null; //panel used to display scrolling bars
 	private JPopupMenu popup = null;	
 	private Tellability analysisResult = null;
+	private JComboBox<FunctionalUnit> unitComboBox = null;
 	
 	/**
 	 * System-wide method for getting access to the active PlotGraph instance that collects events
@@ -156,10 +157,10 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		this.createPopupMenu();
 		
 		// Initialize functional unit combo box
-		JComboBox<FunctionalUnit> unitComboBox = new JComboBox<FunctionalUnit>(FunctionalUnits.ALL);
-		unitComboBox.addItem(null);
-		unitComboBox.setSelectedItem(null);
-		unitComboBox.addActionListener(new ActionListener() {
+		this.unitComboBox = new JComboBox<FunctionalUnit>();
+		this.unitComboBox.addItem(null);
+		this.unitComboBox.setSelectedItem(null);
+		this.unitComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				@SuppressWarnings("unchecked")
@@ -173,9 +174,8 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 				PlotGraphController.getPlotListener().visViewer.repaint();
 			}
 		});
-		addInformation("Highlight Unit:");
-		addInformation("Agents: " + graph.getRoots().size());
-		this.infoPanel.add(unitComboBox);
+//		addInformation("Highlight Unit:");
+//		this.infoPanel.add(unitComboBox);
 		
 		addGraph(FunctionalUnits.ALL_UNITS_GRAPH);
 		addGraph(this.graph);
@@ -352,6 +352,11 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 			unitInstances += mappings.size();
 			this.analysisResult.functionalUnitCount.put(unit, mappings.size());
 			logger.log(Level.INFO, "Found '" + unit.getName() + "' " + mappings.size() + " times.");
+			
+			if (mappings.size() > 0 ) {
+				this.unitComboBox.addItem(unit);
+			}
+			
 			for(Map<Vertex, Vertex> map : mappings) {
 				for(Vertex v : map.keySet()) {
 					g.markVertexAsUnit(v, unit);
@@ -386,6 +391,8 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		
 		// Create GUI representation of analysis
 		addInformation("#Functional Units: " + this.analysisResult.numFunctionalUnits);
+		addInformation("Highlight Units:");
+		this.infoPanel.add(unitComboBox);
 		addInformation("#Polyvalent Vertices: " + this.analysisResult.numPolyvalentVertices);
 		addInformation("Suspense: " + this.analysisResult.suspense);
 		addInformation("Tellability: " + this.analysisResult.compute());
