@@ -466,6 +466,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		vis.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
 		vis.getRenderContext().setArrowDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);
 		vis.getRenderContext().setArrowFillPaintTransformer(Transformers.edgeDrawPaintTransformer);
+		vis.getRenderContext().setEdgeArrowPredicate(Transformers.edgeArrowPredicate);
 		vis.getRenderContext().setEdgeStrokeTransformer(Transformers.edgeStrokeHighlightingTransformer);
 	}
 }

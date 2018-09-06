@@ -11,7 +11,10 @@ import java.awt.geom.Line2D;
 import java.util.Set;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.util.Context;
 import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
 
@@ -53,8 +56,6 @@ public class Transformers {
         	switch (v.getType()) {
         		case SPEECHACT:
         			return factory.getRoundRectangle(v);
-//        		case LISTEN:
-//        			return factory.getRoundRectangle(v);
         		case EMOTION:
         			return factory.getRectangle(v);
         		case LISTEN:
@@ -154,4 +155,18 @@ public class Transformers {
         	}
     	}
     };
+    
+	public static Predicate<Context<Graph<Vertex, Edge>, Edge>> edgeArrowPredicate = new Predicate<Context<Graph<Vertex, Edge>, Edge>>() {
+		@Override
+		public boolean apply(Context<Graph<Vertex, Edge>, Edge> input) {
+			switch (input.element.getType()) {
+        	case EQUIVALENCE:
+        		return false;										// Equivalence edges have no arrows
+    		default:
+    			return true;
+			}
+		}
+		
+	};
+
 }
