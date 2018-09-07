@@ -1,11 +1,9 @@
 package plotmas.test.story;
 
+import java.util.List;
+
 import org.junit.Before;
-import org.junit.BeforeClass;
 
-import com.google.common.collect.ImmutableList;
-
-import jason.asSemantics.Personality;
 import plotmas.LauncherAgent;
 import plotmas.PlotCycle;
 import plotmas.graph.PlotDirectedSparseGraph;
@@ -28,21 +26,14 @@ public abstract class AbstractPlotTest {
 	private static boolean hasSimulationFinished = false;
 	private static Object simulationMonitor = new Object();
 	
-	@BeforeClass
-	public static void startSimulation() throws Exception {
+	public static void startSimulation(String agentFile, List<LauncherAgent> agents) throws Exception {
 		runner = new TestLauncher();
 
-        ImmutableList<LauncherAgent> agents = ImmutableList.of(
-							new LauncherAgent("jeremy",
-									new Personality(0,  1,  0.7,  0.3, 0.3)
-							)
-						);
-  
         // Initialize MAS with a scheduled happening director
         ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
         TestModel model = new TestModel(agents, hapDir);
         
-        PlotCycle.Cycle simulation = new PlotCycle.Cycle(runner, model, new String[0], agents, "agent_primitive_unit");
+        PlotCycle.Cycle simulation = new PlotCycle.Cycle(runner, model, new String[0], agents, agentFile);
 		Thread t = new Thread(simulation);
 		t.start();
 		while(runner.getEnvironmentInfraTier() == null || runner.getUserEnvironment() == null) {
