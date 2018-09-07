@@ -21,13 +21,13 @@ public class CountingVisitor implements PlotGraphVisitor {
 	public HashMap<String, Integer> conflictCounter;						 // agentName --> conflictNum
 	public HashMap<String, List<Pair<Vertex, Vertex>>> productiveConflicts;  // agentName --> [(Intention, Resolution), (...), ...]
 	public Table<String, Vertex, List<Vertex>> motivationChains = HashBasedTable.create();
+	public Triple<String, Vertex, Vertex> mostSuspensefulIntention;			 // (agent, intention, action)
 	
 	private int highestStep = 0;		// highest environment step encountered in story (= plot length in steps)
 	private int vertexNum = 0;		// overall number of events in the plot  
 	
 	private String currentRoot;
 	private PlotDirectedSparseGraph graph;
-	private Triple<String, Vertex, Vertex> mostSuspensefulIntention;
 	
 	public CountingVisitor apply(PlotDirectedSparseGraph graph) {
 		conflictCounter = new HashMap<>();

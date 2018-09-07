@@ -27,6 +27,7 @@ public class Vertex implements Cloneable {
 	private String label;
 	private Type type;
 	private int step;
+	private boolean isPolyvalent;
 	
 	private LinkedList<String> emotions = new LinkedList<>();
 	
@@ -78,6 +79,7 @@ public class Vertex implements Cloneable {
 		this.id = UUID.randomUUID().toString();
 		this.type = type;
 		this.step = step;
+		this.isPolyvalent = false;
 	}
 	
 	public String getId() {
@@ -181,6 +183,10 @@ public class Vertex implements Cloneable {
 		return TermParser.getAnnotation(getLabel(), "cause");
 	}
 
+	public void setPolyvalent() {
+		this.isPolyvalent = true;
+	}
+	
 	/**
 	 * Implements the string representations of the vertex depending on its type. This determines how vertices will be
 	 * displayed in the final graph.
@@ -190,6 +196,11 @@ public class Vertex implements Cloneable {
 	@Override
 	public String toString() {
 		String result = this.getLabel();
+		
+		if (this.isPolyvalent) {
+			result = "* " + result; 
+		}
+		
 		switch(this.type) {
 		case PERCEPT: 	result = TermParser.removeAnnots(result);
 						result = appendEmotions(result);

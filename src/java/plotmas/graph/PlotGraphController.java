@@ -306,6 +306,14 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	}
 	
 	/**
+	 * Adds a functional unit to the drop down menu for highlighting units in plot graph
+	 * @param unit
+	 */
+	public void addDetectedPlotUnitType(FunctionalUnit unit) {
+		this.unitComboBox.addItem(unit);
+	}
+	
+	/**
 	 * Uses the combobox graphTypeList to select graph g. Results in {@linkplain #visualizeGraph} showing this graph.
 	 * @param g
 	 */
@@ -333,63 +341,16 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		if(analysisResult != null) {
 			return analysisResult;
 		}
-		analysisResult = new Tellability();
 		
 		// Create analysed graph with semantically interpretable edges and collapsed vertices
 		PlotDirectedSparseGraph g = new FullGraphPPVisitor().apply(this.graph);
 		g.setName("Analyzed Plot Graph");
 		g.accept(new CompactGraphPPVisitor(g));
 
-		// Find Functional Units and polyvalent Vertices
-		Map<Vertex, Integer> vertexUnitCount = new HashMap<>();
+		// compute all necessary statictics for tellability
+		analysisResult = new Tellability(g);
 		
-		UnitFinder finder = new UnitFinder();
-		int polyvalentVertices = 0;
-		int unitInstances = 0;
-		Set<Vertex> polyvalentVertexSet = new HashSet<Vertex>();
-		for(FunctionalUnit unit : FunctionalUnits.ALL) {
-			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(g, unit.getGraph());
-			unitInstances += mappings.size();
-			this.analysisResult.functionalUnitCount.put(unit, mappings.size());
-			logger.log(Level.INFO, "Found '" + unit.getName() + "' " + mappings.size() + " times.");
-			
-			if (mappings.size() > 0 ) {
-				this.unitComboBox.addItem(unit);
-			}
-			
-			for(Map<Vertex, Vertex> map : mappings) {
-				for(Vertex v : map.keySet()) {
-					g.markVertexAsUnit(v, unit);
-					if(!vertexUnitCount.containsKey(v)) {
-						vertexUnitCount.put(v, 1);
-					} else {
-						int count = vertexUnitCount.get(v);
-						count++;
-						if(count == 2) {
-							polyvalentVertices++;
-							polyvalentVertexSet.add(v);
-						}
-						vertexUnitCount.put(v, count);
-					}
-				}
-			}
-		}
-		
-		// Mark polyvalent vertices with asterisk
-		for(Vertex v : polyvalentVertexSet) {
-			v.setLabel("* " + v.getLabel());
-		}
-
-		// Perform quantitative analysis of plot
-		CountingVisitor countingVis = new CountingVisitor().apply(g);
-		analysisResult.productiveConflicts = countingVis.getProductiveConflictNumber();
-		analysisResult.suspense = countingVis.getSuspense();
-		analysisResult.plotLength = countingVis.getPlotLength();
-		analysisResult.numAllVertices = countingVis.getVertexNum();
-		analysisResult.numFunctionalUnits = unitInstances;
-		analysisResult.numPolyvalentVertices = polyvalentVertices;
-		
-		// Create GUI representation of analysis
+		// Create GUI representation of tellability analysis
 		addInformation("#Functional Units: " + this.analysisResult.numFunctionalUnits);
 		addInformation("Highlight Units:");
 		this.infoPanel.add(unitComboBox);
