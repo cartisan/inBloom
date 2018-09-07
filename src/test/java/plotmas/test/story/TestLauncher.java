@@ -1,5 +1,10 @@
 package plotmas.test.story;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.MessageFormat;
+import java.util.Collection;
+
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
@@ -16,6 +21,47 @@ public class TestLauncher extends PlotLauncher<TestEnvironment, TestModel> {
 		ENV_CLASS = TestEnvironment.class;
 		PlotControlsLauncher.runner = this;
 		BaseCentralisedMAS.runner = this;
+	}
+	
+	/**
+	 * Implements same functionality as {@link plotmas.PlotLauncher#createMas2j}, but changes directory
+	 * of agent ASL files to {@code src/test/asl}.
+	 */
+	@Override
+	protected void createMas2j(Collection<LauncherAgent> agents, String agentFileName, boolean debugMode) {
+		try{
+		    PrintWriter writer = new PrintWriter(DEAULT_FILE_NAME, "UTF-8");
+		    
+		    writer.println("MAS launcher {");
+		    writer.println("	environment: " + ENV_CLASS.getName());
+		    if(!debugMode) {
+		    	writer.println("	executionControl: jason.control.ExecutionControl");
+		    }
+		    writer.println("");
+		    writer.println("	agents:");
+		    
+		    for (LauncherAgent agent : agents) {
+		    	String line = "		" + agent.name + 
+		    			MessageFormat.format(" " + agentFileName + "[beliefs=\"{0}\", goals=\"{1}\"]",
+		    								 agent.beliefs,
+		    								 agent.goals) +
+		    	" agentArchClass " + AG_ARCH_CLASS.getName() + 
+		    	" agentClass "+ AG_CLASS.getName() +
+		    	";";   
+		    	writer.println(line);
+		    }
+		    
+		    writer.println("");
+		    writer.println("	aslSourcePath:");
+		    writer.println("		\"src/test/asl\";");
+		    writer.println("}");
+		    writer.close();
+		    
+		    logger.info("Generated project config: " + DEAULT_FILE_NAME);
+		    
+		} catch (IOException e) {
+			logger.severe("Couldn't create mas2j file");
+		}
 	}
 	
 	public static void main(String[] args) throws JasonException {
@@ -35,7 +81,7 @@ public class TestLauncher extends PlotLauncher<TestEnvironment, TestModel> {
         TestModel model = new TestModel(agents, hapDir);
 
 		// Execute MAS
-		runner.initialize(args, model, agents, "test_agent");
+		runner.initialize(args, model, agents, "agent_primitive_unit");
 		runner.run();
 	}
 }
