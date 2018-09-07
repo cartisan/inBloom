@@ -9,6 +9,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
 import jason.util.Pair;
+import plotmas.graph.Vertex.Type;
 import plotmas.graph.visitor.EdgeVisitResult;
 import plotmas.graph.visitor.PlotGraphVisitor;
 import plotmas.helper.Triple;
@@ -91,9 +92,11 @@ public class CountingVisitor implements PlotGraphVisitor {
 		if(type == Edge.Type.ACTUALIZATION) {
 			this.productiveConflicts.get(this.currentRoot).add(new Pair<>(graph.getSource(edge), graph.getDest(edge)));
 		}
-		
+
 		if(type == Edge.Type.TERMINATION) {
-			this.productiveConflicts.get(this.currentRoot).add(new Pair<>(graph.getDest(edge), graph.getSource(edge)));
+			if(graph.getDest(edge).getType() == Type.INTENTION) {
+				this.productiveConflicts.get(this.currentRoot).add(new Pair<>(graph.getDest(edge), graph.getSource(edge)));
+			}
 		}
 
 		if(type == Edge.Type.MOTIVATION) {

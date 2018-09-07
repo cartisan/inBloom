@@ -9,6 +9,7 @@ import plotmas.PlotCycle;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
 import plotmas.helper.EnvironmentListener;
+import plotmas.helper.Tellability;
 import plotmas.storyworld.ScheduledHappeningDirector;
 
 /**
@@ -22,6 +23,7 @@ public abstract class AbstractPlotTest {
 
 	protected static TestLauncher runner; 
 	protected static PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();
+	protected static Tellability analysis;
 	
 	private static boolean hasSimulationFinished = false;
 	private static Object simulationMonitor = new Object();
@@ -44,7 +46,7 @@ public abstract class AbstractPlotTest {
 			@Override
 			public void onPauseRepeat() {
 				synchronized(simulationMonitor) {
-					PlotGraphController.getPlotListener().analyze(analyzedGraph);
+					analysis = PlotGraphController.getPlotListener().analyze(analyzedGraph);
 					if (VISUALIZE) {
 						PlotGraphController graphView = PlotGraphController.fromGraph(analyzedGraph);
 						graphView.visualizeGraph();
