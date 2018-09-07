@@ -22,9 +22,11 @@ import plotmas.helper.EnvironmentListener;
 import plotmas.storyworld.ScheduledHappeningDirector;
 
 public class PrimitiveUnitTest {
+	private static final boolean VISUALIZE = false;
 
 	private static TestLauncher runner; 
 	private static PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();
+	
 	
 	private static boolean hasSimulationFinished = false;
 	private static Object simulationMonitor = new Object();
@@ -55,8 +57,14 @@ public class PrimitiveUnitTest {
 			public void onPauseRepeat() {
 				synchronized(simulationMonitor) {
 					PlotGraphController.getPlotListener().analyze(analyzedGraph);
-					hasSimulationFinished = true;
-					simulationMonitor.notifyAll();
+					if (VISUALIZE) {
+						PlotGraphController graphView = PlotGraphController.fromGraph(analyzedGraph);
+						graphView.visualizeGraph();
+					} 
+					else {
+						hasSimulationFinished = true;
+						simulationMonitor.notifyAll();
+					}
 				}
 			}
 			
