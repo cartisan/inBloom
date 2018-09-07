@@ -116,7 +116,7 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 				if(target.getWithoutAnnotation().substring(1).equals(vertex.getWithoutAnnotation().substring(1))) {
 					if(target.getWithoutAnnotation().substring(0, 1).equals("+")) {
 						// Great, found the addition!
-						graph.addEdge(new Edge(Edge.Type.TERMINATION), src, target);
+						createTermination(src, target);
 						return true;
 					}
 				}
@@ -170,7 +170,6 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 		}
 		stateList.addFirst(vertex);
 	}
-	
 	private void createTermination(Vertex from, Vertex to) {
 		graph.addEdge(new Edge(Edge.Type.TERMINATION), from, to);
 	}

@@ -191,32 +191,14 @@ public class Vertex implements Cloneable {
 	public String toString() {
 		String result = this.getLabel();
 		switch(this.type) {
-//		case SPEECHACT:	result = "SPEECH>>" + result;
-//						result = appendEmotions(result);
-//						break;
-		case LISTEN:	//result = "+" result;
+		case PERCEPT: 	result = TermParser.removeAnnots(result);
 						result = appendEmotions(result);
 						break;
-		case PERCEPT: 	/*Matcher m = NO_ANNOT_PATTERN.matcher(result);
-				        if (m.find())
-				            result = "+" + m.group(1);*/
-						result = /*"+" +*/ TermParser.removeAnnots(result);
-						result = appendEmotions(result);
-						break;
-		case EMOTION: 	/*try {
-							Emotion em = Emotion.parseString(result);
-							result = em.toString();
-						} catch (ParseException e) {
-							e.printStackTrace();
-							return null;
-						}*/
-						break;
+		case EMOTION: 	break;
 		default: 		result = appendEmotions(result);
 						break;
 		
 		}
-		
-
 		
 		return result;
 	}
