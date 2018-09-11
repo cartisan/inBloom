@@ -42,7 +42,7 @@ public class TellabilityTest extends AbstractPlotTest {
 		// test that productive conflicts are of right type
 		for (Pair<Vertex, Vertex> conflict : analysis.counter.productiveConflicts.get("jeremy")) {
 			assertTrue( (conflict.getFirst().getType() == Type.PERCEPT)  | (conflict.getFirst().getType() == Type.INTENTION) );
-			assertTrue( (conflict.getSecond().getType() == Type.EVENT)  | (conflict.getSecond().getType() == Type.INTENTION) );
+			assertTrue( (conflict.getSecond().getType() == Type.ACTION)  | (conflict.getSecond().getType() == Type.INTENTION) );
 		}
 	}
 	

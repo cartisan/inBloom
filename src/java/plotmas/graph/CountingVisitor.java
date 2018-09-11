@@ -59,6 +59,12 @@ public class CountingVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitEvent(Vertex vertex) {
+		logger.severe("No EVENT vertices should be left by this stage of preprocessing: " + vertex.getLabel());
+		logger.severe("Count of vertices might be not rliable anymore");
+	}
+
+	@Override
+	public void visitAction(Vertex vertex) {
 		updateSimpleVertexCounts(vertex);
 	}
 
@@ -204,4 +210,5 @@ public class CountingVisitor implements PlotGraphVisitor {
 		if (vertex.getStep() > this.highestStep)
 			this.highestStep = vertex.getStep();
 	}
+
 }

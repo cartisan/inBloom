@@ -3,7 +3,6 @@ package plotmas.graph;
 import java.util.LinkedList;
 import java.util.UUID;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jason.asSemantics.Emotion;
@@ -15,13 +14,19 @@ import plotmas.helper.TermParser;
  * @author Leonid Berov
  */
 public class Vertex implements Cloneable {
-
 	static protected Logger logger = Logger.getLogger(Vertex.class.getName());
 	
-	//removes annotations from literal-style stings
-	public static Pattern NO_ANNOT_PATTERN = Pattern.compile("(.+?\\(.+?\\))");
-	
-	public enum Type { ROOT, EVENT, EMOTION, SPEECHACT, LISTEN, PERCEPT, INTENTION, AXIS_LABEL, WILDCARD }
+	public enum Type { EVENT,			// Abstract vertex type for denoting vertices with unclear semantics
+					   ACTION,			// goal-directed events that have an agent, can contain emotions after analysis
+					   PERCEPT,			// changes of an agent's belief base, can contain emotions after analysis
+					   EMOTION,			// primary or secondary event appraisal
+					   SPEECHACT,		// source of a communication edge
+					   LISTEN,			// target of a communication edge
+					   INTENTION,		// commitment to bring about a desired state
+					   WILDCARD,		// vertex of arbitrary but fixed type, used to define schemata in FuntionalUnits 
+					   ROOT,			// root node of plot graph, contains character name but is semantically empty
+					   AXIS_LABEL,		// represents environment-steps on the vertical time axis
+					 }
 
 	private String id;
 	private String label;
@@ -29,6 +34,11 @@ public class Vertex implements Cloneable {
 	private int step;
 	private boolean isPolyvalent;
 	
+	/**
+	 * Stores emotions that have been attached to this Vertex. Only PERCEPT-type vertices can contain emotions, and
+	 * these emotions are collapsed into the percept during graph analysis by {@linkplain FullGraphPPVisitor}, which
+	 * means the emotions a vertex has are not usually known during vertex creation.
+	 */
 	private LinkedList<String> emotions = new LinkedList<>();
 	
 	/**
@@ -37,30 +47,6 @@ public class Vertex implements Cloneable {
 	 */
 	public int minWidth;
 
-	/**
-	 * Returns the label of this string if it is an intention.
-	 * It only returns something other than the empty string,
-	 * if the label starts with "!".
-	 * For vertices of type INTENTION or SPEECHACT, this returns
-	 * the complete label without annotations, without "!".
-	 * For vertices of type LISTEN, this returns the vertex label
-	 * without annotations and without the leading "+!".
-	 * For all other vertices, this returns an empty string.
-	 */
-	public String getIntention() {
-		switch(this.type) {
-			case INTENTION:
-			case SPEECHACT:
-				String removedAnnots = TermParser.removeAnnots(this.label);
-				if(removedAnnots.startsWith("!")) {
-					return removedAnnots.substring(1);
-				} else {
-					return "";
-				}
-			default:
-				return "";
-		}
-	}
 	/**
 	 * Creates a default instance of vertex, with type {@link Vertex.Type#EVENT}.
 	 * @param label vertex content
@@ -173,7 +159,7 @@ public class Vertex implements Cloneable {
 	 * Example: <br />
 	 * <pre>
 	 * {@code
-	 * 	eat(bread)[source(self)] -> self
+	 * 	found(wheat)[cause(farm_work)] -> farm_work
 	 * }
 	 * </pre>
 	 * 
@@ -212,6 +198,31 @@ public class Vertex implements Cloneable {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Returns the label of this string if it is an intention.
+	 * It only returns something other than the empty string,
+	 * if the label starts with "!".
+	 * For vertices of type INTENTION or SPEECHACT, this returns
+	 * the complete label without annotations, without "!".
+	 * For vertices of type LISTEN, this returns the vertex label
+	 * without annotations and without the leading "+!".
+	 * For all other vertices, this returns an empty string.
+	 */
+	public String getIntention() {
+		switch(this.type) {
+			case INTENTION:
+			case SPEECHACT:
+				String removedAnnots = TermParser.removeAnnots(this.label);
+				if(removedAnnots.startsWith("!")) {
+					return removedAnnots.substring(1);
+				} else {
+					return "";
+				}
+			default:
+				return "";
+		}
 	}
 	
 	@Override

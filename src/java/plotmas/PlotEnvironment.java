@@ -21,6 +21,7 @@ import jason.environment.TimeSteppedEnvironment;
 import jason.runtime.MASConsoleGUI;
 import jason.util.Pair;
 import plotmas.graph.PlotGraphController;
+import plotmas.graph.Vertex.Type;
 import plotmas.helper.EnvironmentListener;
 import plotmas.helper.PerceptAnnotation;
 import plotmas.helper.TermParser;
@@ -178,7 +179,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		}
 		actionIntentionMap.get(agentName).remove(action);
 		
-		PlotGraphController.getPlotListener().addEvent(agentName, action.toString() + motivation, getStep());
+		PlotGraphController.getPlotListener().addEvent(agentName, action.toString() + motivation, Type.ACTION, getStep());
 		
     	// let the domain specific subclass handle the actual action execution
     	// ATTENTION: this is were domain-specific action handling code goes

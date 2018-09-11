@@ -36,6 +36,11 @@ public class ForEachVisitor extends PlotGraphVisitorAdapter {
 	public void visitEvent(Vertex vertex) {
 		this.visitVertex(vertex);
 	}
+	
+	@Override
+	public void visitAction(Vertex vertex) {
+		this.visitVertex(vertex);
+	}
 
 	@Override
 	public void visitEmotion(Vertex vertex) {

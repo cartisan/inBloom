@@ -2,6 +2,7 @@ package plotmas.graph;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.logging.Logger;
 
 import jason.asSemantics.Emotion;
 import plotmas.graph.Edge.Type;
@@ -22,6 +23,7 @@ import plotmas.helper.TermParser;
  * @author Sven Wilke
  */
 public class CompactGraphPPVisitor implements PlotGraphVisitor {
+	protected static Logger logger = Logger.getLogger(FullGraphPPVisitor.class.getName());
 	
 	private PlotDirectedSparseGraph graph;
 	
@@ -38,42 +40,16 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 	}
 
 	@Override
-	public void visitEvent(Vertex vertex) { }
-	
-	private Vertex cloneVertexToPredecessor(Vertex v) {
-		Collection<Edge> edgesIn = this.graph.getInEdges(v);
-		Collection<Edge> edgesOut = this.graph.getOutEdges(v);
-		Vertex w = null;
-		Edge edge = null;
-		for(Edge e : edgesIn) {
-			if(e.getType() == Type.TEMPORAL) {
-				w = this.graph.getSource(e);
-				edge = e;
-				break;
-			}
-		}
-		assert w != null;
-		this.graph.removeEdge(edge);
-		Vertex u = v.clone();
-		this.graph.addVertex(u);
-		for(Edge e : edgesIn) {
-			if(e == edge)
-				continue;
-			this.graph.addEdge(e.clone(), this.graph.getSource(e), u);
-		}
-		for(Edge e : edgesOut) {
-			if(e.getType() == Type.TEMPORAL)
-				continue;
-			this.graph.addEdge(e.clone(), u, this.graph.getDest(e));
-		}
-		this.graph.addEdge(new Edge(Edge.Type.TEMPORAL), w, u);
-		this.graph.addEdge(new Edge(Edge.Type.TEMPORAL), u, v);
-		return u;
+	public void visitEvent(Vertex vertex) {
+		logger.severe("No EVENT vertices should be left by this stage of preprocessing: " + vertex.getLabel());
 	}
+	
+	@Override
+	public void visitAction(Vertex vertex) { }
 
 	@Override
 	public void visitEmotion(Vertex vertex) { }
-
+	
 	@Override
 	public void visitPercept(Vertex vertex) {
 		boolean isInvolved = handleTradeoff(vertex);
@@ -198,5 +174,36 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 			default:
 				return EdgeVisitResult.TERMINATE;
 		}
+	}
+	
+	private Vertex cloneVertexToPredecessor(Vertex v) {
+		Collection<Edge> edgesIn = this.graph.getInEdges(v);
+		Collection<Edge> edgesOut = this.graph.getOutEdges(v);
+		Vertex w = null;
+		Edge edge = null;
+		for(Edge e : edgesIn) {
+			if(e.getType() == Type.TEMPORAL) {
+				w = this.graph.getSource(e);
+				edge = e;
+				break;
+			}
+		}
+		assert w != null;
+		this.graph.removeEdge(edge);
+		Vertex u = v.clone();
+		this.graph.addVertex(u);
+		for(Edge e : edgesIn) {
+			if(e == edge)
+				continue;
+			this.graph.addEdge(e.clone(), this.graph.getSource(e), u);
+		}
+		for(Edge e : edgesOut) {
+			if(e.getType() == Type.TEMPORAL)
+				continue;
+			this.graph.addEdge(e.clone(), u, this.graph.getDest(e));
+		}
+		this.graph.addEdge(new Edge(Edge.Type.TEMPORAL), w, u);
+		this.graph.addEdge(new Edge(Edge.Type.TEMPORAL), u, v);
+		return u;
 	}
 }

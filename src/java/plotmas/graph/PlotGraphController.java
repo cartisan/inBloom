@@ -8,11 +8,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JComboBox;
@@ -41,7 +36,6 @@ import plotmas.PlotControlsLauncher;
 import plotmas.PlotLauncher;
 import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.graph.isomorphism.FunctionalUnits;
-import plotmas.graph.isomorphism.UnitFinder;
 import plotmas.graph.visitor.EdgeLayoutVisitor;
 import plotmas.helper.Tellability;
 
@@ -258,10 +252,6 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	public void addCharacter(String agName) {
 		this.graph.addRoot(agName);		
 	}	
-	
-	public void addEvent(String character, String event, int step) {
-		this.graph.addEvent(character, event, step, Vertex.Type.EVENT, Edge.Type.TEMPORAL);
-	}
 	
 	public void addEvent(String character, String event, Vertex.Type eventType, int step) {
 		this.graph.addEvent(character, event, step, eventType, Edge.Type.TEMPORAL);

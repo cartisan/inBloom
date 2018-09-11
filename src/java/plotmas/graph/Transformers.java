@@ -56,13 +56,13 @@ public class Transformers {
         	switch (v.getType()) {
         		case SPEECHACT:
         			return factory.getRoundRectangle(v);
+        		case INTENTION:
+        			return factory.getRoundRectangle(v);
         		case EMOTION:
         			return factory.getRectangle(v);
         		case LISTEN:
         		case PERCEPT:
         			return factory.getRectangle(v);
-        		case INTENTION:
-        			return factory.getRoundRectangle(v);
         		default:
         			return factory.getEllipse(v);
         	}	
@@ -87,9 +87,7 @@ public class Transformers {
 	        		return PlotGraphController.BGCOLOR;
 	        	case AXIS_LABEL:
 	        		return PlotGraphController.BGCOLOR;
-	        	case SPEECHACT:
-	        		return Color.getHSBColor(Float.valueOf("0"), Float.valueOf("0"), Float.valueOf("0.95"));
-	        	case LISTEN:
+	        	case ACTION:
 	        		return Color.getHSBColor(Float.valueOf("0"), Float.valueOf("0"), Float.valueOf("0.95"));
         		default:
         			return Color.LIGHT_GRAY;

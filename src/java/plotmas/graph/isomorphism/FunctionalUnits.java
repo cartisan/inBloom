@@ -3,6 +3,7 @@ package plotmas.graph.isomorphism;
 import plotmas.graph.Edge;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.Vertex;
+import plotmas.graph.Vertex.Type;
 import plotmas.graph.visitor.EdgeLayoutVisitor;
 
 public class FunctionalUnits {
@@ -180,19 +181,19 @@ public class FunctionalUnits {
 	}
 	
 	private static Vertex makePositive(int step) {
-		Vertex vertex = new Vertex("+", step);
+		Vertex vertex = new Vertex("+", Type.PERCEPT, step);
 		vertex.addEmotion("love");
 		return vertex;
 	}
 	
 	private static Vertex makeNegative(int step) {
-		Vertex vertex = new Vertex("-", step);
+		Vertex vertex = new Vertex("-", Type.PERCEPT, step);
 		vertex.addEmotion("hate");
 		return vertex;
 	}
 	
 	private static Vertex makePolyemotional(int step) {
-		Vertex vertex = new Vertex("*", step);
+		Vertex vertex = new Vertex("*", Type.PERCEPT, step);
 		vertex.addEmotion("love");
 		vertex.addEmotion("hate");
 		return vertex;
