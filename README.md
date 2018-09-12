@@ -53,9 +53,11 @@ To implement your own story and explore it using plotmas you need to extend seve
 
 		ImmutableList<LauncherAgent> agents = ImmutableList.of(
       		runner.new LauncherAgent("hen",
-        		new Personality(0,  1, 0.7,  0.3, 0.0)
+        		new Personality(0,  1, 0.7,  0.3, 0.0)		// personality
       		),
       		runner.new LauncherAgent("dog",
+      			ImmutableList.of("life_is_good"),			// initial beliefs
+		    	ImmutableList.of("relax"),					// initial goals
         		new Personality(0, -1, 0, -0.7, -0.8)
       		)
     	);

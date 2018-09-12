@@ -15,9 +15,7 @@ public class TutorialLauncher extends PlotLauncher<TutorialEnviroment, TutorialM
 		    runner = new TutorialLauncher();
 
 		    ImmutableList<LauncherAgent> agents = ImmutableList.of(
-		      new LauncherAgent("agent1",
-		        new Personality(0, 0, 0, 0, 0)
-		      )
+		    	new LauncherAgent("agent1", new Personality(0, 0, 0, 0, 0))
 		    );
 
 	        // Initialize MAS with a scheduled happening director

@@ -6,57 +6,22 @@ import plotmas.PlotEnvironment;
 
 public class TutorialEnviroment extends PlotEnvironment<TutorialModel> {
 
-//    @Override
-//    public void initialize(List<LauncherAgent> agents) {
-//      super.initialize(agents);
-//      this.model.position = 0;
-//    }
-	
-    @Override
-    protected void updateStatePercepts(String agentName) {
-    	super.updateStatePercepts(agentName);
-    	
-    	int pos = model.position;
-    	removePerceptsByUnif(agentName, Literal.parseLiteral("position(X)"));
-    	addPercept(agentName, Literal.parseLiteral("position(" + String.valueOf(pos) + ")" ));
-    	}
-    	
-    
-    
     @Override
     public boolean doExecuteAction(String agentName, Structure action) {
     	boolean result = false;
     	
-    	// check which action is executed by agent
-    	if (action.getFunctor().equals("clean")) {
-    		this. model.suck();
-
-    		result = true;
-    	}
-
-    	if (action.getFunctor().equals("up")) {
-    		this. model.up();
-
-    		result = true;
-    	}
-
-    	if (action.getFunctor().equals("down")) {
-    		this.model.down();
-
-    		result = true;
-    	}
-
-    	if (action.getFunctor().equals("right")) {
-    		this.model.right();
-
-    		result = true;
-    	}
-
-    	if (action.getFunctor().equals("left")) {
-    		this. model.left();
-
-    		result = true;
-    	}
+		// check which action is executed by agent
+		if (action.getFunctor().equals("add")) {
+			// parse the term values passed by agent, pass them on to model
+			int sum = this.model.add(Integer.valueOf( action.getTerm(0).toString() ),
+									 Integer.valueOf( action.getTerm(1).toString() ));
+			
+			// create a perception of the result, which the agent receives
+			addPercept(agentName, Literal.parseLiteral(String.format("sum(%d)", sum)));
+			
+			// indicate that action was successful
+			result = true;
+      }
 
     	return result;
     }
