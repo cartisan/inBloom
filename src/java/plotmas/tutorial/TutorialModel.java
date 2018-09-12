@@ -7,14 +7,20 @@ import plotmas.PlotModel;
 import plotmas.storyworld.HappeningDirector;
 
 public class TutorialModel extends PlotModel<TutorialEnviroment> {
+
+	public boolean[] state = new boolean[4];  			// Felder mit Zustand dreckig oder sauber
+	public int position; 						//Position des Agenten
 	
 	public TutorialModel(List<LauncherAgent> agents, HappeningDirector hapDir) {
 		super(agents, hapDir);
+		this.position = 0;
+		this.state[0] = true;
+		this.state[1] = true;
+		this.state[2] = true;
+		this.state[3] = true;
 	}
 	
 	
-	boolean [] state = new boolean[4];  // Felder mit Zustand dreckig oder sauber
-	public int position; 						//Position des Agenten
 		
 	
 	public void suck(){
