@@ -114,4 +114,9 @@ public class EdgeLayoutVisitor implements PlotGraphVisitor {
 	public void visitIntention(Vertex vertex) {
 		this.visitVertex(vertex);
 	}
+
+	@Override
+	public void visitAction(Vertex vertex) {
+		this.visitVertex(vertex);
+	}
 }

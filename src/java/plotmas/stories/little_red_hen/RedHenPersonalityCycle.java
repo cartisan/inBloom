@@ -20,8 +20,8 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 		onCycleResult(lastPersonalities, er.getTellability());
 		
 		// Save tellability, graph and hen personality if it was better than the best before
-		if(er.getTellability().functionalPolyvalence > bestTellability) {
-			bestTellability = er.getTellability().functionalPolyvalence;
+		if(er.getTellability().compute() > bestTellability) {
+			bestTellability = er.getTellability().compute();
 			log("New best: " + bestTellability);
 			bestPersonalities = lastPersonalities;
 		}

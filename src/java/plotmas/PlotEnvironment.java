@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jason.asSemantics.ActionExec;
@@ -19,8 +21,8 @@ import jason.asSyntax.Term;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
 import jason.runtime.MASConsoleGUI;
-import jason.util.Pair;
 import plotmas.graph.PlotGraphController;
+import plotmas.graph.Vertex.Type;
 import plotmas.helper.EnvironmentListener;
 import plotmas.helper.PerceptAnnotation;
 import plotmas.helper.TermParser;
@@ -40,7 +42,7 @@ import plotmas.helper.TermParser;
  */
 public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends TimeSteppedEnvironment {
 	/* number of times all agents need to repeat an action, before system is paused; -1 to switch off*/
-	public static Integer MAX_REPEATE_NUM = 7;
+	public static Integer MAX_REPEATE_NUM = 5;
 	/* number of steps, before system is automatically pauses; -1 to switch off*/
 	public static Integer MAX_STEP_NUM = -1;
 	
@@ -49,6 +51,10 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
     public static Long startTime = 0L;
     private static Long pauseDuration = 0L;
+    
+    /** regex that matches when the same sequence of words repeats several times, test using https://regex101.com/ */
+	public static final String REPETITION_REGEX = "(?<pattern>(?<lastWord>\\w+;)+?)(\\k<pattern>)+";
+	public static final Pattern REPETITION_PATTERN = Pattern.compile(REPETITION_REGEX);
     
     /**
      * A list of environment listeners which get called on certain events
@@ -75,7 +81,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * consecutive times the agent has been executing the action 'actionName'.
      * This is used to pause simulation execution if all agents just repeat their actions for a while.
      */
-    protected HashMap<String, Pair<String, Integer>> agentActionCount;  // agentName -> (action, #consecutive repeats)
+    protected HashMap<String, List<String>> agentActions;  // agentName -> [action1, action2, ...]
     /**
      * Stores a mapping from agentNames to a list of new events, that happened in model but agent hasn't perceived yet:<br>
      * 	&nbsp; {agentName -> List(events:String)}<br>
@@ -178,7 +184,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		}
 		actionIntentionMap.get(agentName).remove(action);
 		
-		PlotGraphController.getPlotListener().addEvent(agentName, action.toString() + motivation, getStep());
+		PlotGraphController.getPlotListener().addEvent(agentName, action.toString() + motivation, Type.ACTION, getStep());
 		
     	// let the domain specific subclass handle the actual action execution
     	// ATTENTION: this is were domain-specific action handling code goes
@@ -428,16 +434,14 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     * checks if all agents executed the same action for the last MAX_REPEATE_NUM of times, if yes, pauses the MAS.
     */
     protected void initializeActionCounting(List<LauncherAgent> agents) {
-    	this.agentActionCount = new HashMap<>();
-        
+    	this.agentActions = new HashMap<>();
         for (LauncherAgent agent : agents) {
         	this.registerAgentForActionCount(agent.name);
         }
-        }
+    }
     
     private void registerAgentForActionCount(String agName) {
-    	// set up a neutral action count for each agent: no action, executed 1 time
-    	agentActionCount.put(agName, new Pair<String, Integer>("", 1));
+    	agentActions.put(agName, new LinkedList<String>());
     }
 	
 	protected void checkPause() {
@@ -445,8 +449,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 			// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
 	    	if ((MAX_REPEATE_NUM > -1) && (allAgentsRepeating())) {
 	    		// reset counter
-	    		logger.severe("Auto-paused execution of simulation, because all agents repeated their last action for " +
-	    				String.valueOf(MAX_REPEATE_NUM) + " of times.");
+	    		logger.severe("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
+	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
 	    		resetAllAgentActionCounts();
 	
 	    		PlotLauncher.runner.pauseExecution();
@@ -455,7 +459,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	    		}
 	    	}
 	    	if ((MAX_STEP_NUM > -1) && (this.getStep() % MAX_STEP_NUM == 0)) {
-	    		logger.severe("Auto-paused execution of simulation, because system ran for 50 steps.");
+	    		logger.severe("Auto-paused execution of simulation, because system ran for MAX_STEP_NUM steps.");
 	    		
 	    		PlotLauncher.runner.pauseExecution();
 	    		for(EnvironmentListener l : listeners) {
@@ -470,40 +474,40 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 * @param action
 	 */
 	private void updateActionCount(String agentName, Structure action) {
-		Pair<String, Integer> actionCountPair = agentActionCount.get(agentName);
-		
-		// new action is same as last action
-    	if (actionCountPair.getFirst().equals(action.toString())) {
-    		agentActionCount.put(agentName, new Pair<String, Integer>(action.toString(),
-    																  actionCountPair.getSecond()+1));
-    	} 
-    	// new action different from last action
-    	else {
-    		agentActionCount.put(agentName, new Pair<String, Integer>(action.toString(), 1));
-    	}
+		this.agentActions.get(agentName).add(action.toString());
 	}
 	
     private boolean allAgentsRepeating() {
-    	for (Pair<String, Integer> actionCountPair : agentActionCount.values()) {
-    		if (actionCountPair.getSecond() < MAX_REPEATE_NUM) {
-    			return false;
+    	HashMap<String,Boolean> agentsRepeating = new HashMap<>();
+    	for (String agent : agentActions.keySet()) {
+    		agentsRepeating.put(agent, false);
+    		
+    		List<String> actions = agentActions.get(agent);
+    		String actString = actions.stream().collect(Collectors.joining(";")) + ";";
+    		
+    		Matcher matcher = REPETITION_PATTERN.matcher(actString);
+    		while (matcher.find()) {
+    			int repeats = (matcher.end() - matcher.start()) / matcher.group("pattern").length();
+    			logger.fine("action sequence: " + matcher.group("pattern") + "     repeated " + repeats + " # times "
+    					+ "for agent: " + agent);
+    			
+    			if (repeats >= MAX_REPEATE_NUM) {
+    				agentsRepeating.put(agent, true);
+    			}
+  
     		}
     	}
-    	// all agents counts are >= MAX_REPEATE_NUM
-    	return true;
+    	
+    	// test if all agents are set to true
+    	if (agentsRepeating.values().stream().allMatch(bool -> bool)) {
+    		return true;
+    	}
+    	return false;
     }
     
-	public HashMap<String, Pair<String, Integer>> getAgentActionCount() {
-		return agentActionCount;
-	}
-
-	public void setAgentActionCount(HashMap<String, Pair<String, Integer>> agentActionCount) {
-		this.agentActionCount = agentActionCount;
-	}
-    
     public void resetAllAgentActionCounts() {
-    	for (String agent : agentActionCount.keySet()) {
-    		agentActionCount.put(agent, new Pair<String, Integer>("", 1));
+    	for (List<String> actions : agentActions.values()) {
+			actions.clear();
     	}
     }
 }

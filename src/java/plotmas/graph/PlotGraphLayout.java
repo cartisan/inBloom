@@ -252,11 +252,13 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     														 + STEP_OFFSET);
     	
     	// Update x positions of all columns to make place for axis
-    	for (Vertex root : this.columnStartAtX.keySet()) {
-    		this.columnStartAtX.put(root,
-    							    this.columnStartAtX.get(root) - x_pos + PAD_X);
+    	if (x_pos + PAD_X < 0) {
+	    	for (Vertex root : this.columnStartAtX.keySet()) {
+	    		this.columnStartAtX.put(root,
+	    							    this.columnStartAtX.get(root) - x_pos + PAD_X);
+	    	}
+	    	this.size.width = this.size.width - x_pos + PAD_X;
     	}
-    	this.size.width = this.size.width - x_pos + PAD_X;
     	x_pos = PAD_X;
 
     	for (Vertex vertex : ((PlotDirectedSparseGraph) this.graph).getAxisVertices()) {

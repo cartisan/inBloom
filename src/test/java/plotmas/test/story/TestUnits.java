@@ -60,19 +60,19 @@ public class TestUnits {
 	}
 	
 	private static Vertex makePositive(int step) {
-		Vertex vertex = new Vertex("+", step);
+		Vertex vertex = new Vertex("+", Vertex.Type.PERCEPT, step);
 		vertex.addEmotion("love");
 		return vertex;
 	}
 	
 	private static Vertex makeNegative(int step) {
-		Vertex vertex = new Vertex("-", step);
+		Vertex vertex = new Vertex("-",  Vertex.Type.PERCEPT, step);
 		vertex.addEmotion("hate");
 		return vertex;
 	}
 	
 	private static Vertex makeWild(int step) {
-		Vertex vertex = new Vertex("*", step);
+		Vertex vertex = new Vertex("*",  Vertex.Type.PERCEPT, step);
 		vertex.addEmotion("love");
 		vertex.addEmotion("hate");
 		return vertex;

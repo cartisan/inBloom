@@ -42,8 +42,6 @@ public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 		}
 		
 		if (action.getFunctor().equals("goToPlace")) {
-			Term receiverTerm = action.getTerm(0);
-
 			String location = getModel().location.toString();
 			result = getModel().goToPlace(agent, location); 
 		}

@@ -43,8 +43,8 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
      * {@code ENV_CLASS = FarmEnvironment.class;}
      */
 	protected static Class<?> ENV_CLASS;
-    static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
-    static Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
+	protected static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
+	protected static Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
 
     /**
      * Convenience function that casts the runner-singleton to a more appropriate type  

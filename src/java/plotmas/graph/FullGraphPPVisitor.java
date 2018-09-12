@@ -18,11 +18,12 @@ import plotmas.helper.TermParser;
  * It will create edges relevant for functional units and
  * collapse emotions, percepts and action into a single vertex.
  * @author Sven Wilke
- *
  */
 public class FullGraphPPVisitor implements PlotGraphVisitor {
+	protected static Logger logger = Logger.getLogger(FullGraphPPVisitor.class.getName());
 
 	private static final boolean KEEP_MOTIVATION = true;
+	
 	
 	private PlotDirectedSparseGraph graph;
 	
@@ -44,12 +45,12 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitEvent(Vertex vertex) {
-		String label = vertex.getLabel();
-		if(label.startsWith("drop_intention")) {
-			handleDropIntention(vertex);
-			return;
-		}
-		String[] parts = label.split("\\[motivation\\(");
+		logger.warning("Located semantically underspecified EVENT vertex: " + vertex.getLabel());
+	}
+	
+	@Override
+	public void visitAction(Vertex vertex) {
+ 		String[] parts = vertex.getLabel().split("\\[motivation\\(");
 		if(parts.length > 1) {
 			String motivation = TermParser.removeAnnots(parts[1].substring(0, parts[1].length() - 2));
 			String resultingLabel = parts[0];
@@ -177,6 +178,12 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	
 	@Override
 	public void visitIntention(Vertex vertex) {
+		String label = vertex.getLabel();
+		if(label.startsWith("drop_intention")) {
+			handleDropIntention(vertex);
+			return;
+		}
+		
 		this.lookForPerseverance(vertex);
 		this.attachMotivation(vertex);
 	}

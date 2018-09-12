@@ -7,6 +7,7 @@ public interface PlotGraphVisitor {
 
 	public void visitRoot		(Vertex vertex);
 	public void visitEvent		(Vertex vertex);
+	public void visitAction		(Vertex vertex);
 	public void visitEmotion	(Vertex vertex);
 	public void visitPercept	(Vertex vertex);
 	public void visitSpeech		(Vertex vertex);
