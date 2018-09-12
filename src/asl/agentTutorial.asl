@@ -1,5 +1,5 @@
 // Goal
-//!addition.
+!addition.
 
 // Belief Update Rules
 +sum(X) <-

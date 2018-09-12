@@ -52,8 +52,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     public static Long startTime = 0L;
     private static Long pauseDuration = 0L;
     
-    /** regex that matches when the same sequence of words repeats several times, test using https://regex101.com/ */
-	public static final String REPETITION_REGEX = "(?<pattern>(?<lastWord>\\w+;)+?)(\\k<pattern>)+";
+    /** regex that matches when the same sequence of actions (separated by spaces) repeats several times, test using https://regex101.com/ */
+	public static final String REPETITION_REGEX = "(?<pattern>(?<lastWord>\\S+\\ )+?)(\\k<pattern>)+";
 	public static final Pattern REPETITION_PATTERN = Pattern.compile(REPETITION_REGEX);
     
     /**
@@ -239,9 +239,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	
 	@Override
 	protected void stepStarted(int step) {
-		// check if pause mode is enabled, wait with execution while it is
-		this.waitWhilePause();
-		
 		if(!PlotLauncher.getRunner().isDebug()) {
 			logger.info("Step " + this.getStep() + " started for environment");
 		}
@@ -252,6 +249,23 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		else 
 			logger.warning("field model was not set, but a step " + step + " was started");
 	}
+	
+	@Override
+	protected void stepFinished(int step, long elapsedTime, boolean byTimeout) {
+		// if environment is initialized && agents are done setting up && one of the agents didn't choose an action
+		if (this.model != null && byTimeout && step > 5 ) {
+			for (String agName : this.getModel().characters.keySet()) {
+				Object action = this.getActionInSchedule(agName);
+				if(action == null) {
+					this.agentActions.get(agName).add("--");		// mark inaction by --
+				}
+			}
+		}
+		
+		// check if pause mode is enabled, wait with execution while it is
+		this.waitWhilePause();
+	}
+	
 	
 	public void setModel(ModType model) {
 		this.model = model;
@@ -483,7 +497,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     		agentsRepeating.put(agent, false);
     		
     		List<String> actions = agentActions.get(agent);
-    		String actString = actions.stream().collect(Collectors.joining(";")) + ";";
+    		String actString = actions.stream().collect(Collectors.joining(" ")) + " ";
     		
     		Matcher matcher = REPETITION_PATTERN.matcher(actString);
     		while (matcher.find()) {
