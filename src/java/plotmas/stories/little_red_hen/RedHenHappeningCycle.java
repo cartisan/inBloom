@@ -25,7 +25,7 @@ import plotmas.storyworld.ScheduledHappeningDirector;
 
 public class RedHenHappeningCycle extends PlotCycle {
 
-	public static final double THRESHOLD = 0.1;
+	public static final double THRESHOLD = 0.21;
 	public static final int GIVE_UP = 1;
 	
 	public RedHenHappeningCycle(String[] agentNames, String agentSrc) {

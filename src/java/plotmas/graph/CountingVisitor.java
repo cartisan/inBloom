@@ -23,8 +23,9 @@ public class CountingVisitor implements PlotGraphVisitor {
 	public Table<String, Vertex, List<Vertex>> motivationChains = HashBasedTable.create();
 	public Triple<String, Vertex, Vertex> mostSuspensefulIntention;			 // (agent, intention, action)
 	
-	private int highestStep = 0;		// highest environment step encountered in story (= plot length in steps)
-	private int vertexNum = 0;		// overall number of events in the plot  
+	private int lowestStep = Integer.MAX_VALUE;		// lowest environment step encountered in story (= plot start in steps)
+	private int highestStep = Integer.MIN_VALUE;	// highest environment step encountered in story (= plot end in steps)
+	private int vertexNum = 0;					    // overall number of events in the plot  
 	
 	private String currentRoot;
 	private PlotDirectedSparseGraph graph;
@@ -200,7 +201,7 @@ public class CountingVisitor implements PlotGraphVisitor {
 	}
 	
 	public int getPlotLength() {
-		return this.highestStep;
+		return this.highestStep - this.lowestStep;
 	}
 	
 
@@ -212,6 +213,9 @@ public class CountingVisitor implements PlotGraphVisitor {
 		this.vertexNum += 1;
 		if (vertex.getStep() > this.highestStep)
 			this.highestStep = vertex.getStep();
+
+		if (vertex.getStep() < this.lowestStep)
+			this.lowestStep = vertex.getStep();
 	}
 
 }
