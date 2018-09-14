@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jason.asSemantics.ActionExec;
@@ -25,6 +23,7 @@ import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex.Type;
 import plotmas.helper.EnvironmentListener;
 import plotmas.helper.PerceptAnnotation;
+import plotmas.helper.PlotpatternAnalyzer;
 import plotmas.helper.TermParser;
 
 /**
@@ -51,10 +50,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
     public static Long startTime = 0L;
     private static Long pauseDuration = 0L;
-    
-    /** regex that matches when the same sequence of actions (separated by spaces) repeats several times, test using https://regex101.com/ */
-	public static final String REPETITION_REGEX = "(?<pattern>(?<lastWord>\\S+\\ )+?)(\\k<pattern>)+";
-	public static final Pattern REPETITION_PATTERN = Pattern.compile(REPETITION_REGEX);
     
     /**
      * A list of environment listeners which get called on certain events
@@ -497,18 +492,11 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     		agentsRepeating.put(agent, false);
     		
     		List<String> actions = agentActions.get(agent);
-    		String actString = actions.stream().collect(Collectors.joining(" ")) + " ";
+    		HashMap<String,Integer> patRepeats = PlotpatternAnalyzer.countTrailingPatterns(actions);
+    		logger.fine(agent + "'s action patterns: " + patRepeats.toString());
     		
-    		Matcher matcher = REPETITION_PATTERN.matcher(actString);
-    		while (matcher.find()) {
-    			int repeats = (matcher.end() - matcher.start()) / matcher.group("pattern").length();
-    			logger.fine("action sequence: " + matcher.group("pattern") + "     repeated " + repeats + " # times "
-    					+ "for agent: " + agent);
-    			
-    			if (repeats >= MAX_REPEATE_NUM) {
-    				agentsRepeating.put(agent, true);
-    			}
-  
+    		if (patRepeats.values().stream().mapToInt(x -> x).max().orElse(0) >= MAX_REPEATE_NUM) {
+    			agentsRepeating.put(agent, true);
     		}
     	}
     	

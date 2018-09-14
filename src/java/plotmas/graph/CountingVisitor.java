@@ -184,10 +184,13 @@ public class CountingVisitor implements PlotGraphVisitor {
 			}
 		}
 		
-		logger.info("Maximal suspense: " + suspense + ": " +
-					mostSuspensefulIntention.getFirst() + "'s (" + 
-					mostSuspensefulIntention.getSecond().toString() + ", " +
-					mostSuspensefulIntention.getThird().toString() + ")");
+		logger.info("Maximal suspense: " + suspense);
+		if(mostSuspensefulIntention != null) {
+			logger.info("Most suspensefull intention: " +
+						mostSuspensefulIntention.getFirst() + "'s (" + 
+						mostSuspensefulIntention.getSecond().toString() + ", " +
+						mostSuspensefulIntention.getThird().toString() + ")");
+		}
 		
 		return suspense;
 	}

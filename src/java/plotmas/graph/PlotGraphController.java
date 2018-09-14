@@ -119,19 +119,33 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		}
 
 		setUp();
+		this.addGraph(this.graph);
+		this.graphTypeList.setSelectedItem(this.graph);
 	}
 
 	/**
-	 * Creates a new instance of {@link PlotDirectedSparseGraph}, which is used to capture new events.
-	 * Sets up a subgraphs for each character agent.
-	 * @param characters a collection of all acting character agents
+	 * Creates a new instance of {@link PlotDirectedSparseGraph}, which is used to display a graph.
+	 * @param graph Graph to be displayed
 	 */
 	public PlotGraphController(PlotDirectedSparseGraph graph) {
 		super("Plot Graph");
 
 		// create and initialize the plot graph the will be created by this listener
 		this.graph = graph;
+		
 		setUp();
+		addGraph(this.graph);
+		graphTypeList.setSelectedItem(this.graph);
+	}
+
+	/**
+	 * Creates a new instance of {@link PlotDirectedSparseGraph}, which is used to aggregate a set of graphs
+	 * which can be displayed later.
+	 */
+	public PlotGraphController() {
+		super("Plot Graph");
+		setUp();
+		PlotGraphController.plotListener = this;
 	}
 	
 	/**
@@ -168,12 +182,8 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 				PlotGraphController.getPlotListener().visViewer.repaint();
 			}
 		});
-//		addInformation("Highlight Unit:");
-//		this.infoPanel.add(unitComboBox);
 		
 		addGraph(FunctionalUnits.ALL_UNITS_GRAPH);
-		addGraph(this.graph);
-		graphTypeList.setSelectedItem(this.graph);
 	}
 	
     /**

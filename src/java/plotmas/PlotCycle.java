@@ -24,11 +24,18 @@ import plotmas.helper.Tellability;
  * @author Sven Wilke
  */
 public abstract class PlotCycle implements Runnable, EnvironmentListener {
+	/**
+	 * Timeout in ms before a single simulation is forcibly stopped
+	 * A value of -1 means no timeout.
+	 */
+	protected static long TIMEOUT = -1;
 	
 	/**
 	 * The names of the agents in this simulation.
 	 */
 	protected String[] agentNames;
+	
+	protected List<PlotDirectedSparseGraph> stories;
 	/**
 	 * The source file of the agent code.
 	 */
@@ -43,12 +50,6 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	private JFrame cycleFrame;
 	private JTextArea logTextArea = new JTextArea(10, 40);
 	
-	/**
-	 * Timeout in ms before a single simulation is forcibly stopped
-	 * A value of -1 means no timeout.
-	 */
-	protected static long TIMEOUT = -1;
-	
 	protected static int currentCycle = 0;
 	
 	private boolean isRunning = true;
@@ -61,6 +62,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	protected PlotCycle(String[] agentNames, String agentSrc, boolean showGui) {
 		this.agentNames = agentNames;
 		this.agentSrc = agentSrc;
+		stories = new LinkedList<>();
 		if(showGui) {
 			initGui();
 		}
@@ -159,9 +161,16 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 			} catch(InterruptedException e) {
 			}
 		}
-		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
-		EngageResult er = new EngageResult(graph, PlotGraphController.getPlotListener().analyze(graph));
-		graph.setName("ER Cycle, engagement step " + currentCycle);
+		
+		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
+		Tellability tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
+		analyzedGraph.setName("ER Cycle, engagement step " + currentCycle);
+		
+		EngageResult er = new EngageResult(analyzedGraph,
+										   tel,
+										   rr.getAgents(),
+										   rr.getModel());
+		
 		runner.reset();
 		isRunning = true;
 		return er;
@@ -196,6 +205,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 			++currentCycle;
 			log("Running cycle: " + currentCycle);
 			er = engage(rr);
+			stories.add(er.getPlotGraph());
 			rr = this.reflect(er);
 		}
 		this.finish(er);
@@ -322,12 +332,24 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	public class EngageResult {
 		private PlotDirectedSparseGraph plotGraph;
 		private Tellability tellability;
+		private PlotModel<?> lastModel;
+		private List<LauncherAgent> lastAgents;
 		
-		public EngageResult(PlotDirectedSparseGraph plotGraph, Tellability tellability) {
+		public EngageResult(PlotDirectedSparseGraph plotGraph, Tellability tellability, List<LauncherAgent> lastAgents, PlotModel<?> lastModel) {
 			this.plotGraph = plotGraph;
 			this.tellability = tellability;
+			this.lastAgents = lastAgents;
+			this.lastModel = lastModel; 
 		}
 		
+		public PlotModel<?> getLastModel() {
+			return lastModel;
+		}
+
+		public List<LauncherAgent> getLastAgents() {
+			return lastAgents;
+		}
+
 		public PlotDirectedSparseGraph getPlotGraph() {
 			return this.plotGraph;
 		}
