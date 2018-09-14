@@ -6,8 +6,24 @@ import plotmas.graph.Vertex;
 import plotmas.graph.Vertex.Type;
 import plotmas.graph.visitor.EdgeLayoutVisitor;
 
+/**
+ * Class where all functional units are defined.
+ * 
+ * The helper methods in this class should be used for
+ * creating the vertices and edges of the graph.
+ * 
+ * The vertex creation helper methods require a parameter,
+ * indicating the vertex' place on the y-axis of the resulting
+ * display graph of the functional unit.
+ * @author Sven Wilke
+ *
+ */
 public class FunctionalUnits {
 	
+	/**
+	 * Holds all functional units which are relevant for computing
+	 * functional polyvalence.
+	 */
 	public static FunctionalUnit[] ALL;
 	
 	public static final FunctionalUnit NESTED_GOAL;
@@ -27,6 +43,10 @@ public class FunctionalUnits {
 	public static final FunctionalUnit DEBUG_SPEECH;
 	public static final FunctionalUnit DEBUG_TERMINATION;
 	
+	/**
+	 * A graph containing all functional units in {@link #ALL ALL} next
+	 * to each other to be used for displaying them.
+	 */
 	public static final PlotDirectedSparseGraph ALL_UNITS_GRAPH;
 	
 	static {

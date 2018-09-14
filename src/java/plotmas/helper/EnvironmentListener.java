@@ -2,7 +2,7 @@ package plotmas.helper;
 
 /**
  * This interface is for listeners which can be added to a plot environment.
- * @author Sven Wilke (svwilke@uos.de)
+ * @author Sven Wilke
  *
  */
 public interface EnvironmentListener {

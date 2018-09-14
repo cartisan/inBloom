@@ -280,6 +280,10 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		return recV;
 	}
 	
+	/**
+	 * Adds an information label to the bottom of the graph window.
+	 * @param info Information string to display
+	 */
 	public void addInformation(String info) {
 		infoPanel.add(new JLabel(info));
 		infoPanel.validate();
@@ -321,6 +325,11 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		graphTypeList.setSelectedItem(g);
 	}
 	
+	/**
+	 * Analyzes the plot graph, computes the plots tellability and returns it.
+	 * Unlike {@link analyze(PlotDirectedSparseGraph) analyze}, does not store the
+	 * analyzed version of the graph for further processing.
+	 */
 	public Tellability analyze() {
 		return analyze(null);
 	}
