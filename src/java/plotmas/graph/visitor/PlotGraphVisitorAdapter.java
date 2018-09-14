@@ -3,6 +3,10 @@ package plotmas.graph.visitor;
 import plotmas.graph.Edge;
 import plotmas.graph.Vertex;
 
+/**
+ * Adapter of PlotGraphVisitor interface with an empty implementation for each method.
+ * @author Sven Wilke
+ */
 public abstract class PlotGraphVisitorAdapter implements PlotGraphVisitor {
 
 	public void visitVertex(Vertex vertex) {}

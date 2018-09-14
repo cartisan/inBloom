@@ -3,9 +3,18 @@ package plotmas.graph.isomorphism;
 import jason.asSemantics.Emotion;
 import plotmas.graph.Vertex;
 
+/**
+ * Enum defining the type of a vertex with regards to functional unit identification.
+ * @author Sven Wilke
+ */
 enum UnitVertexType {
 	NONE, INTENTION, POSITIVE, NEGATIVE, POLYEMOTIONAL, WILDCARD;
 	
+	/**
+	 * Returns the type of a given vertex.
+	 * @param v Vertex to return the type of.
+	 * @return The UnitVertexType of <i>v</i>.
+	 */
 	static UnitVertexType typeOf(Vertex v) {
 		if(v.getType() == Vertex.Type.WILDCARD) {
 			return UnitVertexType.WILDCARD;

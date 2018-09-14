@@ -217,7 +217,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	}
 	
 	/**
-	 * Returns vertice, that is successors in a plot sense, i.e. vertices that pertain to the same character column.
+	 * Returns vertex, that is a successor in a plot sense, i.e. vertices that pertain to the same character column.
 	 * This excludes vertices connected by communication edges.
 	 * @param vertex for which char-successor is sought
 	 * @return successor vertex if present, or null
@@ -366,6 +366,12 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		this.removeVertex(toRemove);
 	}
 	
+	/**
+	 * Removes a vertex from this graph and automatically finds the predecessor of the
+	 * removed node and connects it to the removed node's successor.
+	 * @param root Root of the subgraph the vertex to be removed belongs to
+	 * @param toRemove Vertex to be removed
+	 */
 	public void removeVertexAndPatchGraphAuto(Vertex root, Vertex toRemove) {
 		Vertex lastV = root;
 		Vertex currentV = root;
@@ -377,7 +383,11 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		
 		this.removeVertexAndPatchGraph(toRemove, lastV);
 	}
-
+	
+	/**
+	 * Runs a PlotGraphVisitor over this graph.
+	 * @param visitor to run
+	 */
 	public void accept(PlotGraphVisitor visitor) {
 		// Queue which contains the objects to be visited.
 		// Objects may only be of type Vertex, Edge or RemovedEdge.

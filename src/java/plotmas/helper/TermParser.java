@@ -8,6 +8,11 @@ import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import jason.asSyntax.parser.ParseException;
 
+/**
+ * Class holding different helper methods regarding
+ * the parsing of strings.
+ * @author Sven Wilke
+ */
 public class TermParser {
 	
 	private static final Pattern EmotionPattern = Pattern.compile("(?<emotion>\\w*)\\[cause\\((?<cause>.*)\\)\\]\\(.\\)");
