@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.logging.Logger;
 
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -69,7 +70,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	private JPopupMenu popup = null;	
 	private Tellability analysisResult = null;
 	private JComboBox<FunctionalUnit> unitComboBox = null;
-	
+
 	/**
 	 * System-wide method for getting access to the active PlotGraph instance that collects events
 	 * and is used for drawing the graph.
@@ -248,6 +249,10 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	public JPopupMenu getPopup() {
 		return this.popup;
 	}
+	
+	public JComboBox<FunctionalUnit> getUnitComboBox() {
+		return unitComboBox;
+	}
 
 	public void closeGraph() {
 		logger.info("Closing and reseting plot graph view");
@@ -282,6 +287,13 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	
 	public void addInformation(String info) {
 		infoPanel.add(new JLabel(info));
+		infoPanel.validate();
+		infoPanel.repaint();
+	}
+	
+	public void addInformation(String label, JComponent component) {
+		infoPanel.add(new JLabel(label));
+		infoPanel.add(component);
 		infoPanel.validate();
 		infoPanel.repaint();
 	}

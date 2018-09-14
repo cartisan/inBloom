@@ -2,6 +2,8 @@ package plotmas.helper;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -23,6 +25,7 @@ public class Tellability {
 	public int productiveConflicts = 0;
 	
 	// Functional Polyvalence
+	public List<FunctionalUnit> plotUnitTypes;
 	public int numFunctionalUnits;
 	public int numPolyvalentVertices;
 	public int numAllVertices;
@@ -35,6 +38,7 @@ public class Tellability {
 	// Suspense
 	public int suspense;
 	public int plotLength;
+
 	
 	// Dynamic Points
 	
@@ -46,6 +50,7 @@ public class Tellability {
 	 */
 	public Tellability(PlotDirectedSparseGraph graph) {
 		counter = new CountingVisitor();
+		this.plotUnitTypes = new LinkedList<FunctionalUnit>();
 		
 		// Find Functional Units and polyvalent Vertices
 		detectPolyvalence(graph);
@@ -86,6 +91,7 @@ public class Tellability {
 			
 			if (mappings.size() > 0 ) {
 				PlotGraphController.getPlotListener().addDetectedPlotUnitType(unit);
+				this.plotUnitTypes.add(unit);
 			}
 			
 			for(Map<Vertex, Vertex> map : mappings) {

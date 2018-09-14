@@ -18,6 +18,7 @@ import plotmas.PlotLauncher;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
+import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.helper.PlotpatternAnalyzer;
 import plotmas.helper.Tellability;
 import plotmas.storyworld.ScheduledHappeningDirector;
@@ -155,6 +156,16 @@ public class RedHenHappeningCycle extends PlotCycle {
 			graphViewer.addGraph(graph);
 			graphViewer.setSelectedGraph(graph);
 		}
+		
+		// for last graph
+		for (FunctionalUnit fu : er.getTellability().plotUnitTypes) {
+			graphViewer.addDetectedPlotUnitType(fu);
+		}
+		graphViewer.addInformation("#Functional Units: " + er.getTellability().numFunctionalUnits);
+		graphViewer.addInformation("Highlight Units:", graphViewer.getUnitComboBox());
+		graphViewer.addInformation("#Polyvalent Vertices: " + er.getTellability().numPolyvalentVertices);
+		graphViewer.addInformation("Suspense: " + er.getTellability().suspense);
+		graphViewer.addInformation("Tellability: " + er.getTellability().compute());
 		
 		graphViewer.visualizeGraph();
 	}
