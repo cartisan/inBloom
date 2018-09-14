@@ -58,7 +58,7 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 		FindCornHappening findCorn = new FindCornHappening(
 				// hen finds wheat after 4 farm work actions
 				(FarmModel model) -> {
-	            		if((model.actionCount > 2) & (!model.wheatFound)) {
+	            		if(model.actionCount > 2) {
 	            			return true;
 	            		}
 	            		return false; 

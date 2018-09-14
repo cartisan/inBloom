@@ -1,5 +1,6 @@
 package plotmas.storyworld;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,15 +20,16 @@ public class ScheduledHappeningDirector implements HappeningDirector{
 	 */
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	// TODO: happenings are to fire only once!
 	public List<Happening<?>> getTriggeredHappenings(int step) {
 		List<Happening<?>> triggeredHapps = new LinkedList<>();
-		for (Happening h : this.scheduledHappenings) {
+		
+		for (Iterator<Happening<?>> iterator = this.scheduledHappenings.iterator(); iterator.hasNext();) {
+		    Happening h = iterator.next();
 			if (h.triggered(this.model)) {
 				triggeredHapps.add(h);
-			}
+		        iterator.remove();
+		    }
 		}
-
 		return triggeredHapps;
 	}
 
