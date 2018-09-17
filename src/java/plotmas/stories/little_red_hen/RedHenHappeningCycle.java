@@ -84,6 +84,7 @@ public class RedHenHappeningCycle extends PlotCycle {
 				// schedule happening to occur one step after start of previous equilibrium state
 				Integer startStep = positionStepMap.get(location.getFirst()) + 1;
 				
+				// TODO: Select happening from catalog
 				FindCornHappening findCorn = new FindCornHappening(
 						// protagonist finds wheat to prevent equilibrium
 						(FarmModel model) -> {
@@ -97,6 +98,8 @@ public class RedHenHappeningCycle extends PlotCycle {
 				
 				
 				((ScheduledHappeningDirector) er.getLastModel().happeningDirector).scheduleHappening(findCorn);
+				
+				// TODO: adapt protagonist's personality
 				break;		// enough to resolve first equilibrium
 			}
 		}

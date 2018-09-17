@@ -28,6 +28,7 @@ public class Vertex implements Cloneable {
 					   AXIS_LABEL,		// represents environment-steps on the vertical time axis
 					 }
 
+	/* NOTE: each new attribute should also be considered in #clone() */
 	private String id;
 	private String label;
 	private Type type;
@@ -230,6 +231,7 @@ public class Vertex implements Cloneable {
 		Vertex clone = new Vertex(this.label, this.type, this.step);
 		
 		clone.minWidth = this.minWidth;
+		clone.isPolyvalent = this.isPolyvalent;
 		
 		for (String e: this.emotions) {
 			clone.addEmotion(e);

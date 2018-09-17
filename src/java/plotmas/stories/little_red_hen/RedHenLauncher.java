@@ -56,7 +56,7 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         // Initialize MAS with a scheduled happening director
         ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 		FindCornHappening findCorn = new FindCornHappening(
-				// hen finds wheat after 4 farm work actions
+				// hen finds wheat after 2 farm work actions
 				(FarmModel model) -> {
 	            		if(model.actionCount > 2) {
 	            			return true;

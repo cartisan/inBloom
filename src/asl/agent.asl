@@ -95,7 +95,8 @@ wish(relax).
 //	?obligation(X);
 //	!X;
 //	!default_activity.
-@default_activity_1[affect(and(personality(conscientiousness,high)))]
+
+@default_activity_1[affect(personality(conscientiousness,high))]
 +!default_activity <-
 	?obligation(X);
 	!X;
@@ -158,7 +159,7 @@ wish(relax).
 /********************************************/
 /***** Plans  *******************************/
 /********************************************/
-
+@create_bread[affect(personality(conscientiousness,high))]
 +!create_bread : has(wheat(seed)) <-
 	+self(has_purpose);
 	!plant(wheat);

@@ -31,7 +31,7 @@ import plotmas.graph.visitor.RemovedEdge;
 public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Edge> implements Cloneable {
   
     static Logger logger = Logger.getLogger(PlotDirectedSparseGraph.class.getName());
-    public static final String AXIS_LABEL = "time step";
+    public static final String AXIS_LABEL = "plot step";
 	
 	private ArrayList<Vertex> roots = Lists.newArrayList();
 	private HashMap<String, Vertex> lastVertexMap = new HashMap<>();			// maps: agentName --> vertex

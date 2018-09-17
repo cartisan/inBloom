@@ -40,22 +40,19 @@ import plotmas.helper.TermParser;
  * @author Leonid Berov
  */
 public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends TimeSteppedEnvironment {
-	/* number of times all agents need to repeat an action, before system is paused; -1 to switch off*/
-	public static Integer MAX_REPEATE_NUM = 5;
-	/* number of steps, before system is automatically pauses; -1 to switch off*/
+	static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
+
+	/** number of times all agents need to repeat an action, before system is paused; -1 to switch off*/
+	public static final Integer MAX_REPEATE_NUM = 5;
+	/** number of environment steps, before system automatically pauses; -1 to switch off*/
 	public static Integer MAX_STEP_NUM = -1;
-	
+	/** time in ms that {@link TimeSteppedEnvironment} affords agents to propose an action, before each step times out */
 	static final String STEP_TIMEOUT = "100";
 	
-    static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
-    public static Long startTime = 0L;
+    /** Safes the time the plot has started to compute plot time, i.e. temporal duration of the plot so far. */
+    private static Long startTime = 0L;
+    /** Aggregates the durations of all pauses, so that plot time can disregard time spent paused. */
     private static Long pauseDuration = 0L;
-    
-    /**
-     * A list of environment listeners which get called on certain events
-     * in the environment.
-     */
-    private List<EnvironmentListener> listeners = new LinkedList<>();
     
     /**
      * Returns the current plot time in ms, i.e. the time that has passed since simulation was started
@@ -65,9 +62,19 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	return (System.nanoTime() - PlotEnvironment.pauseDuration - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
     }
     
+    /**
+     * Updates {@link #pauseDuration} with the duration of a new pause. 
+     * @param duration
+     */
     public static void notePause(Long duration) {
     	pauseDuration += duration;
     }
+    
+    /**
+     * A list of environment listeners which get called on certain events
+     * in the environment.
+     */
+    private List<EnvironmentListener> listeners = new LinkedList<>();
     
     protected ModType model;
     
@@ -101,6 +108,12 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * and not when it is scheduled, otherwise the graph would get out of order.
      */
     private ConcurrentHashMap<String, HashMap<Structure, Intention>> actionIntentionMap = new ConcurrentHashMap<>();
+    
+    /** 
+     * Counts plot steps, synchronously to {@link TimeSteppedEnvironment#step} but designating the step of the 
+     * first plotted intention as step 1. Should be preferred as step counter for all plotmas purposes.
+     */
+    protected int step = 0;
     
     private boolean initialized = false;
     
@@ -233,16 +246,20 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	}
 	
 	@Override
-	protected void stepStarted(int step) {
-		if(!PlotLauncher.getRunner().isDebug()) {
-			logger.info("Step " + this.getStep() + " started for environment");
-		}
-		
-		if (this.model != null)
-			// Give model opportunity to check for and execute happenings
-			this.model.checkHappenings(step);
-		else 
-			logger.warning("field model was not set, but a step " + step + " was started");
+	protected synchronized void stepStarted(int step) {
+		if (this.step > 0) {
+			this.step++;
+			
+			if(!PlotLauncher.getRunner().isDebug()) {
+				logger.info("Step " + this.step + " started for environment");
+			}
+			
+			if (this.model != null)
+				// Give model opportunity to check for and execute happenings
+				this.model.checkHappenings(this.step);
+			else 
+				logger.warning("field model was not set, but a step " + this.step + " was started");
+			}
 	}
 	
 	@Override
@@ -270,6 +287,15 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	public ModType getModel() {
 		return this.model;
 	}
+	
+    @Override
+    public int getStep() {
+    	return this.step;
+    }
+    
+    public void setStep(int step) {
+    	this.step = step;
+    }
 	
     /********************** Methods for updating agent percepts **************************
     * - distinguishes between:

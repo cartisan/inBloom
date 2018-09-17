@@ -128,6 +128,11 @@ public class PlotAwareAg extends AffectiveAgent {
         	
         	// Actually plot the intention with the motivation
         	if(!isRecursive) {
+        		if (PlotLauncher.getRunner().getUserEnvironment().getStep() == 0) {
+        			// Initialized step counting with first intention
+        			PlotLauncher.getRunner().getUserEnvironment().setStep(1);
+        		}
+        		
         		PlotGraphController.getPlotListener().addEvent(
         			this.name,
         			intentionString + motivationString,
