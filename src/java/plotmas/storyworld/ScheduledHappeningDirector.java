@@ -15,7 +15,7 @@ public class ScheduledHappeningDirector implements HappeningDirector{
 		this.scheduledHappenings = new LinkedList<>();
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see plotmas.storyworld.HappeningDirector#getTriggeredHappenings(int)
 	 */
 	@Override
@@ -38,6 +38,11 @@ public class ScheduledHappeningDirector implements HappeningDirector{
 		this.scheduledHappenings.add(h);		
 	}
 
+	@SuppressWarnings("rawtypes")
+	public void removeHappening(Happening h) {
+		this.scheduledHappenings.remove(h);		
+	}
+	
 	@Override
 	public void setModel(PlotModel<?> model) {
 		this.model = model;

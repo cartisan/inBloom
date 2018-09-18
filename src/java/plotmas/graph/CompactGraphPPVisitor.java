@@ -176,6 +176,12 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 		}
 	}
 	
+	/**
+	 * Clones a vertex v and inserts the clone as the predecessor of v in a subgraph
+	 * @param v vertex to be cloned
+	 * @return clone of vertex v 
+	 */
+	@SuppressWarnings("unused")
 	private Vertex cloneVertexToPredecessor(Vertex v) {
 		Collection<Edge> edgesIn = this.graph.getInEdges(v);
 		Collection<Edge> edgesOut = this.graph.getOutEdges(v);
