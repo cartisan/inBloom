@@ -1,4 +1,4 @@
-package plotmas;
+package plotmas.ERcycle;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -14,6 +14,10 @@ import javax.swing.JTextArea;
 import jason.JasonException;
 import jason.asSemantics.Personality;
 import jason.runtime.MASConsoleGUI;
+import plotmas.LauncherAgent;
+import plotmas.PlotEnvironment;
+import plotmas.PlotLauncher;
+import plotmas.PlotModel;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
 import plotmas.helper.EnvironmentListener;

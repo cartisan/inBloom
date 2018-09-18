@@ -1,4 +1,4 @@
-package plotmas;
+package plotmas.ERcycle;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
 import jason.asSemantics.Personality;
+import plotmas.PlotLauncher;
 import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.graph.isomorphism.FunctionalUnits;
 import plotmas.helper.PlotFormatter;

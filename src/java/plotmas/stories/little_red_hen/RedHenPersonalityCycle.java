@@ -5,7 +5,7 @@ import java.util.List;
 
 import jason.asSemantics.Personality;
 import plotmas.LauncherAgent;
-import plotmas.PersonalitySpaceSearchCycle;
+import plotmas.ERcycle.PersonalitySpaceSearchCycle;
 import plotmas.storyworld.ScheduledHappeningDirector;
 
 public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {

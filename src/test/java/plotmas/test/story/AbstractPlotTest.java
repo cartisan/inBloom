@@ -5,7 +5,7 @@ import java.util.List;
 import org.junit.Before;
 
 import plotmas.LauncherAgent;
-import plotmas.PlotCycle;
+import plotmas.ERcycle.PlotCycle;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
 import plotmas.helper.EnvironmentListener;
