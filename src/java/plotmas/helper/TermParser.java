@@ -7,6 +7,7 @@ import jason.asSemantics.Emotion;
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import jason.asSyntax.parser.ParseException;
+import plotmas.graph.Edge;
 
 /**
  * Class holding different helper methods regarding
@@ -15,7 +16,7 @@ import jason.asSyntax.parser.ParseException;
  */
 public class TermParser {
 	
-	private static final Pattern EmotionPattern = Pattern.compile("(?<emotion>\\w*)\\[cause\\((?<cause>.*)\\)\\]\\(.\\)");
+	private static final Pattern EmotionPattern = Pattern.compile("(?<emotion>\\w*)\\["+ Edge.Type.CAUSALITY.toString() +"\\((?<cause>.*)\\)\\]\\(.\\)");
 	/**
 	 * Creates an emotion object from a textual representation of an emotion
 	 * as it is created by {@link Emotion#toString()}. This means that the
@@ -27,8 +28,8 @@ public class TermParser {
 	public static Emotion emotionFromString(String emo) {
 		Matcher matcher = EmotionPattern.matcher(emo);
 		if(matcher.find()) {
-			Emotion emotion = Emotion.getEmotion(matcher.group("emotion").toLowerCase());
-			emotion.setCause(matcher.group("cause"));
+			Emotion emotion = Emotion.getEmotion(matcher.group(Emotion.ANNOTATION_FUNCTOR).toLowerCase());
+			emotion.setCause(matcher.group(Edge.Type.CAUSALITY.toString()));
 			return emotion;
 		}
 		return null;

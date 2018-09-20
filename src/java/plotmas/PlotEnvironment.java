@@ -19,6 +19,7 @@ import jason.asSyntax.Term;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
 import jason.runtime.MASConsoleGUI;
+import plotmas.graph.Edge;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex.Type;
 import plotmas.helper.EnvironmentListener;
@@ -183,7 +184,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	@Override
     public boolean executeAction(String agentName, Structure action) {
     	// add attempted action to plot graph
-		String motivation = "[motivation(%s)]";
+		String motivation = "[" + Edge.Type.MOTIVATION.toString() + "(%s)]";
 		Intention intent = actionIntentionMap.get(agentName).get(action);
 		if(intent != null) {
 			motivation = String.format(motivation, TermParser.removeAnnots(intent.peek().getTrigger().getTerm(1).toString()));

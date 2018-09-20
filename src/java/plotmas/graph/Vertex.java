@@ -167,7 +167,7 @@ public class Vertex implements Cloneable {
 	 * @return
 	 */
 	public String getCause() {
-		return TermParser.getAnnotation(getLabel(), "cause");
+		return TermParser.getAnnotation(getLabel(), Edge.Type.CAUSALITY.toString());
 	}
 
 	public void setPolyvalent() {

@@ -39,7 +39,6 @@ wish(relax).
 +has(X) : is_pleasant(eat(X)) & has(X)  <-			// still has X when event selected 
 	!eat(X).
 	
-//+has(wheat(seed)) <- 
 +found(wheat) <-
 	!create_bread.
 

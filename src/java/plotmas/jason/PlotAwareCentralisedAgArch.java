@@ -8,6 +8,7 @@ import jason.asSemantics.Message;
 import jason.infra.centralised.CentralisedAgArch;
 import jason.infra.centralised.MsgListener;
 import plotmas.PlotLauncher;
+import plotmas.graph.Edge;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
 
@@ -28,7 +29,7 @@ public class PlotAwareCentralisedAgArch extends CentralisedAgArch {
     	Intention sourceIntention = this.getTS().getC().getSelectedIntention();
     	String motivation = "";
     	if(sourceIntention != null) {
-    		 motivation = String.format("[motivation(%1s)]", sourceIntention.peek().getTrigger().getTerm(1).toString());
+    		 motivation = String.format("[" + Edge.Type.MOTIVATION.toString() + "(%1s)]", sourceIntention.peek().getTrigger().getTerm(1).toString());
     	}
         
     	Vertex senderV = PlotGraphController.getPlotListener().addMsgSend(m, motivation, step);

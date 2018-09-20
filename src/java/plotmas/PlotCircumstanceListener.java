@@ -3,6 +3,7 @@ package plotmas;
 import jason.asSemantics.CircumstanceListener;
 import jason.asSemantics.Event;
 import jason.asSemantics.Intention;
+import plotmas.graph.Edge;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
 import plotmas.graph.Vertex.Type;
@@ -48,7 +49,7 @@ public class PlotCircumstanceListener implements CircumstanceListener {
 		if(!i.isFinished()) {
 			String drop = "" + i.peek().getTrigger();
 			String cause = "" + this.agent.getTS().getC().getSelectedOption().getPlan().getTrigger();
-			PlotGraphController.getPlotListener().addEvent(this.name, "drop_intention(" + drop + ")[cause(" + cause + ")]", Type.INTENTION, PlotLauncher.getRunner().getUserEnvironment().getStep());
+			PlotGraphController.getPlotListener().addEvent(this.name, "drop_intention(" + drop + ")[" + Edge.Type.CAUSALITY.toString() +"(" + cause + ")]", Type.INTENTION, PlotLauncher.getRunner().getUserEnvironment().getStep());
 		}
 	}	
 

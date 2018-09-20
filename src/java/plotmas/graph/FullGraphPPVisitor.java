@@ -68,7 +68,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	
 	public void handleDropIntention(Vertex vertex) {
 		String label = vertex.getLabel();
-		Pattern pattern = Pattern.compile("drop_intention\\((?<drop>.*?)\\)\\[cause\\((?<cause>.*)\\)\\]");
+		Pattern pattern = Pattern.compile("drop_intention\\((?<drop>.*?)\\)\\[" + Edge.Type.CAUSALITY.toString() + "\\((?<cause>.*)\\)\\]");
 		Matcher matcher = pattern.matcher(label);
 		
 		// Remove the vertex if it is somehow degenerate (pattern could not be matched)
@@ -93,7 +93,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 		}
 		
 		// Look for the cause in previous vertices
-		String causeString = matcher.group("cause").substring(1);
+		String causeString = matcher.group(Edge.Type.CAUSALITY.toString()).substring(1);
 		Vertex cause = null;
 		for(Vertex potentialCause : this.eventList) {
 			if(potentialCause.getLabel().equals(causeString)) {
@@ -199,7 +199,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	
 	private void attachMotivation(Vertex vertex) {
 		String label = vertex.getLabel();
-		String[] parts = label.split("\\[motivation\\(");
+		String[] parts = label.split("\\[" + Edge.Type.MOTIVATION.toString() + "\\(");
 		
 		if(parts.length > 1) {
 			String[] motivations = parts[1].substring(0, parts[1].length() - 2).split(";");
@@ -224,7 +224,6 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 					
 					if(isMotivation && !motivationVertices.contains(target)) {
 						this.graph.addEdge(new Edge(Edge.Type.MOTIVATION), target, vertex);
-						//vertex.setMotivation(target);
 						motivationVertices.add(target);
 						break;
 					}

@@ -140,7 +140,7 @@ public class Transformers {
         	switch (e.getType()) {
         	case ROOT:
         		return PlotGraphController.BGCOLOR;
-        	case COMMUNICATION:
+        	case EQUIVALENCE:
         		return Color.LIGHT_GRAY;
         	case ACTUALIZATION:
         		return Color.CYAN.darker();
