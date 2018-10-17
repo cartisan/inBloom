@@ -2,6 +2,7 @@ package plotmas.graph.isomorphism;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -27,9 +28,19 @@ public class FunctionalUnit {
 	private PlotDirectedSparseGraph unitGraph;
 	private PlotDirectedSparseGraph displayGraph;
 	
+	private boolean isPrimitive = false;
+	
 	public FunctionalUnit(String name, PlotDirectedSparseGraph graph) {
 		this.name = name;
 		this.unitGraph = graph;
+	}
+	
+	public void setPrimitive() {
+		this.isPrimitive = true;
+	}
+	
+	public boolean isPrimitive() {
+		return this.isPrimitive;
 	}
 	
 	/**
@@ -187,5 +198,44 @@ public class FunctionalUnit {
 	@Override
 	public String toString() {
 		return this.name;
+	}
+	
+	public class Instance {
+		
+		private Collection<Vertex> vertices;
+		
+		public Instance(Collection<Vertex> vertices) {
+			this.vertices = vertices;
+		}
+		
+		public boolean contains(Vertex v) {
+			return vertices.contains(v);
+		}
+		
+		public Collection<Vertex> getVertices() {
+			return this.vertices;
+		}
+		
+		public FunctionalUnit getUnit() {
+			return FunctionalUnit.this;
+		}
+		
+		public String toString() {
+			return FunctionalUnit.shortenName(getUnit().getName());
+		}
+	}
+	
+	static private String shortenName(String name) {
+		String result = "";
+		if(name.contains(" ")) {
+			for(char c : name.toCharArray()) {
+				if(c >= 'A' && c <= 'Z') {
+					result += c;
+				}
+			}
+		} else {
+			result = name.substring(0, 3);
+		}
+		return result;
 	}
 }

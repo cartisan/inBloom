@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import plotmas.framing.ConnectivityGraph;
+import plotmas.framing.FramingGenerator;
 import plotmas.graph.CountingVisitor;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
@@ -30,7 +32,8 @@ public class Tellability {
 	public int numPolyvalentVertices;
 	public int numAllVertices;
 	public Map<FunctionalUnit, Integer> functionalUnitCount = new HashMap<>();
-
+	public ConnectivityGraph connectivityGraph;
+	
 	// Semantic Symmetry
 	
 	// Semantic Opposition
@@ -83,6 +86,9 @@ public class Tellability {
 		int polyvalentVertices = 0;
 		int unitInstances = 0;
 		Set<Vertex> polyvalentVertexSet = new HashSet<Vertex>();
+		
+		connectivityGraph = new ConnectivityGraph();
+		
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(graph, unit.getGraph());
 			unitInstances += mappings.size();
@@ -95,7 +101,27 @@ public class Tellability {
 			}
 			
 			for(Map<Vertex, Vertex> map : mappings) {
+				/*FunctionalUnitInstance instance = new FunctionalUnitInstance(unit, map.keySet());
+				for(FunctionalUnitInstance fui : instances) {
+					boolean containsAny = false;
+					for(Vertex v : map.keySet()) {
+						if(fui.isContained(v)) {
+							containsAny = true;
+							break;
+						}
+					}
+					if(containsAny) {
+						instance.link(fui);
+						fui.link(instance);
+					}
+				}
+				instances.add(instance);*/
+				
+				FunctionalUnit.Instance instance = unit.new Instance(map.keySet());
+				connectivityGraph.addVertex(instance);
+				
 				for(Vertex v : map.keySet()) {
+					
 					graph.markVertexAsUnit(v, unit);
 					if(!vertexUnitCount.containsKey(v)) {
 						vertexUnitCount.put(v, 1);
@@ -111,6 +137,20 @@ public class Tellability {
 				}
 			}
 		}
+		
+		for(FunctionalUnit primitiveUnit : FunctionalUnits.PRIMITIVES) {
+			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(graph, primitiveUnit.getGraph());
+			for(Map<Vertex, Vertex> map : mappings) {
+				FunctionalUnit.Instance instance = primitiveUnit.new Instance(map.keySet());
+				connectivityGraph.addVertex(instance);
+			}
+		}
+		
+		connectivityGraph.removeEntailed();
+		connectivityGraph.prunePrimitives();
+		connectivityGraph.display();
+		
+		logger.info("Summary: " + FramingGenerator.generateFraming(this));
 		
 		this.numFunctionalUnits = unitInstances;
 		this.numPolyvalentVertices = polyvalentVertices;

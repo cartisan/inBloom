@@ -31,7 +31,7 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
 							new LauncherAgent("hen",					  	   // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
-									new Personality(0,  1, 0.7,  0.3, 0.15)    //punishment
+									new Personality(0,  1, 0.7,  0.3, 0.65)    //punishment
 //									new Personality(0,  1, 0.7,  0.3,  -1)     //low neurot --> no punishment
 //									new Personality(0,  1, 0.7,  0.7,  -1)     //high aggrea --> sharing
 									
