@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
 import jason.asSemantics.Agent;
+import jason.asSyntax.PlanLibrary;
 import jason.bb.DefaultBeliefBase;
 import jason.infra.centralised.BaseCentralisedMAS;
 import jason.infra.centralised.CentralisedAgArch;
@@ -45,6 +48,8 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 	protected static Class<?> ENV_CLASS;
 	protected static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
 	protected static Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
+	
+	protected static Map<String, PlanLibrary> planLibraryCache =  new HashMap<>();
 
     /**
      * Convenience function that casts the runner-singleton to a more appropriate type  
@@ -54,16 +59,30 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
         return (PlotLauncher<?,?>) BaseCentralisedMAS.getRunner();
     }
     
+    
+    /**
+     * Cinvenience function to retrieve an instance of the plan library. Returns the cached library from last execution,
+     * if runner was reseted but not restarted in the meantime.
+     * @return
+     */
+    public static PlanLibrary getPlanLibraryFor(String agentName) {
+    	return PlotLauncher.planLibraryCache.get(agentName);
+    }
+    
     /**
      * Resets static variables such that a new
      * cycle of simulation may be run.
      */
     public void reset() {
+    	if (control != null) {
+    		control.stop();
+    		control = null;
+    	}
+    	if (env != null) {
+    		env.stop();
+    		env = null;
+    	}
     	
-    	control.stop();
-    	control = null;
-    	env.stop();
-    	env = null;
     	stopAgs();
     	runner = null;
     	ags.clear();
@@ -217,6 +236,8 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 	 * @param agents
 	 */
 	protected void initializePlotAgents(List<LauncherAgent> agents) {
+		PlotLauncher.planLibraryCache.clear();
+		
 		for (LauncherAgent ag: agents) {
 			if(ag.personality != null) {
 				// initialize personalities
@@ -227,7 +248,9 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 					logger.severe("Failed to initialize mood based on personality: " + ag.personality);
 					e.printStackTrace();
 				}
+				
 				plotAg.initializeMoodMapper();
+				PlotLauncher.planLibraryCache.put(ag.name, plotAg.getPL());
 			}
 		}
 	}

@@ -64,14 +64,13 @@ public class RedHenHappeningCycle extends PlotCycle {
 		ProblemFixCommand problemFix = null;
 		int counter = 0;
 		while( (problemFix == null) & (counter < reasoningCycle.size() * 2)) {
-			// TODO: setup all strategies as singleton, just cycle through them once
 			counter++;
 			log(" Testing for plot problems: " + detectionState.getClass().getSimpleName());
 			problemFix = detectionState.detect(er);
 		}
 		
 		if (problemFix != null) {
-			log(" Applying fix: " + problemFix.toString());
+			log(" Applying fix: " + problemFix.message());
 			problemFix.execute(er);
 			this.transformations.add(problemFix);
 		} else {
@@ -131,6 +130,10 @@ public class RedHenHappeningCycle extends PlotCycle {
 	
 	public void setDetectionState(ProblemDetectionState detectionState) {
 		this.detectionState = detectionState;
+	}
+	
+	public List<ProblemFixCommand> getTransformations(){
+		return this.transformations;
 	}
 	
 	public static void main(String[] args) {

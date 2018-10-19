@@ -1,6 +1,8 @@
 package plotmas.ERcycle;
 
+import jason.asSyntax.Trigger;
 import plotmas.ERcycle.PlotCycle.EngageResult;
+import plotmas.helper.TermParser;
 import plotmas.stories.little_red_hen.FarmModel;
 import plotmas.stories.little_red_hen.FindCornHappening;
 import plotmas.storyworld.Happening;
@@ -36,8 +38,18 @@ public class ScheduleHappening implements ProblemFixCommand {
 	}
 	
 	@Override
-	public String toString() {
+	public String message() {
 		return "Scheduling happening " + this.happening.getClass().getSimpleName() + " at step " + this.startStep;
+	}
+	
+	/**
+	 * Determines the label of the vertex that this happening will cause in a characters subgraph, if it is successfully
+	 * perceived. Does not return annotations. Can be used to detect this happening in a plot graph using e.g.
+	 * <code> scheduledHappening.getGraphRepresentation().equals(TermParser.removeAnnots(v.getLabel())); </code>
+	 * @return Label with belief-added operator and without annotations
+	 */
+	public String getGraphRepresentation() {
+		return Trigger.TEOperator.add.toString() + this.happening.getPercept();
 	}
 
 }
