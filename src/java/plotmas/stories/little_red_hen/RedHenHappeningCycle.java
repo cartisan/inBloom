@@ -79,7 +79,7 @@ public class RedHenHappeningCycle extends PlotCycle {
 			return new ReflectResult(null, null, null, false);
 		}
 
-		FarmModel model = new FarmModel(new ArrayList<LauncherAgent>(), er.getLastModel().happeningDirector);
+		FarmModel model = new FarmModel(new ArrayList<LauncherAgent>(), er.getLastModel().happeningDirector.clone());
 		PlotLauncher<?, ?> runner = new RedHenLauncher();
 		runner.setShowGui(false);
 		return new ReflectResult(runner, model, er.getLastAgents());

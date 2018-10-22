@@ -14,4 +14,5 @@ public interface HappeningDirector {
 	 */
 	public List<Happening<?>> getTriggeredHappenings(int step);
 	public void setModel(PlotModel<?> model);
+	public HappeningDirector clone();
 }
