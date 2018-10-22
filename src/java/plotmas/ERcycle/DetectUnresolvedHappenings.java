@@ -3,12 +3,6 @@ package plotmas.ERcycle;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import jason.asSyntax.Literal;
-import jason.asSyntax.LogicalFormula;
-import jason.asSyntax.Plan;
-import jason.asSyntax.PlanLibrary;
-import jason.asSyntax.Trigger;
-import plotmas.PlotLauncher;
 import plotmas.ERcycle.PlotCycle.EngageResult;
 import plotmas.graph.Edge;
 import plotmas.graph.Vertex;

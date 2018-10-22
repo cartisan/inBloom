@@ -2,7 +2,6 @@ package plotmas.ERcycle;
 
 import jason.asSyntax.Trigger;
 import plotmas.ERcycle.PlotCycle.EngageResult;
-import plotmas.helper.TermParser;
 import plotmas.stories.little_red_hen.FarmModel;
 import plotmas.stories.little_red_hen.FindCornHappening;
 import plotmas.storyworld.Happening;
