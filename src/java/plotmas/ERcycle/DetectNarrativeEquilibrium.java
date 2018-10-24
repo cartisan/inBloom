@@ -52,7 +52,7 @@ public class DetectNarrativeEquilibrium extends ProblemDetectionState {
 	}
 	
 	@Override
-	public ProblemFixCommand detect(EngageResult er) {
+	public ProblemFixCommand performDetect(EngageResult er) {
 		Vertex protagonist = detectPotentialProtagonist(er);
 		
 		// construct list of events for protagonist
@@ -77,15 +77,15 @@ public class DetectNarrativeEquilibrium extends ProblemDetectionState {
 				// schedule happening to occur one step after start of previous equilibrium state
 				Integer startStep = positionStepMap.get(location.getFirst()) + 1;
 				
-				// next problem detection step should be to check if the schedule happening is properly realized
-				this.controller.setDetectionState(this.getInstanceFor(DetectUnresolvedHappenings.class));
+				// we are scheduling happenings, so next problem detection step should always be to check if the
+				// unresolved happenings are present. If no unresolved happenings are detected, defaultNextState
+				// will be changed to its previous value by the responsible class
+				this.nextReflectionState = this.getInstanceFor(DetectUnresolvedHappenings.class);
 				return new ScheduleHappening(startStep, protagonist.getLabel());
 			}
 		}
 		
 		// no narrative equilibria identified
-		this.controller.setDetectionState(this.getInstanceFor(DetectInsufficientCoupling.class));
 		return null;
 	}
-
 }

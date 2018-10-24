@@ -10,11 +10,10 @@ public class DetectInsufficientCoupling extends ProblemDetectionState {
 	}
 
 	@Override
-	public ProblemFixCommand detect(EngageResult er) {
+	public ProblemFixCommand performDetect(EngageResult er) {
 		// TODO Auto-generated method stub
 		
 		// no insufficient coupling identified
-		this.controller.setDetectionState(this.getInstanceFor(DetectNarrativeEquilibrium.class));
 		return null;
 	}
 

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import jason.asSemantics.Affect;
 import jason.asSemantics.Personality;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Plan;
@@ -31,6 +32,17 @@ public class AdaptPersonality implements ProblemFixCommand {
     	VALUE_MAP.put("medium", 0.01);
     	VALUE_MAP.put("high",   1.0);
     }
+    
+    /**
+	 * 
+     * @param unresolvedHappening
+     * @param charName
+     * @return
+     */
+    public static AdaptPersonality getNextFixFor(String unresolvedHappening, String charName) {
+    	// TODO: Implement backtracking, so that all solutions for a happening are successively explored
+    	return new AdaptPersonality(unresolvedHappening, charName);
+    }
 	
 	private PlanLibrary planLib;
 	private String charName;
@@ -50,9 +62,10 @@ public class AdaptPersonality implements ProblemFixCommand {
 			// for each candidate plan, check affective preconditions (and context?) of its first step
 			List<Plan> firstStepOptions = planLib.getCandidatePlans(Trigger.parseTrigger("+!" + firstStep));
 			
-			
-			firstStepOptions = firstStepOptions.stream().filter(x -> x.getTrigger().getLiteral().isGround())		// filter out generic plans like +X! <-- they are not ground
-					.filter(x -> x.getLabel().getAnnot("affect") != null)		// filter out plans without affective preconditions, no need to change personalities there
+			// FIXME: this is not appropriate: reasoner always selects first fitting plan, no matter if its ground/annotations are present
+			//        need to take preconditions into account?
+			firstStepOptions = firstStepOptions.stream().filter(x -> x.getTrigger().getLiteral().isGround())  // filter out generic plans like +X! <-- they are not ground
+					.filter(x -> x.getLabel().getAnnot(Affect.ANNOTATION_FUNCTOR) != null)  // filter out plans without affective preconditions, no need to change personalities there
 					.collect(Collectors.toList());
 			
 			// this would give us the precondition for a coping plan, if we were to test that preconditions are met:
@@ -61,7 +74,7 @@ public class AdaptPersonality implements ProblemFixCommand {
 			// choose one option to pursue; if none available, note that
 			if (!firstStepOptions.isEmpty()) {
 				Plan selectedPlan = (Plan) SELECTION_STRATEGY.apply(firstStepOptions);
-				affectConditions.add(selectedPlan.getLabel().getAnnot("affect"));
+				affectConditions.add(selectedPlan.getLabel().getAnnot(Affect.ANNOTATION_FUNCTOR));
 			} else {
 				affectConditions.add(null);
 			}

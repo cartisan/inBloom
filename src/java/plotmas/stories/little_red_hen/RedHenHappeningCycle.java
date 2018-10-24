@@ -22,13 +22,11 @@ import plotmas.storyworld.ScheduledHappeningDirector;
 
 public class RedHenHappeningCycle extends PlotCycle {
 
-	public static final double THRESHOLD = 0.21;
+	public static final double THRESHOLD = 0.4;
 	public static final int GIVE_UP = 4;
 	
 	/** current state of reasoning cycle responsible for detecting plot problems */
 	protected ProblemDetectionState detectionState;
-	/** reasoning cycle responsible for detecting plot problems */
-	protected ImmutableList<ProblemDetectionState> reasoningCycle;
 	
 	/** ordered list of transformation commands identified during reflection and applied during engagement */
 	protected List<ProblemFixCommand> transformations = new LinkedList<>();
@@ -38,12 +36,13 @@ public class RedHenHappeningCycle extends PlotCycle {
 		// Create PlotCycle with needed agents.
 		super(agentNames, agentSrc);
 		
-		this.reasoningCycle = ImmutableList.of(
-				ProblemDetectionState.getInstance(DetectNarrativeEquilibrium.class, this),
-				ProblemDetectionState.getInstance(DetectInsufficientCoupling.class, this)
-		);
+		ProblemDetectionState s1 = ProblemDetectionState.getInstance(DetectNarrativeEquilibrium.class, this);
+		ProblemDetectionState s2 = ProblemDetectionState.getInstance(DetectInsufficientCoupling.class, this);
 		
-		this.detectionState = reasoningCycle.get(0);
+		s1.nextReflectionState = s2;
+		s2.nextReflectionState = s1;
+		
+		this.detectionState = s1;
 	}
 	
 	@Override
@@ -59,14 +58,14 @@ public class RedHenHappeningCycle extends PlotCycle {
 			return new ReflectResult(null, null, null, false);
 		}
 		
-		// start state machine that detects plot problems, detections states either return a fix or change
-		// the detection to a next state
+		// start state machine that detects plot problems, detections states return a fix and change the
+		// the detectionState to the next state
 		ProblemFixCommand problemFix = null;
 		int counter = 0;
-		while( (problemFix == null) & (counter < reasoningCycle.size() * 2)) {
+		while( (problemFix == null) & (counter < 6)) {
 			counter++;
 			log(" Testing for plot problems: " + detectionState.getClass().getSimpleName());
-			problemFix = detectionState.detect(er);
+			problemFix = detectionState.detect(er);		// this has to always set the next detection state!
 		}
 		
 		if (problemFix != null) {
@@ -128,7 +127,7 @@ public class RedHenHappeningCycle extends PlotCycle {
 		graphViewer.visualizeGraph();
 	}
 	
-	public void setDetectionState(ProblemDetectionState detectionState) {
+	public void setNextDetectionState(ProblemDetectionState detectionState) {
 		this.detectionState = detectionState;
 	}
 	
