@@ -87,7 +87,7 @@ public class Tellability {
 		int unitInstances = 0;
 		Set<Vertex> polyvalentVertexSet = new HashSet<Vertex>();
 		
-		connectivityGraph = new ConnectivityGraph();
+		connectivityGraph = new ConnectivityGraph(graph);
 		
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(graph, unit.getGraph());
@@ -101,23 +101,8 @@ public class Tellability {
 			}
 			
 			for(Map<Vertex, Vertex> map : mappings) {
-				/*FunctionalUnitInstance instance = new FunctionalUnitInstance(unit, map.keySet());
-				for(FunctionalUnitInstance fui : instances) {
-					boolean containsAny = false;
-					for(Vertex v : map.keySet()) {
-						if(fui.isContained(v)) {
-							containsAny = true;
-							break;
-						}
-					}
-					if(containsAny) {
-						instance.link(fui);
-						fui.link(instance);
-					}
-				}
-				instances.add(instance);*/
-				
-				FunctionalUnit.Instance instance = unit.new Instance(map.keySet());
+				FunctionalUnit.Instance instance = unit.new Instance(graph, map.keySet());
+				instance.identifySubject(map);
 				connectivityGraph.addVertex(instance);
 				
 				for(Vertex v : map.keySet()) {
@@ -141,16 +126,15 @@ public class Tellability {
 		for(FunctionalUnit primitiveUnit : FunctionalUnits.PRIMITIVES) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(graph, primitiveUnit.getGraph());
 			for(Map<Vertex, Vertex> map : mappings) {
-				FunctionalUnit.Instance instance = primitiveUnit.new Instance(map.keySet());
+				FunctionalUnit.Instance instance = primitiveUnit.new Instance(graph, map.keySet());
 				connectivityGraph.addVertex(instance);
 			}
 		}
 		
 		connectivityGraph.removeEntailed();
 		connectivityGraph.prunePrimitives();
+		connectivityGraph.mergeTimeEquivalents();
 		connectivityGraph.display();
-		
-		logger.info("Summary: " + FramingGenerator.generateFraming(this));
 		
 		this.numFunctionalUnits = unitInstances;
 		this.numPolyvalentVertices = polyvalentVertices;
@@ -159,6 +143,8 @@ public class Tellability {
 		for(Vertex v : polyvalentVertexSet) {
 			v.setPolyvalent();
 		}
+		
+		logger.info("Summary: " + FramingGenerator.generateFraming(this));
 	}
 
 	/**

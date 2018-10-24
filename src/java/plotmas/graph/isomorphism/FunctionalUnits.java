@@ -1,5 +1,6 @@
 package plotmas.graph.isomorphism;
 
+import jason.util.Pair;
 import plotmas.graph.Edge;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.Vertex;
@@ -30,7 +31,7 @@ public class FunctionalUnits {
 	 * Holds all primitive functional units.
 	 */
 	public static FunctionalUnit[] PRIMITIVES;
-	
+
 	public static final FunctionalUnit NESTED_GOAL;
 	public static final FunctionalUnit DENIED_REQUEST;
 	public static final FunctionalUnit RETALIATION;
@@ -45,8 +46,7 @@ public class FunctionalUnits {
 	public static final FunctionalUnit GIVING_UP;
 	public static final FunctionalUnit SACRIFICE;
 	
-	//public static final FunctionalUnit DEBUG_SPEECH;
-	//public static final FunctionalUnit DEBUG_TERMINATION;
+	
 	
 	/**
 	 * A graph containing all functional units in {@link #ALL ALL} next
@@ -68,6 +68,7 @@ public class FunctionalUnits {
 		v2 = makeNegative(3);
 		deniedRequest.addEdge(makeCommunication(), v3, v2);
 		DENIED_REQUEST = new FunctionalUnit("Denied Request", deniedRequest);
+		DENIED_REQUEST.setSubject(new Pair<Vertex, String>(v1, "!achieve\\((.*)\\)"));
 		
 		PlotDirectedSparseGraph nestedGoal = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1);
@@ -76,6 +77,7 @@ public class FunctionalUnits {
 		nestedGoal.addEdge(makeMotivation(), v1, v2);
 		nestedGoal.addEdge(makeActualization(), v2, v3);
 		NESTED_GOAL = new FunctionalUnit("Nested Goal", nestedGoal);
+		NESTED_GOAL.setSubject(new Pair<Vertex, String>(v1, "(.*)"));
 		
 		PlotDirectedSparseGraph retaliation = new PlotDirectedSparseGraph();
 		v1 = makeWildcard(1);
@@ -90,6 +92,7 @@ public class FunctionalUnits {
 		v2 = makeNegative(4);
 		retaliation.addEdge(makeActualization(), v1, v2);
 		RETALIATION = new FunctionalUnit("Retaliation", retaliation);
+		RETALIATION.setSubject(new Pair<Vertex, String>(v3, "(.*)"));
 		
 		PlotDirectedSparseGraph intentionalProblemResolution = new PlotDirectedSparseGraph();
 		v1 = makeNegative(1);
