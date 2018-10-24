@@ -15,7 +15,7 @@ public class PlotpatternAnalyzer {
     
 	/** regex that matches when the same sequence of events (separated by spaces) repeats several times, test using https://regex101.com/ */
 	public static final String EVENT_SEP = " "; 	// should always be a white-space
-	public static final String REPETITION_REGEX = "(?<pattern>(?<lastWord>\\S+" + Pattern.quote(EVENT_SEP) + ")+?)(\\k<pattern>)+";
+	public static final String REPETITION_REGEX = "(?<pattern>(?<lastWord>" + Pattern.quote(EVENT_SEP) + "\\S+)+?)(?:\\k<pattern>)+";
 	public static final Pattern REPETITION_PATTERN = Pattern.compile(REPETITION_REGEX);
 	
 	/**
@@ -26,7 +26,7 @@ public class PlotpatternAnalyzer {
 	 * @return HashMap mapping patterns to number of occurrences
 	 */
 	static public HashMap<String, Integer> countAllPatterns(List<String> events) {
-		String plot = events.stream().collect(Collectors.joining(EVENT_SEP)) + EVENT_SEP;
+		String plot = EVENT_SEP + events.stream().collect(Collectors.joining(EVENT_SEP));
 		Pattern repetition_pat = Pattern.compile(REPETITION_REGEX);
 		
 		return countPatterns(plot, repetition_pat);
@@ -41,7 +41,7 @@ public class PlotpatternAnalyzer {
 	 * @return HashMap mapping patterns to number of occurrences
 	 */
 	static public HashMap<String, Integer> countTrailingPatterns(List<String> events) {
-		String plot = events.stream().collect(Collectors.joining(EVENT_SEP)) + EVENT_SEP;
+		String plot = EVENT_SEP + events.stream().collect(Collectors.joining(EVENT_SEP));
 		Pattern repetition_pat = Pattern.compile(REPETITION_REGEX + "$");
 		
 		return countPatterns(plot, repetition_pat);

@@ -70,8 +70,10 @@ public class DetectNarrativeEquilibrium extends ProblemDetectionState {
 		HashMap<String, Integer> patternCounts = PlotpatternAnalyzer.countAllPatterns(events);
 		for (Entry<String,Integer> patternCount : patternCounts.entrySet()) {
 			if (patternCount.getValue() >= PlotEnvironment.MAX_REPEATE_NUM) {
-				// found narrative equilibrium, identify in which step it starts
-				Pattern pattern = Pattern.compile("(" + Pattern.quote(patternCount.getKey() + PlotpatternAnalyzer.EVENT_SEP) + ")+");
+				// found narrative equilibrium, identify in which step it starts. Use regex: (pattern ){rep_num}
+				Pattern pattern = Pattern.compile(
+						"(" + Pattern.quote(patternCount.getKey() + PlotpatternAnalyzer.EVENT_SEP) + "){" + patternCount.getValue() +"}"
+						);
 				Pair<Integer,Integer> location = PlotpatternAnalyzer.patternLocation(events, pattern);
 				
 				// schedule happening to occur one step after start of previous equilibrium state

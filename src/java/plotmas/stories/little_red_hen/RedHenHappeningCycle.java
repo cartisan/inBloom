@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
-
 import jason.asSemantics.Personality;
 import plotmas.LauncherAgent;
 import plotmas.PlotLauncher;
@@ -22,7 +20,7 @@ import plotmas.storyworld.ScheduledHappeningDirector;
 
 public class RedHenHappeningCycle extends PlotCycle {
 
-	public static final double THRESHOLD = 0.4;
+	public static final double THRESHOLD = 0.9;
 	public static final int GIVE_UP = 4;
 	
 	/** current state of reasoning cycle responsible for detecting plot problems */
@@ -47,10 +45,10 @@ public class RedHenHappeningCycle extends PlotCycle {
 	
 	@Override
 	protected ReflectResult reflect(EngageResult er) {
-		log("Reflecting...");
+		log("  Reflecting...");
 		Tellability tellability = er.getTellability();
 		
-		log(" tellability of last engagement result: " + tellability.compute());
+		log("    tellability of last engagement result: " + tellability.compute());
 		
 		// Check if we found an appropriate story
 		if ((tellability.compute() > THRESHOLD) || (PlotCycle.currentCycle > GIVE_UP)){
@@ -64,12 +62,12 @@ public class RedHenHappeningCycle extends PlotCycle {
 		int counter = 0;
 		while( (problemFix == null) & (counter < 6)) {
 			counter++;
-			log(" Testing for plot problems: " + detectionState.getClass().getSimpleName());
+			log("    Testing for plot problems: " + detectionState.getClass().getSimpleName());
 			problemFix = detectionState.detect(er);		// this has to always set the next detection state!
 		}
 		
 		if (problemFix != null) {
-			log(" Applying fix: " + problemFix.message());
+			log("    Applying fix: " + problemFix.message());
 			problemFix.execute(er);
 			this.transformations.add(problemFix);
 		} else {

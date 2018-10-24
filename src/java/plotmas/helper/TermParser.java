@@ -99,7 +99,7 @@ public class TermParser {
 	 * personality conditions and return all paths of the tree as potential personality conditions.
 	 * 
 	 * @param annot string representation of an affective plan precondition
-	 * @see plotmas.test.util.TermParserTest
+	 * @see plotmas.test.helper.TermParserTest
 	 * @return
 	 */
 	public static List<Pair<String,String>> extractPersonalityAnnotation(String annot) {

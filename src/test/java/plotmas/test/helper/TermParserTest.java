@@ -1,4 +1,4 @@
-package plotmas.test.util;
+package plotmas.test.helper;
 
 import java.util.LinkedList;
 import java.util.List;
