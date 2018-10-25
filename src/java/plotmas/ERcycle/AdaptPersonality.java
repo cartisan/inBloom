@@ -12,6 +12,7 @@ import jason.asSemantics.Affect;
 import jason.asSemantics.Personality;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Plan;
+import jason.asSyntax.PlanBody;
 import jason.asSyntax.PlanLibrary;
 import jason.asSyntax.Trigger;
 import jason.util.Pair;
@@ -55,21 +56,29 @@ public class AdaptPersonality implements ProblemFixCommand {
 		this.planLib = PlotLauncher.getPlanLibraryFor(charName);
 		this.charName = charName;
 		
-		// Find which plans could get triggered by this happening and identify their pre-conditions
+		// Find which plans could get triggered by this happening and identify the preconditions of all involved steps
 		List<Plan> candidatePlans = planLib.getCandidatePlans(Trigger.parseTrigger(unresolvedHappening));
 		List<LinkedList<Literal>> affectConditions = new LinkedList<>(); 
 		for (Plan p : candidatePlans) {
 			LinkedList<Literal> conditionList = new LinkedList<>();
 			affectConditions.add(conditionList);
 
-			// TODO: iterate over all steps in body
-			String firstStep = p.getBody().getBodyTerm().toString();
-			this.findPlanPreconditions(conditionList, firstStep);
+			// iterate over all steps in plan body and collect affect annotations for each step that is a plan itself
+			PlanBody planStep = p.getBody();
+			while (planStep != null) {
+				if ((planStep.getBodyType().equals(PlanBody.BodyType.achieve)) ||			// only look for preconditions on plans
+						(planStep.getBodyType().equals(PlanBody.BodyType.achieveNF))) {
+					String step = "+!" + planStep.getBodyTerm().toString();
+					this.determineAffectiveConditions(conditionList, step);
+				}
+				planStep = planStep.getBodyNext();
+			}
 		}
 		
 		// for each candidatePlan, affectConditions now contains either affect-precondition of first step, or null if candidatePlan is no viable
 		assert(candidatePlans.size() == affectConditions.size());
 		
+		// ~~~~~~~~~~~~~~~ fine until here ~~~~~~~~~~~~~~~~~~~~
 		List<List<Literal>> viablePlansPreConditions = affectConditions.stream().filter(x -> x.size() > 0).collect(Collectors.toList());
 		List<Literal> selectedCondition = (List<Literal>) SELECTION_STRATEGY.apply(viablePlansPreConditions);
 		
@@ -84,14 +93,14 @@ public class AdaptPersonality implements ProblemFixCommand {
 								   VALUE_MAP.get(selectedPersonality.getSecond()));
 		}
 	}
-
-	protected void findPlanPreconditions(List<Literal> affectConditions, String planStep) {
+	
+	protected void determineAffectiveConditions(List<Literal> affectConditions, String intention) {
 		// for each candidate plan, check affective preconditions (and context?) of its first step
-		List<Plan> firstStepOptions = planLib.getCandidatePlans(Trigger.parseTrigger("+!" + planStep));
+		List<Plan> candidatePlans = planLib.getCandidatePlans(Trigger.parseTrigger(intention));
 		
 		// FIXME: this is not appropriate: reasoner always selects first fitting plan, no matter if its ground/annotations are present
 		//        need to take preconditions into account?
-		firstStepOptions = firstStepOptions.stream().filter(x -> x.getTrigger().getLiteral().isGround())  // filter out generic plans like +X! <-- they are not ground
+		candidatePlans = candidatePlans.stream().filter(x -> this.isLowerCase(x.getTrigger().getLiteral().getFunctor()))  // filter out generic plans like +X!
 				.filter(x -> x.getLabel().getAnnot(Affect.ANNOTATION_FUNCTOR) != null)  // filter out plans without affective preconditions, no need to change personalities there
 				.filter(x -> x.getLabel().getAnnot(Affect.ANNOTATION_FUNCTOR).toString().contains(Personality.ANNOTATION_FUNCTOR))  // filter out plans without affective preconditions, no need to change personalities there
 				.collect(Collectors.toList());
@@ -100,12 +109,10 @@ public class AdaptPersonality implements ProblemFixCommand {
 		//List<LogicalFormula> contexts = firstStepOptions.stream().map(x -> x.getContext()).collect(Collectors.toList());
 		
 		// choose one option to pursue; if none available, note that
-		if (!firstStepOptions.isEmpty()) {
-			Plan selectedPlan = (Plan) SELECTION_STRATEGY.apply(firstStepOptions);
+		if (!candidatePlans.isEmpty()) {
+			Plan selectedPlan = (Plan) SELECTION_STRATEGY.apply(candidatePlans);
 			affectConditions.add(selectedPlan.getLabel().getAnnot(Affect.ANNOTATION_FUNCTOR));
-		} else {
-//			affectConditions.add(null);
-		}
+		} 
 	}
 	
 	@Override
@@ -142,5 +149,10 @@ public class AdaptPersonality implements ProblemFixCommand {
 	@Override
 	public String message() {
 		return "Changing personality of character: " + this.charName + " using mask: " + this.persDiff.toString();
+	}
+	
+
+	private boolean isLowerCase(String string) {
+		return string.equals(string.toLowerCase());
 	}
 }
