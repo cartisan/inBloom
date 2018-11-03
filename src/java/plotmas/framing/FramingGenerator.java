@@ -24,12 +24,16 @@ public class FramingGenerator {
 	 * %3$s is the subject of the unit in base form.
 	 * %4$s is the subject of the unit in -ing form.
 	 * %5$s is the subject of the unit in -s form.
+	 * %6$s is "s" if the first agent is a single one, and "" if there is more than one.
+	 * %7$s is "s" if the other agent is a single one, and "" if there is more than one.
+	 * %8$s is "ie" if the first agent is a single one, and "y" if there is more than one.
+	 * %9$s is "ie" if the other agent is a single one, and "y" if there is more than one.
 	 */
 	static {
-		nlSnippets.put(FunctionalUnits.NESTED_GOAL, "%1$s takes up a complex plan to %3$s");
-		nlSnippets.put(FunctionalUnits.RETALIATION, "%2$s retaliates against %1$s by %4$s them");
-		nlSnippets.put(FunctionalUnits.DENIED_REQUEST, "%2$s deny %1$s's request for %3$s");
-		nlSnippets.put(FunctionalUnits.HONORED_REQUEST, "%2$s honor %1$s's request for %3$s");
+		nlSnippets.put(FunctionalUnits.NESTED_GOAL, "%1$s take%6$s up a complex plan to %3$s");
+		nlSnippets.put(FunctionalUnits.RETALIATION, "%2$s retaliate%7$s against %1$s by %4$s them");
+		nlSnippets.put(FunctionalUnits.DENIED_REQUEST, "%2$s den%9$s%7$s %1$s's request for %3$s");
+		nlSnippets.put(FunctionalUnits.HONORED_REQUEST, "%2$s honor%7$s %1$s's request for %3$s");
 	}
 	
 	public static String generateFraming(Tellability tellability) {
@@ -71,7 +75,7 @@ public class FramingGenerator {
 		if(instances.length == 0) {
 			return "This is not a story, but I wrote it anyway as an example of how not to be a good author.";
 		}
-		
+
 		// Construct natural language snippets
 		String desc = "";
 		for(int i = 0; i < instances.length; i++) {
@@ -96,7 +100,6 @@ public class FramingGenerator {
 			desc += parts[i];
 		}
 		desc += ".";
-		
 		return desc;
 	}
 	
@@ -110,6 +113,10 @@ public class FramingGenerator {
 		return String.format(name, instance.getFirstAgent(), instance.getSecondAgent(),
 				Translator.translate(instance.getSubject(), Translator.Form.BASE),
 				Translator.translate(instance.getSubject(), Translator.Form.ING),
-				Translator.translate(instance.getSubject(), Translator.Form.S));
+				Translator.translate(instance.getSubject(), Translator.Form.S),
+				instance.isFirstPlural() ? "" : "s",
+				instance.isSecondPlural() ? "" : "s",
+				instance.isFirstPlural() ? "y" : "ie",
+				instance.isSecondPlural() ? "y" : "ie");
 	}
 }

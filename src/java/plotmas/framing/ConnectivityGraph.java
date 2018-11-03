@@ -166,6 +166,8 @@ public class ConnectivityGraph extends DirectedSparseGraph<FunctionalUnit.Instan
 		Set<String> firstAgents = new HashSet<String>();
 		Set<String> secondAgents = new HashSet<String>();
 		Set<String> subjects = new HashSet<String>();
+		boolean firstPlural = false;
+		boolean secondPlural = false;
 		
 		// Extract individual instance information and remove from graph
 		for(FunctionalUnit.Instance inst : set) {
@@ -177,6 +179,12 @@ public class ConnectivityGraph extends DirectedSparseGraph<FunctionalUnit.Instan
 			}
 			if(inst.getSecondAgent() != null) {
 				secondAgents.add(inst.getSecondAgent());
+			}
+			if(inst.isFirstPlural()) {
+				firstPlural = true;
+			}
+			if(inst.isSecondPlural()) {
+				secondPlural = true;
 			}
 			if(inst.getSubject() != null) {
 				subjects.add(inst.getSubject());
@@ -228,6 +236,14 @@ public class ConnectivityGraph extends DirectedSparseGraph<FunctionalUnit.Instan
 		}
 		if(!secondAgent.isEmpty())
 			mergedInstance.setSecondAgent(secondAgent);
+		
+		firstPlural = firstPlural || firstAgents.size() > 1;
+		secondPlural = secondPlural || secondAgents.size() > 1;
+		
+		if(firstPlural)
+			mergedInstance.setFirstPlural();
+		if(secondPlural)
+			mergedInstance.setSecondPlural();
 		
 		String subject = "";
 		c = 0;

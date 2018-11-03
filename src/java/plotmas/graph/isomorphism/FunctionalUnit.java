@@ -243,6 +243,8 @@ public class FunctionalUnit {
 		private String firstAgent;
 		private String secondAgent;
 		private String subject;
+		private boolean firstPlural = false;
+		private boolean secondPlural = false;
 		
 		/**
 		 * Creates an instance of a functional unit, given a graph and a collection
@@ -372,9 +374,26 @@ public class FunctionalUnit {
 		public String getFirstAgent() {
 			return firstAgent;
 		}
+
+		public boolean isFirstPlural() {
+			return firstPlural;
+		}
+		
+		public void setFirstPlural() {
+			firstPlural = true;
+		}
+		
 		
 		public String getSecondAgent() {
 			return secondAgent;
+		}
+		
+		public boolean isSecondPlural() {
+			return secondPlural;
+		}
+		
+		public void setSecondPlural() {
+			secondPlural = true;
 		}
 		
 		/**

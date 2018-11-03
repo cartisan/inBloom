@@ -166,6 +166,7 @@ public class FunctionalUnits {
 		v2 = makePositive(3);
 		honoredRequest.addEdge(makeCommunication(), v3, v2);
 		HONORED_REQUEST = new FunctionalUnit("Honored Request", honoredRequest);
+		HONORED_REQUEST.setSubject(new Pair<Vertex, String>(v1, "!achieve\\((.*)\\)"));
 		
 		ALL[0] = DENIED_REQUEST;
 		ALL[1] = NESTED_GOAL;
