@@ -45,7 +45,7 @@ public class DetectUnresolvedHappenings extends ProblemDetectionState {
 		
 		if (unresolveds.isEmpty()) {
 			// No unresolved happenings found at all, this step can be removed from reasoning cycle again
-			this.getInstanceFor(DetectNarrativeEquilibrium.class).nextReflectionState = this.getInstanceFor(DetectInsufficientCoupling.class);
+			this.nextReflectionState = this.getInstanceFor(DetectInsufficientCoupling.class);
 			return null;
 		}
 			
@@ -57,6 +57,7 @@ public class DetectUnresolvedHappenings extends ProblemDetectionState {
 			
 			if (fix != null) {
 				logger.info("Scheduling " + fix.message() + " to resolve: " + hapCharPair.getFirst());
+				this.nextReflectionState = this.getInstanceFor(DetectUnresolvedHappenings.class);
 				return fix;
 			}
 			logger.info("Can't find way to resolve: " + hapCharPair.getFirst());
