@@ -45,9 +45,9 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
      * Subclasses need to set ENV_CLASS to the class of their PlotEnvironment implementation, e.g.
      * {@code ENV_CLASS = FarmEnvironment.class;}
      */
-	protected static Class<?> ENV_CLASS;
-	protected static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
-	protected static Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
+	public Class<?> ENV_CLASS;
+	protected Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
+	protected Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
 	
 	protected static Map<String, PlanLibrary> planLibraryCache =  new HashMap<>();
 
@@ -174,7 +174,7 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
                     agArch.setConf(agentConf);
                     agArch.setAgName(numberedAg);
                     agArch.setEnvInfraTier(env);
-                    if ((generalConf != RConf.THREADED) && cAg > 0 && ap.getAgArchClasses().isEmpty() && ap.getBBClass().equals(DefaultBeliefBase.class.getName())) {
+                    if ((generalConf != RConf.THREADED) && cAg > 0 && ap.getAgArchClasses().isEmpty() && ap.getBBClass().getClassName().equals(DefaultBeliefBase.class.getName())) {
                         // creation by cloning previous agent (which is faster -- no parsing, for instance)
                         agArch.createArchs(ap.getAgArchClasses(), pag, this);
                     } else {

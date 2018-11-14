@@ -13,8 +13,8 @@ public class OedipusLauncherNew extends PlotLauncher<OedipusEnvironmentNew, Oedi
 
 	  public static void main(String[] args) throws JasonException {
 		  logger.info("Starting up from Launcher!");
-		    ENV_CLASS = OedipusEnvironmentNew.class;
 		    runner = new OedipusLauncherNew();
+		    runner.ENV_CLASS = OedipusEnvironmentNew.class;
 
 		    ImmutableList<LauncherAgent> agents = ImmutableList.of(
 		     // runner.new LauncherAgent("oedipus",

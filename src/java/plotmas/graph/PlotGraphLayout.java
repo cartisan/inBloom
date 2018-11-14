@@ -66,7 +66,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
         this.m_currentPoint = new Point(START_X, START_Y);
         Collection<Vertex> roots = ((PlotDirectedSparseGraph) this.graph).getRoots();
         
-        if (roots.size() > 0 && this.graph != null) {
+        if (roots.size() > 0) {
         	// analyze each column
        		for(Vertex root : roots) {
        			logger.fine("Column " + root.getLabel());
@@ -231,7 +231,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 		logger.info("Building time-step oriented layout");
         ArrayList<Vertex> roots = ((PlotDirectedSparseGraph) this.graph).getRoots();
         
-        if (roots.size() > 0 && this.graph != null) {
+        if (roots.size() > 0) {
         	// build step-axis before first col
         	this.buildYAxis();
         	

@@ -36,7 +36,7 @@ public abstract class ProblemDetectionState {
        
        if(instance==null) {
          instance = createInstance(clazz, controller);
-         INSTANCES.put(clazz, instance);
+         INSTANCES.putIfAbsent(clazz, instance);
        }
        
        return (T) instance;

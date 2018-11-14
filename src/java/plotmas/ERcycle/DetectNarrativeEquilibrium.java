@@ -42,7 +42,7 @@ public class DetectNarrativeEquilibrium extends ProblemDetectionState {
 		
 		Vertex root = null;
 		for (Vertex v : er.getPlotGraph().getRoots()) {
-			if (v.getLabel() == protagonist) {
+			if (v.getLabel().equals(protagonist)) {
 				root = v;
 				break;
 			}

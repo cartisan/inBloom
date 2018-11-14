@@ -16,8 +16,8 @@ public class CrowLauncher extends PlotLauncher<CrowEnvironment, CrowModel> {
 
 	  public static void main(String[] args) throws JasonException {
 		  logger.info("Starting up from Launcher!");
-		    ENV_CLASS = CrowEnvironment.class;
 		    runner = new CrowLauncher();
+		    runner.ENV_CLASS = CrowEnvironment.class;
 
 		    ImmutableList<LauncherAgent> agents = ImmutableList.of(
 		      new LauncherAgent("crow",

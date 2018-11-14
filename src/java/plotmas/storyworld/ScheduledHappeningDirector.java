@@ -6,7 +6,7 @@ import java.util.List;
 
 import plotmas.PlotModel;
 
-public class ScheduledHappeningDirector implements HappeningDirector{
+public class ScheduledHappeningDirector implements HappeningDirector, Cloneable{
 
 	private List<Happening<?>> stillScheduledHappenings;    // contains happenings that are scheduled but were not yet executed this round
 	private List<Happening<?>> happeningsSchedule;			// contains happenings that are scheduled (independent of current cycle's state)

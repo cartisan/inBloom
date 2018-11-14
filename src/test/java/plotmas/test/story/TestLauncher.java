@@ -66,9 +66,9 @@ public class TestLauncher extends PlotLauncher<TestEnvironment, TestModel> {
 	
 	public static void main(String[] args) throws JasonException {
         logger.info("Starting TestLauncher!");
-        ENV_CLASS = TestEnvironment.class;
         
         runner = new TestLauncher();
+        runner.ENV_CLASS = TestEnvironment.class;
 
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
 							new LauncherAgent("jeremy",

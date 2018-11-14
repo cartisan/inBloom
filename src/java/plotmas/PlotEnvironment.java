@@ -1,5 +1,6 @@
 package plotmas;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -129,7 +130,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     @Override
     public void init(String[] args) {
     	if (args.length > 0)
-    		logger.warning("Initilization arguments provided but usage unclear, ignoring. Args: " + args.toString());
+    		logger.warning("Initilization arguments provided but usage unclear, ignoring. Args: " + Arrays.toString(args));
     	
     	String[] env_args = {STEP_TIMEOUT};
     	super.init(env_args);
@@ -239,9 +240,9 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	@Override
 	public void scheduleAction(String agName, Structure action, Object infraData) {
 		Intention intent = ((ActionExec)infraData).getIntention();
-		if(!actionIntentionMap.containsKey(agName)) {
-			actionIntentionMap.put(agName, new HashMap<>());
-		}
+		
+		actionIntentionMap.putIfAbsent(agName, new HashMap<>());
+		
 		actionIntentionMap.get(agName).put(action, intent);
 		super.scheduleAction(agName, action, infraData);
 	}

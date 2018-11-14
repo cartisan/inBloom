@@ -11,8 +11,8 @@ import plotmas.storyworld.ScheduledHappeningDirector;
 public class TutorialLauncher extends PlotLauncher<TutorialEnviroment, TutorialModel> {
 
 	  public static void main(String[] args) throws JasonException {
-		    ENV_CLASS = TutorialEnviroment.class;
 		    runner = new TutorialLauncher();
+		    runner.ENV_CLASS = TutorialEnviroment.class;
 
 		    ImmutableList<LauncherAgent> agents = ImmutableList.of(
 		    	new LauncherAgent("agent1", new Personality(0, 0, 0, 0, 0))
