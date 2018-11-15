@@ -50,5 +50,10 @@
   		<artifactId>freehep-graphicsio-emf</artifactId>
   		<version>2.4</version>
   	</dependency>
+  	<dependency>
+  		<groupId>org.choco-solver</groupId>
+  		<artifactId>choco-solver</artifactId>
+  		<version>4.0.0</version>
+  	</dependency>
   </dependencies>
 </project>
