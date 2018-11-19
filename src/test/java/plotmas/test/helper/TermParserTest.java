@@ -3,6 +3,8 @@ package plotmas.test.helper;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.common.collect.ImmutableSet;
+
 import jason.util.Pair;
 import junit.framework.TestCase;
 import plotmas.helper.TermParser;
@@ -36,9 +38,17 @@ public class TermParserTest extends TestCase {
 		assertEquals("extraversion", results.get(1).get(0).getFirst());
 		assertEquals(1.0, results.get(1).get(0).getSecond());
 		
-		// TODO: Solution not complete, also not simplified
-		annotation = "affect(or(and(personality(extraversion,positive),not (mood(dominance,low))),personality(openness,low))),source(self)";
+		annotation = "affect(or(personality(extraversion,high),personality(openness,low))),source(self)";
 		results = TermParser.solutionsForPersonalityAnnotation(annotation);
-
+		assertEquals(7, results.size());
+				
+		annotation = "affect(or(personality(extraversion,positive),personality(openness,low))),source(self)";
+		results = TermParser.solutionsForPersonalityAnnotation(annotation);
+		assertEquals(10, results.size());
+		
+		// TODO: also not simplified
+		annotation = "affect(or(and(personality(extraversion,positive),not (mood(dominance,low))),personality(openness,low))),source(self)";
+		List<List<Pair<String,Double>>> results2 = TermParser.solutionsForPersonalityAnnotation(annotation);
+		assertEquals(ImmutableSet.copyOf(results), ImmutableSet.copyOf(results2));
 	}
 }

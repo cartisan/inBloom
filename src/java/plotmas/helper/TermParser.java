@@ -14,7 +14,10 @@ import org.chocosolver.solver.constraints.Constraint;
 import org.chocosolver.solver.variables.IntVar;
 
 import jason.asSemantics.Affect;
+import jason.asSemantics.AffectiveDimensionChecks;
 import jason.asSemantics.Emotion;
+import jason.asSemantics.Mood;
+import jason.asSemantics.Personality;
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import jason.asSyntax.parser.ParseException;
@@ -124,7 +127,12 @@ public class TermParser {
 		return conditions;
 	}
 	
-	// Returns a list of OCEAN tuples
+	/**
+	 * Takes an affective plan annotation and translates it into a CSP, which is then solved for valid personality
+	 * using the possible domain of {-1, -0.3, 0, 0.3, 1} for personality traits.
+	 * @param annot String of plan annotation, form: "affect(...), other_annotations"
+	 * @return A List of OCEAN n-tuples, each representing a valid personality diff, e.g. [[(E:1), (O:-1)], [(E:-1),(O:1)]]
+	 */
 	public static List<List<Pair<String,Double>>> solutionsForPersonalityAnnotation(String annot) {
         Literal annotLiteral = Literal.parseLiteral(annot);
         
@@ -133,7 +141,7 @@ public class TermParser {
         	throw new RuntimeException("Annotation should have functor 'affect', not: " + annFunctor);
         }
         
-        //affect(pers(C,h))    affect(and(p(C,h),p(E,l)))
+        //examples: affect(pers(C,h))   ||   affect(and(p(C,h),p(E,l)))
 		Model model = new Model("pers-model");
 		Map<String,IntVar> intVarCache = new HashMap<>();
         Constraint personalityConstraint = constrainFromAffectLiteral((Literal) annotLiteral.getTerm(0), model, intVarCache, "");
@@ -149,8 +157,7 @@ public class TermParser {
         	
         	for(String trait: intVarCache.keySet()) {
         		IntVar var = intVarCache.get(trait);
-        		oceanConstraints.add(new Pair<String, Double>(trait, (s.getIntVal(var) / 10.0)));
-        		
+        		oceanConstraints.add(new Pair<String, Double>(trait, (s.getIntVal(var) / 10.0)));	// scale IntVar \in {-10, -3, 3, 10} to trait-value range
         	}
         	
         	results.add(oceanConstraints);
@@ -164,15 +171,21 @@ public class TermParser {
 		String func = lit.getFunctor();
 		
 		switch(func) {
-    		case "mood": {
-    			switch(parentFunc) {
-    			case "or":
-    			case "not":	return model.falseConstraint();
-    			case "and":
-    			default: 	return model.trueConstraint();
-    			}
-    		}
-    		case "personality": {
+			case AffectiveDimensionChecks.AND:	{
+				Constraint c0 = constrainFromAffectLiteral((Literal) lit.getTerm(0), model, varCache, func);
+				Constraint c1 = constrainFromAffectLiteral((Literal) lit.getTerm(1), model, varCache, func);
+				return model.and(c0, c1);
+			}
+			case AffectiveDimensionChecks.OR:	{
+				Constraint c0 = constrainFromAffectLiteral((Literal) lit.getTerm(0), model, varCache, func);
+				Constraint c1 = constrainFromAffectLiteral((Literal) lit.getTerm(1), model, varCache, func);
+				return model.or(c0, c1);
+			}
+			case AffectiveDimensionChecks.NOT:	{
+				Constraint c0 = constrainFromAffectLiteral((Literal) lit.getTerm(0), model, varCache, func);
+				return model.not(c0);
+			}
+    		case Personality.ANNOTATION_FUNCTOR: {
     			String trait = lit.getTerm(0).toString();
     			String value = lit.getTerm(1).toString();
     			
@@ -180,33 +193,23 @@ public class TermParser {
     			IntVar var = varCache.get(trait);
     			
     			switch(value) {
-    			case "positive": return model.arithm(var, ">", 0);
-    			case "negative": return model.arithm(var, "<", 0);
-    			case "low": 	 return model.arithm(var, "<=", -7);
-    			case "medium": 	 return model.absolute(model.intVar(3), var) ;
-    			case "high": 	 return model.arithm(var, ">=", 7);
-    			default:		 throw new RuntimeException("Illegal trait-value: " + value);
+	    			case AffectiveDimensionChecks.POS: return model.arithm(var, ">", 0);
+	    			case AffectiveDimensionChecks.NEG: return model.arithm(var, "<", 0);
+	    			case AffectiveDimensionChecks.LOW: return model.arithm(var, "<=", -7);
+	    			case AffectiveDimensionChecks.MED: return model.absolute(model.intVar(3), var) ;
+	    			case AffectiveDimensionChecks.HIG: return model.arithm(var, ">=", 7);
+	    			default:		 				   throw new RuntimeException("Illegal trait-value: " + value);
     			}
-    			
     		}
-    		case "and":	{
-    			Constraint c0 = constrainFromAffectLiteral((Literal) lit.getTerm(0), model, varCache, func);
-    			Constraint c1 = constrainFromAffectLiteral((Literal) lit.getTerm(1), model, varCache, func);
-    			return model.and(c0, c1);
-    		}
-    		case "or":	{
-    			Constraint c0 = constrainFromAffectLiteral((Literal) lit.getTerm(0), model, varCache, func);
-    			Constraint c1 = constrainFromAffectLiteral((Literal) lit.getTerm(1), model, varCache, func);
-    			return model.or(c0, c1);
-    		}
-    		// for some reason Jason adds a space to our nots
-    		case "not ":	{
-    			if(((Literal) lit.getTerm(0)).getFunctor() == "mood") {
-    				// all mood's resolve to 1, so not(mood(X)) would always be 0 --> fix w/ lookahead 
-    				return model.trueConstraint(); 
+			case Mood.ANNOTATION_FUNCTOR: {
+    			// mood needs to be treated as irrelevant
+    			switch(parentFunc) {
+	    			case AffectiveDimensionChecks.OR:
+	    			case AffectiveDimensionChecks.NOT:	return model.falseConstraint();	// or(X,0) makes only X relevant, not(0) returns 1
+	    			
+	    			case AffectiveDimensionChecks.AND:
+	    			default: 							return model.trueConstraint(); // and(X,1) allows X to be evaluated no matter the mood
     			}
-    			Constraint c0 = constrainFromAffectLiteral((Literal) lit.getTerm(0), model, varCache, func);
-    			return model.not(c0);
     		}
     		default:	throw new RuntimeException("Illegal functor-value: " + func);
 		}
