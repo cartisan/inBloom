@@ -146,7 +146,7 @@ public abstract class PlotEnvironment<DomainModel extends Model> extends TimeSte
 		String agName = null;
 		
         try {
-        	logger.info("Creating a new agent odipus");
+        	logger.info("Creating a new agent");
         	agName = this.getRuntimeServices().createAgent(name, aslFile, PlotAwareAg.class.getName(), agArchs, null, null, null);
 
         	// set the agents personality

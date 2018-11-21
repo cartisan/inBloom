@@ -44,28 +44,14 @@ public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 		if (action.getFunctor().equals("working")) {
 			result = getModel().working(agent);
 		}
-		
-		if (action.getFunctor().equals("goToPlace")) {
-			Term receiverTerm = action.getTerm(0);
-
-			String location = getModel().location.toString();
-			result = getModel().goToPlace(agent, location); 
-		}
-		
+				
 		if (action.getFunctor().equals("answer_question")) {
 			Term receiverTerm = action.getTerm(0);
 		
 			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
 			result = getModel().answer_question(agent, patient);
 		}
-		
-		//if (action.getFunctor().equals("getChild")) {
-			//Term receiverTerm = action.getTerm(0);
-
-			//StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
-			//result = getModel().getChild(agent, patient); 
-		//}
-		
+			
 		if (action.getFunctor().equals("ask")) {
 			Term receiverTerm = action.getTerm(0);
 			
@@ -73,22 +59,25 @@ public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 			result = getModel().ask(agent, patient);
 		}
 		
-		/**if (action.getFunctor().equals("giveAway")) {
+		if (action.getFunctor().equals("getChild")) {
+			result = getModel().getChild(agent);
+		}
+		
+		if (action.getFunctor().equals("giveChildTo")) {
 			Term receiverTerm = action.getTerm(0);
 			
 			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
-			result = getModel().giveAway(agent, patient);
-		}**/
-
-
-		/**if (action.getFunctor().equals("giveChildTo")) {
+			result = getModel().giveChildTo(agent, patient);
+			
+		}
+		
+		if (action.getFunctor().equals("adopt")) {
 			Term receiverTerm = action.getTerm(0);
-
+			
 			StoryworldAgent patient = getModel().getAgent(receiverTerm.toString());
-			result = getModel().giveChildTo(agent, patient); 
-		}**/
-		
-		
+			result = getModel().adopt(agent, patient);
+			
+		}
 		
 		
 		pauseOnRepeat(agentName, action); 
@@ -97,12 +86,3 @@ public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
 		
 	}
 }
-
-
-
-// this.getEnvironmentInfraTier().getRuntimeServices().createAgent(agName, agSource, agClass, archClasses, bbsPars, stts, father)
-// -> kann vom Model aus aufgerufen werden	z.B.					oedipus, "agent.asl", PlotAwareAgName.get_name(), plotAwareAgArchClass.get_name()
-
-/** Liste der Agenten holen (bei update state percepts).
-model.getAgent(agentName).partner gibt uns Partner des Agenten. Literal partner(X) löschen und neuen hinzufügen.
-Hierbei wird perception mit Partner jedes Mal hinzugefügt, sonst ändern sodass es nur bei Änderungen neue perception gibt.**/

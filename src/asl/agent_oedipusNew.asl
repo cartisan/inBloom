@@ -31,17 +31,23 @@ wish(chilling).
 	+perceived(wifePregnant);
 	!ask(oracle).
 	
-/*+sonKillsMe <-
++sonKillsMe <-
 	.print("My son will kill me");
 	+perceived(sonKillsMe);
-	!giveAway(Oedipus). */
+	!giveChildTo(shepherd). 
 	
-/*+pregnant <-
-	getChild;
-	.print("got child").*/
-	
-	
++pregnant <-
+	.print("try to get child");
+	+perceived(pregnant);
+	!getChild.
 
+
++guardianOfOedipus <-
+	.print("figure out what to do with Oedipus");
+	+perceived(guardianOfOedipus);
+	!guardianplan.
+	
+	
 /********************************************/
 /***** Self-specifications  *****************/
 /*****      Emotion management **************/
@@ -89,12 +95,21 @@ wish(chilling).
 	!killSelf;
 	-self(has_purpose).
 	
-+!blinding: perceived(deadMom) <-					// perception deadMom kann z.B. obligation blindSelf triggern
++!blinding: perceived(deadMom) <-					
 	+self(has_purpose);
 	!blindSelf;
 	-self(has_purpose).
 
-
+// if guardian is not nice, gives child away
+@guardianplan_1[affect(and(personality(conscientiousness,low)))]
++!guardianplan: perceived(guardianOfOedipus) <- 		
+	!giveChildTo(polybos_merope).
+	
+// if guardian is nice, adopts child
+@guardianplan_2[affect(and (not(personality(conscientiousness,low))))]
++!guardianplan: perceived(guardianOfOedipus) <- 		
+	!adopt(Oedipus).
+// klappt nicht mit Oedipus, sondern nur mit Agents die schon von Anfang an kreiert waren.
 	
 
 
@@ -109,12 +124,6 @@ wish(chilling).
 +!working <-
 	working.
 	
-+!reigning <-
-	reigning.
-	
-+!goToPlace(location) <-
-	goToPlace(location).
-	
 +!suicide <-
 	suicide.
 	
@@ -127,8 +136,14 @@ wish(chilling).
 +!answer_question(Anims) <-
 	answer_question(Anims).
 	
-/*+!giveAway(Anims) <-
-	giveAway(Anims).*/
++!getChild <-
+	getChild.
+	
++!giveChildTo(Anims) <-
+	giveChildTo(Anims).
+	
++!adopt(Anims) <-
+	adopt(Anims).
 
 
 	

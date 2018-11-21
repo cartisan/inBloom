@@ -24,16 +24,13 @@ public class OedipusLauncherNew extends PlotLauncher {
 				        new Personality(0, 0, 0, 0, 0)
 				      ),
 		      runner.new LauncherAgent("polybos_merope",
-				        new Personality(0, 0, 0, 0, 0)
+				        new Personality(0, 1, 0, 0, 0)
 				      ),
 		      runner.new LauncherAgent("oracle",
 				        new Personality(0, 0, 0, 0, 0)
-				      ),
-		     // runner.new LauncherAgent("sphinx",
-				//        new Personality(0, 0, 0, 0, 0)
-				//      ),
+				      ),		  
 		      runner.new LauncherAgent("shepherd",
-				       new Personality(0, 0, 0, 0, 0)
+				       new Personality(0, -1, 0, 0, 0)
 				     ) 
 		    );
 
@@ -41,7 +38,3 @@ public class OedipusLauncherNew extends PlotLauncher {
 		  }
     
 }
-
-/** für Beliefs von Anfang an: mit Name und Personality gibt es keine initial Beliefs und Goals.
-ODER bei Launcher Agent weitere Parameter dazugeben (im PlotLauncher), verschiedene Strings mit Beliefs etc mit Java linklist/arraylist. Leere Liste für Goals.
-**/
