@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,6 +23,8 @@ import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import jason.asSyntax.parser.ParseException;
 import jason.util.Pair;
+import plotmas.ERcycle.AdaptPersonality;
+import plotmas.ERcycle.AdaptPersonality.OCEANConstraints;
 import plotmas.graph.Edge;
 
 /**
@@ -133,37 +136,23 @@ public class TermParser {
 	 * @param annot String of plan annotation, form: "affect(...), other_annotations"
 	 * @return A List of OCEAN n-tuples, each representing a valid personality diff, e.g. [[(E:1), (O:-1)], [(E:-1),(O:1)]]
 	 */
-	public static List<List<Pair<String,Double>>> solutionsForPersonalityAnnotation(String annot) {
-        Literal annotLiteral = Literal.parseLiteral(annot);
-        
-        String annFunctor = annotLiteral.getFunctor();
+	public static Set<OCEANConstraints> solutionsForPersonalityAnnotation(Literal annot) {
+        String annFunctor = annot.getFunctor();
         if(!annFunctor.equals(Affect.ANNOTATION_FUNCTOR)) {
         	throw new RuntimeException("Annotation should have functor 'affect', not: " + annFunctor);
         }
         
         //examples: affect(pers(C,h))   ||   affect(and(p(C,h),p(E,l)))
-		Model model = new Model("pers-model");
+		Model model = new Model("step-model");
 		Map<String,IntVar> intVarCache = new HashMap<>();
-        Constraint personalityConstraint = constrainFromAffectLiteral((Literal) annotLiteral.getTerm(0), model, intVarCache, "");
+        Constraint personalityConstraint = constrainFromAffectLiteral((Literal) annot.getTerm(0), model, intVarCache, "");
         personalityConstraint.post();
         
         Solver solver = model.getSolver();
         solver.showSolutions();
         List<Solution> solutions = solver.findAllSolutions();
         
-        List<List<Pair<String,Double>>> results = new LinkedList<>();
-        for (Solution s:solutions) {
-        	List<Pair<String, Double>> oceanConstraints = new LinkedList<>();
-        	
-        	for(String trait: intVarCache.keySet()) {
-        		IntVar var = intVarCache.get(trait);
-        		oceanConstraints.add(new Pair<String, Double>(trait, (s.getIntVal(var) / 10.0)));	// scale IntVar \in {-10, -3, 3, 10} to trait-value range
-        	}
-        	
-        	results.add(oceanConstraints);
-        }
-        
-        return results;
+        return OCEANConstraints.toConstraintsSet(solutions, intVarCache.values());
 	}
         
 		
@@ -189,7 +178,9 @@ public class TermParser {
     			String trait = lit.getTerm(0).toString();
     			String value = lit.getTerm(1).toString();
     			
-    			varCache.putIfAbsent(trait, model.intVar(trait, new int[]{-10, -3, 3, 10}));
+				if(!varCache.containsKey(trait)) {
+					varCache.put(trait, model.intVar(trait, AdaptPersonality.PERSONALITY_INT_DOMAIN));
+				}
     			IntVar var = varCache.get(trait);
     			
     			switch(value) {
