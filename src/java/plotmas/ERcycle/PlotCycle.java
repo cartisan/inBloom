@@ -132,6 +132,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 */
 	protected EngageResult engage(ReflectResult rr) {
 		log("  Engaging...");
+		log("    Parameters: " + rr.toString());
 		PlotLauncher<?,?> runner = rr.getRunner();
 
 		Thread t = new Thread(new Cycle(runner, rr.getModel(), new String[0], rr.getAgents(), this.agentSrc));
@@ -325,6 +326,18 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		
 		public boolean shouldContinue() {
 			return this.shouldContinue;
+		}
+		
+		public String toString() {
+			String result = "Agents: ";
+			for (LauncherAgent ag : this.agents) {
+				result += ag.name + ": " + ag.personality + ", ";
+			}
+			
+			result += "Happenings: ";
+			result += this.model.happeningDirector.getAllHappenings().toString();
+				
+			return result;
 		}
 	}
 	

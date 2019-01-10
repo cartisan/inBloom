@@ -21,7 +21,7 @@ import plotmas.storyworld.ScheduledHappeningDirector;
 public class RedHenHappeningCycle extends PlotCycle {
 
 	public static final double THRESHOLD = 0.9;
-	public static final int GIVE_UP = 9;
+	public static final int GIVE_UP = 4;
 	
 	/** current state of reasoning cycle responsible for detecting plot problems */
 	protected ProblemDetectionState detectionState;
@@ -131,6 +131,12 @@ public class RedHenHappeningCycle extends PlotCycle {
 	
 	public List<ProblemFixCommand> getTransformations(){
 		return this.transformations;
+	}
+	
+	public void undoLastFix(EngageResult er) {
+		ProblemFixCommand lastFix = this.transformations.get(this.transformations.size() - 1);
+		lastFix.undo(er);
+		this.transformations.remove(lastFix);
 	}
 	
 	public static void main(String[] args) {

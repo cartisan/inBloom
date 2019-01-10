@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.chocosolver.solver.Model;
@@ -31,68 +30,104 @@ import plotmas.ERcycle.PlotCycle.EngageResult;
 import plotmas.helper.TermParser;
 
 public class AdaptPersonality implements ProblemFixCommand {
-	protected static Function<List<?>, ?> SELECTION_STRATEGY =  x -> x.get(0);		// default strategy: get first element
 
 	/** domain that personality traits can take, cast to integer for choco-solver CSP variables	 */
 	public static int[] PERSONALITY_INT_DOMAIN = new int[]{-10, -3, 3, 10};
 
+    /** map from happening#charName to a list of personality fixes that should be tried to resolve the happening  */
     private static Map<String, List<Personality>> fixMap = new HashMap<>();
     
+    /**
+     * Converts happening and char name to internal representation used in {@link #fixMap}.
+     * @param unresolvedHappening
+     * @param charName
+     * @return
+     */
+    private static String keyFor(String unresolvedHappening, String charName) {
+    	 return unresolvedHappening + "#" + charName;
+    }
+    
+    /**
+     * Returns the next personality fix that should be tried to resolve this happening for the respective character.
+     * @param unresolvedHappening happening that was not resolved as in the respective vertex of plot graph
+     * @param charName String representation as in root node of plot graph
+     * @return
+     */
     public static AdaptPersonality getNextFixFor(String unresolvedHappening, String charName) {
     	String key = keyFor(unresolvedHappening, charName);
     	
     	if (fixMap.containsKey(key)) {
-    		Personality persDiff = fixMap.get(key).remove(0);
+    		List<Personality> cachedFixList = fixMap.get(key);
+    		if (cachedFixList.isEmpty())
+    			return null;
+    		
+    		Personality persDiff = cachedFixList.remove(0);
     		return new AdaptPersonality(persDiff, charName);
     	}
     	
     	return new AdaptPersonality(unresolvedHappening, charName);
     }
     
+	/**
+	 * Translate OCEANConditions into AdaptPersonality style Personality diffs, and cache them for future execution
+	 * @param affectConditions OCEAN settings that can enable any one of the plans that could get triggered by this happening
+	 * @param persHapKey key for happening and character in map that caches the fixes {@link #fixMap} 
+	 */
 	private static void populateFixMap(List<OCEANConstraints> affectConditions, String persHapKey) {
-		// affectConditions contains OCEAN settings that can enable any one of the plans that could get triggered by this happening
-		// ...each of these settings needs to be tested as AdaptPersonality fix, until one of them works!
-		
 		List<Personality> fixList = new LinkedList<>();
+		
 		for (OCEANConstraints selectedCondition : affectConditions) {
-			// derive personality conditions from collected annotations in selectedCondition, aggregate them all in pDiff
 			Personality pDiff = selectedCondition.toPersonalityDiff(); 
 			fixList.add(pDiff);
 		}
 
-		// make sure that subsequent calls can execute the cached fixes
 		// TODO: Decide how and if to sort potential fixes. We know: locality and sharp boundaries
 //		fixList.sort(Personality.comparator());
 		AdaptPersonality.fixMap.put(persHapKey, fixList);
 	}
 	
-    private static String keyFor(String unresolvedHappening, String charName) {
-    	 return unresolvedHappening + "#" + charName;
-    }
-	
 	private String charName;
-	private Personality persDiff;
+	/** intended change of personality, in mask format. That is: 0 if trait will be unchanged, otherwise new value */
+	private Personality persMask;
+	/** Personality of character before AdaptPersonality fix was executed */
 	private Personality oldPers;
+	/** True when this id the first attempt to find the right personality -> no undo of previous attempts required */ 
+	public boolean isFirstFix=false;
 
+	/**
+	 * Create a CSP that deduces from the plan library which personalities might allow an agent to react to the
+	 * unresolved happening. Then solve the CSP and cache all solution-personalities so next time no computation
+	 * will be necessary. Instantiate fix from first cached solution.
+	 * @param unresolvedHappening
+	 * @param charName
+	 */
 	public AdaptPersonality(String unresolvedHappening, String charName) {
 		this.charName = charName;
+		this.isFirstFix = true;
 		String key = AdaptPersonality.keyFor(unresolvedHappening, charName);
 		
-		// Find which plans could get triggered by this happening and identify the preconditions of all involved steps
+		// Find which plans could get triggered by this happening, identify the preconditions of involved steps
+		// and compute viable ocean settings that could potentially allow execution of one complete plan
 		PlanLibrary planLib = PlotLauncher.getPlanLibraryFor(charName);
 		List<Plan> candidatePlans = planLib.getCandidatePlans(Trigger.parseTrigger(unresolvedHappening));
 		List<OCEANConstraints> affectConditions = collectAffectConditions(candidatePlans, planLib);
 
-		// Create all possible personality fixes from the affect conditions, and cache them
+		// translate conditions into personality fixes and cache them for future execution
 		AdaptPersonality.populateFixMap(affectConditions, key);
 		
-		// set up this fix to use the personality fix made from the annotations of the first viablePlan
-		Personality thisPersDiff = AdaptPersonality.fixMap.get(key).remove(0);
-		this.persDiff = thisPersDiff;
+		// set up this fix to use the first cached fix
+		Personality thisPersMask = AdaptPersonality.fixMap.get(key).remove(0);
+		this.persMask = thisPersMask;
 	}
 	
-	public AdaptPersonality(Personality persDiff, String charName) {
-		this.persDiff = persDiff;
+	/**
+	 * Create fix for unrfesolved happening from cached personality without having to re-solve the CSP that is required
+	 * to deduce a potential personality from the plan library. 
+	 * @param persMask
+	 * @param charName
+	 */
+	private AdaptPersonality(Personality persMask, String charName) {
+		this.persMask = persMask;
 		this.charName = charName;
 	}
 	
@@ -105,8 +140,8 @@ public class AdaptPersonality implements ProblemFixCommand {
 				ListIterator<String> it = Personality.TRAITS.listIterator();
 				while (it.hasNext()) {
 					String trait = it.next();
-					if (this.persDiff.getTrait(trait) != 0.0) {
-						chara.personality.setTrait(trait, this.persDiff.getTrait(trait));
+					if (this.persMask.getTrait(trait) != 0.0) {
+						chara.personality.setTrait(trait, this.persMask.getTrait(trait));
 					}
 				}
 				
@@ -128,54 +163,67 @@ public class AdaptPersonality implements ProblemFixCommand {
 	
 	@Override
 	public String message() {
-		return "Changing personality of character: " + this.charName + " using mask: " + this.persDiff.toString();
+		return "Changing personality of character: " + this.charName + " using mask: " + this.persMask.toString();
 	}
 	
+	/**
+	 * For a collection of candidate plans, i.e. plans that could get triggered by the happening, compute all
+	 * OCEAN settings, that could allow the execution of at least one of them.
+	 * @param candidatePlans
+	 * @param planLib
+	 * @return
+	 */
 	private List<OCEANConstraints> collectAffectConditions(List<Plan> candidatePlans, PlanLibrary planLib) {
-		// contains OCEAN settings that are promising in making a candidate plan execute
+		// will contain OCEAN settings that are promising in making a candidate plan execute
 		List<OCEANConstraints> viablePlanSettings = new LinkedList<>();
 		
 		for (Plan p : candidatePlans) {
 			// for each step in plan: stores a list with all potential conditions that could allow this step
-			LinkedList<Set<OCEANConstraints>> viablePlanstepSettings = new LinkedList<>();
+			List<Set<OCEANConstraints>> viablePlanstepSettings = collectAllStepConditions(p, planLib);
 			
-			// iterate over all steps in plan body and collect affect annotations for each step that is a plan itself
-			PlanBody planStep = p.getBody();
-			while (planStep != null) {
-				if ((planStep.getBodyType().equals(PlanBody.BodyType.achieve)) ||			// only look for preconditions on plans
-						(planStep.getBodyType().equals(PlanBody.BodyType.achieveNF))) {
-					String step = "+!" + planStep.getBodyTerm().toString();
-					viablePlanstepSettings.add(this.determineAllEnablingOCEANsettings(step, planLib));
-				}
-				planStep = planStep.getBodyNext();
-			}
+			// stores all viable OCEAN constellations that might enable plan p
+			Set<OCEANConstraints> oceanSolutions = computeAllOceanSolutions(p, viablePlanstepSettings);
 			
-			// viablePlanstepSettings now consists of entries where the n-th entry contains all possible constraints for enabling the
-			// ...execution of the n-th plan-step of plan p. 
-			// To enable the execution of plan p, each plan-step has to be executable; i.e. we need to solve for the
-			// ... conjunction of (disjunction of constraints of a step) for all steps
-			Model model = new Model(p.toString());
-			Map<String, IntVar> intVarCache = new HashMap<>();
-			
-			Constraint conjunctionConstr = model.trueConstraint();
-			for(Set<OCEANConstraints> nthStepConstraints: viablePlanstepSettings) {
-				Constraint disjunctionConstr = model.falseConstraint();
-				for (OCEANConstraints stepConstraint: nthStepConstraints) {
-					disjunctionConstr = model.or(disjunctionConstr, stepConstraint.toConstraint(intVarCache, model));
-				}
-				conjunctionConstr = model.and(disjunctionConstr, conjunctionConstr);
-			}
-			conjunctionConstr.post();
-			Solver solver = model.getSolver();
-			List<Solution> solutions = solver.findAllSolutions();
-
-			// add all OCEAN settings that may allow this plan to be executed to list of viable OCEAN options
-			viablePlanSettings.addAll(OCEANConstraints.toConstraintsSet(solutions, intVarCache.values()));
+			viablePlanSettings.addAll(oceanSolutions);
 		}
 		
 		return viablePlanSettings;
 	}
+
+	/**
+	 * For each step in plan, determines the preconditions for all possible plans to resolve that step. For each step, 
+	 * returns a set of OCEAN constraints that could allow the execution of just this step. <br> 
+	 * (Thus, the length of the returned list should be the same as the step-number in the plan.)
+	 * @param plan
+	 * @param planLib
+	 * @return
+	 */
+	private List<Set<OCEANConstraints>> collectAllStepConditions(Plan plan, PlanLibrary planLib) {
+		// contains OCEAN settings that are promising in making a candidate plan execute
+		List<Set<OCEANConstraints>> viablePlanstepSettings = new LinkedList<>();
+		
+		// iterate over all steps in plan body and collect affect annotations for each step that is a plan itself
+		PlanBody planStep = plan.getBody();
+		while (planStep != null) {
+			if ((planStep.getBodyType().equals(PlanBody.BodyType.achieve)) ||			// only look for preconditions on plans
+					(planStep.getBodyType().equals(PlanBody.BodyType.achieveNF))) {
+				String step = "+!" + planStep.getBodyTerm().toString();
+				viablePlanstepSettings.add(this.determineAllEnablingOCEANsettings(step, planLib));
+			}
+			planStep = planStep.getBodyNext();
+		}
+		
+		return viablePlanstepSettings;
+	}
 	
+	/**
+	 * For an intention, determines which plans could be executed to resolve this intention. Collects personality
+	 * annotations from these plans and computes all OCEAN settings, that have the potential to allow the execution
+	 * of such a plan, and thus, the resolution of intention.
+	 * @param intention
+	 * @param planLib
+	 * @return
+	 */
 	private Set<OCEANConstraints> determineAllEnablingOCEANsettings(String intention, PlanLibrary planLib) {
 		// for each intention, check affective preconditions (and context?) of its associated plans
 		List<Plan> candidatePlans = planLib.getCandidatePlans(Trigger.parseTrigger(intention));
@@ -189,7 +237,7 @@ public class AdaptPersonality implements ProblemFixCommand {
 		// this would give us the precondition for a coping plan, if we were to test that preconditions are met:
 		//List<LogicalFormula> contexts = firstStepOptions.stream().map(x -> x.getContext()).collect(Collectors.toList());
 		
-		// from each candidate plan annotation, derive all possible OCEAN settings that would allows this candidate to be executed
+		// from each candidate plan annotation, derive all possible OCEAN settings that would allow this candidate to be executed
 		Set<OCEANConstraints> enablingOCEANconditions = new HashSet<>();
 		for(Literal annot: candidatePlanAnnotations) {
 			enablingOCEANconditions.addAll(TermParser.solutionsForPersonalityAnnotation(annot));
@@ -197,12 +245,59 @@ public class AdaptPersonality implements ProblemFixCommand {
 		
 		return enablingOCEANconditions;
 	}
-	
-	
-	public static class OCEANConstraints {
-		public Set<Pair<String, Integer>> constraints = new HashSet<>();
-		public Map<String, IntVar> varMap = new HashMap<>();
+
+	/**
+	 * Computes OCEAN constraints to allow the execution of plan p, from the constraints of each of p's plan steps.
+	 * To enable the execution of plan p, each plan-step has to be executable; i.e. we need to solve for the 
+	 * conjunction of (disjunction of constraints of a step) for all steps.
+	 * 
+	 * @param p Plan for which ocean settings need to be found to allow its execution (just relevant for naming)
+	 * @param viablePlanstepSettings consists of entries where the n-th entry contains all possible constraints for enabling the execution of the n-th plan-step of plan p
+	 * @return
+	 */
+	private Set<OCEANConstraints> computeAllOceanSolutions(Plan p, List<Set<OCEANConstraints>> viablePlanstepSettings) {
+		Model model = new Model(p.toString());
+		Map<String, IntVar> intVarCache = new HashMap<>();
 		
+		Constraint conjunctionConstr = model.trueConstraint();
+		for(Set<OCEANConstraints> nthStepConstraints: viablePlanstepSettings) {
+			Constraint disjunctionConstr = model.falseConstraint();
+			for (OCEANConstraints stepConstraint: nthStepConstraints) {
+				disjunctionConstr = model.or(disjunctionConstr, stepConstraint.toConstraint(intVarCache, model));
+			}
+			conjunctionConstr = model.and(disjunctionConstr, conjunctionConstr);
+		}
+		conjunctionConstr.post();
+		Solver solver = model.getSolver();
+		List<Solution> solutions = solver.findAllSolutions();
+
+		// add all OCEAN settings that may allow this plan to be executed to list of viable OCEAN options
+		Set<OCEANConstraints> oceanSolutions = OCEANConstraints.toConstraintsSet(solutions, intVarCache.values());
+		return oceanSolutions;
+	}
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * Represents one personality setting in the OCEAN space, which could enable the execution of a plan or plan step.
+	 * For each trait that is relevant, {@link #constraints} holds a {@link Pair} where the first value represents the
+	 * trait name and the second its value in integer representation: {-10, -3, 3, 10}. 
+	 * @author Leonid Berov
+	 */
+	public static class OCEANConstraints {
+		/** Set of (trait, int-value) pairs representing the relevant personality constraints */
+		public Set<Pair<String, Integer>> constraints = new HashSet<>();
+		
+		/**
+		 * Translates a list of choco-solutions into the set of corresponsing OCEANConstraints.
+		 * @param solutions A list of solutions for a CSP based on ASL affect annotations 
+		 * @param vars A collection of the IntVars that were used in the CSP, in order to retrive their value from each solution
+		 * @return a set of OCEANConstraints that represents all solutions of the CSP
+		 */
 		public static Set<OCEANConstraints> toConstraintsSet(List<Solution> solutions, Collection<IntVar> vars) {
 	        Set<OCEANConstraints> results = new HashSet<>();
 	       
@@ -219,10 +314,20 @@ public class AdaptPersonality implements ProblemFixCommand {
 	        return results;
 		}
 
+		/**
+		 * Adds a trait and its integer-represented value to this constraint set.
+		 * @param trait
+		 * @param value
+		 */
 		public void addTrait(String trait, Integer value) {
 			this.constraints.add(new Pair<>(trait, value));
 		}
 		
+		/**
+		 * Returns the value of a trait, if trait is constrained, or null if it is not relevant.
+		 * @param trait
+		 * @return
+		 */
 		public Integer getTrait(String trait) {
 			Integer result = null;
 			
@@ -235,6 +340,12 @@ public class AdaptPersonality implements ProblemFixCommand {
 			return result;
 		}
 		
+		/**
+		 * Translates this OCEANConstraints into a single choco-solver type constraint used for CSP.
+		 * @param varMap A map of trait-names to the IntVars that will be used by all constraints of the CSP, can be empty in which case it is intiaized lazy
+		 * @param model The model that will be used to solve the CSP
+		 * @return A constraint with at most 5 integer variables, one for each relevant trait
+		 */
 		public Constraint toConstraint(Map<String, IntVar> varMap, Model model) {
 			List<Constraint> cstrs = new LinkedList<>();
 			for(Pair<String, Integer> constr : this.constraints) {
@@ -251,6 +362,12 @@ public class AdaptPersonality implements ProblemFixCommand {
 		}
 		
 		
+		/**
+		 * Translates this OCEANConstraint into a personality diff as emplyed by {@code AdaptPersonality} fixes. For 
+		 * each trait the diff contains either 0, if the trait remains unchanged, or the value that it should be
+		 * changed to.
+		 * @return
+		 */
 		public Personality toPersonalityDiff() {
 			Personality pDiff = Personality.createDefaultPersonality();
 			
@@ -301,5 +418,4 @@ public class AdaptPersonality implements ProblemFixCommand {
 	        return false;
 	    }
 	}
-	
 }

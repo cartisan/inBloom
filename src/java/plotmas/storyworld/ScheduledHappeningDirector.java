@@ -17,6 +17,10 @@ public class ScheduledHappeningDirector implements HappeningDirector, Cloneable{
 		this.stillScheduledHappenings = new LinkedList<>();
 	}
 
+	public List<Happening<?>> getAllHappenings() {
+		return this.happeningsSchedule;
+	}
+	
 	/**
 	 * @see plotmas.storyworld.HappeningDirector#getTriggeredHappenings(int)
 	 */

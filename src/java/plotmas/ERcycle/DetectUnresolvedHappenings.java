@@ -58,6 +58,12 @@ public class DetectUnresolvedHappenings extends ProblemDetectionState {
 			if (fix != null) {
 				logger.info("Scheduling " + fix.message() + " to resolve: " + hapCharPair.getFirst());
 				this.nextReflectionState = this.getInstanceFor(DetectUnresolvedHappenings.class);
+				
+				// Revert old fix, if there was one
+				if (!fix.isFirstFix) {
+					this.controller.undoLastFix(er);
+				}
+				
 				return fix;
 			}
 			logger.info("Can't find way to resolve: " + hapCharPair.getFirst());
