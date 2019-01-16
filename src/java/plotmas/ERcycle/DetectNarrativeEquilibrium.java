@@ -83,7 +83,7 @@ public class DetectNarrativeEquilibrium extends ProblemDetectionState {
 				// unresolved happenings are present. If no unresolved happenings are detected, defaultNextState
 				// will be changed to its previous value by the responsible class
 				this.nextReflectionState = this.getInstanceFor(DetectUnresolvedHappenings.class);
-				return new ScheduleHappening(startStep, protagonist.getLabel());
+				return ScheduleHappening.scheduleRandomHappening(startStep, protagonist.getLabel(), controller);
 			}
 		}
 		

@@ -486,7 +486,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 			// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
 	    	if ((MAX_REPEATE_NUM > -1) && (allAgentsRepeating())) {
 	    		// reset counter
-	    		logger.severe("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
+	    		logger.info("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
 	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
 	    		resetAllAgentActionCounts();
 	
@@ -496,7 +496,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	    		}
 	    	}
 	    	if ((MAX_STEP_NUM > -1) && (this.getStep() % MAX_STEP_NUM == 0)) {
-	    		logger.severe("Auto-paused execution of simulation, because system ran for MAX_STEP_NUM steps.");
+	    		logger.info("Auto-paused execution of simulation, because system ran for MAX_STEP_NUM steps.");
 	    		
 	    		PlotLauncher.runner.pauseExecution();
 	    		for(EnvironmentListener l : listeners) {

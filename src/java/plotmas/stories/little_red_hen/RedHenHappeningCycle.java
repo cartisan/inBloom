@@ -1,6 +1,7 @@
 package plotmas.stories.little_red_hen;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,18 +30,24 @@ public class RedHenHappeningCycle extends PlotCycle {
 	/** ordered list of transformation commands identified during reflection and applied during engagement */
 	protected List<ProblemFixCommand> transformations = new LinkedList<>();
 	
+	/** set of domain-specific happenings allowed to be scheduled by the ER Cycle */
+	public HashSet<Class<?>> availableHappenings = new HashSet<>();
+	
 	
 	public RedHenHappeningCycle(String[] agentNames, String agentSrc) {
-		// Create PlotCycle with needed agents.
+		// Create PlotCycle with needed agents
 		super(agentNames, agentSrc);
 		
+		// Setup standard reasoning cycle
 		ProblemDetectionState s1 = ProblemDetectionState.getInstance(DetectNarrativeEquilibrium.class, this);
 		ProblemDetectionState s2 = ProblemDetectionState.getInstance(DetectInsufficientCoupling.class, this);
-		
 		s1.nextReflectionState = s2;
 		s2.nextReflectionState = s1;
 		
 		this.detectionState = s1;
+		
+		// set up domain specific set of allowed happenings
+		this.availableHappenings.add(FindCornHappening.class);
 	}
 	
 	@Override
