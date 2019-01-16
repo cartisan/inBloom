@@ -229,8 +229,9 @@ public class AdaptPersonality implements ProblemFixCommand {
 		List<Plan> candidatePlans = planLib.getCandidatePlans(Trigger.parseTrigger(intention));
 		
 		Set<Literal> candidatePlanAnnotations = candidatePlans.stream()
+				.filter(x -> !Character.isUpperCase(x.getTrigger().getLiteral().getFunctor().charAt(0))) // ignore meta plans like +!X, they eventually have to call the concrete plan and this is what we are after
 				.filter(x -> x.getLabel().getAnnot(Affect.ANNOTATION_FUNCTOR) != null)  // filter out plans without affective preconditions, no need to change personalities there
-				.filter(x -> x.getLabel().getAnnot(Affect.ANNOTATION_FUNCTOR).toString().contains(Personality.ANNOTATION_FUNCTOR))  // filter out plans without affective preconditions, no need to change personalities there
+				.filter(x -> x.getLabel().getAnnot(Affect.ANNOTATION_FUNCTOR).toString().contains(Personality.ANNOTATION_FUNCTOR))  // filter out plans without personality preconditions, no need to change personalities there
 				.map(x -> x.getLabel().getAnnot(Affect.ANNOTATION_FUNCTOR))
 				.collect(Collectors.toSet());
 		
