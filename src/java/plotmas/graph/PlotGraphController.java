@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Logger;
 
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -52,6 +53,10 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
     
 	protected static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
     
+	/** CounterfactualityLauncher which is started by clicking on the button */
+	//TODO I dont know how the launcher is dealing with interfaces etc
+	//public static CounterfactualityLauncher counterfactRunner = null;
+	
 	/** Singleton instance used to collect the plot */
 	private static PlotGraphController plotListener = null;
 
@@ -65,12 +70,21 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
 	private JComboBox<PlotDirectedSparseGraph> graphTypeList = new JComboBox<>();	// ComboBox that is displayed on the graph to change display type
 	public VisualizationViewer<Vertex, Edge> visViewer = null;
+	private JButton counterfactButton;
 	private JPanel infoPanel = new JPanel(); // parent of information JLabels
 	private GraphZoomScrollPane scrollPane = null; //panel used to display scrolling bars
 	private JPopupMenu popup = null;	
 	private Tellability analysisResult = null;
 	private JComboBox<FunctionalUnit> unitComboBox = null;
 
+	/**
+	 * getter method in order to get the original graph
+	 * @return original graph
+	 */
+	public PlotDirectedSparseGraph getGraph() {
+		return this.graph;
+	}
+	
 	/**
 	 * System-wide method for getting access to the active PlotGraph instance that collects events
 	 * and is used for drawing the graph.
@@ -200,6 +214,57 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
         result.add(pngItem);
 
         this.popup = result;
+    }
+    
+    /**
+     * Adds a Button to the menu that will switch from Counterfactuality
+     * to originial and the other way around
+     * 
+     * Can be extended by different buttons and a createButtons method
+     */
+    
+    protected void createCounterfactButton() {
+    	logger.info("creating counterfactuality button");
+    	JButton btCounterfact = new JButton("Counterfactuality!");
+    	btCounterfact.addActionListener(new ActionListener() {
+			//boolean for first time -> calculating
+    		private boolean firstClick = true;
+   			//distinguishing: counterfactual click or original click?
+    		private boolean counterfact = true;
+    		public void actionPerformed(ActionEvent click) {
+    			
+    			PlotDirectedSparseGraph counterfactGraph = new PlotDirectedSparseGraph();
+    			PlotDirectedSparseGraph originalGraph = new PlotDirectedSparseGraph();
+    			if(firstClick) {
+    				//counterfactGraph = counterfactRunner.getCounterfact();
+    				PlotGraphController.getPlotListener().addGraph(counterfactGraph);
+        			originalGraph = PlotGraphController.getPlotListener().getGraph();
+        			//set firstClick false
+        			firstClick = false;
+        			logger.info("The first click was done!");
+    			}
+     			//counterfact true -> show the counterfact graph
+    			//counterfact false -> show the original graph
+    			//TODO build up the rest of the code such that this part works
+//    			if(counterfact) {
+//    				PlotGraphController.getPlotListener().setSelectedGraph(counterfactGraph);
+//    			} else {
+//    				PlotGraphController.getPlotListener().setSelectedGraph(originalGraph);
+//    			}
+    			counterfact = !counterfact;
+    			//TODO what do I do with the returned PlotGraphController?
+    			//PlotGraphController.plotListener = PlotGraphController.getPlotListener().visualizeGraph();
+    			
+    			//Test -> works fine!
+    			if(counterfact) {
+    				logger.info("counterfactual graph");
+    			} else {
+    				logger.info("original graph");
+    			}
+    			
+    		}
+    	});
+    	this.counterfactButton = btCounterfact;
     }
     
 	/**
@@ -414,6 +479,12 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		// c information panel
 		infoPanel.setLayout(new FlowLayout(SwingConstants.LEADING, 15, 5));
 		
+		//counterfactuality Button
+		this.createCounterfactButton();
+		this.counterfactButton.setText("Counterfactuality!");
+		//add Button to infopanel
+		this.infoPanel.add(counterfactButton);
+		
 		// second: register a listener that redraws the plot when selection changes. Careful here: order with last command matters
 		this.graphTypeList.setActionCommand(CHANGE_VIEW_COMMAND);
 		this.graphTypeList.addActionListener(this);
@@ -421,7 +492,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		
 		this.add(graphTypeList, BorderLayout.NORTH);	
 		this.add(infoPanel, BorderLayout.SOUTH);
-		
+
 		this.getContentPane().add(this.scrollPane);
 		this.pack();
 		
