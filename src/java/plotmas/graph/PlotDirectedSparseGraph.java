@@ -236,6 +236,69 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
     }
 	
 	/**
+	 * Returns vertex, that is a predecessor in a plot sense, i.e. vertices that pertain to the same character column.
+	 * This excludes vertices connected by communication edges.
+	 * @param vertex for which char-predecessor is sought
+	 * @return successor vertex if present, or null
+	 */
+	private Vertex getCharPredecessor(Vertex vertex) {
+		if(!containsVertex(vertex))
+			return null;
+		
+		for(Edge edge : getIncoming_internal(vertex)) {
+			if(edge.getType() == Edge.Type.TEMPORAL) {
+				return this.getSource(edge);
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns the position of this vertex inside the step.
+	 * 0 means this vertex is the first of its step, -1 is the second,
+	 * -2 the third, and so on.
+	 * @param vertex
+	 * @return position
+	 */
+	public int getInnerStep(Vertex vertex) {
+		int step = vertex.getStep();
+		Vertex pred = getCharPredecessor(vertex);
+		int c = 0;
+		while(pred != null && pred.getStep() == step) {
+			c++;
+			pred = getCharPredecessor(pred);
+		}
+		return c;
+	}
+	
+	/**
+	 * Returns all vertices which are a real predecessor of the given vertex.
+	 * This means, that all vertices this method returns happened at the same
+	 * time, or earlier, than the vertex in question.
+	 * This is effectively done by excluding EQUIVALENCE, ROOT and TERMINATION
+	 * edges in looking for predecessors. This assumes that they will never be
+	 * used in a forward-connecting way (except for ROOT).
+	 * Should this change, this method needs to be changed to look
+	 * for getStep and getInnerStep.
+	 * @param vertex for which real predecessors are sought
+	 * @return all real predecessors of the vertex, or an empty collection if none were found
+	 */
+	public Collection<Vertex> getRealPredecessors(Vertex vertex) {
+		if(!containsVertex(vertex))
+			return null;
+		
+		Set<Vertex> vertices = new HashSet<Vertex>();
+		for(Edge edge : getIncoming_internal(vertex)) {
+			if(edge.getType() != Edge.Type.EQUIVALENCE
+			&& edge.getType() != Edge.Type.TERMINATION
+			&& edge.getType() != Edge.Type.ROOT) {
+				vertices.add(this.getSource(edge));
+			}
+		}
+		return vertices;
+	}
+	
+	/**
 	 * Returns the subgraph of a character, i.e. all vertices connected to a certain root node.
 	 * @param root
 	 * @return

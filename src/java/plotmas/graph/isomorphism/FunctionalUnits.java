@@ -1,5 +1,6 @@
 package plotmas.graph.isomorphism;
 
+import jason.util.Pair;
 import plotmas.graph.Edge;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.Vertex;
@@ -26,6 +27,11 @@ public class FunctionalUnits {
 	 */
 	public static FunctionalUnit[] ALL;
 	
+	/**
+	 * Holds all primitive functional units.
+	 */
+	public static FunctionalUnit[] PRIMITIVES;
+
 	public static final FunctionalUnit NESTED_GOAL;
 	public static final FunctionalUnit DENIED_REQUEST;
 	public static final FunctionalUnit RETALIATION;
@@ -40,8 +46,7 @@ public class FunctionalUnits {
 	public static final FunctionalUnit GIVING_UP;
 	public static final FunctionalUnit SACRIFICE;
 	
-	public static final FunctionalUnit DEBUG_SPEECH;
-	public static final FunctionalUnit DEBUG_TERMINATION;
+	
 	
 	/**
 	 * A graph containing all functional units in {@link #ALL ALL} next
@@ -63,6 +68,7 @@ public class FunctionalUnits {
 		v2 = makeNegative(3);
 		deniedRequest.addEdge(makeCommunication(), v3, v2);
 		DENIED_REQUEST = new FunctionalUnit("Denied Request", deniedRequest);
+		DENIED_REQUEST.setSubject(new Pair<Vertex, String>(v1, "!achieve\\((.*)\\)"));
 		
 		PlotDirectedSparseGraph nestedGoal = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1);
@@ -71,6 +77,7 @@ public class FunctionalUnits {
 		nestedGoal.addEdge(makeMotivation(), v1, v2);
 		nestedGoal.addEdge(makeActualization(), v2, v3);
 		NESTED_GOAL = new FunctionalUnit("Nested Goal", nestedGoal);
+		NESTED_GOAL.setSubject(new Pair<Vertex, String>(v1, "(.*)"));
 		
 		PlotDirectedSparseGraph retaliation = new PlotDirectedSparseGraph();
 		v1 = makeWildcard(1);
@@ -85,6 +92,7 @@ public class FunctionalUnits {
 		v2 = makeNegative(4);
 		retaliation.addEdge(makeActualization(), v1, v2);
 		RETALIATION = new FunctionalUnit("Retaliation", retaliation);
+		RETALIATION.setSubject(new Pair<Vertex, String>(v3, "(.*)"));
 		
 		PlotDirectedSparseGraph intentionalProblemResolution = new PlotDirectedSparseGraph();
 		v1 = makeNegative(1);
@@ -158,6 +166,7 @@ public class FunctionalUnits {
 		v2 = makePositive(3);
 		honoredRequest.addEdge(makeCommunication(), v3, v2);
 		HONORED_REQUEST = new FunctionalUnit("Honored Request", honoredRequest);
+		HONORED_REQUEST.setSubject(new Pair<Vertex, String>(v1, "!achieve\\((.*)\\)"));
 		
 		ALL[0] = DENIED_REQUEST;
 		ALL[1] = NESTED_GOAL;
@@ -181,19 +190,157 @@ public class FunctionalUnits {
 		ALL_UNITS_GRAPH = allUnitsGraph;
 		
 		/**
-		 * DEBUG UNITS
+		 * Primitive Units
 		 */
-		PlotDirectedSparseGraph speech = new PlotDirectedSparseGraph();
-		v1 = makeIntention(1);
-		v2 = makePolyemotional(2);
-		speech.addEdge(makeCommunication(), v1, v2);
-		DEBUG_SPEECH = new FunctionalUnit("Debug Speech", speech);
+		PRIMITIVES = new FunctionalUnit[24];
 		
-		PlotDirectedSparseGraph termination = new PlotDirectedSparseGraph();
+		PlotDirectedSparseGraph g = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1);
-		v2 = makePolyemotional(2);
-		termination.addEdge(makeTermination(), v2, v1);
-		DEBUG_TERMINATION = new FunctionalUnit("Debug Termination", termination);
+		v2 = makeIntention(2);
+		g.addEdge(makeMotivation(), v1, v2);
+		PRIMITIVES[0] = new FunctionalUnit("Motivation", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makeIntention(1);
+		v2 = makeIntention(2);
+		g.addEdge(makeTermination(), v2, v1);
+		PRIMITIVES[1] = new FunctionalUnit("Change of Mind", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makeIntention(1);
+		v2 = makeIntention(2);
+		g.addEdge(makeEquivalence(), v2, v1);
+		PRIMITIVES[2] = new FunctionalUnit("Perseverance", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makePositive(1);
+		v2 = makeIntention(2);
+		g.addEdge(makeMotivation(), v1, v2);
+		PRIMITIVES[3] = new FunctionalUnit("Enablement", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makeNegative(1);
+		v2 = makeIntention(2);
+		g.addEdge(makeMotivation(), v1, v2);
+		PRIMITIVES[4] = new FunctionalUnit("Problem", g);
+
+		g = new PlotDirectedSparseGraph();
+		v1 = makeIntention(1);
+		v2 = makePositive(2);
+		g.addEdge(makeActualization(), v1, v2);
+		PRIMITIVES[5] = new FunctionalUnit("Success", g);
+
+		g = new PlotDirectedSparseGraph();
+		v1 = makeIntention(1);
+		v2 = makeNegative(2);
+		g.addEdge(makeActualization(), v1, v2);
+		PRIMITIVES[6] = new FunctionalUnit("Failure", g);
+
+		g = new PlotDirectedSparseGraph();
+		v1 = makePositive(1);
+		v2 = makeNegative(2);
+		g.addEdge(makeTermination(), v2, v1);
+		PRIMITIVES[7] = new FunctionalUnit("Loss", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makeNegative(1);
+		v2 = makePositive(2);
+		g.addEdge(makeTermination(), v2, v1);
+		PRIMITIVES[8] = new FunctionalUnit("Resolution", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makeNegative(1);
+		v2 = makeNegative(2);
+		g.addEdge(makeTermination(), v2, v1);
+		PRIMITIVES[9] = new FunctionalUnit("Negative Trade-Off", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makePositive(1);
+		v2 = makePositive(2);
+		g.addEdge(makeTermination(), v2, v1);
+		PRIMITIVES[10] = new FunctionalUnit("Positive Trade-Off", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makePositive(1);
+		v2 = makeNegative(2);
+		g.addEdge(makeEquivalence(), v2, v1);
+		PRIMITIVES[11] = new FunctionalUnit("Mixed Blessing", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makeNegative(1);
+		v2 = makePositive(2);
+		g.addEdge(makeEquivalence(), v2, v1);
+		PRIMITIVES[12] = new FunctionalUnit("Hidden Blessing", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makePositive(1);
+		v2 = makePositive(2);
+		g.addEdge(makeEquivalence(), v2, v1);
+		PRIMITIVES[13] = new FunctionalUnit("Complex Positive Event", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makeNegative(1);
+		v2 = makeNegative(2);
+		g.addEdge(makeEquivalence(), v2, v1);
+		PRIMITIVES[14] = new FunctionalUnit("Complex Negative Event", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makeIntention(1);
+		v2 = makeIntention(2);
+		g.addEdge(makeCommunication(), v1, v2);
+		PRIMITIVES[15] = new FunctionalUnit("Request", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makePositive(1);
+		v2 = makeIntention(2);
+		g.addEdge(makeCommunication(), v1, v2);
+		PRIMITIVES[16] = new FunctionalUnit("CC Enablement", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makeNegative(1);
+		v2 = makeIntention(2);
+		g.addEdge(makeCommunication(), v1, v2);
+		PRIMITIVES[17] = new FunctionalUnit("CC Motivation", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makeIntention(1);
+		v2 = makeNegative(2);
+		g.addEdge(makeCommunication(), v1, v2);
+		PRIMITIVES[18] = new FunctionalUnit("CC Threat", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makeIntention(1);
+		v2 = makePositive(2);
+		g.addEdge(makeCommunication(), v1, v2);
+		PRIMITIVES[19] = new FunctionalUnit("CC Promise", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makePositive(1);
+		v2 = makePositive(2);
+		g.addEdge(makeCommunication(), v1, v2);
+		PRIMITIVES[20] = new FunctionalUnit("Shared Positive Event", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makeNegative(1);
+		v2 = makeNegative(2);
+		g.addEdge(makeCommunication(), v1, v2);
+		PRIMITIVES[21] = new FunctionalUnit("Shared Negative Event", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makePositive(1);
+		v2 = makeNegative(2);
+		g.addEdge(makeCommunication(), v1, v2);
+		PRIMITIVES[22] = new FunctionalUnit("CC Mixed Blessing", g);
+		
+		g = new PlotDirectedSparseGraph();
+		v1 = makeNegative(1);
+		v2 = makePositive(2);
+		g.addEdge(makeCommunication(), v1, v2);
+		PRIMITIVES[23] = new FunctionalUnit("CC Hidden Blessing", g);
+		
+		for(FunctionalUnit unit : PRIMITIVES) {
+			unit.setPrimitive();
+		}
 	}
 	
 	private static Vertex makeIntention(int step) {
