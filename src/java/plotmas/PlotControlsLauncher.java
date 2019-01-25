@@ -165,10 +165,11 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 
 	@Override
 	protected void createButtons() {
-		createDrawButton();
+		createPauseButton();
 		createAnalysisButton();
 		createSummaryButton();
-		super.createButtons();
+		createDrawButton();
+        createStopButton();
 	}
 
 	protected void createDrawButton() {
