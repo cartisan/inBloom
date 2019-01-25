@@ -36,15 +36,15 @@ public class FramingGenerator {
 		nlSnippets.put(FunctionalUnits.HONORED_REQUEST, "%2$s honor%7$s %1$s's request for %3$s");
 	}
 	
-	public static String generateFraming(Tellability tellability) {
+	public static String generateFraming(ConnectivityGraph connectivityGraph) {
 		
 		// Sort instances by polyvalence (descending)
-		FunctionalUnit.Instance[] units = new FunctionalUnit.Instance[tellability.connectivityGraph.getVertices().size()];
-		units = tellability.connectivityGraph.getVertices().toArray(units);
+		FunctionalUnit.Instance[] units = new FunctionalUnit.Instance[connectivityGraph.getVertices().size()];
+		units = connectivityGraph.getVertices().toArray(units);
 		Arrays.sort(units, new Comparator<FunctionalUnit.Instance>() {
 			@Override
 			public int compare(FunctionalUnit.Instance o1, FunctionalUnit.Instance o2) {
-				return tellability.connectivityGraph.getNeighborCount(o2) - tellability.connectivityGraph.getNeighborCount(o1);
+				return connectivityGraph.getNeighborCount(o2) - connectivityGraph.getNeighborCount(o1);
 			}
 		});
 		
@@ -67,7 +67,7 @@ public class FramingGenerator {
 				if(o1 == o2) {
 					return 0;
 				}
-				return tellability.connectivityGraph.isPredecessor(o1, o2) ? -1 : 1;
+				return connectivityGraph.isPredecessor(o1, o2) ? -1 : 1;
 			}
 		});
 		

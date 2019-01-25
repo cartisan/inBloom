@@ -10,7 +10,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import plotmas.framing.ConnectivityGraph;
-import plotmas.framing.FramingGenerator;
 import plotmas.graph.CountingVisitor;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
@@ -131,11 +130,6 @@ public class Tellability {
 			}
 		}
 		
-		connectivityGraph.removeEntailed();
-		connectivityGraph.prunePrimitives();
-		connectivityGraph.mergeTimeEquivalents();
-		connectivityGraph.display();
-		
 		this.numFunctionalUnits = unitInstances;
 		this.numPolyvalentVertices = polyvalentVertices;
 		
@@ -143,8 +137,6 @@ public class Tellability {
 		for(Vertex v : polyvalentVertexSet) {
 			v.setPolyvalent();
 		}
-		
-		logger.info("Summary: " + FramingGenerator.generateFraming(this));
 	}
 
 	/**

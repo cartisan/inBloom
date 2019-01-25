@@ -253,6 +253,10 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	public JComboBox<FunctionalUnit> getUnitComboBox() {
 		return unitComboBox;
 	}
+	
+	public Tellability getAnalysisResult() {
+		return analysisResult;
+	}
 
 	public void closeGraph() {
 		logger.info("Closing and reseting plot graph view");
@@ -391,7 +395,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		
 		return analysisResult;
 	}
-	
+
 	/**
 	 * Plots and displays the graph that is selected by {@code this.graphTypeList}.
 	 * @return the displayed JFrame
