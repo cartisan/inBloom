@@ -54,8 +54,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	protected static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
     
 	/** CounterfactualityLauncher which is started by clicking on the button */
-	//TODO I dont know how the launcher is dealing with interfaces etc
-	//public static CounterfactualityLauncher counterfactRunner = null;
+	private static CounterfactualityLauncher counterfactRunner = null;
 	
 	/** Singleton instance used to collect the plot */
 	private static PlotGraphController plotListener = null;
@@ -236,9 +235,15 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
     			PlotDirectedSparseGraph counterfactGraph = new PlotDirectedSparseGraph();
     			PlotDirectedSparseGraph originalGraph = new PlotDirectedSparseGraph();
     			if(firstClick) {
-    				//counterfactGraph = counterfactRunner.getCounterfact();
-    				PlotGraphController.getPlotListener().addGraph(counterfactGraph);
+    						
+    				//getting the current graph and give it to the CounterfactualityLauncher
         			originalGraph = PlotGraphController.getPlotListener().getGraph();
+        			//for the beginning: we give it all information (runner, persNum, etc)
+        			counterfactRunner = new CounterfactualityLauncher(originalGraph, new String[] { "hen", "dog", "cow", "pig" }, "agent");
+    				counterfactGraph = counterfactRunner.getCounterfact();
+    				//TODO how to deal with the graph graphically
+    				//PlotGraphController.getPlotListener().addGraph(counterfactGraph);
+        			
         			//set firstClick false
         			firstClick = false;
         			logger.info("The first click was done!");
@@ -247,16 +252,19 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
     			//counterfact false -> show the original graph
     			//TODO build up the rest of the code such that this part works
 //    			if(counterfact) {
-//    				PlotGraphController.getPlotListener().setSelectedGraph(counterfactGraph);
+//   				PlotGraphController.getPlotListener().setSelectedGraph(counterfactGraph);
 //    			} else {
 //    				PlotGraphController.getPlotListener().setSelectedGraph(originalGraph);
 //    			}
     			counterfact = !counterfact;
     			//TODO what do I do with the returned PlotGraphController?
+    			//TODO maybe we need something new for visualizing a counterfactual graph
+    			//we should think about that and find a convenient solution.
+    			//in the beginning -> just the same design
     			//PlotGraphController.plotListener = PlotGraphController.getPlotListener().visualizeGraph();
     			
     			//Test -> works fine!
-    			if(counterfact) {
+    			if(counterfact) {	
     				logger.info("counterfactual graph");
     			} else {
     				logger.info("original graph");

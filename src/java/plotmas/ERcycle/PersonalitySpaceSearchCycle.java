@@ -20,6 +20,7 @@ import java.util.logging.StreamHandler;
 
 import jason.asSemantics.Personality;
 import plotmas.PlotLauncher;
+import plotmas.graph.CounterfactualityLauncher;
 import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.graph.isomorphism.FunctionalUnits;
 import plotmas.helper.PlotFormatter;
@@ -32,6 +33,7 @@ import plotmas.helper.Tellability;
  */
 public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 	
+	protected static Logger logger = Logger.getLogger(CounterfactualityLauncher.class.getName());
 	/**
 	 * The name of the file the results will be written to.
 	 */
@@ -190,94 +192,121 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 		System.out.println("\t[-nogui]\tStarts the application in headless mode.");
 		System.out.println("\t[-timeout]\tSets a maximum time for a single simulation to run.");
 	}
+	/**
+	 * Initializes a cycle with given agents. Has default values for the personality values of an agent.
+	 * The default values are: -1.0, 0, 1.0
+	 * Default value for hiding the GUI is false, consequently the GUI will be shown
+	 * @param agentNames The names of the agents
+	 * @param agentSrc The AgentSpeak source file for all agents
+	 * @param personalityNum Defines how many unique personalities the cycle should iterate over.
+	 */
+	public PersonalitySpaceSearchCycle(String[] agentNames, String agentSrc, int personalityNum) {
+		this(agentNames, agentSrc, personalityNum, new double[] { -1.0, 0, 1.0 }, false, false);
+	}
 	
 	/**
 	 * Initializes a cycle with given agents.
 	 * @param agentNames The names of the agents
 	 * @param agentSrc The AgentSpeak source file for all agents
 	 * @param personalityNum Defines how many unique personalities the cycle should iterate over.
+	 * @param personalityValues All possible values of the personality of one agent
+	 * @param hideGui Indicates whether GUI should be hidden or not
 	 */
-	public PersonalitySpaceSearchCycle(String[] agentNames, String agentSrc, int personalityNum) {
-		super(agentNames, agentSrc, !hideGui);
-
-		// Open a file for writing results
-		try {
-			FileWriter fw = new FileWriter(outFile, currentCycle > 0);
-		    BufferedWriter bw = new BufferedWriter(fw);
-		    csvOut = new PrintWriter(bw);
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
+	public PersonalitySpaceSearchCycle(String[] agentNames, String agentSrc, int personalityNum, double[] personalityValues, boolean hideGui, boolean counterfact) {
+		super(agentNames, agentSrc, hideGui);
 		
-		// Create the file handler here if the log file name is invariant of the name
-		// (logs all contents to a single file)
-		if(!logFile.contains("%d")) {
-			setupFileLogger();
-		}
-		
-		// Print CSV header
-		if(currentCycle == 0) {
-			String header = "tellability,functional_units_total,";
-			for(FunctionalUnit unit : FunctionalUnits.ALL) {
-				header += unit.getName().toLowerCase().replace(' ', '_') + "s,";
+		if(!counterfact) {
+			// Open a file for writing results
+			try {
+				FileWriter fw = new FileWriter(outFile, currentCycle > 0);
+			    BufferedWriter bw = new BufferedWriter(fw);
+			    csvOut = new PrintWriter(bw);
+			} catch(IOException e) {
+				e.printStackTrace();
 			}
-			header += "polyvalent_vertices,";
-			
-			for (int i = 0; i < personalityNum; ++i) {
-				header += String.format("o%d,c%d,e%d,a%d,n%d,", i, i, i, i, i);
+			// Create the file handler here if the log file name is invariant of the name
+			// (logs all contents to a single file)
+			if(!logFile.contains("%d")) {
+				setupFileLogger();
 			}
-			// remove last comma
-			header = header.substring(0, header.length() - 1);
-			
-			csvOut.println(header);
-		}
-		
-		// read old results if continuing from infile
-		boolean fileRead = false;
-		
-		if(!inFile.isEmpty()) {
-			try(FileReader fr = new FileReader(inFile);
-				BufferedReader br = new BufferedReader(fr);)
-			{
-				String line;
-				personalityList = new LinkedList<Personality[]>();
-				while((line = br.readLine()) != null) {
-					String[] pd = line.split(",");
-					Personality[] configuration = new Personality[personalityNum];
-						for (int i = 0; i < personalityNum; ++i) {
-							configuration[i] = new Personality(
-										Double.parseDouble(pd[0 + i*5]),
-										Double.parseDouble(pd[1 + i*5]),
-										Double.parseDouble(pd[2 + i*5]),
-										Double.parseDouble(pd[3 + i*5]),
-										Double.parseDouble(pd[4 + i*5])
-									);
-						}							
-					personalityList.add(configuration);
+			// Print CSV header
+			if(currentCycle == 0) {
+				String header = "tellability,functional_units_total,";
+				for(FunctionalUnit unit : FunctionalUnits.ALL) {
+					header += unit.getName().toLowerCase().replace(' ', '_') + "s,";
 				}
-				fileRead = true;
-			} catch(IOException e0) {
-				System.err.println("Could not read input file!");
-			} catch(IndexOutOfBoundsException | NumberFormatException e1) {
-				System.err.println("Input file did not have the correct format.");
+				header += "polyvalent_vertices,";
+				
+				for (int i = 0; i < personalityNum; ++i) {
+					header += String.format("o%d,c%d,e%d,a%d,n%d,", i, i, i, i, i);
+				}
+				// remove last comma
+				header = header.substring(0, header.length() - 1);
+				
+				csvOut.println(header);
 			}
-		}
+	
+			// read old results if continuing from infile
+			boolean fileRead = false;
 		
-		// if no infile present, or reading failed
-		if(!fileRead) {
-			// Generate all possible personalities.
-			Personality[] personalitySpace = createPersonalitySpace(new double[] { -1.0, 0, 1.0 });
-			personalityList = createPlotSpace(personalitySpace, personalityNum, true);
-		}
-		
-		personalityIterator = personalityList.iterator();
-		
-		if(endCycle == -1) {
-			endCycle = personalityList.size();
-		}
 
-		// Log how many personalities there are.
-		log("Running " + (endCycle - currentCycle) + " cycles...");
+			if(!inFile.isEmpty()) {
+				try(FileReader fr = new FileReader(inFile);
+					BufferedReader br = new BufferedReader(fr);)
+				{
+					String line;
+					personalityList = new LinkedList<Personality[]>();
+					while((line = br.readLine()) != null) {
+						String[] pd = line.split(",");
+						Personality[] configuration = new Personality[personalityNum];
+							for (int i = 0; i < personalityNum; ++i) {
+								configuration[i] = new Personality(
+											Double.parseDouble(pd[0 + i*5]),
+											Double.parseDouble(pd[1 + i*5]),
+											Double.parseDouble(pd[2 + i*5]),
+											Double.parseDouble(pd[3 + i*5]),
+											Double.parseDouble(pd[4 + i*5])
+										);
+							}							
+						personalityList.add(configuration);
+					}
+					fileRead = true;
+				} catch(IOException e0) {
+					System.err.println("Could not read input file!");
+				} catch(IndexOutOfBoundsException | NumberFormatException e1) {
+					System.err.println("Input file did not have the correct format.");
+				}
+			}
+
+			// if no infile present, or reading failed
+			if(!fileRead) {
+				// Generate all possible personalities.
+				Personality[] personalitySpace = createPersonalitySpace(personalityValues);
+				personalityList = createPlotSpace(personalitySpace, personalityNum, true);
+			}
+			
+			personalityIterator = personalityList.iterator();
+			
+			if(endCycle == -1) {
+				endCycle = personalityList.size();
+			}
+	
+			// Log how many personalities there are.
+			log("Running " + (endCycle - currentCycle) + " cycles...");
+		} else if (counterfact) {
+			Personality[] personalitySpace = createPersonalitySpace(personalityValues);
+			//personalityNum instead of 2 does not work -> too much
+			//TODO check out how we solve this
+			personalityList = createPlotSpace(personalitySpace, personalityNum, true);
+			personalityIterator = personalityList.iterator();
+			
+			if(endCycle == -1) {
+				endCycle = personalityList.size();
+			}
+	
+			// Log how many personalities there are.
+			log("Running " + (endCycle - currentCycle) + " cycles...");
+		}
 	}
 
 	/**
@@ -413,6 +442,10 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 		if(closeOnComplete) {
 			lastRunner.finish();
 		}
+	}
+	
+	public List<Personality[]> getPersonalityList() {
+		return this.personalityList;
 	}
 
 	
