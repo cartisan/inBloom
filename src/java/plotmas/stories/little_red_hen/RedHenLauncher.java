@@ -19,6 +19,7 @@ import plotmas.storyworld.ScheduledHappeningDirector;
 public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 	
 	public RedHenLauncher() {
+		logger.info("create RedHenLauncher");
 		ENV_CLASS = FarmEnvironment.class;
 		PlotControlsLauncher.runner = this;
 		BaseCentralisedMAS.runner = this;

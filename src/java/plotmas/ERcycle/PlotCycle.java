@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -18,6 +19,7 @@ import plotmas.LauncherAgent;
 import plotmas.PlotEnvironment;
 import plotmas.PlotLauncher;
 import plotmas.PlotModel;
+import plotmas.graph.CounterfactualityLauncher;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
 import plotmas.helper.EnvironmentListener;
@@ -28,6 +30,9 @@ import plotmas.helper.Tellability;
  * @author Sven Wilke
  */
 public abstract class PlotCycle implements Runnable, EnvironmentListener {
+	
+	protected static Logger logger = Logger.getLogger(CounterfactualityLauncher.class.getName());
+	
 	/**
 	 * Timeout in ms before a single simulation is forcibly stopped
 	 * A value of -1 means no timeout.
@@ -202,6 +207,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 */
 	@Override
 	public void run() {
+		logger.info("I actually run a cycle");
 		ReflectResult rr = this.createInitialReflectResult();
 		EngageResult er = null;
 		
@@ -211,7 +217,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 			er = engage(rr);
 			stories.add(er.getPlotGraph());
 			rr = this.reflect(er);
-		}
+		} 
 		this.finish(er);
 	}
 	

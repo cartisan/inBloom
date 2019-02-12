@@ -9,14 +9,15 @@ import plotmas.ERcycle.PersonalitySpaceSearchCycle;
 import plotmas.storyworld.ScheduledHappeningDirector;
 
 public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
-	
-	protected RedHenPersonalityCycle() {
+	//TODO protected!!!!
+	public RedHenPersonalityCycle() {
 		// Create PlotCycle with needed agents.
 		super(new String[] { "hen", "dog", "cow", "pig" }, "agent", 2);
 	}
 
 	@Override
 	protected ReflectResult reflect(EngageResult er) {
+		logger.info("I am reflecting");
 		onCycleResult(lastPersonalities, er.getTellability());
 		
 		// Save tellability, graph and hen personality if it was better than the best before

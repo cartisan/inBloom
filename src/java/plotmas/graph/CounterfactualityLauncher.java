@@ -14,6 +14,7 @@ import plotmas.PlotModel;
 //import plotmas.helper.Counterfactuality;
 import plotmas.ERcycle.CounterfactualitySpaceSearchCycle;
 import plotmas.stories.little_red_hen.RedHenCounterfactualityCycle;
+import plotmas.stories.little_red_hen.RedHenPersonalityCycle;
 
 /**
  * Responsible for creating counterfactual plotlines of a given <i>original</i> graph
@@ -98,21 +99,20 @@ public class CounterfactualityLauncher {
 		//example red hen, best tellability
 		//ideal case: best tellability is produced here
 		RedHenCounterfactualityCycle cfSearchSpace = new RedHenCounterfactualityCycle(personalityValues);
-		
+		//RedHenPersonalityCycle cfSearchSpace = new RedHenPersonalityCycle();
 		//this is working
 		List<Personality[]> allPersonalities = cfSearchSpace.getPersonalityList();
 		logger.info("I have procuded a list with all personalities");
 		
 		//something in reflect is not working
+		//boooah. reflect is driving me crazy
 		
-		//later on I will change the reflect cycle and the engage part such
-		//that the story with highest counterfactuality is choosen
+		//i do it myself now.
+		//i have the list of personalities.
+		//i produce a directedsparsegraph of each personality
+		//i use counterfactuality in order to decide which graph is the best
+		//i give the graph back here
 		
-		//at the moment we try it only with best tellability
-		
-		//if we get best personalities from that,
-		//we produce the corresponding graph 
-		//and do fancy graphic stuff with that
 		
 		//for each story one must only create a new StoryCounterfactualityLauncher
 		//where we only add needed information

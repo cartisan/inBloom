@@ -202,7 +202,7 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 	 */
 	public PersonalitySpaceSearchCycle(String[] agentNames, String agentSrc, int personalityNum) {
 		this(agentNames, agentSrc, personalityNum, new double[] { -1.0, 0, 1.0 }, false, false);
-	}
+	} 
 	
 	/**
 	 * Initializes a cycle with given agents.

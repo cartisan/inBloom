@@ -14,7 +14,11 @@ public class RedHenCounterfactualityCycle extends PersonalitySpaceSearchCycle {
 	
 	public RedHenCounterfactualityCycle(double[] pValues) {
 		super(new String[] { "hen", "dog", "cow", "pig" }, "agent", 1, pValues, true, true);
-		personalityValues = pValues;
+		personalityValues = pValues;	
+		if(cycleNum > -1) {
+			endCycle = currentCycle + cycleNum;
+		}
+		this.run();
 	}
 
 	@Override
@@ -49,20 +53,25 @@ public class RedHenCounterfactualityCycle extends PersonalitySpaceSearchCycle {
 
 	@Override
 	protected ReflectResult createInitialReflectResult() {
+		logger.info("I have created an intitial reflect result!");
 		lastPersonalities = personalityIterator.next();
 		lastRunner = new RedHenLauncher();
+		logger.info("step0");
 		lastRunner.setShowGui(false);
+		
+		logger.info("step1");
 		
 		List<LauncherAgent> agents = createAgs(new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
 		ReflectResult rr = new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), agents);
-		
+		logger.info("step2");
 		log("Cycle " + currentCycle);
-		
+		logger.info("step3");
 		// Create a new file logger if the log file name depends on the cycle number.
 		if(logFile.contains("%d")) {
 			setupFileLogger();
 		}
-		
+		logger.info("step4");
+		logger.info("end of createInitialReflectResult");
 		return rr;
 	}
 
