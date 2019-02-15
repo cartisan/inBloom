@@ -271,7 +271,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
         	logger.info("Creating new agent: " + name);
         	
         	// enables plot graph to track new agent's actions
-        	// TODO: implement an appropriate vertical offset to visualize agent's late arrival
         	PlotGraphController.getPlotListener().addCharacter(name);
         	
         	// create Agent
@@ -566,7 +565,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     }
 	
 	protected void checkPause() {
-		if (this.initialized) {
+		if ((this.initialized) & !PlotLauncher.getRunner().isDebug()) {
 			// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
 	    	if ((MAX_REPEATE_NUM > -1) && (allAgentsRepeating())) {
 	    		// reset counter
