@@ -155,23 +155,27 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 /***** Plans  *******************************/
 /********************************************/
 
-@create_bread[affect(personality(conscientiousness,high))]
+@create_bread_1[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(seed)])<-
 	!plant(wheat);
 	!create(bread).
 
+@create_bread_2[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(growing)])<-
 	!tend(wheat);
 	!create(bread).
 
+@create_bread_3[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(ripe)])<-
 	!harvest(wheat);
 	!create(bread).
 
+@create_bread_4[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(harvested)])<-
 	!grind(wheat);
 	!create(bread).
 
+@create_bread_5[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(flour)])<-
 	!bake(bread);
 	-obligation(create(bread)).
