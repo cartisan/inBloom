@@ -110,6 +110,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	 */
 	public void addCharacter(String agentName) {
     	Character character = new Character(agentName);
+    	character.setModel(this);
 		this.characters.put(character.name, character);
 		
 	}

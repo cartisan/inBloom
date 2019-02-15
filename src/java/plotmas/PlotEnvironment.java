@@ -1,5 +1,6 @@
 package plotmas;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,21 +13,30 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import jason.asSemantics.ActionExec;
+import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Intention;
+import jason.asSemantics.Personality;
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
+import jason.infra.centralised.CentralisedEnvironment;
 import jason.runtime.MASConsoleGUI;
+import jason.runtime.RuntimeServicesInfraTier;
 import plotmas.graph.Edge;
 import plotmas.graph.PlotGraphController;
+import plotmas.graph.Vertex;
 import plotmas.graph.Vertex.Type;
 import plotmas.helper.EnvironmentListener;
 import plotmas.helper.PerceptAnnotation;
 import plotmas.helper.PlotpatternAnalyzer;
 import plotmas.helper.TermParser;
+import plotmas.jason.PlotAwareAg;
+import plotmas.jason.PlotAwareAgArch;
+import plotmas.jason.PlotAwareCentralisedAgArch;
+import plotmas.jason.PlotAwareCentralisedRuntimeServices;
 
 /**
  *  Responsible for relaying action requests from ASL agents to the {@link plotmas.PlotModel Storyworld} and
@@ -247,6 +257,80 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		super.scheduleAction(agName, action, infraData);
 	}
 	
+	/**
+	 * Creates a new agent and registers it in all the necessary places. Starts the agent after registration. 
+	 * @param name Name of the agent that will be created
+	 * @param aslFile ASL file name that contains the agents reasoning code, should be located in src/asl
+	 * @param personality an instance of {@linkplain jason.asSemantics.Personality} that will affect the agents behavior
+	 */
+	public void createAgent(String name, String aslFile, Personality personality) {
+		ArrayList<String> agArchs = new ArrayList<String>(Arrays.asList(PlotAwareAgArch.class.getName()));
+		String agName = null;
+		
+        try {
+        	logger.info("Creating new agent: " + name);
+        	
+        	// enables plot graph to track new agent's actions
+        	// TODO: implement an appropriate vertical offset to visualize agent's late arrival
+        	PlotGraphController.getPlotListener().addCharacter(name);
+        	
+        	// create Agent
+        	agName = this.getRuntimeServices().createAgent(name, aslFile, PlotAwareAg.class.getName(), agArchs, null, null, null);
+
+        	// set the agents personality
+        	AffectiveAgent ag = ((PlotLauncher<?,?>) PlotLauncher.getRunner()).getPlotAgent(agName);
+        	ag.initializePersonality(personality);
+	    } catch (Exception e) {
+	    	e.printStackTrace();
+        } 
+        
+        // enable action counting for new agent, so it is accounted for in auto-pause feature
+        this.registerAgentForActionCount(agName);
+        
+        // start new agent's reasoning cycle
+        this.getRuntimeServices().startAgent(agName);
+        
+        // creates a model representation for the new agent
+        this.getModel().addCharacter(agName);
+	}
+
+	/**
+	 * Stops and removes agent agName from the simulation, the model and all accounting facilities. 
+	 * @param agName The name of the agent to be removed
+	 * @param byAgName The name of the agent responsible for removing agName, or null if a happening is responsible
+	 */
+	public void killAgent(String agName, String byAgName) {
+		// stop agent
+		this.getRuntimeServices().killAgent(agName, byAgName);
+
+		// make sure action counting for pause does not take removed agent into account
+		agentActions.remove(agName);
+		
+		// indicate removal in plot graph
+		PlotGraphController.getPlotListener().addEvent(agName, "died", Vertex.Type.EVENT, this.getStep());
+		
+		// remove character from story-world model
+		this.model.removeCharacter(agName);
+	}
+
+	/**
+	 * Stops and removes agent agName from the simulation, the model and all accounting facilities. 
+	 * @param agName The name of the agent to be removed
+	 */
+	public void killAgent(String agName) {
+		this.killAgent(agName, null);
+	}
+    	
+    /**
+     * Adopted getRuntimeServices method; to be used instead of {@linkplain CentralisedEnvironment#getRuntimeServices()}
+     * which was available through {@code this.getEnvironmentInfraTier().getRuntimeServices()}.
+     * @return Returns a CentralisedRuntimeServices subclass which operates on the plotmas specific 
+     * {@linkplain PlotAwareCentralisedAgArch} class.
+     */
+    private RuntimeServicesInfraTier getRuntimeServices() {
+        return new PlotAwareCentralisedRuntimeServices(PlotLauncher.getRunner());
+    }
+        
 	@Override
 	protected synchronized void stepStarted(int step) {
 		if (this.step > 0) {
