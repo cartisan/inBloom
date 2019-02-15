@@ -41,14 +41,6 @@ public class PerceptAnnotation {
 	}
 	
 	public PerceptAnnotation(String... ems) {
-		// check for validity first
-		for (String em : ems) {
-    		if (!Emotion.getAllEmotions().contains(em)) {
-    			logger.warning("Error: Trying to add an invalid emotion to a percept: " + em);
-    			throw new RuntimeException("Trying to add an invalid emotion to a percept: " + em);
-    		}
-		}
-		
 		this.emotions = Arrays.asList(ems);
 	}
 	
@@ -81,7 +73,13 @@ public class PerceptAnnotation {
 		String result = "";
 		
     	for(String em: this.emotions) {
-			result += Emotion.ANNOTATION_FUNCTOR + "(" + em + "),";
+    		if (Emotion.getAllEmotions().contains(em)) {
+    			result += Emotion.ANNOTATION_FUNCTOR + "(" + em + "),";
+    		}
+    		else{
+    			logger.warning("Error: Trying to add an invalid emotion to a percept: " + em);
+    			throw new RuntimeException("Trying to add an invalid emotion to a percept: " + em);
+    		}
     	}
     	
     	// remove comma after last emotion

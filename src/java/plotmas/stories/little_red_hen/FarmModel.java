@@ -58,7 +58,6 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 			logger.info("Wheat has grown and is ripe now");
 			this.environment.addEventPerception(agent.name, "tend(wheat)", PerceptAnnotation.fromEmotion("pride"));
 			return true;
-//			return false;
 		}
 		
 		return false;
@@ -79,7 +78,6 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		if ((this.wheat.state == WHEAT_STATE.HARVESTED)){
 			this.wheat.state = WHEAT_STATE.FLOUR;
 			logger.info("Wheat was ground to flour");
-			this.wheat = null;
 			this.environment.addEventPerception(agent.name, "grind(wheat)", PerceptAnnotation.fromEmotion("pride"));
 			return true;
 		}
@@ -110,27 +108,8 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		
 		@Override
 		public String literal() {
-			if (state == WHEAT_STATE.SEED) {
-				return "wheat(seed)";
-			}
-			
-			if (state == WHEAT_STATE.GROWING) {
-				return "wheat(growing)";
-			}
-
-			if (state == WHEAT_STATE.RIPE) {
-				return "wheat(ripe)";
-			}
-			
-			if (state == WHEAT_STATE.HARVESTED) {
-				return "wheat(harvested)";
-			}
-			
-			if (state == WHEAT_STATE.FLOUR) {
-				return "wheat(flour)";
-			}
-		
-			return null;
+			String res = "wheat[state(%s)]";
+			return String.format(res, state.toString().toLowerCase());
 		}
 
 		@Override
