@@ -85,6 +85,10 @@ public class Happening<T extends PlotModel<?>> extends Event {
 		this.effect = effect;
 	}
 	
+	public String toString() {
+		return this.getClass().getSimpleName();
+	}
+	
 	public String getCausalProperty() {
 		return causalProperty;
 	}

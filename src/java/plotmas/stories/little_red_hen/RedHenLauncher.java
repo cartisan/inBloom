@@ -31,7 +31,7 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
 							new LauncherAgent("hen",					  	   // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
-									new Personality(0,  1, 0.7,  0.3, 0.15)    //punishment
+									new Personality(0,  1, 0.7,  0.3, 0.65)    //punishment
 //									new Personality(0,  1, 0.7,  0.3,  -1)     //low neurot --> no punishment
 //									new Personality(0,  1, 0.7,  0.7,  -1)     //high aggrea --> sharing
 									
@@ -56,9 +56,9 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         // Initialize MAS with a scheduled happening director
         ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 		FindCornHappening findCorn = new FindCornHappening(
-				// hen finds wheat after 4 farm work actions
+				// hen finds wheat after 2 farm work actions
 				(FarmModel model) -> {
-	            		if((model.actionCount > 4) & (!model.wheatFound)) {
+	            		if(model.actionCount > 2) {
 	            			return true;
 	            		}
 	            		return false; 

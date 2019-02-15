@@ -1,4 +1,4 @@
-package plotmas;
+package plotmas.ERcycle;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -19,38 +19,108 @@ import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
 import jason.asSemantics.Personality;
+import plotmas.PlotLauncher;
 import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.graph.isomorphism.FunctionalUnits;
 import plotmas.helper.PlotFormatter;
 import plotmas.helper.Tellability;
 
+/**
+ * Abstract version of a cycle that searches the personality space.
+ * Provides helpful program arguments as well as input and output functionality.
+ * @author Sven Wilke
+ */
 public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 	
+	/**
+	 * The name of the file the results will be written to.
+	 */
 	protected static String outFile = "results.csv";
+	/**
+	 * The name of the file personalities should be written from.
+	 * If no name is specified, this class creates a personality
+	 * space by itself.
+	 */
 	protected static String inFile = "";
+	/**
+	 * The name of the file the MAS console log should be written to.
+	 * Can include "%d" (without quotes) to save to a different file
+	 * depending on the cycle number.
+	 */
 	protected static String logFile = "";
 	
+	/**
+	 * The index of the last cycle to run. Can be set via a program argument,
+	 * or is calculated when cycleNum was set.
+	 */
 	protected static int endCycle = -1;
+	
+	/**
+	 * The number of cycles to run. Can be set via a program argument.
+	 * If -1, will run all cycles.
+	 */
 	protected static int cycleNum = -1;
 	
+	/**
+	 * The number of cycles to run before saving the results to
+	 * the output file. Note: results are always saved after
+	 * the last cycle has been run.
+	 */
 	protected static int flushInterval = 30;
 	
+	/**
+	 * Whether the JVM should close after it completed the last
+	 * cycle.
+	 */
 	protected static boolean closeOnComplete = false;
 	
+	/**
+	 * Whether the MAS GUI should be hidden during execution.
+	 */
 	protected static boolean hideGui = false;
 	
+	/**
+	 * The best tellability score.
+	 */
 	protected double bestTellability = -1f;
+	/**
+	 * The personalities corresponding to the
+	 * best tellability score.
+	 */
 	protected Personality[] bestPersonalities = null;
 	
+	/**
+	 * The list of personalities for all cycles to run.
+	 */
 	protected List<Personality[]> personalityList;
+	/**
+	 * An iterator used to iterate over the personalities.
+	 */
 	protected Iterator<Personality[]> personalityIterator;
 	
+	/**
+	 * The personalities of the last cycle.
+	 */
 	protected Personality[] lastPersonalities;
+	/**
+	 * The launcher of the last cycle.
+	 */
 	protected PlotLauncher<?,?> lastRunner;
 	
+	/**
+	 * The writer for the output file.
+	 */
 	protected PrintWriter csvOut;
 	
-	
+	/**
+	 * Handles the i-th argument of the given program arguments.
+	 * Returns a number x, such that i + x is the index of the next
+	 * argument to handle. x is -1 if an error occurred (invalid number of arguments
+	 * or unknown argument).
+	 * @param args Arguments given to the program
+	 * @param i Index of the argument to handle
+	 * @return number of steps to the next argument, or -1 if an error occurred.
+	 */
 	protected static int handleArgument(String[] args, int i) {
 		switch(args[i]) {
 			case "-close":
@@ -104,6 +174,9 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 		return 2;
 	}
 	
+	/**
+	 * Prints help stating valid arguments.
+	 */
 	protected static void printHelp() {
 		System.out.println("The following arguments are valid:");
 		System.out.println("\t[-out <file name>]\tSets the output file to the given file name.");
@@ -118,7 +191,12 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 		System.out.println("\t[-timeout]\tSets a maximum time for a single simulation to run.");
 	}
 	
-	
+	/**
+	 * Initializes a cycle with given agents.
+	 * @param agentNames The names of the agents
+	 * @param agentSrc The AgentSpeak source file for all agents
+	 * @param personalityNum Defines how many unique personalities the cycle should iterate over.
+	 */
 	public PersonalitySpaceSearchCycle(String[] agentNames, String agentSrc, int personalityNum) {
 		super(agentNames, agentSrc, !hideGui);
 
@@ -202,6 +280,14 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 		log("Running " + (endCycle - currentCycle) + " cycles...");
 	}
 
+	/**
+	 * From a list of possible personalities, generates a list of personality sets for a given
+	 * number of characters.
+	 * @param personalitySpace valid personalities an agent can have
+	 * @param characters number of agents
+	 * @param repeat whether the characters are symmetric (i.e. is <a, b> the same as <b, a>?)
+	 * @return list of personality arrays stating different combinations of personalities for the agents.
+	 */
 	public List<Personality[]> createPlotSpace(Personality[] personalitySpace, int characters, boolean repeat) {
 		List<int[]> values = allCombinations(characters, personalitySpace.length, repeat);
 		List<Personality[]> allPersonalityCombinations = new LinkedList<Personality[]>();
@@ -215,6 +301,12 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 		return allPersonalityCombinations;
 	}
 	
+	/**
+	 * Creates all variations of a personality by generating permutations
+	 * using the values given in the scale argument.
+	 * @param scale The values each trait can assume
+	 * @return array of possible personalities using the given values
+	 */
 	public Personality[] createPersonalitySpace(double[] scale) {
 		List<Personality> personalities = new LinkedList<Personality>();
 		List<int[]> values = allCombinations(5, scale.length, true);
@@ -247,10 +339,16 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 		}
 	}
 	
+	/**
+	 * To be called by a subclass.
+	 * Writes the results to the output file and flushes if needed.
+	 * @param personalities personality that was used in the cycle
+	 * @param tellability tellability analysis that was generated by the simulation
+	 */
 	protected void onCycleResult(Personality[] personalities, Tellability tellability) {
 		StringBuilder csv = new StringBuilder();
 		Formatter f = new Formatter(csv);
-		f.format(Locale.ENGLISH, "%f,%d,", tellability.functionalPolyvalence, tellability.numFunctionalUnits);
+		f.format(Locale.ENGLISH, "%f,%d,", tellability.compute(), tellability.numFunctionalUnits);
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
 			f.format("%d,", tellability.functionalUnitCount.get(unit));
 		}
@@ -274,6 +372,9 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 		}
 	}
 	
+	/**
+	 * Changes the logging to write to a file.
+	 */
 	protected void setupFileLogger() {
 		Handler[] hs = Logger.getLogger("").getHandlers(); 
         for (int i = 0; i < hs.length; i++) {

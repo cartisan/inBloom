@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import jason.asSemantics.Emotion;
+import plotmas.graph.Edge;
 
 public class PerceptAnnotation {
 	   static Logger logger = Logger.getLogger(PerceptAnnotation.class.getName());
@@ -55,9 +56,9 @@ public class PerceptAnnotation {
 	}
 	
 	public String separator(String literal1, String literal2) {
-		if ((literal1 != "") & (literal2 != ""))
-			return ",";
-		return "";
+		if ((literal1.equals("")) || (literal2.equals("")))
+			return "";
+		return ",";
 	}
 	
 	public String causalityAnnotation() {
@@ -65,7 +66,7 @@ public class PerceptAnnotation {
 			return "";
 		}
 		
-		return "cause(" + this.cause + ")";
+		return Edge.Type.CAUSALITY.toString() + "(" + this.cause + ")";
 	}
 	
 	public String emotionsAnnotation() {

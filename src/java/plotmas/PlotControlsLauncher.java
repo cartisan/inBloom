@@ -14,6 +14,7 @@ import javax.swing.JButton;
 
 import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
+import plotmas.framing.FramingGenerator;
 import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.PlotmasGraph;
@@ -32,6 +33,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	
 	private JButton pauseButton;
 	private JButton drawButton;
+	private JButton summaryButton;
 	private LinkedList<PlotmasGraph> graphs = new LinkedList<PlotmasGraph>();
 	private Long pauseStart = 0L;
 	
@@ -163,9 +165,11 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 
 	@Override
 	protected void createButtons() {
-		createDrawButton();
+		createPauseButton();
 		createAnalysisButton();
-		super.createButtons();
+		createSummaryButton();
+		createDrawButton();
+        createStopButton();
 	}
 
 	protected void createDrawButton() {
@@ -192,12 +196,32 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 			public void actionPerformed(ActionEvent evt) {
 				if(MASConsoleGUI.get().isPause()) {
 					PlotGraphController.getPlotListener().analyze();
+					summaryButton.setEnabled(true);
 				}
 			}
 	
 		});
 		
 		MASConsoleGUI.get().addButton(btAnalyze);
+	}
+	
+	protected void createSummaryButton() {
+		JButton btSummary = new JButton("Summarize Plot");
+		
+		btSummary.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph.removeEntailed();
+				PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph.prunePrimitives();
+				PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph.mergeTimeEquivalents();
+				PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph.display();
+				
+				logger.info("Summary: " + FramingGenerator.generateFraming(PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph));
+			}
+		});
+		
+		btSummary.setEnabled(false);
+		MASConsoleGUI.get().addButton(btSummary);
+		this.summaryButton = btSummary; 
 	}
 
 	@Override

@@ -34,7 +34,9 @@ public class PlotGraphLayoutTest extends TestCase {
 	public void visuallyInspectLayout(PlotDirectedSparseGraph g) throws Exception {
 		PlotGraphController.instantiatePlotListener(new ArrayList<LauncherAgent>());
 		PlotGraphController controller = PlotGraphController.getPlotListener();
-		DRAW_GRAPH.set(controller, g);
+		
+		controller.addGraph(g);
+		controller.setSelectedGraph(g);
 		
 		controller.visualizeGraph();
 		System.out.println("Press enter to continue execution...");
@@ -49,8 +51,8 @@ public class PlotGraphLayoutTest extends TestCase {
         SIZE = AbstractLayout.class.getDeclaredField("size");
         SIZE.setAccessible(true);
         
-        DRAW_GRAPH = PlotGraphController.class.getDeclaredField("drawnGraph");
-        DRAW_GRAPH.setAccessible(true);
+//        DRAW_GRAPH = PlotGraphController.class.getDeclaredField("drawnGraph");
+//        DRAW_GRAPH.setAccessible(true);
     }
 	
 	@SuppressWarnings("unchecked")
@@ -65,6 +67,7 @@ public class PlotGraphLayoutTest extends TestCase {
 		LoadingCache<Vertex, Point2D> locations = (LoadingCache<Vertex, Point2D>) LOC.get(layout);
 		
 		// test pos of first root
+//		visuallyInspectLayout(graph);
 		assertEquals(Double.valueOf(PlotGraphLayout.START_X), locations.get(v1).getX());
 		double yv1 = Double.valueOf(PlotGraphLayout.START_Y + PlotGraphLayout.PAD_Y);
 		assertEquals(yv1 + PlotGraphLayout.STEP_OFFSET, locations.get(v1).getY());
@@ -74,6 +77,20 @@ public class PlotGraphLayoutTest extends TestCase {
 		double yv2 = Double.valueOf(PlotGraphLayout.START_Y + PlotGraphLayout.PAD_Y);
 		assertEquals(xv2, locations.get(v2).getX());
 		assertEquals(yv2 + PlotGraphLayout.STEP_OFFSET, locations.get(v2).getY());
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void testRootLocationsMovesDueToLongLabel() throws Exception {
+		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
+		
+		// Create Trees for each agent and add the roots
+		Vertex v1 = graph.addRoot("len:200 ***********************************************************************************************************************************************************************************************");
+		
+		Layout<Vertex, Edge> layout = new PlotGraphLayout(graph);
+		LoadingCache<Vertex, Point2D> locations = (LoadingCache<Vertex, Point2D>) LOC.get(layout);
+		
+		// test pos of first root
+		assertEquals(Double.valueOf(812.0), locations.get(v1).getX());
 	}
 	
 	public void testCanvasGrows() throws Exception  {
@@ -255,6 +272,7 @@ public class PlotGraphLayoutTest extends TestCase {
 		assertEquals(locations.get(v6).getY() + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET, locations.get(v3).getY());
 	}
 	
+	/** Expected failure, this feature is not yet implemented */
 	@SuppressWarnings("unchecked")
 	public void testMissingSteps_endOfGraph() throws Exception {
 		// ...... Building test graph ......
@@ -283,17 +301,17 @@ public class PlotGraphLayoutTest extends TestCase {
 		graph.addEdge(new Edge(), v7, v8);
 		
 		// !!! Check out how it looks
-//		visuallyInspectLayout(graph);
+		visuallyInspectLayout(graph);
 		
 //		// ..... Testing locations ......
 		Layout<Vertex, Edge> layout = new PlotGraphLayout(graph);
 		LoadingCache<Vertex, Point2D> locations = (LoadingCache<Vertex, Point2D>) LOC.get(layout);
 		
-		// test that in first column step 3 was shifted down, because step 2 was detected in second column
-		assertEquals(locations.get(v8).getY() + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET, locations.get(v4).getY());
-		
 		// test that in second column step 2 was shifted down, because its missing in column one but has a successor there 
 		assertEquals(locations.get(v3).getY() + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET, locations.get(v7).getY());
+		
+		// test that in first column step 3 was shifted down, because step 2 was detected in second column
+		assertEquals(locations.get(v8).getY() + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET, locations.get(v4).getY());
 	}
 	
 	@SuppressWarnings("unchecked")

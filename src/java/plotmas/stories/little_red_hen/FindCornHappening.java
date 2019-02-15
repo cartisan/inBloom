@@ -14,6 +14,10 @@ public class FindCornHappening extends Happening<FarmModel> {
 		this.patient = patient;
 		this.annotation = PerceptAnnotation.fromEmotion("joy");
 	}
+	
+	public FindCornHappening(Predicate<FarmModel> trigger, String patient){
+		this(trigger, patient, "");
+	}
 
 	@Override
 	public void execute(FarmModel model) {

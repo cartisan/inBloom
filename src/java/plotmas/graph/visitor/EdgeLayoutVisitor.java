@@ -6,14 +6,27 @@ import plotmas.graph.Edge;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.Vertex;
 
+/**
+ * Computes and sets the offsets of a graph's edges for later display.
+ * @author Sven Wilke
+ */
 public class EdgeLayoutVisitor implements PlotGraphVisitor {
 	
+	/**
+	 * Number of pixels between two edges.
+	 */
 	private static final int EDGE_SPACING = 9;
 	
 	private PlotDirectedSparseGraph graph;
 	private Vertex[] occupanceLeft;
 	private Vertex[] occupanceRight;
 	
+	/**
+	 * Creates a visitor for a given graph, with maximally <i>numLanes</i> columns
+	 * in either direction. 
+	 * @param g
+	 * @param numLanes
+	 */
 	public EdgeLayoutVisitor(PlotDirectedSparseGraph g, int numLanes) {
 		this.graph = g;
 		this.occupanceLeft = new Vertex[numLanes];
@@ -112,6 +125,11 @@ public class EdgeLayoutVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitIntention(Vertex vertex) {
+		this.visitVertex(vertex);
+	}
+
+	@Override
+	public void visitAction(Vertex vertex) {
 		this.visitVertex(vertex);
 	}
 }

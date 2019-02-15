@@ -17,6 +17,7 @@ import jason.asSyntax.Plan;
 import jason.asSyntax.PlanBody;
 import plotmas.PlotCircumstanceListener;
 import plotmas.PlotLauncher;
+import plotmas.graph.Edge;
 import plotmas.graph.PlotGraphController;
 import plotmas.graph.Vertex;
 
@@ -60,6 +61,8 @@ public class PlotAwareAg extends AffectiveAgent {
         	// once with free variables for recursion check
         	// and once with bound variables for plotting
         	Literal motivation = null;
+        	String operator = "";
+        	String type = "";
         	Literal motivationNoUnif = null;
         	
         	// This variable will later be set to true,
@@ -81,6 +84,8 @@ public class PlotAwareAg extends AffectiveAgent {
         			
         			// We do not want a motivation, if the motivation was recursive (e.g. default_activity)
         			if(!isPlanRecursive(motivatingPlan, event.getIntention().peek().getUnif().clone())) {
+        				type = event.getIntention().peek().getTrigger().getType().toString();				// "!" or ""
+        				operator = event.getIntention().peek().getTrigger().getOperator().toString();		// "+" or "-"
         				motivation = (Literal)event.getIntention().peek().getTrigger().getLiteral().clone();
         			}
         		} else {
@@ -92,8 +97,6 @@ public class PlotAwareAg extends AffectiveAgent {
         			if(isPlanRecursive((Plan) o.getPlan().clone(), o.getUnifier().clone())) {
         				return o;
         			} else {
-//        				return o;
-//        				motivation = (Literal)event.getTrigger().getLiteral().clone();
         				motivation = null;
         			}
         		}
@@ -106,14 +109,16 @@ public class PlotAwareAg extends AffectiveAgent {
         	}
         	
         	String intentionString = "!" + intention.toString();
-        	String motivationString = motivation == null ? "" : "[motivation(" + motivation.toString() + ")]";
+        	// if motivation was an intention, just use type "!", otherwise perception, use operator "+" or "-" 
+        	// results in sth like [motivation(+found(wheat)]
+        	String motivationString = motivation == null ? "" : "[" + Edge.Type.MOTIVATION.toString() + "(" + (type == "" ? operator : type) + motivation.toString() + ")]";
         	
         	if(motivation != null) {
-        		if(motivation.getFunctor().equals("mood")) {
+        		if(motivation.getFunctor().equals(Mood.ANNOTATION_FUNCTOR)) {
         			
         			Collection<String> sources = this.getAffectiveTS().getAffectiveC().getS();
         			if(!sources.isEmpty()) {
-        				motivationString = "[motivation(";
+        				motivationString = "["+ Edge.Type.MOTIVATION.toString() +"(";		// --> [motivation(... )
             			for(String s : sources) {
             				motivationString += s;
             				motivationString += ";";
@@ -128,6 +133,11 @@ public class PlotAwareAg extends AffectiveAgent {
         	
         	// Actually plot the intention with the motivation
         	if(!isRecursive) {
+        		if (PlotLauncher.getRunner().getUserEnvironment().getStep() == 0) {
+        			// Initialize step counting with first intention
+        			PlotLauncher.getRunner().getUserEnvironment().setStep(1);
+        		}
+        		
         		PlotGraphController.getPlotListener().addEvent(
         			this.name,
         			intentionString + motivationString,

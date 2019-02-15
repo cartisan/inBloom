@@ -11,7 +11,10 @@ import java.awt.geom.Line2D;
 import java.util.Set;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.util.Context;
 import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
 
@@ -53,15 +56,13 @@ public class Transformers {
         	switch (v.getType()) {
         		case SPEECHACT:
         			return factory.getRoundRectangle(v);
-//        		case LISTEN:
-//        			return factory.getRoundRectangle(v);
+        		case INTENTION:
+        			return factory.getRoundRectangle(v);
         		case EMOTION:
         			return factory.getRectangle(v);
         		case LISTEN:
         		case PERCEPT:
         			return factory.getRectangle(v);
-        		case INTENTION:
-        			return factory.getRoundRectangle(v);
         		default:
         			return factory.getEllipse(v);
         	}	
@@ -86,9 +87,7 @@ public class Transformers {
 	        		return PlotGraphController.BGCOLOR;
 	        	case AXIS_LABEL:
 	        		return PlotGraphController.BGCOLOR;
-	        	case SPEECHACT:
-	        		return Color.getHSBColor(Float.valueOf("0"), Float.valueOf("0"), Float.valueOf("0.95"));
-	        	case LISTEN:
+	        	case ACTION:
 	        		return Color.getHSBColor(Float.valueOf("0"), Float.valueOf("0"), Float.valueOf("0.95"));
         		default:
         			return Color.LIGHT_GRAY;
@@ -141,7 +140,7 @@ public class Transformers {
         	switch (e.getType()) {
         	case ROOT:
         		return PlotGraphController.BGCOLOR;
-        	case COMMUNICATION:
+        	case EQUIVALENCE:
         		return Color.LIGHT_GRAY;
         	case ACTUALIZATION:
         		return Color.CYAN.darker();
@@ -154,4 +153,18 @@ public class Transformers {
         	}
     	}
     };
+    
+	public static Predicate<Context<Graph<Vertex, Edge>, Edge>> edgeArrowPredicate = new Predicate<Context<Graph<Vertex, Edge>, Edge>>() {
+		@Override
+		public boolean apply(Context<Graph<Vertex, Edge>, Edge> input) {
+			switch (input.element.getType()) {
+        	case EQUIVALENCE:
+        		return false;										// Equivalence edges have no arrows
+    		default:
+    			return true;
+			}
+		}
+		
+	};
+
 }

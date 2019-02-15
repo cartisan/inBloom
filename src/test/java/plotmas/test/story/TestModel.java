@@ -17,10 +17,6 @@ public class TestModel extends PlotModel<TestEnvironment> {
 
 	public TestModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		super(agentList, hapDir);
-		
-		for(Character ag : this.characters.values()) {
-			ag.addToInventory(wallet);
-		}
 	}
 	
 	@Override

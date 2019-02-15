@@ -31,7 +31,7 @@ import plotmas.graph.visitor.RemovedEdge;
 public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Edge> implements Cloneable {
   
     static Logger logger = Logger.getLogger(PlotDirectedSparseGraph.class.getName());
-    public static final String AXIS_LABEL = "time step";
+    public static final String AXIS_LABEL = "plot step";
 	
 	private ArrayList<Vertex> roots = Lists.newArrayList();
 	private HashMap<String, Vertex> lastVertexMap = new HashMap<>();			// maps: agentName --> vertex
@@ -217,7 +217,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	}
 	
 	/**
-	 * Returns vertice, that is successors in a plot sense, i.e. vertices that pertain to the same character column.
+	 * Returns vertex, that is a successor in a plot sense, i.e. vertices that pertain to the same character column.
 	 * This excludes vertices connected by communication edges.
 	 * @param vertex for which char-successor is sought
 	 * @return successor vertex if present, or null
@@ -234,6 +234,69 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
         
         return null;
     }
+	
+	/**
+	 * Returns vertex, that is a predecessor in a plot sense, i.e. vertices that pertain to the same character column.
+	 * This excludes vertices connected by communication edges.
+	 * @param vertex for which char-predecessor is sought
+	 * @return successor vertex if present, or null
+	 */
+	private Vertex getCharPredecessor(Vertex vertex) {
+		if(!containsVertex(vertex))
+			return null;
+		
+		for(Edge edge : getIncoming_internal(vertex)) {
+			if(edge.getType() == Edge.Type.TEMPORAL) {
+				return this.getSource(edge);
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns the position of this vertex inside the step.
+	 * 0 means this vertex is the first of its step, -1 is the second,
+	 * -2 the third, and so on.
+	 * @param vertex
+	 * @return position
+	 */
+	public int getInnerStep(Vertex vertex) {
+		int step = vertex.getStep();
+		Vertex pred = getCharPredecessor(vertex);
+		int c = 0;
+		while(pred != null && pred.getStep() == step) {
+			c++;
+			pred = getCharPredecessor(pred);
+		}
+		return c;
+	}
+	
+	/**
+	 * Returns all vertices which are a real predecessor of the given vertex.
+	 * This means, that all vertices this method returns happened at the same
+	 * time, or earlier, than the vertex in question.
+	 * This is effectively done by excluding EQUIVALENCE, ROOT and TERMINATION
+	 * edges in looking for predecessors. This assumes that they will never be
+	 * used in a forward-connecting way (except for ROOT).
+	 * Should this change, this method needs to be changed to look
+	 * for getStep and getInnerStep.
+	 * @param vertex for which real predecessors are sought
+	 * @return all real predecessors of the vertex, or an empty collection if none were found
+	 */
+	public Collection<Vertex> getRealPredecessors(Vertex vertex) {
+		if(!containsVertex(vertex))
+			return null;
+		
+		Set<Vertex> vertices = new HashSet<Vertex>();
+		for(Edge edge : getIncoming_internal(vertex)) {
+			if(edge.getType() != Edge.Type.EQUIVALENCE
+			&& edge.getType() != Edge.Type.TERMINATION
+			&& edge.getType() != Edge.Type.ROOT) {
+				vertices.add(this.getSource(edge));
+			}
+		}
+		return vertices;
+	}
 	
 	/**
 	 * Returns the subgraph of a character, i.e. all vertices connected to a certain root node.
@@ -366,6 +429,12 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		this.removeVertex(toRemove);
 	}
 	
+	/**
+	 * Removes a vertex from this graph and automatically finds the predecessor of the
+	 * removed node and connects it to the removed node's successor.
+	 * @param root Root of the subgraph the vertex to be removed belongs to
+	 * @param toRemove Vertex to be removed
+	 */
 	public void removeVertexAndPatchGraphAuto(Vertex root, Vertex toRemove) {
 		Vertex lastV = root;
 		Vertex currentV = root;
@@ -377,7 +446,11 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		
 		this.removeVertexAndPatchGraph(toRemove, lastV);
 	}
-
+	
+	/**
+	 * Runs a PlotGraphVisitor over this graph.
+	 * @param visitor to run
+	 */
 	public void accept(PlotGraphVisitor visitor) {
 		// Queue which contains the objects to be visited.
 		// Objects may only be of type Vertex, Edge or RemovedEdge.
@@ -447,13 +520,14 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		switch(vertex.getType()) {
 		case ROOT: 		visitor.visitRoot(vertex); 		break;
 		case EVENT: 	visitor.visitEvent(vertex); 	break;
+		case WILDCARD:	visitor.visitEvent(vertex);		break;
+		case ACTION: 	visitor.visitAction(vertex); 	break;
 		case EMOTION: 	visitor.visitEmotion(vertex); 	break;
 		case PERCEPT: 	visitor.visitPercept(vertex); 	break;
 		case SPEECHACT: visitor.visitSpeech(vertex); 	break;
 		case LISTEN: 	visitor.visitListen(vertex); 	break;
 		case INTENTION: visitor.visitIntention(vertex); break;
 		case AXIS_LABEL: break;
-		case WILDCARD:	visitor.visitEvent(vertex);		break;
 		default:
 			throw new RuntimeException("Unknown vertex type. Aborting visit!");
 		}

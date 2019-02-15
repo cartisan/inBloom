@@ -14,6 +14,11 @@ import plotmas.graph.Edge;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.Vertex;
 
+/**
+ * Class used to hold the state of partial mappings in the
+ * subgraph isomorphism algorithm.
+ * @author Sven Wilke
+ */
 public class State {
 	
 	private static final int NULL_NODE = -1;
@@ -28,6 +33,11 @@ public class State {
 	
 	private Map<String, Integer> agentNodeCounts;
 	
+	/**
+	 * Creates a new State for the given plot graph and functional unit graph.
+	 * @param plotGraph
+	 * @param unitGraph
+	 */
 	public State(PlotDirectedSparseGraph plotGraph, PlotDirectedSparseGraph unitGraph) {
 		g1 = plotGraph;
 		g2 = unitGraph;
@@ -53,6 +63,10 @@ public class State {
 		Arrays.fill(out2, NULL_NODE);
 	}
 	
+	/**
+	 * Creates a copy of the given State.
+	 * @param other State to copy.
+	 */
 	public State(State other) {
 		g1 = other.g1;
 		g2 = other.g2;
@@ -79,6 +93,11 @@ public class State {
 		return depth == n2;
 	}
 	
+	/**
+	 * Adds a mapping between two vertices.
+	 * @param v1 Index of the vertex in the plot graph
+	 * @param v2 Index of the vertex in the functional unit graph
+	 */
 	public void addMapping(int v1, int v2) {
 		assert core1[v1] == NULL_NODE;
 		assert core2[v2] == NULL_NODE;
@@ -110,6 +129,11 @@ public class State {
 		}
 	}
 	
+	/**
+	 * Increases the number of vertices of the matching
+	 * belonging to the given agent by 1.
+	 * @param agent
+	 */
 	private void countNodeForAgent(String agent) {
 		int current = 0;
 		if(agentNodeCounts.containsKey(agent)) {
@@ -118,10 +142,19 @@ public class State {
 		agentNodeCounts.put(agent, current + 1);
 	}
 	
+	/**
+	 * Decreases the number of vertices of the matching
+	 * belonging to the given agent by 1.
+	 * @param agent
+	 */
 	private void uncountNodeForAgent(String agent) {
 		agentNodeCounts.put(agent, agentNodeCounts.get(agent) - 1);
 	}
 	
+	/**
+	 * Removes the last mapping and undoes all changes caused by the
+	 * creation of that mapping.
+	 */
 	public void backtrack() {
 		assert lastAddedv1 != NULL_NODE;
 		
@@ -166,6 +199,9 @@ public class State {
 		return mapping;
 	}
 	
+	/**
+	 * Computes the set of possible mappings.
+	 */
 	public Set<Pair<Integer>> getCandidates() {
 		
 		// TODO: Optimize by saving how many entries are in the sets
@@ -219,6 +255,13 @@ public class State {
 		return tAll;
 	}
 	
+	/**
+	 * Checks whether a matching of two vertices
+	 * is feasible both syntactically and semantically.
+	 * @param v1 Index of the vertex in the plot graph
+	 * @param v2 Index of the vertex in the functional unit graph
+	 * @return true if the matching is feasible.
+	 */
 	public boolean isFeasible(int v1, int v2) {
 		assert v1 < n1;
 		assert v2 < n2;
@@ -228,6 +271,12 @@ public class State {
 		return isSynFeasible(v1, v2) && isSemFeasible(v1, v2);
 	}
 	
+	/**
+	 * Checks if a potential matching is syntactically feasible.
+	 * @param v1 Index of the vertex in the plot graph
+	 * @param v2 Index of the vertex in the functional unit graph
+	 * @return true if the matching is syntactically feasible.
+	 */
 	private boolean isSynFeasible(int v1, int v2) {
 		
 		Set<Integer> pred1 = getPredecessors(g1, v1);
@@ -374,11 +423,25 @@ public class State {
 		return rNew;
 	}
 	
+	/**
+	 * Checks if a potential matching is semantically feasible
+	 * by checking for vertex and edge compatibility.
+	 * @param v1 Index of the vertex in the plot graph
+	 * @param v2 Index of the vertex in the functional unit graph
+	 * @return true if the matching is semantically feasible.
+	 */
 	private boolean isSemFeasible(int v1, int v2) {
 		return checkVertexCompatibility(v1, v2)
 			&& checkEdgeCompatibility(v1, v2);
 	}
 	
+	/**
+	 * Checks whether the vertices of a vertex matching
+	 * are compatible.
+	 * @param v1 Index of the vertex in the plot graph
+	 * @param v2 Index of the vertex in the functional unit graph
+	 * @return true if the vertices are compatible.
+	 */
 	private boolean checkVertexCompatibility(int v1, int v2) {
 		Vertex plotVertex = g1.getVertex(v1);
 		Integer currentCount = agentNodeCounts.get(g1.getAgent(plotVertex));
@@ -407,6 +470,13 @@ public class State {
         return t1 != UnitVertexType.NONE && t1 == t2;
 	}
 	
+	/**
+	 * Checks whether the edges of a vertex matching
+	 * are compatible.
+	 * @param v1 Index of the vertex in the plot graph
+	 * @param v2 Index of the vertex in the functional unit graph
+	 * @return true if the edges are compatible.
+	 */
 	private boolean checkEdgeCompatibility(int v1, int v2) {
 		for(int m = 0; m < n2; m++) {
 			if(core2[m] != NULL_NODE) {
@@ -436,6 +506,14 @@ public class State {
 		return true;
 	}
 	
+	/**
+	 * Checks whether the edges between two vertices of the plot graph and
+	 * the edges between two vertices of the unit graph match.
+	 * @param plotEdges The edges of the plot graph
+	 * @param unitEdges The edges of the functional unit graph
+	 * @param isWildcard whether one of the vertices adjacent to the edges in the functional unit graph was a wildcard vertex.
+	 * @return true if the edges match, false if they don't.
+	 */
 	private boolean checkEdgeSetCompatibility(Collection<Edge> plotEdges, Collection<Edge> unitEdges, boolean isWildcard) {
 		// If the unit vertex is a wildcard, simply check the amount of edges,
 		// effectively making use of "wildcard edges"
@@ -469,6 +547,15 @@ public class State {
 		return edgeTypes.isEmpty();
 	}
 	
+	/**
+	 * Computes the set of edges between two given vertices.
+	 * Filters the edges using the {@link #isEdgeValid(Edge) isEdgeValid} method,
+	 * by only including those for which that method returns true.
+	 * @param g	Graph the vertices are in.
+	 * @param v1 Vertex from which edges should originate
+	 * @param v2 Vertex which the edges should lead to
+	 * @return Collection with all valid edges between <i>v1</i> and <i>v2</i>.
+	 */
 	private Collection<Edge> getEdges(PlotDirectedSparseGraph g, Vertex v1, Vertex v2) {
 		Collection<Edge> allEdges = g.findEdgeSet(v1, v2);
 		Collection<Edge> filteredEdges = new HashSet<Edge>();
@@ -482,6 +569,13 @@ public class State {
 		return filteredEdges;
 	}
 	
+	/**
+	 * Computes a set of indices of all predecessors of a vertex corresponding
+	 * to a provided index <i>v</i>.
+	 * @param g The graph the vertex is in.
+	 * @param v The index of the vertex to look for predecessors of.
+	 * @return HashSet containing indices of vertices which are predecessors.
+	 */
 	private Set<Integer> getPredecessors(PlotDirectedSparseGraph g, int v) {
 		Vertex vert = g.getVertex(v);
 		HashSet<Integer> predecessors = new HashSet<Integer>();
@@ -497,6 +591,13 @@ public class State {
 		return predecessors;
 	}
 	
+	/**
+	 * Computes a set of indices of all successors of a vertex corresponding
+	 * to a provided index <i>v</i>.
+	 * @param g The graph the vertex is in.
+	 * @param v The index of the vertex to look for successors of.
+	 * @return HashSet containing indices of vertices which are successors.
+	 */
 	private HashSet<Integer> getSuccessors(PlotDirectedSparseGraph g, int v) {
 		Vertex vert = g.getVertex(v);
 		HashSet<Integer> successors = new HashSet<Integer>();
@@ -512,6 +613,11 @@ public class State {
 		return successors;
 	}
 	
+	/**
+	 * Defines whether an edge should be considered in the isomorphism.
+	 * @param e Edge
+	 * @return whether <i>e</i> will be considered in the isomorphism search.
+	 */
 	private boolean isEdgeValid(Edge e) {
 		return e.getType() != Edge.Type.TEMPORAL && e.getType() != Edge.Type.ROOT;
 	}

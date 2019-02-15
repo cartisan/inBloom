@@ -1,5 +1,6 @@
 package plotmas;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,10 +20,12 @@ import jason.asSyntax.Term;
 import jason.asSyntax.parser.ParseException;
 import jason.environment.TimeSteppedEnvironment;
 import jason.runtime.MASConsoleGUI;
-import jason.util.Pair;
+import plotmas.graph.Edge;
 import plotmas.graph.PlotGraphController;
+import plotmas.graph.Vertex.Type;
 import plotmas.helper.EnvironmentListener;
 import plotmas.helper.PerceptAnnotation;
+import plotmas.helper.PlotpatternAnalyzer;
 import plotmas.helper.TermParser;
 
 /**
@@ -39,22 +42,19 @@ import plotmas.helper.TermParser;
  * @author Leonid Berov
  */
 public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends TimeSteppedEnvironment {
-	/* number of times all agents need to repeat an action, before system is paused; -1 to switch off*/
-	public static Integer MAX_REPEATE_NUM = 7;
-	/* number of steps, before system is automatically pauses; -1 to switch off*/
+	static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
+
+	/** number of times all agents need to repeat an action, before system is paused; -1 to switch off*/
+	public static final Integer MAX_REPEATE_NUM = 5;
+	/** number of environment steps, before system automatically pauses; -1 to switch off*/
 	public static Integer MAX_STEP_NUM = -1;
-	
+	/** time in ms that {@link TimeSteppedEnvironment} affords agents to propose an action, before each step times out */
 	static final String STEP_TIMEOUT = "100";
 	
-    static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
-    public static Long startTime = 0L;
+    /** Safes the time the plot has started to compute plot time, i.e. temporal duration of the plot so far. */
+    private static Long startTime = 0L;
+    /** Aggregates the durations of all pauses, so that plot time can disregard time spent paused. */
     private static Long pauseDuration = 0L;
-    
-    /**
-     * A list of environment listeners which get called on certain events
-     * in the environment.
-     */
-    private List<EnvironmentListener> listeners = new LinkedList<>();
     
     /**
      * Returns the current plot time in ms, i.e. the time that has passed since simulation was started
@@ -64,9 +64,19 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	return (System.nanoTime() - PlotEnvironment.pauseDuration - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
     }
     
+    /**
+     * Updates {@link #pauseDuration} with the duration of a new pause. 
+     * @param duration
+     */
     public static void notePause(Long duration) {
     	pauseDuration += duration;
     }
+    
+    /**
+     * A list of environment listeners which get called on certain events
+     * in the environment.
+     */
+    private List<EnvironmentListener> listeners = new LinkedList<>();
     
     protected ModType model;
     
@@ -75,7 +85,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * consecutive times the agent has been executing the action 'actionName'.
      * This is used to pause simulation execution if all agents just repeat their actions for a while.
      */
-    protected HashMap<String, Pair<String, Integer>> agentActionCount;  // agentName -> (action, #consecutive repeats)
+    protected HashMap<String, List<String>> agentActions;  // agentName -> [action1, action2, ...]
     /**
      * Stores a mapping from agentNames to a list of new events, that happened in model but agent hasn't perceived yet:<br>
      * 	&nbsp; {agentName -> List(events:String)}<br>
@@ -101,6 +111,12 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      */
     private ConcurrentHashMap<String, HashMap<Structure, Intention>> actionIntentionMap = new ConcurrentHashMap<>();
     
+    /** 
+     * Counts plot steps, synchronously to {@link TimeSteppedEnvironment#step} but designating the step of the 
+     * first plotted intention as step 1. Should be preferred as step counter for all plotmas purposes.
+     */
+    protected int step = 0;
+    
     private boolean initialized = false;
     
     /**
@@ -114,7 +130,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     @Override
     public void init(String[] args) {
     	if (args.length > 0)
-    		logger.warning("Initilization arguments provided but usage unclear, ignoring. Args: " + args.toString());
+    		logger.warning("Initilization arguments provided but usage unclear, ignoring. Args: " + Arrays.toString(args));
     	
     	String[] env_args = {STEP_TIMEOUT};
     	super.init(env_args);
@@ -169,7 +185,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	@Override
     public boolean executeAction(String agentName, Structure action) {
     	// add attempted action to plot graph
-		String motivation = "[motivation(%s)]";
+		String motivation = "[" + Edge.Type.MOTIVATION.toString() + "(%s)]";
 		Intention intent = actionIntentionMap.get(agentName).get(action);
 		if(intent != null) {
 			motivation = String.format(motivation, TermParser.removeAnnots(intent.peek().getTrigger().getTerm(1).toString()));
@@ -178,7 +194,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		}
 		actionIntentionMap.get(agentName).remove(action);
 		
-		PlotGraphController.getPlotListener().addEvent(agentName, action.toString() + motivation, getStep());
+		PlotGraphController.getPlotListener().addEvent(agentName, action.toString() + motivation, Type.ACTION, getStep());
 		
     	// let the domain specific subclass handle the actual action execution
     	// ATTENTION: this is were domain-specific action handling code goes
@@ -224,28 +240,46 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	@Override
 	public void scheduleAction(String agName, Structure action, Object infraData) {
 		Intention intent = ((ActionExec)infraData).getIntention();
-		if(!actionIntentionMap.containsKey(agName)) {
-			actionIntentionMap.put(agName, new HashMap<>());
-		}
+		
+		actionIntentionMap.putIfAbsent(agName, new HashMap<>());
+		
 		actionIntentionMap.get(agName).put(action, intent);
 		super.scheduleAction(agName, action, infraData);
 	}
 	
 	@Override
-	protected void stepStarted(int step) {
-		// check if pause mode is enabled, wait with execution while it is
-		this.waitWhilePause();
-		
-		if(!PlotLauncher.getRunner().isDebug()) {
-			logger.info("Step " + this.getStep() + " started for environment");
+	protected synchronized void stepStarted(int step) {
+		if (this.step > 0) {
+			this.step++;
+			
+			if(!PlotLauncher.getRunner().isDebug()) {
+				logger.info("Step " + this.step + " started for environment");
+			}
+			
+			if (this.model != null)
+				// Give model opportunity to check for and execute happenings
+				this.model.checkHappenings(this.step);
+			else 
+				logger.warning("field model was not set, but a step " + this.step + " was started");
+			}
+	}
+	
+	@Override
+	protected void stepFinished(int step, long elapsedTime, boolean byTimeout) {
+		// if environment is initialized && agents are done setting up && one of the agents didn't choose an action
+		if (this.model != null && byTimeout && step > 5 ) {
+			for (String agName : this.getModel().characters.keySet()) {
+				Object action = this.getActionInSchedule(agName);
+				if(action == null) {
+					this.agentActions.get(agName).add("--");		// mark inaction by --
+				}
+			}
 		}
 		
-		if (this.model != null)
-			// Give model opportunity to check for and execute happenings
-			this.model.checkHappenings(step);
-		else 
-			logger.warning("field model was not set, but a step " + step + " was started");
+		// check if pause mode is enabled, wait with execution while it is
+		this.waitWhilePause();
 	}
+	
 	
 	public void setModel(ModType model) {
 		this.model = model;
@@ -255,6 +289,15 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	public ModType getModel() {
 		return this.model;
 	}
+	
+    @Override
+    public int getStep() {
+    	return this.step;
+    }
+    
+    public void setStep(int step) {
+    	this.step = step;
+    }
 	
     /********************** Methods for updating agent percepts **************************
     * - distinguishes between:
@@ -428,16 +471,14 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     * checks if all agents executed the same action for the last MAX_REPEATE_NUM of times, if yes, pauses the MAS.
     */
     protected void initializeActionCounting(List<LauncherAgent> agents) {
-    	this.agentActionCount = new HashMap<>();
-        
+    	this.agentActions = new HashMap<>();
         for (LauncherAgent agent : agents) {
         	this.registerAgentForActionCount(agent.name);
         }
-        }
+    }
     
     private void registerAgentForActionCount(String agName) {
-    	// set up a neutral action count for each agent: no action, executed 1 time
-    	agentActionCount.put(agName, new Pair<String, Integer>("", 1));
+    	agentActions.put(agName, new LinkedList<String>());
     }
 	
 	protected void checkPause() {
@@ -445,8 +486,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 			// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
 	    	if ((MAX_REPEATE_NUM > -1) && (allAgentsRepeating())) {
 	    		// reset counter
-	    		logger.severe("Auto-paused execution of simulation, because all agents repeated their last action for " +
-	    				String.valueOf(MAX_REPEATE_NUM) + " of times.");
+	    		logger.info("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
+	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
 	    		resetAllAgentActionCounts();
 	
 	    		PlotLauncher.runner.pauseExecution();
@@ -455,7 +496,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	    		}
 	    	}
 	    	if ((MAX_STEP_NUM > -1) && (this.getStep() % MAX_STEP_NUM == 0)) {
-	    		logger.severe("Auto-paused execution of simulation, because system ran for 50 steps.");
+	    		logger.info("Auto-paused execution of simulation, because system ran for MAX_STEP_NUM steps.");
 	    		
 	    		PlotLauncher.runner.pauseExecution();
 	    		for(EnvironmentListener l : listeners) {
@@ -470,40 +511,33 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 * @param action
 	 */
 	private void updateActionCount(String agentName, Structure action) {
-		Pair<String, Integer> actionCountPair = agentActionCount.get(agentName);
-		
-		// new action is same as last action
-    	if (actionCountPair.getFirst().equals(action.toString())) {
-    		agentActionCount.put(agentName, new Pair<String, Integer>(action.toString(),
-    																  actionCountPair.getSecond()+1));
-    	} 
-    	// new action different from last action
-    	else {
-    		agentActionCount.put(agentName, new Pair<String, Integer>(action.toString(), 1));
-    	}
+		this.agentActions.get(agentName).add(action.toString());
 	}
 	
     private boolean allAgentsRepeating() {
-    	for (Pair<String, Integer> actionCountPair : agentActionCount.values()) {
-    		if (actionCountPair.getSecond() < MAX_REPEATE_NUM) {
-    			return false;
+    	HashMap<String,Boolean> agentsRepeating = new HashMap<>();
+    	for (String agent : agentActions.keySet()) {
+    		agentsRepeating.put(agent, false);
+    		
+    		List<String> actions = agentActions.get(agent);
+    		HashMap<String,Integer> patRepeats = PlotpatternAnalyzer.countTrailingPatterns(actions);
+    		logger.fine(agent + "'s action patterns: " + patRepeats.toString());
+    		
+    		if (patRepeats.values().stream().mapToInt(x -> x).max().orElse(0) >= MAX_REPEATE_NUM) {
+    			agentsRepeating.put(agent, true);
     		}
     	}
-    	// all agents counts are >= MAX_REPEATE_NUM
-    	return true;
+    	
+    	// test if all agents are set to true
+    	if (agentsRepeating.values().stream().allMatch(bool -> bool)) {
+    		return true;
+    	}
+    	return false;
     }
     
-	public HashMap<String, Pair<String, Integer>> getAgentActionCount() {
-		return agentActionCount;
-	}
-
-	public void setAgentActionCount(HashMap<String, Pair<String, Integer>> agentActionCount) {
-		this.agentActionCount = agentActionCount;
-	}
-    
     public void resetAllAgentActionCounts() {
-    	for (String agent : agentActionCount.keySet()) {
-    		agentActionCount.put(agent, new Pair<String, Integer>("", 1));
+    	for (List<String> actions : agentActions.values()) {
+			actions.clear();
     	}
     }
 }

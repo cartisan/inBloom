@@ -91,7 +91,7 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	.suspend(X);
 	!X.
 
-@default_activity_1[affect(and(personality(conscientiousness,high)))]
+@default_activity_1[affect(personality(conscientiousness,high))]
 +!default_activity <-
 	?obligation(X);
 	!X;
@@ -155,6 +155,7 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 /***** Plans  *******************************/
 /********************************************/
 
+@create_bread[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(seed)])<-
 	!plant(wheat);
 	!create(bread).
