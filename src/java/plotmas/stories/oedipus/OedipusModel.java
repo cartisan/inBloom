@@ -1,4 +1,4 @@
-package oedipusnew;
+package plotmas.stories.oedipus;
 
 import java.util.List;
 
@@ -11,14 +11,14 @@ import plotmas.storyworld.StoryworldAgent;
 //import jason.asSemantics.DefaultInternalAction;
 
 
-public class OedipusModelNew extends Model {
+public class OedipusModel extends Model {
 	
 	
 	public int actionCount;
 	public String location; 
 	public int pregnancytimeCount;
 	
-	public OedipusModelNew(List<LauncherAgent> agentList, PlotEnvironment<OedipusModelNew> env) {
+	public OedipusModel(List<LauncherAgent> agentList, PlotEnvironment<OedipusModel> env) {
 		super(agentList, env);
 		this.actionCount = 0;
 		this.pregnancytimeCount = 0;

@@ -1,4 +1,4 @@
-package oedipusnew;
+package plotmas.stories.oedipus;
 
 import com.google.common.collect.ImmutableList;
 
@@ -6,12 +6,12 @@ import jason.JasonException;
 import jason.asSemantics.Personality;
 import plotmas.PlotLauncher;
 
-public class OedipusLauncherNew extends PlotLauncher {
+public class OedipusLauncher extends PlotLauncher {
 
 	  public static void main(String[] args) throws JasonException {
 		  logger.info("Starting up from Launcher!");
-		    ENV_CLASS = OedipusEnvironmentNew.class;
-		    runner = new OedipusLauncherNew();
+		    ENV_CLASS = OedipusEnvironment.class;
+		    runner = new OedipusLauncher();
 
 		    ImmutableList<LauncherAgent> agents = ImmutableList.of(
 		     // runner.new LauncherAgent("oedipus",
@@ -34,7 +34,7 @@ public class OedipusLauncherNew extends PlotLauncher {
 				     ) 
 		    );
 
-		    runner.run(args, agents, "agent_oedipusNew"); 
+		    runner.run(args, agents, "agent_oedipus"); 
 		  }
     
 }

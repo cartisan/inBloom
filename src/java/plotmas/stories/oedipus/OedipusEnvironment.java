@@ -1,4 +1,4 @@
-package oedipusnew;
+package plotmas.stories.oedipus;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -10,13 +10,13 @@ import plotmas.PlotEnvironment;
 import plotmas.PlotLauncher.LauncherAgent;
 import plotmas.storyworld.StoryworldAgent;
 
-public class OedipusEnvironmentNew extends PlotEnvironment<OedipusModelNew> {
+public class OedipusEnvironment extends PlotEnvironment<OedipusModel> {
 
-	static Logger logger = Logger.getLogger(OedipusEnvironmentNew.class.getName());
+	static Logger logger = Logger.getLogger(OedipusEnvironment.class.getName());
 	@Override
 	public void initialize(List<LauncherAgent> agents) {
 		super.initialize(agents);
-		OedipusModelNew model = new OedipusModelNew(agents, this);
+		OedipusModel model = new OedipusModel(agents, this);
 		this.setModel(model);
 		this.model.location = null; 
 
