@@ -1,25 +1,15 @@
 package plotmas.tutorial;
 
-import java.util.List;
-
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import plotmas.PlotEnvironment;
-import plotmas.PlotLauncher.LauncherAgent;
 
 public class TutorialEnviroment extends PlotEnvironment<TutorialModel> {
 
     @Override
-    public void initialize(List<LauncherAgent> agents) {
-      super.initialize(agents);
-        TutorialModel model = new TutorialModel(agents, this);
-        this.setModel(model);
-    }
-	
-    @Override
-    public boolean executeAction(String agentName, Structure action) {
-		boolean result = super.executeAction(agentName, action);
-		
+    public boolean doExecuteAction(String agentName, Structure action) {
+    	boolean result = false;
+    	
 		// check which action is executed by agent
 		if (action.getFunctor().equals("add")) {
 			// parse the term values passed by agent, pass them on to model
@@ -33,6 +23,6 @@ public class TutorialEnviroment extends PlotEnvironment<TutorialModel> {
 			result = true;
       }
 
-      return result;
+    	return result;
     }
 }
