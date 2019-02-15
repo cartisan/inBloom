@@ -4,22 +4,26 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.logging.Handler;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
-import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Agent;
-import jason.asSemantics.Personality;
+import jason.asSyntax.PlanLibrary;
 import jason.bb.DefaultBeliefBase;
+import jason.infra.centralised.BaseCentralisedMAS;
 import jason.infra.centralised.CentralisedAgArch;
 import jason.infra.centralised.RConf;
 import jason.mas2j.AgentParameters;
 import plotmas.graph.PlotGraphController;
-import plotmas.helper.PlotFormatter;
+import plotmas.jason.PlotAwareAg;
+import plotmas.jason.PlotAwareAgArch;
+import plotmas.jason.PlotAwareCentralisedAgArch;
 
 /**
  * Used to perform a Java-side setup and execution of a Jason MAS. <br>
@@ -33,20 +37,56 @@ import plotmas.helper.PlotFormatter;
  * @see plotmas.stories.little_red_hen.RedHenLauncher
  * @author Leonid Berov
  */
-public class PlotLauncher extends PlotControlsLauncher {
+public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends PlotControlsLauncher {
 	protected static Logger logger = Logger.getLogger(PlotLauncher.class.getName());
 	public static String DEAULT_FILE_NAME = "launcher.mas2j";
-
-    
+	
     /** 
      * Subclasses need to set ENV_CLASS to the class of their PlotEnvironment implementation, e.g.
      * {@code ENV_CLASS = FarmEnvironment.class;}
      */
-	@SuppressWarnings("rawtypes")
-	protected static Class ENV_CLASS;
-    static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
-    static Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
+	public Class<?> ENV_CLASS;
+	protected Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
+	protected Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
+	
+	protected static Map<String, PlanLibrary> planLibraryCache =  new HashMap<>();
+
+    /**
+     * Convenience function that casts the runner-singleton to a more appropriate type  
+     * @return
+     */
+    public static PlotLauncher<?,?> getRunner() {
+        return (PlotLauncher<?,?>) BaseCentralisedMAS.getRunner();
+    }
     
+    
+    /**
+     * Cinvenience function to retrieve an instance of the plan library. Returns the cached library from last execution,
+     * if runner was reseted but not restarted in the meantime.
+     * @return
+     */
+    public static PlanLibrary getPlanLibraryFor(String agentName) {
+    	return PlotLauncher.planLibraryCache.get(agentName);
+    }
+    
+    /**
+     * Resets static variables such that a new
+     * cycle of simulation may be run.
+     */
+    public void reset() {
+    	if (control != null) {
+    		control.stop();
+    		control = null;
+    	}
+    	if (env != null) {
+    		env.stop();
+    		env = null;
+    	}
+    	
+    	stopAgs();
+    	runner = null;
+    	ags.clear();
+    }
     
     /** 
      * This implements the functionality of the super class, but inserts {@link PlotAwareCentralisedAgentArch}
@@ -134,7 +174,7 @@ public class PlotLauncher extends PlotControlsLauncher {
                     agArch.setConf(agentConf);
                     agArch.setAgName(numberedAg);
                     agArch.setEnvInfraTier(env);
-                    if ((generalConf != RConf.THREADED) && cAg > 0 && ap.getAgArchClasses().isEmpty() && ap.getBBClass().equals(DefaultBeliefBase.class.getName())) {
+                    if ((generalConf != RConf.THREADED) && cAg > 0 && ap.getAgArchClasses().isEmpty() && ap.getBBClass().getClassName().equals(DefaultBeliefBase.class.getName())) {
                         // creation by cloning previous agent (which is faster -- no parsing, for instance)
                         agArch.createArchs(ap.getAgArchClasses(), pag, this);
                     } else {
@@ -154,12 +194,15 @@ public class PlotLauncher extends PlotControlsLauncher {
     }
     
     
-	protected void createMas2j(Collection<LauncherAgent> agents, String agentFileName) {
+	protected void createMas2j(Collection<LauncherAgent> agents, String agentFileName, boolean debugMode) {
 		try{
 		    PrintWriter writer = new PrintWriter(DEAULT_FILE_NAME, "UTF-8");
 		    
 		    writer.println("MAS launcher {");
 		    writer.println("	environment: " + ENV_CLASS.getName());
+		    if(!debugMode) {
+		    	writer.println("	executionControl: jason.control.ExecutionControl");
+		    }
 		    writer.println("");
 		    writer.println("	agents:");
 		    
@@ -192,10 +235,12 @@ public class PlotLauncher extends PlotControlsLauncher {
 	 * we can initialize personality from mas2j files.
 	 * @param agents
 	 */
-	protected void initializePlotAgents(ImmutableList<LauncherAgent> agents) {
-		// initialize personalities
+	protected void initializePlotAgents(List<LauncherAgent> agents) {
+		PlotLauncher.planLibraryCache.clear();
+		
 		for (LauncherAgent ag: agents) {
 			if(ag.personality != null) {
+				// initialize personalities
 				PlotAwareAg plotAg = (PlotAwareAg) this.getAg(ag.name).getTS().getAg();
 				try {
 					plotAg.initializePersonality(ag.personality);
@@ -203,44 +248,42 @@ public class PlotLauncher extends PlotControlsLauncher {
 					logger.severe("Failed to initialize mood based on personality: " + ag.personality);
 					e.printStackTrace();
 				}
+				
 				plotAg.initializeMoodMapper();
+				PlotLauncher.planLibraryCache.put(ag.name, plotAg.getPL());
 			}
 		}
 	}
 	
-	protected void initzializePlotEnvironment(ImmutableList<LauncherAgent> agents) {
-		PlotEnvironment<?> env = (PlotEnvironment<?>) this.env.getUserEnvironment();
-		env.initialize(agents);
+	protected void initializePlotEnvironment(List<LauncherAgent> agentList, ModType model) {
+		EnvType env = this.getUserEnvironment();
+		model.setEnvironment(env);
+		env.setModel(model);
+		
+		env.initialize(agentList);
+	}
+	
+	protected void initializePlotModel(List<LauncherAgent> agentList) {
+		this.getUserModel().initialize(agentList);
 	}
 	
 	/**
-	 * Has to be executed after initialization is complete because it depends
-	 * on PlotEnvironment being already initialized with a plotStartTime.
-	 */
-	public synchronized void setupPlotLogger() {
-        Handler[] hs = Logger.getLogger("").getHandlers(); 
-        for (int i = 0; i < hs.length; i++) { 
-            Logger.getLogger("").removeHandler(hs[i]); 
-        }
-        Handler h = PlotFormatter.handler();
-        Logger.getLogger("").addHandler(h);
-        Logger.getLogger("").setLevel(Level.INFO);
-//        Logger.getLogger("").setLevel(Level.FINE);
-	}
-	
-	/**
-	 * Creates a mas2j file to prepare execution of the MAS, sets up agents, environment and model and finally starts
-	 * the execution of the MAS. The execution is paused if all agents repeat the same action
-	 * {@link PlotEnvironment.MAX_REPEATE_NUM} number of times.
-	 * <b> Attention: </b> static parameter {@link #ENV_CLASS} needs to be set to the class of your custom environment before executing 
-	 * this method.
+	 * Creates a mas2j file to prepare execution of the MAS, sets up agents, environment and model.
+	 * <b> Attention: </b> static parameter {@link #ENV_CLASS} needs to be set to the class of your custom environment 
+	 * before executing this method.
 	 * 
 	 * @param args contains the name of the mas2j and potentially {@code -debug} to execute in debug mode
+	 * @param model an instance of a (domain-specific) model sub-class
 	 * @param agents a list of agent parameters used to initialize mas2j, environment and model
+	 * @param agentFileName specifies the source of the agent ASL code
+	 * @param usePlotLogger set this to false if you wish to set your own logging output
 	 * @throws JasonException
 	 */
-	public void run (String[] args, ImmutableList<LauncherAgent> agents, String agentFileName) throws JasonException  {
+	@SuppressWarnings("unchecked")
+	public void initialize (String[] args, PlotModel<?> model, List<LauncherAgent> agents, String agentFileName) throws JasonException  {
 		String defArgs[];
+		boolean debugMode=false;
+		
 		if (ENV_CLASS == null) {
         	throw new RuntimeException("PlotLauncher.ENV_CLASS must be set to the class of your custom"
         			+ " environment before executing this method");
@@ -252,75 +295,49 @@ public class PlotLauncher extends PlotControlsLauncher {
         else {
         	assert args[0] == "-debug";
         	defArgs = new String[] {PlotLauncher.DEAULT_FILE_NAME, "-debug"};
+        	debugMode = true;
+        	
+        	// make sure plotmas environment doesn't pause while slowly stepping through reasoning cycles
+        	PlotEnvironment.MAX_STEP_NUM = -1;
         }
         
         
 		PlotGraphController.instantiatePlotListener(agents);
         
-		this.createMas2j(agents, agentFileName);
+		this.createMas2j(agents, agentFileName, debugMode);
 		this.init(defArgs);
 		this.create();
         
-		this.initzializePlotEnvironment(agents);
 		this.setupPlotLogger();
+		this.initializePlotEnvironment(agents, (ModType) model);
 		this.initializePlotAgents(agents);
+		this.initializePlotModel(agents);
+	}
+	
 		
+	/**
+	 * Starts the execution of the MAS. The execution is paused if all agents repeat the same action
+	 * {@link PlotEnvironment.MAX_REPEATE_NUM} number of times.
+	 * 
+	 * <b> Attention: </b> {@linkplain PlotLauncher#initialize(String[], ImmutableList, String)} needs to be executed 
+	 * first.
+	 */
+	public void run() {
 		this.start();
 		this.waitEnd();
 		this.finish();
 	}
-	
-	public AffectiveAgent getPlotAgent(String agName) {
+
+	public PlotAwareAg getPlotAgent(String agName) {
 		return AG_CLASS.cast(PlotLauncher.getRunner().getAg(agName).getTS().getAg());
-	}
-
-	/**
-	 * Helper class used to encapsulate all parameters needed to initialise ASL Agents from java code.
-	 * This parameters will be used to create a mas2j file required to start a Jason multi agent system. 
-	 * @author Leonid Berov
-	 */
-	public class LauncherAgent {
-		public String name;
-		public String beliefs;
-		public String goals;
-		public Personality personality;
-		
-		public LauncherAgent() {
-			this.name = null;
-			this.beliefs = "";
-			this.goals = "";
-			this.personality = null;
 		}
 		
-		public LauncherAgent(String name) {
-			this.beliefs = "";
-			this.goals = "";
-			this.personality = null;
-			
-			this.name = name;
+	@SuppressWarnings("unchecked")
+	public EnvType getUserEnvironment() {
+		return (EnvType) this.getEnvironmentInfraTier().getUserEnvironment();
 		}
 
-		public LauncherAgent(String name, Personality personality) {
-			this.beliefs = "";
-			this.goals = "";
-			
-			this.name = name;
-			this.personality = personality;
-		}
-		
-		public LauncherAgent(String name, Collection<String> beliefs, Collection<String> goals, Personality personality) {
-			this.name = name;
-			this.beliefs = createLiteralString(beliefs);
-			this.goals = createLiteralString(goals);
-			this.personality = personality;
-		}
-		
-		/**
-		 * Helper function that takes a collection of strings and concatenates them into a list that can be used to 
-		 * generate ASL literal lists.
-		 */
-		private String createLiteralString(Collection<String> literalList) {
-			return String.join(",", literalList);
-		}
+	public ModType getUserModel() {
+		return (ModType) this.getUserEnvironment().getModel();
 	}
 }

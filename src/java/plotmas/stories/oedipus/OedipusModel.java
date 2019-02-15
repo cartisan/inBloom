@@ -3,29 +3,28 @@ package plotmas.stories.oedipus;
 import java.util.List;
 
 import jason.asSemantics.Personality;
-import plotmas.PlotEnvironment;
-import plotmas.PlotLauncher.LauncherAgent;
-//import plotmas.storyworld.Item;
-import plotmas.storyworld.Model;
-import plotmas.storyworld.StoryworldAgent;
+import plotmas.LauncherAgent;
+import plotmas.PlotModel;
+import plotmas.storyworld.Character;
 //import jason.asSemantics.DefaultInternalAction;
+import plotmas.storyworld.HappeningDirector;
 
 
-public class OedipusModel extends Model {
+public class OedipusModel extends PlotModel<OedipusEnvironment> {
 	
 	
 	public int actionCount;
 	public String location; 
 	public int pregnancytimeCount;
 	
-	public OedipusModel(List<LauncherAgent> agentList, PlotEnvironment<OedipusModel> env) {
-		super(agentList, env);
+	public OedipusModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
+		super(agentList, hapDir);
 		this.actionCount = 0;
 		this.pregnancytimeCount = 0;
 	}
 	
 	
-	public boolean chilling(StoryworldAgent agent){
+	public boolean chilling(Character agent){
 		this.actionCount +=1;
 		logger.info("Someone was chilling");
 		
@@ -43,7 +42,7 @@ public class OedipusModel extends Model {
 		
 	}
 	
-	public boolean working(StoryworldAgent agent){
+	public boolean working(Character agent){
 		this.actionCount +=1;
 		logger.info("Someone was working");
 		
@@ -59,7 +58,7 @@ public class OedipusModel extends Model {
 		return true; 
 	}
 	
-	public boolean ask(StoryworldAgent asker, StoryworldAgent asked){
+	public boolean ask(Character asker, Character asked){
 		this.actionCount +=1;
 		logger.info(asker.name +" asked "+ asked.name);
 		this.environment.addEventPerception(asked.name, "wasAsked");
@@ -67,7 +66,7 @@ public class OedipusModel extends Model {
 		return true;
 	}
 	
-	public boolean answer_question(StoryworldAgent answerer, StoryworldAgent answered){
+	public boolean answer_question(Character answerer, Character answered){
 		this.actionCount +=1;
 		logger.info(answerer.name +" answered "+ answered.name);
 		if (answered.name == "laios") {
@@ -78,13 +77,13 @@ public class OedipusModel extends Model {
 	}
 	
 	
-	public boolean getChild(StoryworldAgent agent) {
+	public boolean getChild(Character agent) {
 		
 		if(agent.name == "jocaste") {
 			this.environment.addEventPerception(agent.name, "gotChild");
 			this.actionCount +=1;
 			
-			this.environment.createAgent("Oedipus", "agent_oedipusNew.asl", new Personality(0,0,0,0,0));
+			this.environment.createAgent("Oedipus", "agent_oedipus.asl", new Personality(0,0,0,0,0));
 			logger.info(agent.name + "gave birth to Oedipus");
 			
 		}
@@ -93,7 +92,7 @@ public class OedipusModel extends Model {
 		
 	}
 	
-	public boolean giveChildTo(StoryworldAgent giver, StoryworldAgent receiver){
+	public boolean giveChildTo(Character giver, Character receiver){
 		this.actionCount +=1;
 		logger.info(giver.name +" gave "+ "Oedipus " + "to " + receiver.name);
 		this.environment.addEventPerception(receiver.name, "guardianOfOedipus");
@@ -103,7 +102,7 @@ public class OedipusModel extends Model {
 	}
 	
 	
-	public boolean adopt(StoryworldAgent adopter, StoryworldAgent adopted){
+	public boolean adopt(Character adopter, Character adopted){
 		this.actionCount +=1;
 		logger.info(adopter.name +" adopted" + adopted.name);
 		this.environment.addEventPerception(adopter.name, "parentsOfOedipus");

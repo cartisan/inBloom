@@ -5,7 +5,13 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import plotmas.PlotEnvironment;
+import jason.asSemantics.Mood;
+import jason.asSemantics.Personality;
+import plotmas.LauncherAgent;
+import plotmas.PlotLauncher;
+import plotmas.PlotModel;
+import plotmas.helper.PerceptAnnotation;
+import plotmas.jason.PlotAwareAg;
 
 
 /**
@@ -15,21 +21,24 @@ import plotmas.PlotEnvironment;
  * modify a character's state.
  * @author Leonid Berov
  */
-public class StoryworldAgent {
-    static Logger logger = Logger.getLogger(StoryworldAgent.class.getName());
+public class Character {
+    static Logger logger = Logger.getLogger(Character.class.getName());
 	
-	public LinkedList<Item> inventory = new LinkedList<Item>();
-	public String name;
-	private PlotEnvironment<?> environment;
+    public LinkedList<Item> inventory = new LinkedList<Item>();
+    public PlotAwareAg plotAgentPendant;
+    public String name;
 
-	
-	
-	public StoryworldAgent() {
-		this.name = null;
+	private PlotModel<?> model;
+
+	public Character() {
 	}
 	
-	public StoryworldAgent(String name) {
-		this.name = name;
+	public Character(String name) {
+		this.setName(name);
+	}
+	
+	public void initialize(LauncherAgent lAgent) {
+		this.setName(lAgent.name);
 	}
 	
 	/**
@@ -75,24 +84,24 @@ public class StoryworldAgent {
 		return null;
 	}
 	
-	public boolean share(String itemType, StoryworldAgent receiver) {
+	public boolean share(String itemType, Character receiver) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			receiver.receive(item, this);
-			this.environment.addEventPerception(name,
-					String.format("shared(%s,%s)" + Model.addTargetedEmotion("pride", "self"),
-								  item.literal(), receiver.name));
+			this.model.getEnvironment().addEventPerception(name, 
+														   String.format("shared(%s,%s)", item.literal(), receiver.name),
+														   new PerceptAnnotation().addTargetedEmotion("pride", "self"));
 			return true;
 		}
 		
 		return false;
 	}
 	
-	public boolean share(String itemType, List<StoryworldAgent> receivers) {
+	public boolean share(String itemType, List<Character> receivers) {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			
-			for(StoryworldAgent receiver : receivers) {
+			for(Character receiver : receivers) {
 				receiver.receive(item, this);
 			}
 			
@@ -100,9 +109,9 @@ public class StoryworldAgent {
 											   .collect(Collectors.joining(",", "[", "]"))
 											   .toString();
 			
-			this.environment.addEventPerception(name,
-					String.format("share(%s,%s)" + Model.addTargetedEmotion("pride", "self"),
-								  item.literal(), recList));
+			this.model.getEnvironment().addEventPerception(name,
+														   String.format("share(%s,%s)", item.literal(), recList),
+														   new PerceptAnnotation().addTargetedEmotion("pride", "self"));
 			
 			logger.info(this.name + " shared some " + item.literal() + ".");
 			
@@ -112,12 +121,12 @@ public class StoryworldAgent {
 		return false;
 	}
 	
-	public boolean receive(Item item, StoryworldAgent from) {
+	public boolean receive(Item item, Character from) {
 		this.addToInventory(item);
 		
-		this.environment.addEventPerception(name,
-				String.format("receive(%s)" + Model.addTargetedEmotion("gratitude", "self"),
-							  item.literal(), this.name));
+		this.model.getEnvironment().addEventPerception(name,
+													   String.format("receive(%s,%s)", item.literal(), this.name),
+													   new PerceptAnnotation().addTargetedEmotion("gratitude", "self"));
 		
 		//logger.info(this.name + " received some " + item.literal() + ".");
 		logger.info(this.name + " received some " + item.getItemName() + ".");
@@ -132,8 +141,9 @@ public class StoryworldAgent {
 			
 			if (item.isEdible()) {
 				this.removeFromInventory(item);
-				this.environment.addEventPerception(name, 
-						String.format("eat(%s)" + Model.addEmotion("satisfaction"), item.literal()));
+				this.model.getEnvironment().addEventPerception(name, 
+															   String.format("eat(%s)", item.literal()),
+															   PerceptAnnotation.fromEmotion("satisfaction"));
 				
 				// in theory: here double dispatch
 				// so food can affect agent in specific
@@ -148,15 +158,36 @@ public class StoryworldAgent {
 	}
 	
 	public boolean relax() {
-		this.environment.addEventPerception(name, "relax" + Model.addEmotion("joy"));
+		this.model.getEnvironment().addEventPerception(name, "relax", PerceptAnnotation.fromEmotion("joy"));
 		return true;
-	}
-
-	public void setEnvironment(PlotEnvironment<?> environment) {
-		this.environment = environment;
 	}
 	
 	public String toString() {
 		return this.name + "-agent_model";
+	}
+	
+	public void setModel(PlotModel<?> model) {
+		this.model = model;
+	}
+
+	public Personality getPersonality() {
+		return this.plotAgentPendant.getPersonality();
+	}
+	
+	public Mood getMood() {
+		return this.plotAgentPendant.getMood();
+	}
+
+	public void setName(String agentName) {
+		this.name = agentName;
+		this.plotAgentPendant = PlotLauncher.runner.getPlotAgent(this.name);
+	}
+	
+	public String getName() {
+		return this.name;
+	}
+	
+	public void setPlotAgentPendant(PlotAwareAg pAgent) {
+		this.plotAgentPendant = pAgent;
 	}
 }
