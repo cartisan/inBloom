@@ -34,11 +34,6 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 */
 	protected static long TIMEOUT = -1;
 	
-	/**
-	 * The names of the agents in this simulation.
-	 */
-	protected String[] agentNames;
-	
 	protected List<PlotDirectedSparseGraph> stories;
 	/**
 	 * The source file of the agent code.
@@ -63,8 +58,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 * @param agentNames an array of the names of all agents
 	 * @param agentSrc the name of the source file for the agent code
 	 */
-	protected PlotCycle(String[] agentNames, String agentSrc, boolean showGui) {
-		this.agentNames = agentNames;
+	protected PlotCycle(String agentSrc, boolean showGui) {
 		this.agentSrc = agentSrc;
 		stories = new LinkedList<>();
 		if(showGui) {
@@ -72,8 +66,8 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		}
 	}
 	
-	protected PlotCycle(String[] agentNames, String agentSrc) {
-		this(agentNames, agentSrc, true);
+	protected PlotCycle(String agentSrc) {
+		this(agentSrc, true);
 	}
 	
 	private void initGui() {
@@ -181,8 +175,8 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		return er;
 	}
 	
-	protected List<LauncherAgent> createAgs(Personality[] personalities) {
-		if(personalities.length != this.agentNames.length) {
+	protected List<LauncherAgent> createAgs(String[] agentNames, Personality[] personalities) {
+		if(personalities.length != agentNames.length) {
 			throw new IllegalArgumentException("There should be as many personalities as there are agents."
 					+ "(Expected: " + agentNames.length + ", Got: " + personalities.length + ")");
 		}

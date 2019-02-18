@@ -8,7 +8,7 @@ import java.util.List;
 import jason.asSemantics.Personality;
 import plotmas.LauncherAgent;
 import plotmas.PlotLauncher;
-import plotmas.ERcycle.DetectInsufficientCoupling;
+import plotmas.ERcycle.DetectLackingAdversity;
 import plotmas.ERcycle.DetectNarrativeEquilibrium;
 import plotmas.ERcycle.PlotCycle;
 import plotmas.ERcycle.ProblemDetectionState;
@@ -33,14 +33,17 @@ public class RedHenHappeningCycle extends PlotCycle {
 	/** set of domain-specific happenings allowed to be scheduled by the ER Cycle */
 	public HashSet<Class<?>> availableHappenings = new HashSet<>();
 	
+	/** current number of characters in simulations */
+	public int charCount;
 	
-	public RedHenHappeningCycle(String[] agentNames, String agentSrc) {
-		// Create PlotCycle with needed agents
-		super(agentNames, agentSrc);
+	
+	public RedHenHappeningCycle(String agentSrc) {
+		// Instantiate PlotCycle
+		super(agentSrc);
 		
 		// Setup standard reasoning cycle
 		ProblemDetectionState s1 = ProblemDetectionState.getInstance(DetectNarrativeEquilibrium.class, this);
-		ProblemDetectionState s2 = ProblemDetectionState.getInstance(DetectInsufficientCoupling.class, this);
+		ProblemDetectionState s2 = ProblemDetectionState.getInstance(DetectLackingAdversity.class, this);
 		s1.nextReflectionState = s2;
 		s2.nextReflectionState = s1;
 		
@@ -100,10 +103,9 @@ public class RedHenHappeningCycle extends PlotCycle {
 		FarmModel model = new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector());
 		
 		// start with neutral personalities
-		List<LauncherAgent> startAgents = this.createAgs(new Personality[] {new Personality(0, 0, 0, 0, 0),
-															  				new Personality(0, 0, 0, 0, 0),
-															  				new Personality(0, 0, 0, 0, 0), 
-															  				new Personality(0, 0, 0, 0, 0)});
+		this.charCount = 1;
+		List<LauncherAgent> startAgents = this.createAgs(new String[]{"protagonist"}, 
+														 new Personality[] {new Personality(0, 0, 0, 0, 0)});
 		
 		return new ReflectResult(runner, model, startAgents);
 	}
@@ -140,6 +142,14 @@ public class RedHenHappeningCycle extends PlotCycle {
 		return this.transformations;
 	}
 	
+	/**
+	 * Changes the character count by adding 'number'. To decrease character count, number should be negative.
+	 * @param number
+	 */
+	public void updateCharCount(int number) {
+		this.charCount += number;
+	}
+	
 	public void undoLastFix(EngageResult er) {
 		ProblemFixCommand lastFix = this.transformations.get(this.transformations.size() - 1);
 		lastFix.undo(er);
@@ -148,10 +158,8 @@ public class RedHenHappeningCycle extends PlotCycle {
 	
 	public static void main(String[] args) {
 		TIMEOUT = 1000;
-		RedHenHappeningCycle cycle = new RedHenHappeningCycle(new String[] { "hen", "dog", "cow", "pig" },
-															  "agent");
+		RedHenHappeningCycle cycle = new RedHenHappeningCycle("agent");
 		cycle.run();
-
 	}
 
 }

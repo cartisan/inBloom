@@ -17,7 +17,7 @@ public class DetectUnresolvedHappenings extends ProblemDetectionState {
 	
 	protected DetectUnresolvedHappenings(RedHenHappeningCycle controller) {
 		super(controller);
-		this.nextReflectionState = this.getInstanceFor(DetectInsufficientCoupling.class);
+		this.nextReflectionState = this.getInstanceFor(DetectLackingAdversity.class);
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class DetectUnresolvedHappenings extends ProblemDetectionState {
 		
 		if (unresolveds.isEmpty()) {
 			// No unresolved happenings found at all, this step can be removed from reasoning cycle again
-			this.nextReflectionState = this.getInstanceFor(DetectInsufficientCoupling.class);
+			this.nextReflectionState = this.getInstanceFor(DetectLackingAdversity.class);
 			return null;
 		}
 			
