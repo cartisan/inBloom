@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -24,6 +25,8 @@ import javax.swing.SwingConstants;
 import org.freehep.graphicsbase.util.export.ExportDialog;
 import org.jfree.ui.RefineryUtilities;
 
+import com.google.common.collect.ImmutableList;
+
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
@@ -33,13 +36,20 @@ import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import jason.asSemantics.Message;
+import jason.asSemantics.Personality;
 import plotmas.LauncherAgent;
 import plotmas.PlotControlsLauncher;
 import plotmas.PlotLauncher;
+import plotmas.PlotModel;
 import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.graph.isomorphism.FunctionalUnits;
 import plotmas.graph.visitor.EdgeLayoutVisitor;
 import plotmas.helper.Tellability;
+import plotmas.stories.little_red_hen.FarmEnvironment;
+import plotmas.stories.little_red_hen.FarmModel;
+import plotmas.stories.little_red_hen.RedHenLauncher;
+import plotmas.storyworld.HappeningDirector;
+import plotmas.storyworld.ScheduledHappeningDirector;
 
 /**
  * Responsible for maintaining and visualizing the graph that represents the emergent plot of the narrative universe.
@@ -239,7 +249,19 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
     				//getting the current graph and give it to the CounterfactualityLauncher
         			originalGraph = PlotGraphController.getPlotListener().getGraph();
         			//for the beginning: we give it all information (runner, persNum, etc)
-        			counterfactRunner = new CounterfactualityLauncher(originalGraph, new String[] { "hen", "dog", "cow", "pig" }, "agent");
+        			
+        			//only for testing, will be removed later
+        			ImmutableList<LauncherAgent> lagents = ImmutableList.of(
+ 							new LauncherAgent("hen",new Personality(0,  1, 0.7,  0.3, 0.15)),
+ 							new LauncherAgent("dog",new Personality(0, -1, 0, -0.7, -0.8)),
+ 							new LauncherAgent("cow",new Personality(0, -1, 0, -0.7, -0.8)),
+ 							new LauncherAgent("pig", new Personality(0, -1, 0, -0.7, -0.8)));
+        			logger.info("Launcher Agents created in PlotGraphController");
+        			ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
+        			logger.info("Happening Scheduler created");
+        			PlotModel<FarmEnvironment> model = new FarmModel(lagents, hapDir);
+        			logger.info("PlotModel created");
+        			counterfactRunner = new CounterfactualityLauncher(originalGraph, new String[] { "hen", "dog", "cow", "pig" }, "agent", PlotControlsLauncher.runner, model);
     				counterfactGraph = counterfactRunner.getCounterfact();
     				//TODO how to deal with the graph graphically
     				//PlotGraphController.getPlotListener().addGraph(counterfactGraph);

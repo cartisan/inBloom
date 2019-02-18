@@ -59,14 +59,23 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
      * cycle of simulation may be run.
      */
     public void reset() {
-    	
-    	control.stop();
-    	control = null;
-    	env.stop();
-    	env = null;
+        if (control != null) {
+            control.stop();
+            control = null;
+        }
+        if (env != null) {
+            env.stop();
+            logger.info("env stopped");
+            //env is also here not null!
+            env = null;
+            
+        }
+        logger.info("env set to zero");
     	stopAgs();
+    	logger.info("Stopping agents was successful");
     	runner = null;
     	ags.clear();
+    	logger.info("Clearing was successful");
     }
     
     /** 

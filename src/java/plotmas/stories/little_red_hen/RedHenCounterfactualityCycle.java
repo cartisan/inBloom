@@ -11,88 +11,27 @@ import plotmas.storyworld.ScheduledHappeningDirector;
 public class RedHenCounterfactualityCycle extends PersonalitySpaceSearchCycle {
 	
 	static double[] personalityValues;
+	RedHenPersonalityCycle redhen = new RedHenPersonalityCycle();
 	
 	public RedHenCounterfactualityCycle(double[] pValues) {
-		super(new String[] { "hen", "dog", "cow", "pig" }, "agent", 1, pValues, true, true);
+		super(new String[] { "hen", "dog", "cow", "pig" }, "agent", 2, pValues, true, true);
 		personalityValues = pValues;	
 		if(cycleNum > -1) {
 			endCycle = currentCycle + cycleNum;
 		}
 		this.run();
+		
 	}
 
 	@Override
 	protected ReflectResult reflect(EngageResult er) {
-		logger.info("I am reflecting");
-		onCycleResult(lastPersonalities, er.getTellability());
-		
-		// Save tellability, graph and hen personality if it was better than the best before
-		if(er.getTellability().compute() > bestTellability) {
-			bestTellability = er.getTellability().compute();
-			log("New best: " + bestTellability);
-			bestPersonalities = lastPersonalities;
-		}
-		
-		// Stop cycle if there are no other personality combinations
-		if(!personalityIterator.hasNext() || currentCycle >= endCycle) {
-			return new ReflectResult(null, null, null, false);
-		}
-		
-		// Start the next cycle
-		lastPersonalities = personalityIterator.next();
-		lastRunner = new RedHenLauncher();
-		lastRunner.setShowGui(false);
-		// Create a new file logger if the log file name depends on the cycle number.
-		if(logFile.contains("%d")) {
-			setupFileLogger();
-		}
-		
-		List<LauncherAgent> agents = createAgs(new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
-		return new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), agents);
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
 	protected ReflectResult createInitialReflectResult() {
-		logger.info("I have created an intitial reflect result!");
-		lastPersonalities = personalityIterator.next();
-		lastRunner = new RedHenLauncher();
-		logger.info("step0");
-		lastRunner.setShowGui(false);
-		
-		logger.info("step1");
-		
-		List<LauncherAgent> agents = createAgs(new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
-		ReflectResult rr = new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), agents);
-		logger.info("step2");
-		log("Cycle " + currentCycle);
-		logger.info("step3");
-		// Create a new file logger if the log file name depends on the cycle number.
-		if(logFile.contains("%d")) {
-			setupFileLogger();
-		}
-		logger.info("step4");
-		logger.info("end of createInitialReflectResult");
-		return rr;
+		// TODO Auto-generated method stub
+		return null;
 	}
-
-	@Override
-	protected void finish(EngageResult er) {
-		// Print results
-		log("Best tellability: " + bestTellability);
-		log("Personalities:");
-		for(Personality p : bestPersonalities) {
-			log("\t" + p.toString());
-		}
-		
-		// flush and close handled by super implementation
-		super.finish(er);
-	}
-	
-	public static void main(String[] args) {
-		PersonalitySpaceSearchCycle.main(args);
-		
-		RedHenCounterfactualityCycle cycle = new RedHenCounterfactualityCycle(personalityValues);
-		cycle.run();
-	}
-
 }
