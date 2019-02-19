@@ -1,13 +1,38 @@
 // Goal
-!addition.
+!cleaning.
 
 // Belief Update Rules
-+sum(X) <-
-	.print("I perceive a result");	// print is an internal action provided by Jason, hence the dot at the beginning	
-	.print("Sum of 2+4 =", X).
++pos(X) <-
+	.print("My position is ", X+1).
+
++dirty: dirty <-
+	.print("I perceive my position is dirty.").	
+	
++clean: clean <-
+	.print("I perceive my position is clean.").	
+	
+
 
 // Plans
-+!addition <-
-	.print("Started adding");
-	add(2,4);						// call environment action
-	.print("Finished adding").
+
+// plans for dirty location
++!cleaning: dirty <- 
+	.print("Start cleaning at position ",X+1);
+	suck;
+	!move.						
+	
++!move : pos(0) <-
+	.print("Moving to next position.");
+	right.
+
++!move : pos(1) <-						
+	.print("Moving to next position.");
+	down.
+
++!move : pos(2) <-
+	.print("Moving to next position.");
+	up.
+	
++!move : pos(3) <-
+	.print("Moving to next position.");
+	left.
