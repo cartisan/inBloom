@@ -156,7 +156,16 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * @param l
      */
     public void addListener(EnvironmentListener l) {
+    	logger.info("I am adding a listener!");
     	this.listeners.add(l);
+    }
+    
+    public void showListeners(){
+    	for(EnvironmentListener l : listeners) {
+    		logger.info("A listener!");
+    	}
+    	int size = listeners.size();
+    	logger.info(Integer.toString(size));
     }
     
     /**
@@ -274,7 +283,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 				}
 			}
 		}
-		
 		// check if pause mode is enabled, wait with execution while it is
 		this.waitWhilePause();
 	}
@@ -455,8 +463,11 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 * until its woken up again.
 	 */
 	synchronized void waitWhilePause() {
+		logger.info("before check");
+		this.showListeners();
 		this.checkPause();
-		
+		logger.info("after check");
+		this.showListeners();
         try {
             while (MASConsoleGUI.get().isPause()) {
             	logger.info("Execution paused, switching to console output");
@@ -489,13 +500,11 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
 	    		resetAllAgentActionCounts();
 	    		PlotLauncher.runner.pauseExecution();
-	    		//no listeners!!!!
+	    		//no listeners!!!!  		
 	    		for(EnvironmentListener l : listeners) {
 	    			logger.severe("listeners get informed");
 	    			l.onPauseRepeat();
 	    		}
-	    		int numlist = listeners.size();
-	    		logger.info(Integer.toString(numlist));
 	    	}
 	    	if ((MAX_STEP_NUM > -1) && (this.getStep() % MAX_STEP_NUM == 0)) {
 	    		logger.severe("Auto-paused execution of simulation, because system ran for MAX_STEP_NUM steps.");

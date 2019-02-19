@@ -248,8 +248,8 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
     						
     				//getting the current graph and give it to the CounterfactualityLauncher
         			originalGraph = PlotGraphController.getPlotListener().getGraph();
-        			//for the beginning: we give it all information (runner, persNum, etc)
         			
+        			//for the beginning: we give it all information (runner, persNum, etc)
         			//only for testing, will be removed later
         			ImmutableList<LauncherAgent> lagents = ImmutableList.of(
  							new LauncherAgent("hen",new Personality(0,  1, 0.7,  0.3, 0.15)),
@@ -263,6 +263,8 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
         			logger.info("PlotModel created");
         			counterfactRunner = new CounterfactualityLauncher(originalGraph, new String[] { "hen", "dog", "cow", "pig" }, "agent", PlotControlsLauncher.runner, model);
     				counterfactGraph = counterfactRunner.getCounterfact();
+    				
+    				
     				//TODO how to deal with the graph graphically
     				//PlotGraphController.getPlotListener().addGraph(counterfactGraph);
         			

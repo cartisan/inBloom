@@ -96,12 +96,14 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 	 */
 	public PlotDirectedSparseGraph getCounterfact() {
 		this.calculateCounterfact();
+		//question: will the return wait untill calculateCounterfact() has finished?
+		//alternative: make a run method for calculating and a getCounterfact() method
 		return counterfact;
 	}
 	
 	/**
-	 * calculates first all Possible Graphs
-	 * and than chooses the best graph
+	 * first calculates all Possible Graphs
+	 * and then chooses the best graph
 	 */
 	public void calculateCounterfact() {
 		//calculate all possible personalities
@@ -114,11 +116,9 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 		List<Personality[]> personalityList = createPlotSpace(personalitySpace, personalityNum, false);
 		logger.info("I have combined the different personalities and I have a list of all possible Agentcombinations");
 
-		//till here we get a perfect list with all the personalities and the agents we would like to consider
-
 		
 		//produce a plot directed sparse graph for each personality
-		//calculate the tellability (later just replace that with counterfactuality)
+		//calculate the tellability (later just replace that with counterfactuality -> original graph as parameter)
 		//and save only the personality and the tellability
 		Double lastValue = 0.0;
 		List<LauncherAgent> result;
@@ -129,22 +129,21 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 			List<LauncherAgent> lagents = createAgents(p);
 			logger.info("Launcher Agent is created");
 			Tellability t = simulate(lagents);
-			//logger.info("Simulation done");
+			logger.info("Simulation done");
 			//simulation is making problems!
 			Double currentValue = t.compute();
-			//logger.info("Tellability computed");
+			logger.info("Tellability computed");
 			if(currentValue > lastValue) {
 				result = lagents;
 			}
-			//logger.info("Comparison done");
+			logger.info("Comparison done");
 		}
 		
-		
+		runner.reset();
 		
 		//create a plot with the winning launcher agents
 		
 		//result is the plotdirectedgraph
-		//do something graphic stuff with it here
 		
 		
 		//for each story one must only create a new StoryCounterfactualityLauncher
@@ -231,9 +230,18 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 	}
 	
 	protected Tellability simulate(List<LauncherAgent> lagents) {
+		
 		logger.info("We start to simulate"); //problem in creating the thread
+		
 		Thread t = new Thread(new Cycle(runner, model, new String[0], lagents, agentSrc));
 		t.start();
+		
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			logger.info("interrupted");
+		}
+		
 		MASConsoleGUI.get().setPause(false);
 		boolean hasAddedListener = false;
 		long startTime = System.currentTimeMillis();
@@ -247,6 +255,8 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 					if(runner.getEnvironmentInfraTier() != null) {
 						if(runner.getEnvironmentInfraTier().getUserEnvironment() != null) {
 							runner.getUserEnvironment().addListener(this);
+							runner.getUserEnvironment().showListeners();
+							//listeners exist
 							hasAddedListener = true;
 						}
 					}
@@ -254,10 +264,12 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 				//handle timeout
 				if(TIMEOUT > -1 && (System.currentTimeMillis() - startTime) >= TIMEOUT && PlotEnvironment.getPlotTimeNow() >= TIMEOUT) {
 					isRunning = false;
+					logger.info("TIMEOUT");
 				}
 				//sleep
 				Thread.sleep(150);
 				//logger.info("pzzhh");
+				//listeners are zero
 			} catch (InterruptedException e) {
 				logger.info("InterruptedException");
 			}
