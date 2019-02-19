@@ -22,7 +22,7 @@ import plotmas.storyworld.ScheduledHappeningDirector;
 public class RedHenHappeningCycle extends PlotCycle {
 
 	public static final double THRESHOLD = 0.9;
-	public static final int GIVE_UP = 4;
+	public static final int GIVE_UP = 7;
 	
 	/** current state of reasoning cycle responsible for detecting plot problems */
 	protected ProblemDetectionState detectionState;
