@@ -14,7 +14,8 @@ public class RedHenCounterfactualityCycle extends PersonalitySpaceSearchCycle {
 	RedHenPersonalityCycle redhen = new RedHenPersonalityCycle();
 	
 	public RedHenCounterfactualityCycle(double[] pValues) {
-		super(new String[] { "hen", "dog", "cow", "pig" }, "agent", 2, pValues, true, true);
+		super(new String[]  { "hen", "dog", "cow", "pig" }, "agent", 2);
+//		super(new String[] { "hen", "dog", "cow", "pig" }, "agent", 2, pValues, true, true);
 		personalityValues = pValues;	
 		if(cycleNum > -1) {
 			endCycle = currentCycle + cycleNum;

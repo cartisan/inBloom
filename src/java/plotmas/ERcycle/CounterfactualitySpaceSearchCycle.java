@@ -17,7 +17,7 @@ public class CounterfactualitySpaceSearchCycle extends PersonalitySpaceSearchCyc
 	 */
 	
 	public CounterfactualitySpaceSearchCycle(String[] agentNames, String agentSrc, int personalityNum, double[] personalityValues) {
-		super(agentNames, agentSrc, personalityNum, personalityValues, false, true);
+		super(agentNames, agentSrc, personalityNum);
 	}
 	@Override
 	protected ReflectResult reflect(EngageResult er) {
