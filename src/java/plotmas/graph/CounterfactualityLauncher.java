@@ -235,12 +235,7 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 		
 		Thread t = new Thread(new Cycle(runner, model, new String[0], lagents, agentSrc));
 		t.start();
-		
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			logger.info("interrupted");
-		}
+		runner.deleteUserEnvironment();
 		
 		MASConsoleGUI.get().setPause(false);
 		boolean hasAddedListener = false;

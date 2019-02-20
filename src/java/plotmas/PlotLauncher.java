@@ -326,4 +326,8 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 	public ModType getUserModel() {
 		return (ModType) this.getUserEnvironment().getModel();
 	}
+
+	public void deleteUserEnvironment() {
+		this.env = null;
+	}
 }
