@@ -103,9 +103,9 @@ public class RedHenHappeningCycle extends PlotCycle {
 		FarmModel model = new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector());
 		
 		// start with neutral personalities
-		this.charCount = 1;
 		List<LauncherAgent> startAgents = this.createAgs(new String[]{"protagonist"}, 
 														 new Personality[] {new Personality(0, 0, 0, 0, 0)});
+		this.charCount = startAgents.size();
 		
 		return new ReflectResult(runner, model, startAgents);
 	}
@@ -157,7 +157,6 @@ public class RedHenHappeningCycle extends PlotCycle {
 	}
 	
 	public static void main(String[] args) {
-		TIMEOUT = 1000;
 		RedHenHappeningCycle cycle = new RedHenHappeningCycle("agent");
 		cycle.run();
 	}

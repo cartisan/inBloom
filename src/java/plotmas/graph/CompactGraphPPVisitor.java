@@ -3,8 +3,10 @@ package plotmas.graph;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import jason.asSemantics.Emotion;
+import jason.asSemantics.Mood;
 import plotmas.graph.Edge.Type;
 import plotmas.graph.visitor.EdgeVisitResult;
 import plotmas.graph.visitor.PlotGraphVisitor;
@@ -52,18 +54,34 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 	
 	@Override
 	public void visitPercept(Vertex vertex) {
-		boolean isInvolved = handleTradeoff(vertex);
+		boolean isInTradeoff = handleTradeoff(vertex);
+		boolean isRelevantMood = handleMood(vertex);
+		
+		
 		for(String emotion : Emotion.getAllEmotions()) {
 			if(vertex.hasEmotion(emotion)) {
 				handleAffectiveState(vertex);
 				return;
 			}
 		}
-		if(!isInvolved)
+		
+		if(!(isInTradeoff | isRelevantMood))
 			this.graph.removeVertexAndPatchGraphAuto(this.currentRoot, vertex);
 	}
 	
 	
+	private boolean handleMood(Vertex vertex) {
+		if (vertex.toString().contains(Mood.ANNOTATION_FUNCTOR)) {
+			// include mood vertices that are important for other vertices
+			boolean connected = graph.getIncidentEdges(vertex).stream().map(e -> e.getType())
+																.filter(e -> e != Type.TEMPORAL & e != Type.ROOT)
+																.collect(Collectors.toList())
+																.size() > 0;
+			boolean addition = vertex.toString().startsWith("+");
+			return connected | addition;
+		}
+		return false;
+	}
 	
 	private void handleAffectiveState(Vertex vertex) {
 		handleLossAndResolution(vertex);

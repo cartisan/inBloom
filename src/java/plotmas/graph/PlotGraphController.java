@@ -257,6 +257,10 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	public Tellability getAnalysisResult() {
 		return analysisResult;
 	}
+	
+	public PlotDirectedSparseGraph getGraph() {
+		return this.graph;
+	}
 
 	public void closeGraph() {
 		logger.info("Closing and reseting plot graph view");
