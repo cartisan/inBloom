@@ -14,6 +14,8 @@ is_work(create(bread)).
 creatable_from(wheat,bread).
 
 is_pleasant(eat(bread)).
+is_pleasant(eat(cheese)).    //crowfox
+
 
 obligation(farm_work).
 wish(relax).
@@ -21,6 +23,7 @@ wish(relax).
 is_useful(A,true) :- is_pleasant(eat(A)).
 
 !default_activity.
+	
 
 /********************************************/
 /*****      Common sense reasoning ************/
@@ -31,8 +34,15 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 +wish(X) : is_work(X) <-
 	!!X.
 
+
 +wish(X)  <-
 	!!X.
+	
++has(X) : is_pleasant(eat(X)) & has(X) & hungry(false) <-   // crowfox
+	!keep(X).
+
++has(X) : is_pleasant(eat(X)) & has(X) & hungry(true) <-   // crowfox
+	!giveAdvice.
 
 // Share when very agreeable character, unless in a bad mood
 @share_food_plan2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
@@ -134,7 +144,7 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 		+punished(Anims);		
 	} else {
 		.send(Anims, achieve, eat(X));
-		.print("Asked ", Anims, " to eat ", X, ". But not shareing necessary ressources. xoxo");
+		.print("Asked ", Anims, " to eat ", X, ". But not sharing necessary resources. xoxo");
 		!eat(X);
 		+punished(Anims)
 	}.
@@ -229,6 +239,23 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	-has(X);
 	.succeed_goal(eat(X)).
 
++!enterScene <-  	//crowfox
+	enterScene.
+
++want(X) <- 		//crowfox
+	.print("I want ", X); 
+	goToTree;
+	flatter.
+
++!keep(X)<- 
+	.print("I am happy to have my ", X).
+
++compliment  <-  //crowfox
+	sing.
+	
++!giveAdvice <-
+	.print("Never trust a flatterer!").
+	
 +!share(X, Anims) <-
 	share(X, Anims).
 	
