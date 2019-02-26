@@ -22,11 +22,22 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     protected void updateStatePercepts(String agentName) {
     	super.updateStatePercepts(agentName);
     	
+    	for (String location :getModel().locations.keySet()) {
+    		List<Character> agents = getModel().locations.get(location);
+    		if (!agents.isEmpty()) {
+    			for (Character agent :agents) {
+    				String agentname = agent.getName();
+    				removePerceptsByUnif(agentname, Literal.parseLiteral("at(X)"));
+    				addPercept(agentname, Literal.parseLiteral("at(" + location + ")"));
+    			}
+    		}
+    	}
     	// update publicly known wheat state
     	if (!(getModel().wheat == null)) {
     		removePerceptsByUnif(agentName, Literal.parseLiteral("existant(wheat[X])"));
     		addPercept(agentName, Literal.parseLiteral("existant(" + getModel().wheat.literal() + ")"));
     	}
+
     	else {
     		removePerceptsByUnif(agentName, Literal.parseLiteral("existant(wheat[X])"));
     	}
@@ -85,6 +96,25 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     			result = agent.share(item, patient);
     			
     		}
+    	}
+    	
+    	else if (action.getFunctor().equals("enterScene")) {
+    		result = getModel().enterScene(agent);
+    	}
+    	
+    	else if (action.getFunctor().equals("goToTree")) {
+    		Character target = getModel().getCharacter("crow");
+			result = getModel().goToTree(agent, target);
+    	}
+    	
+    	else if (action.getFunctor().equals("flatter")) {
+    		Character target = getModel().getCharacter("crow");
+			result = getModel().flatter(agent, target);
+    	}
+    	
+    	else if (action.getFunctor().equals("sing")) {
+    		Character listener = getModel().getCharacter("fox");
+			result = getModel().sing(agent, listener);
     	}
     	
     	else if (action.getFunctor().equals("relax")) {

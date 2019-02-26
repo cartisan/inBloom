@@ -29,7 +29,7 @@ public class TutorialEnviroment extends PlotEnvironment<TutorialModel> {
 		if (action.getFunctor().equals("suck")){
 			result = getModel().suck();
 			// create a perception of the result, which the agent receives
-			addPercept(Literal.parseLiteral(String.format("clean")));
+//			addPercept(Literal.parseLiteral(String.format("clean")));
 			// indicate that action was successful
 			result = true;		
       }
@@ -37,7 +37,7 @@ public class TutorialEnviroment extends PlotEnvironment<TutorialModel> {
 		if (action.getFunctor().equals("left")) {	
 			result = getModel().left();
 			// create a perception of the result, which the agent receives
-			addPercept( Literal.parseLiteral(String.format("pos("+ getModel().position + ")")));
+//			addPercept( Literal.parseLiteral(String.format("pos("+ getModel().position + ")")));
 			// indicate that action was successful
 			result = true;		
       }
@@ -45,7 +45,7 @@ public class TutorialEnviroment extends PlotEnvironment<TutorialModel> {
 		if (action.getFunctor().equals("right")) {
 			result = getModel().right();
 			// create a perception of the result, which the agent receives
-			addPercept( Literal.parseLiteral(String.format("pos("+ getModel().position + ")")));
+//			addPercept( Literal.parseLiteral(String.format("pos("+ getModel().position + ")")));
 			// indicate that action was successful
 			result = true;		
       }
@@ -53,7 +53,7 @@ public class TutorialEnviroment extends PlotEnvironment<TutorialModel> {
 		if (action.getFunctor().equals("up")) {
 			result = getModel().up();
 			// create a perception of the result, which the agent receives
-			addPercept( Literal.parseLiteral(String.format("pos("+ getModel().position + ")")));
+//			addPercept( Literal.parseLiteral(String.format("pos("+ getModel().position + ")")));
 			// indicate that action was successful
 			result = true;	
       }
@@ -61,7 +61,7 @@ public class TutorialEnviroment extends PlotEnvironment<TutorialModel> {
 		if (action.getFunctor().equals("down")) {
 			result = getModel().down();
 			// create a perception of the result, which the agent receives
-			addPercept( Literal.parseLiteral(String.format("pos("+ getModel().position + ")")));
+//			addPercept( Literal.parseLiteral(String.format("pos("+ getModel().position + ")")));
 			// indicate that action was successful
 			result = true;	
 			
