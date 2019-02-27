@@ -162,6 +162,23 @@ public class Character {
 		return true;
 	}
 	
+	public boolean flying() {
+		if (name == "crow") {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean farmAnimal() {
+		if (name == "crow") {
+			return false;
+		}
+		else if (name == "fox") {
+			return false;
+		}
+		return true;
+	}
+
 	public String toString() {
 		return this.name + "-agent_model";
 	}

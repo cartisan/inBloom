@@ -98,23 +98,28 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     		}
     	}
     	
-    	else if (action.getFunctor().equals("enterScene")) {
-    		result = getModel().enterScene(agent);
+    	else if (action.getFunctor().equals("flyToTree")) {
+    		result = getModel().flyToTree(agent);
     	}
     	
-    	else if (action.getFunctor().equals("goToTree")) {
-    		Character target = getModel().getCharacter("crow");
-			result = getModel().goToTree(agent, target);
+    	else if (action.getFunctor().equals("strolling")) {
+    		result = getModel().strolling(agent);
     	}
     	
-    	else if (action.getFunctor().equals("flatter")) {
-    		Character target = getModel().getCharacter("crow");
-			result = getModel().flatter(agent, target);
+    	else if (action.getFunctor().equals("approachTree")) {
+			result = getModel().approachTree(agent);
+    	}
+    	
+    	else if (action.getFunctor().equals("getCheese")) {
+			result = getModel().getCheese(agent);
     	}
     	
     	else if (action.getFunctor().equals("sing")) {
-    		Character listener = getModel().getCharacter("fox");
-			result = getModel().sing(agent, listener);
+			result = getModel().sing(agent);
+    	}
+    	
+    	else if (action.getFunctor().equals("handOver")) {
+			result = getModel().handOver(agent);
     	}
     	
     	else if (action.getFunctor().equals("relax")) {

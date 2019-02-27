@@ -37,6 +37,9 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 
 +wish(X)  <-
 	!!X.
+
++sees(X) : is_pleasant(eat(X)) & hungry(true) <-   // crowfox
+	!want(X).
 	
 +has(X) : is_pleasant(eat(X)) & has(X) & hungry(false) <-   // crowfox
 	!keep(X).
@@ -239,19 +242,25 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	-has(X);
 	.succeed_goal(eat(X)).
 
-+!enterScene <-  	//crowfox
-	enterScene.
++!flyToTree <-  	//crowfox
+	flyToTree.
 
-+want(X) <- 		//crowfox
++!strolling <-      //crowfox
+	strolling.
+	
++!want(X) <- 		//crowfox
 	.print("I want ", X); 
-	goToTree;
-	flatter.
+	approachTree;
+	getCheese.
 
 +!keep(X)<- 
 	.print("I am happy to have my ", X).
 
 +compliment  <-  //crowfox
 	sing.
+
++threat<-  //crowfox
+	handOver.
 	
 +!giveAdvice <-
 	.print("Never trust a flatterer!").
