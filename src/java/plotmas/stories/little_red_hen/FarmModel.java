@@ -184,6 +184,20 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		return false;
 	}
 	
+	public boolean ask(Character agent) {
+		for (String charKey : this.characters.keySet()) {
+			if (!charKey.equals(agent.name)) {
+				Character target = this.characters.get(charKey);
+				if (under(agent.name, target.name)) {
+					logger.info(agent.name + " asks " +target.name + " to hand share cheese with " + agent.name);
+					this.environment.addEventPerception(target.name, "politeQuery", new PerceptAnnotation(""));
+					return true;
+				}
+			}	
+		}
+		return false;
+	}
+	
 	public boolean sing(Character agent) { 
 		for (String charKey : this.characters.keySet()) {
 			if (!charKey.equals(agent.name)) {
@@ -204,10 +218,10 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		return false;
 	}
 	
-	public boolean collect(Character agent, Item item) {
-		if(this.locations.get("underTree").contains(item.getItemName())){
-			agent.addToInventory(item);
-			this.locations.get("other").remove(item.getItemName());
+	public boolean collect(Character agent, String thing) {
+		if(this.locations.get("underTree").contains(thing)){
+			agent.addToInventory(cheese); //unschön gelöst. Ich würde lieber entweder einen String übergeben oder String in Item umwandeln
+			this.locations.get("other").remove(thing);
 			return true;
 		}
 		return false;
@@ -221,6 +235,29 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 					receiver.addToInventory(cheese);
 					agent.removeFromInventory(cheese);
 					logger.info(agent.name + " hands over Cheese to " +receiver.name);
+					return true;
+				}
+				else if (agent.has("cheese") & over(agent.name, receiver.name)){
+					receiver.addToInventory(cheese);
+					agent.removeFromInventory(cheese);
+					logger.info(agent.name + " hands over Cheese to " +receiver.name);
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean refuse(Character agent) {
+		for (String charKey : this.characters.keySet()) {
+			if (!charKey.equals(agent.name)) {
+				Character enemy = this.characters.get(charKey);
+				if (agent.has("cheese") & samePlace(agent.name, enemy.name)){
+					logger.info(agent.name + " does not hand over Cheese to " +enemy.name);
+					return true;
+				}
+				else if (agent.has("cheese") & over(agent.name, enemy.name)){
+					logger.info(agent.name + " does not hand over Cheese to " +enemy.name);
 					return true;
 				}
 			}

@@ -247,7 +247,7 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	.print("To get ", X, "I need to go to", Y); 
 	!approachTree;
 	!get(X).
-	
+
 +!approachTree <-  	//crowfox
 	approachTree.
 
@@ -258,8 +258,13 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	flatter;
 	collect(X).
 
-+!get(X) <-			//crowfox
++!get(X) <-				//crowfox
+	.print("Give ",X, " to me or I will take it from you!");
 	threaten.
+
++!get(X) <-
+	.print("I am so hungry, would you share your", X," cheese with me please?");
+	ask.	
 
 +!strolling <-      //crowfox
 	strolling.
@@ -267,14 +272,25 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 +!keep(X)<- 
 	.print("I am happy to have my ", X).
 
-+compliment  <-  //crowfox
++compliment  <-  		//crowfox
 	sing.
 
-+threat<-  //crowfox
++threat<- 				 //crowfox
 	handOver.
+
++threat<- 				 //crowfox
+	.print("No, I will not give you anything!");
+	refuse.
+	
++politeQuery <- 			 //crowfox
+	handOver.
+
++politeQuery <-				//crowfox
+	.print("No, I will not give you anything!");
+	refuse.
 	
 +!giveAdvice <-
-	.print("Never trust a flatterer!").
+	.print("I have one advice for you: Never trust a flatterer!").
 	
 +!share(X, Anims) <-
 	share(X, Anims).

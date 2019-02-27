@@ -10,7 +10,6 @@ import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import plotmas.PlotEnvironment;
 import plotmas.storyworld.Character;
-import plotmas.storyworld.Item;
 
 /**
  * Custom controller for the "Tale of the Little Red Hen", managed by {@link RedHenLauncher}.
@@ -118,16 +117,25 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
 			result = getModel().threaten(agent);
     	}
     	
+    	else if (action.getFunctor().equals("ask")) {
+			result = getModel().ask(agent);
+    	}
+    	
     	else if (action.getFunctor().equals("sing")) {
 			result = getModel().sing(agent);
     	}
     	
-    	else if (action.getFunctor().equals("collect(X)")) {
-    		result = getModel().collect(agent, X );  //ich weiß, dass das so nicht geht, ist  nur um zu zeigen, was ich will
+    	else if (action.getFunctor().equals("collect")) {
+    		String item = action.getTerm(0).toString();
+    		result = getModel().collect(agent, item );  //ich weiß, dass das so nicht geht, ist  nur um zu zeigen, was ich will
     	}
     	
     	else if (action.getFunctor().equals("handOver")) {
 			result = getModel().handOver(agent);
+    	}
+    	
+    	else if (action.getFunctor().equals("refuse")) {
+			result = getModel().refuse(agent);
     	}
     	
     	else if (action.getFunctor().equals("relax")) {
