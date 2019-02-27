@@ -38,8 +38,8 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 +wish(X)  <-
 	!!X.
 
-+sees(X) : is_pleasant(eat(X)) & hungry(true) <-   // crowfox
-	!want(X).
++sees(X)[location(Y)] : is_pleasant(eat(X)) & hungry(true) <-   // crowfox
+	!want(X)[location(Y)].
 	
 +has(X) : is_pleasant(eat(X)) & has(X) & hungry(false) <-   // crowfox
 	!keep(X).
@@ -242,16 +242,27 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	-has(X);
 	.succeed_goal(eat(X)).
 
-+!flyToTree <-  	//crowfox
-	flyToTree.
++!want(X)[location(Y)] <- 	//crowfox
+	.print("I want ", X); 
+	.print("To get ", X, "I need to go to", Y); 
+	!approachTree;
+	!get(X).
+	
++!approachTree <-  	//crowfox
+	approachTree.
+
++!get(X) <-			//crowfox
+	.print("How well you are looking today: how glossy your feathers; how bright your eye." /n
+			"I feel sure your voice must surpass that of other birds, just as your figure does;"/n
+			"let me hear but one song from you that I may greet you as the Queen of Birds.");
+	flatter;
+	collect(X).
+
++!get(X) <-			//crowfox
+	threaten.
 
 +!strolling <-      //crowfox
 	strolling.
-	
-+!want(X) <- 		//crowfox
-	.print("I want ", X); 
-	approachTree;
-	getCheese.
 
 +!keep(X)<- 
 	.print("I am happy to have my ", X).

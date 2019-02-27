@@ -25,16 +25,16 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	public boolean wheatFound;
 	
 	public Cheese cheese;
-	public HashMap<String, List<Character>> locations;
+	public HashMap<String, List<String>> locations;
 	
 	public FarmModel(List<LauncherAgent> agents, HappeningDirector hapDir) {
 		super(agents, hapDir);
-		this.locations = new HashMap<String, List<Character>>();
-		this.locations.put("other",new LinkedList<Character>());
-		this.locations.put("onTree",new LinkedList<Character>());
-		this.locations.put("underTree",new LinkedList<Character>());
+		this.locations = new HashMap<String, List<String>>();
+		this.locations.put("other",new LinkedList<String>());
+		this.locations.put("onTree",new LinkedList<String>());
+		this.locations.put("underTree",new LinkedList<String>());
 		for(String agentname :this.characters.keySet()) {
-			this.locations.get("other").add(this.characters.get(agentname));
+			this.locations.get("other").add(this.characters.get(agentname).name);
 		}
 
 		this.actionCount = 0;
@@ -117,27 +117,10 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		
 		return false;
 	}
-	
-	public boolean flyToTree(Character agent) {
-		if(agent.flying() & this.locations.get("other").contains(agent)) { 
-			logger.info(agent.name + ": flies to tree");
-			if (agent.has("cheese"))
-				logger.info(agent.name + " has cheese");
-			this.locations.get("onTree").add(agent);
-			this.locations.get("other").remove(agent);	
-			for (String charName : this.characters.keySet()) {
-				if (!charName.equals(agent.name)) {
-					this.environment.addEventPerception(charName, "sees(cheese)"); 
-					logger.info(charName + " sees " + agent.name + " with cheese");
-				}
-	        }
-			return true;
-		}
-		return false;
-	}
+
 	
 	public boolean strolling(Character agent) {
-		if (!agent.flying() & this.locations.get("other").contains(agent))  {
+		if (!agent.flying() & this.locations.get("other").contains(agent.name))  {
 			logger.info(agent.name + " strolls around");
 			return true;
 		}
@@ -145,33 +128,53 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	}
 	
 	public boolean approachTree(Character agent) {
-		if (!agent.flying() & this.locations.get("other").contains(agent)) {
-			logger.info(agent.name + " walks under the tree and says: Good day, Mistress Crow.");
-			this.locations.get("underTree").add(agent);
-			this.locations.get("other").remove(agent);
+		if(agent.flying() & this.locations.get("other").contains(agent.name)) { 
+			logger.info(agent.name + ": flies to tree");
+			if (agent.has("cheese"))
+				logger.info(agent.name + " has cheese");
+			for (String charName : this.characters.keySet()) {
+				if (!charName.equals(agent.name)) {
+					Character viewer = this.characters.get(charName);
+					for (Item item : agent.inventory) {
+						if (samePlace(agent.name, viewer.name)) {
+							this.environment.addEventPerception(charName, "sees(" + item + ")[location(tree)]"); 
+							logger.info(charName + " sees " + agent.name + " with " + item);
+						}
+					}
+				}
+	        }
+			this.locations.get("onTree").add(agent.name);
+			this.locations.get("other").remove(agent.name);	
 			return true;
 		}
-		else if (agent.flying() & this.locations.get("other").contains(agent)) {
-			logger.info(agent.name + "flies to the tree.");
-			this.locations.get("onTree").add(agent);
-			this.locations.get("other").remove(agent);
+		else if (!agent.flying() & this.locations.get("other").contains(agent.name)) {
+			logger.info(agent.name + " walks under the tree and says: Good day, Mistress Crow.");
+			this.locations.get("underTree").add(agent.name);
+			this.locations.get("other").remove(agent.name);
 			return true;
 		}
 		return false;
 	}
 	
-	public boolean getCheese(Character agent) {
+	public boolean flatter(Character agent) {
 		for (String charKey : this.characters.keySet()) {
 			if (!charKey.equals(agent.name)) {
 				Character target = this.characters.get(charKey);
-				if(under(agent, target)) {
-					logger.info(agent.name + "flatters "+ target.name + ": How well you are looking today: how glossy your feathers; how bright your eye. "
-							+ "I feel sure your voice must surpass that of other birds, just as your figure does; "
-							+ "let me hear but one song from you that I may greet you as the Queen of Birds.");
+				if(under(agent.name, target.name)) {
+					logger.info(agent.name + "flatters "+ target.name);
 					this.environment.addEventPerception(target.name, "compliment", new PerceptAnnotation("joy"));
 					return true;
 				}
-				else if (samePlace(agent, target)) {
+			}
+		}
+		return false;
+	}
+		
+	public boolean threaten(Character agent) {
+		for (String charKey : this.characters.keySet()) {
+			if (!charKey.equals(agent.name)) {
+				Character target = this.characters.get(charKey);
+				if (samePlace(agent.name, target.name)) {
 					logger.info(agent.name + " tells " +target.name + " to hand over cheese or " + agent.name + " will take it from " +target.name + " with force.");
 					this.environment.addEventPerception(target.name, "threat", new PerceptAnnotation("fear"));
 					return true;
@@ -185,15 +188,14 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		for (String charKey : this.characters.keySet()) {
 			if (!charKey.equals(agent.name)) {
 				Character listener = this.characters.get(charKey);
-				if (over(agent, listener) & agent.has("cheese")) {
-					listener.addToInventory(cheese);
+				if (over(agent.name, listener.name) & agent.has("cheese")) {
 					agent.removeFromInventory(cheese);
 					logger.info(agent.name + ": lifted up her head and began to caw her best, "
-							+ "but the moment she opened her mouth the piece of cheese fell to the ground, "
-							+ "only to be snapped up by: " + listener.name);
+							+ "but the moment she opened her mouth the piece of cheese fell to the ground ");
+					this.locations.get("underTree").add(cheese.getItemName());
 					return true;
 				}
-				else if (this.locations.get("onTree").contains(agent) & !agent.has("cheese") ) {
+				else if (this.locations.get("onTree").contains(agent.name) & !agent.has("cheese") ) {
 					logger.info(agent.name + " sings a song to " + listener.name);
 					return true;
 				}
@@ -202,11 +204,20 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		return false;
 	}
 	
+	public boolean collect(Character agent, Item item) {
+		if(this.locations.get("underTree").contains(item.getItemName())){
+			agent.addToInventory(item);
+			this.locations.get("other").remove(item.getItemName());
+			return true;
+		}
+		return false;
+	}
+	
 	public boolean handOver(Character agent) {
 		for (String charKey : this.characters.keySet()) {
 			if (!charKey.equals(agent.name)) {
 				Character receiver = this.characters.get(charKey);
-				if (agent.has("cheese") & samePlace(agent, receiver)){
+				if (agent.has("cheese") & samePlace(agent.name, receiver.name)){
 					receiver.addToInventory(cheese);
 					agent.removeFromInventory(cheese);
 					logger.info(agent.name + " hands over Cheese to " +receiver.name);
@@ -271,7 +282,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 
 	}
 	
-	public boolean samePlace(Character agent1, Character agent2){
+	public boolean samePlace(String agent1, String agent2){
 		if(locations.get("other").contains(agent1) & locations.get("other").contains(agent2)) {
 			return true;
 		}
@@ -284,14 +295,14 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		return false;
 	}
 	
-	public boolean under(Character agent1, Character agent2) {
+	public boolean under(String agent1, String agent2) {
 		if (locations.get("underTree").contains(agent1) & locations.get("onTree").contains(agent2)) {
 			return true;
 		}
 		return false;
 	}
 	
-	public boolean over(Character agent1, Character agent2) {
+	public boolean over(String agent1, String agent2) {
 		if (locations.get("onTree").contains(agent1) & locations.get("underTree").contains(agent2)) {
 			return true;
 		}

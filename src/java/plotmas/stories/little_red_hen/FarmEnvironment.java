@@ -10,6 +10,7 @@ import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import plotmas.PlotEnvironment;
 import plotmas.storyworld.Character;
+import plotmas.storyworld.Item;
 
 /**
  * Custom controller for the "Tale of the Little Red Hen", managed by {@link RedHenLauncher}.
@@ -23,12 +24,15 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     	super.updateStatePercepts(agentName);
     	
     	for (String location :getModel().locations.keySet()) {
-    		List<Character> agents = getModel().locations.get(location);
+    		List<String> agents = getModel().locations.get(location);
     		if (!agents.isEmpty()) {
-    			for (Character agent :agents) {
-    				String agentname = agent.getName();
-    				removePerceptsByUnif(agentname, Literal.parseLiteral("at(X)"));
-    				addPercept(agentname, Literal.parseLiteral("at(" + location + ")"));
+    			for (String agent :agents) {
+    				for (String animal : getModel().characters.keySet()) {
+    					if (animal.equals(agent)) {
+		    				removePerceptsByUnif(agent, Literal.parseLiteral("at(X)"));
+		    				addPercept(agent, Literal.parseLiteral("at(" + location + ")"));
+		    			}
+    				}
     			}
     		}
     	}
@@ -98,10 +102,6 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     		}
     	}
     	
-    	else if (action.getFunctor().equals("flyToTree")) {
-    		result = getModel().flyToTree(agent);
-    	}
-    	
     	else if (action.getFunctor().equals("strolling")) {
     		result = getModel().strolling(agent);
     	}
@@ -110,12 +110,20 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
 			result = getModel().approachTree(agent);
     	}
     	
-    	else if (action.getFunctor().equals("getCheese")) {
-			result = getModel().getCheese(agent);
+    	else if (action.getFunctor().equals("flatter")) {
+			result = getModel().flatter(agent);
+    	}
+    	
+    	else if (action.getFunctor().equals("threaten")) {
+			result = getModel().threaten(agent);
     	}
     	
     	else if (action.getFunctor().equals("sing")) {
 			result = getModel().sing(agent);
+    	}
+    	
+    	else if (action.getFunctor().equals("collect(X)")) {
+    		result = getModel().collect(agent, X );  //ich weiß, dass das so nicht geht, ist  nur um zu zeigen, was ich will
     	}
     	
     	else if (action.getFunctor().equals("handOver")) {
