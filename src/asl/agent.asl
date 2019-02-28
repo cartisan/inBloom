@@ -38,15 +38,24 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 +wish(X)  <-
 	!!X.
 
-+sees(X)[location(Y)] : is_pleasant(eat(X)) & hungry(true) <-   // crowfox
-	!want(X)[location(Y)].
++sees(X)[location(Y), owner(Z)] : is_pleasant(eat(X)) & hungry(true) <-   // crowfox
+	!want(X)[location(Y), owner(Z)].
 	
 +has(X) : is_pleasant(eat(X)) & has(X) & hungry(false) <-   // crowfox
 	!keep(X).
 
+@has_1[affect(personality(agreeableness,high))]
++has(X) : is_pleasant(eat(X)) & has(X) & hungry(true) <-   // crowfox
+	!thankOther.
+
+@has_2[affect(personality(agreeableness,medium))]
 +has(X) : is_pleasant(eat(X)) & has(X) & hungry(true) <-   // crowfox
 	!giveAdvice.
 
+@has_3[affect(personality(agreeableness,low))]
++has(X) : is_pleasant(eat(X)) & has(X) & hungry(true) <-   // crowfox
+	!eat(X).
+	
 // Share when very agreeable character, unless in a bad mood
 @share_food_plan2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +has(X) : is_pleasant(eat(X)) & has(X) <- 			// still has X when event selected
@@ -86,6 +95,14 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 		.resume(Req);
 	}.
 
+//+has(X): is_pleasant(eat(X)) & has(X) <-
+//	.appraise_emotion(joy).
+	
+//-has(X): is_pleasant(eat(X)) <-
+//	.appraise_emotion(distress).
+
+//+is_dropped(X): at(underTree)  <-
+//	.appraise_emotion(joy).
 
 /********************************************/
 /*****      Personality *********************/
@@ -140,7 +157,7 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 
 // insert all actual punishment plans
 @punished_plan_1[atomic]	
-+!punish : mood(hostile) & has(X) & is_pleasant(eat(X)) <-
++!punish : mood(hostile) & has(X) & is_pleasant(eat(X)) & not(hungry(false))<-
 	?affect_target(Anims);
 	if (.empty(Anims)) {
 		!eat(X);
@@ -242,52 +259,63 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	-has(X);
 	.succeed_goal(eat(X)).
 
-+!want(X)[location(Y)] <- 	//crowfox
-	.print("I want ", X); 
-	.print("To get ", X, "I need to go to", Y); 
-	!approachTree;
-	!get(X).
++!want(X)[location(Y), owner(Z)] <- 	//crowfox
+	.print("I want ", X, " from ", Z); 
+	.print("To get ", X, " I need to go to ", Y); 
+	!approach(Y);
+	!get(X, Z).
 
-+!approachTree <-  	//crowfox
-	approachTree.
++!approach(X) <-  	//crowfox
+	approach(X).
 
-+!get(X) <-			//crowfox
-	.print("How well you are looking today: how glossy your feathers; how bright your eye." /n
-			"I feel sure your voice must surpass that of other birds, just as your figure does;"/n
-			"let me hear but one song from you that I may greet you as the Queen of Birds.");
-	flatter;
-	collect(X).
+	
+@get_3[affect(personality(agreeableness,medium))]
++!get(X, Z) <-			//crowfox
+	.print("How well you are looking today: how glossy your feathers, how bright your eye")
+	.print("I feel sure your voice must surpass that of other birds, just as your figure does")
+	.print("let me hear but one song from you that I may greet you as the Queen of Birds");
+	flatter(Z).
 
-+!get(X) <-				//crowfox
+@get_2[affect(personality(agreeableness,low))]
++!get(X, Z) <-				//crowfox
 	.print("Give ",X, " to me or I will take it from you!");
-	threaten.
-
-+!get(X) <-
-	.print("I am so hungry, would you share your", X," cheese with me please?");
-	ask.	
+	threaten(Z).
+	
+@get_4[affect(personality(agreeableness,high))]
++!get(X, Z) <-
+	.print("I am so hungry, would you share your ", X," with me please?");
+	ask(Z).	
 
 +!strolling <-      //crowfox
 	strolling.
-
+	
 +!keep(X)<- 
 	.print("I am happy to have my ", X).
 
 +compliment  <-  		//crowfox
 	sing.
 
-+threat<- 				 //crowfox
-	handOver.
++is_dropped(X): at(underTree) <-		//crowfox
+	collect(X).
 
-+threat<- 				 //crowfox
-	.print("No, I will not give you anything!");
-	refuse.
++threat(X)[owner(Y)]<- 				 //crowfox
+	handOver(X, Y).
 	
-+politeQuery <- 			 //crowfox
-	handOver.
-
-+politeQuery <-				//crowfox
+@threat_2[affect(personality(conscientiousness,low))]
++threat<- 				 //crowfox
 	.print("No, I will not give you anything!");
-	refuse.
+	refuseToGive(X,Y).
+		
++politeQuery(X)[owner(Y)] <- 			 //crowfox
+	handOver(X, Y).
+	
+@politeQuery_1[affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]
++politeQuery(X)[owner(Y)] <-				//crowfox
+	.print("No, I will not give you anything!");
+	refuseToGive(X,Y).
+
++!thankOther <-
+	.print("Thank you!").
 	
 +!giveAdvice <-
 	.print("I have one advice for you: Never trust a flatterer!").

@@ -105,20 +105,28 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     		result = getModel().strolling(agent);
     	}
     	
-    	else if (action.getFunctor().equals("approachTree")) {
-			result = getModel().approachTree(agent);
+    	
+    	else if (action.getFunctor().equals("approach")) {
+    		String location = action.getTerm(0).toString();
+    		result = getModel().approach(agent,location );
     	}
     	
     	else if (action.getFunctor().equals("flatter")) {
-			result = getModel().flatter(agent);
+    		String targetName = action.getTerm(0).toString();
+    		Character target = getModel().characters.get(targetName);
+			result = getModel().flatter(agent, target );
     	}
     	
     	else if (action.getFunctor().equals("threaten")) {
-			result = getModel().threaten(agent);
+    		String targetName = action.getTerm(0).toString();
+    		Character target = getModel().characters.get(targetName);
+			result = getModel().threaten(agent, target);
     	}
     	
     	else if (action.getFunctor().equals("ask")) {
-			result = getModel().ask(agent);
+    		String targetName = action.getTerm(0).toString();
+    		Character target = getModel().characters.get(targetName);
+			result = getModel().ask(agent, target);
     	}
     	
     	else if (action.getFunctor().equals("sing")) {
@@ -127,15 +135,19 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     	
     	else if (action.getFunctor().equals("collect")) {
     		String item = action.getTerm(0).toString();
-    		result = getModel().collect(agent, item );  //ich weiß, dass das so nicht geht, ist  nur um zu zeigen, was ich will
+    		result = getModel().collect(agent, item ); 
     	}
     	
     	else if (action.getFunctor().equals("handOver")) {
-			result = getModel().handOver(agent);
+    		String target = action.getTerm(0).toString();
+    		String item = action.getTerm(1).toString();
+			result = getModel().handOver(agent, target, item);
     	}
     	
-    	else if (action.getFunctor().equals("refuse")) {
-			result = getModel().refuse(agent);
+    	else if (action.getFunctor().equals("refuseToGive")) {
+    		String target = action.getTerm(0).toString();
+    		String item = action.getTerm(1).toString();
+    		result = getModel().refuseToGive(agent, target, item);
     	}
     	
     	else if (action.getFunctor().equals("relax")) {
