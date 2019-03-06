@@ -16,7 +16,7 @@ public class MakeExtraverted implements ProblemFixCommand {
 	private double otherOldE;
 	
 	public MakeExtraverted(EngageResult er) {
-		this.protagonist = er.getLastAgents().stream().filter(ag -> ag.name.compareTo("protagonist") == 0).collect(Collectors.toList()).get(0);
+		this.protagonist = er.getAgent("protagonist");
 		this.protagonistOldE = protagonist.personality.E;
 
 		// select an other character at random to also make extraverted 
