@@ -37,13 +37,13 @@ import plotmas.storyworld.ScheduledHappeningDirector;
 public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	static protected Logger logger = Logger.getLogger(PlotModel.class.getName());
 	
-	public static MoodMapper moodMapper = new MoodMapper();
 	public static final boolean X_AXIS_IS_TIME = true;		// defines whether moods will be mapped based on plotTim or timeStep
 															// in latter case, average mood will be calculated over all cycles in a timeStep
 	
 	public HashMap<String, Character> characters = null;
 	public HappeningDirector happeningDirector = null; 
 	public EnvType environment = null;
+	public MoodMapper moodMapper = null;
 
 	/** Stores values of model-subclass fields, so that after each action we can check if storyworld changed. <br>
 	 *  <b>mapping:</b>  fieldName --> old field value */
@@ -54,6 +54,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	private Table<String, String, String> causalityTable;
 
 	public PlotModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
+		this.moodMapper = new MoodMapper();
         this.characters = new HashMap<String, Character>();
         
         // add all instantiated agents to world model
@@ -158,13 +159,13 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		if (X_AXIS_IS_TIME) {
 			// time in ms based mood log
 			Long plotTime = PlotEnvironment.getPlotTimeNow();
-			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
 			moodMapper.addMood(name, plotTime, mood);
+			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
 		} else {
 			// time-step based mood log
 			Integer timeStep = PlotLauncher.runner.getUserEnvironment().getStep();
-			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + timeStep.toString());
 			moodMapper.addMood(name, new Long(timeStep), mood);
+			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + timeStep.toString());
 		}
 	}
 	

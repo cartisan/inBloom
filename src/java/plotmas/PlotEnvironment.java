@@ -349,7 +349,9 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 				logger.warning("field model was not set, but a step " + this.step + " was started");
 		} else {
 			// ignore mood data before environment step 1 started
-			PlotModel.moodMapper.startTimes.add(getPlotTimeNow());
+			if (this.model != null) {
+				this.getModel().moodMapper.startTimes.add(getPlotTimeNow());
+			}
 		}
 		
 	}

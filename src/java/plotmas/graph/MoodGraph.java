@@ -50,6 +50,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 	private XYSeriesCollection moodData = null;
 	private String selectedMoodDimension = null;
 	private JFreeChart chart = null;
+	private PlotModel<?> model = null;
 
 	public static MoodGraph getMoodListener() {
 		if (MoodGraph.moodListener==null) {
@@ -70,26 +71,27 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 		this.selectedMoodDimension = MOOD_DIMS[0];
 	}
 	
-	public void createData() {
-		this.createData(SAMPLING_STEP);
+	public void createData(PlotModel<?> model) {
+		this.createData(SAMPLING_STEP, model);
 	}
 	
-	public void createData(int samplingStep) {
+	public void createData(int samplingStep, PlotModel<?> model) {
 		MoodGraph.SAMPLING_STEP = samplingStep;
 		this.deleteGraphData();
+		this.model  = model;
 		
-		logger.fine("Using following mood data to create mood graph:\n" + PlotModel.moodMapper.toString());
-		Long startTime = PlotModel.moodMapper.latestStartTime();
+		logger.fine("Using following mood data to create mood graph:\n" + this.model.moodMapper.toString());
+		Long startTime = this.model.moodMapper.latestStartTime();
 		startTime = startTime - (startTime % 10) + 10;		// round up start time to next multiple of 10
 				
-		for(String agName: PlotModel.moodMapper.mappedAgents()) {
+		for(String agName: this.model.moodMapper.mappedAgents()) {
 			this.moodData.addSeries(new XYSeries(agName));
 			
-			Long endTime = PlotModel.moodMapper.latestMoodEntry(agName);
+			Long endTime = this.model.moodMapper.latestMoodEntry(agName);
 			
 			// for every 10ms from start time until end time sample mood and put it into the graph
 			for (Long x_val = startTime; x_val < endTime + 1; x_val += samplingStep) {
-				Double sampledMood = PlotModel.moodMapper.sampleMood(agName, x_val).get(selectedMoodDimension);
+				Double sampledMood = this.model.moodMapper.sampleMood(agName, x_val).get(selectedMoodDimension);
 				this.addMoodPoint(sampledMood, x_val, agName);
 			}
 		}
@@ -113,6 +115,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 	
 	public void deleteGraphData() {
 		this.moodData.removeAllSeries();
+		this.model = null;
 	}
 	
 	public MoodGraph visualizeGraph() {
@@ -149,7 +152,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 				String selectedDimension = (String) combo.getSelectedItem();
 				
 				MoodGraph.getMoodListener().selectedMoodDimension = selectedDimension;
-				MoodGraph.getMoodListener().createData();
+				MoodGraph.getMoodListener().createData(model);
 				
 				((XYPlot) MoodGraph.getMoodListener().chart.getPlot()).getRangeAxis().setLabel(
 						MoodGraph.getMoodListener().selectedMoodDimension
@@ -190,6 +193,8 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 	}
 
 	public XYSeriesCollection getData() {
+		if (null == moodData)
+			throw new RuntimeException("Mood data was not initialized, make sure to execute #createData() first");
 		return moodData;
 	}
 

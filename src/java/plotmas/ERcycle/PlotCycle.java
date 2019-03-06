@@ -5,11 +5,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+
+import org.jfree.data.xy.XYSeriesCollection;
 
 import jason.JasonException;
 import jason.asSemantics.Personality;
@@ -18,6 +21,7 @@ import plotmas.LauncherAgent;
 import plotmas.PlotEnvironment;
 import plotmas.PlotLauncher;
 import plotmas.PlotModel;
+import plotmas.graph.MoodGraph;
 import plotmas.graph.PlotDirectedSparseGraph;
 import plotmas.graph.PlotGraphController;
 import plotmas.helper.EnvironmentListener;
@@ -29,7 +33,7 @@ import plotmas.helper.Tellability;
  */
 public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	/** Set true to display full plot graphs next to the analyzed one, during ER, for debugging purposes. */
-	protected static final boolean SHOW_FULL_GRAPH = true;
+	protected static final boolean SHOW_FULL_GRAPH = false;
 
 	/** Timeout in ms before a single simulation is forcibly stopped. A value of -1 means no timeout.  */
 	protected static long TIMEOUT = -1;
@@ -126,8 +130,12 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		log("    Parameters: " + rr.toString());
 		PlotLauncher<?,?> runner = rr.getRunner();
 
-		Thread t = new Thread(new Cycle(runner, rr.getModel(), new String[0], rr.getAgents(), this.agentSrc));
-		t.start();
+		try {
+			Thread t = new Thread(new Cycle(runner, rr.getModel(), new String[0], rr.getAgents(), this.agentSrc));
+			t.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		MASConsoleGUI.get().setPause(false);
 		boolean hasAddedListener = false;
@@ -159,14 +167,20 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 			}
 		}
 		
+		// get plot data to store in EngageResult
 		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
-		Tellability tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
 		analyzedGraph.setName("ER Cycle, step " + currentCycle);
-		
+		Tellability tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
+
+		// get mood data to store in EngageResult
+		MoodGraph.getMoodListener().createData(runner.getUserModel());
+		XYSeriesCollection moodData = MoodGraph.getMoodListener().getData();
+
 		EngageResult er = new EngageResult(analyzedGraph,
 										   tel,
 										   rr.getAgents(),
-										   rr.getModel());
+										   runner.getUserModel(),
+										   moodData);
 		
 		if (PlotCycle.SHOW_FULL_GRAPH) {
 			PlotDirectedSparseGraph displayGraph = PlotGraphController.getPlotListener().getGraph().clone();
@@ -248,17 +262,16 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		private List<LauncherAgent> agents;
 		private String agSrc;
 		
-		public Cycle(PlotLauncher<?, ?> runner, PlotModel<?> model, String[] args, List<LauncherAgent> agents, String agSrc) {
+		public Cycle(PlotLauncher<?, ?> runner, PlotModel<?> model, String[] args, List<LauncherAgent> agents, String agSrc) throws Exception {
 			this.runner = runner;
-			this.model = model;
-			
-			for(LauncherAgent ag : agents) {
-				model.addCharacter(ag);
-			}
-			
 			this.args = args;
 			this.agents = agents;
 			this.agSrc = agSrc;
+
+			this.model = (PlotModel<?>) model.getClass().getConstructors()[0].newInstance(agents, model.happeningDirector);
+			for(LauncherAgent ag : agents) {
+				model.addCharacter(ag);
+			}
 		}
 
 		@Override
@@ -352,16 +365,31 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 */
 	public class EngageResult {
 		private PlotDirectedSparseGraph plotGraph;
+		private XYSeriesCollection moodData; 
 		private PlotDirectedSparseGraph auxiliaryGraph;
 		private Tellability tellability;
 		private PlotModel<?> lastModel;
 		private List<LauncherAgent> lastAgents;
 		
-		public EngageResult(PlotDirectedSparseGraph plotGraph, Tellability tellability, List<LauncherAgent> lastAgents, PlotModel<?> lastModel) {
+		public EngageResult(PlotDirectedSparseGraph plotGraph, Tellability tellability, List<LauncherAgent> lastAgents, PlotModel<?> lastModel, XYSeriesCollection moodData) {
 			this.plotGraph = plotGraph;
 			this.tellability = tellability;
 			this.lastAgents = lastAgents;
 			this.lastModel = lastModel; 
+			this.moodData = moodData;
+		}
+		
+		public LauncherAgent getAgent(String name) {
+			List<LauncherAgent> agList = this.lastAgents.stream().filter(ag -> ag.name.compareTo(name) == 0)
+		    													 .collect(Collectors.toList());
+			
+			if (agList.size() == 0) {
+				throw new RuntimeException("No character: " + name + " present in ER Cycle.");
+			} else if (agList.size() > 1) {
+				throw new RuntimeException("Too many characters with name: " + name + " present in ER Cycle.");
+			}
+				
+			return agList.get(0);
 		}
 		
 		public PlotModel<?> getLastModel() {
@@ -386,6 +414,14 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 
 		public void setAuxiliaryGraph(PlotDirectedSparseGraph g) {
 			this.auxiliaryGraph = g;
+		}
+
+		public XYSeriesCollection getMoodData() {
+			return moodData;
+		}
+
+		public void setMoodData(XYSeriesCollection moodData) {
+			this.moodData = moodData;
 		}
 	}
 }
