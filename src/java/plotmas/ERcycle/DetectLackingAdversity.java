@@ -11,7 +11,8 @@ import plotmas.graph.Vertex;
 import plotmas.stories.little_red_hen.RedHenHappeningCycle;
 
 public class DetectLackingAdversity extends ProblemDetectionState {
-
+	private static final Double NEG_MOOD_THRESHOLD = -0.3;
+	
 	private ProblemDetectionState initialNextStage;
 
 	protected DetectLackingAdversity(RedHenHappeningCycle controller) {
@@ -42,12 +43,16 @@ public class DetectLackingAdversity extends ProblemDetectionState {
 			if (this.initialNextStage == null) {
 				this.initialNextStage = this.nextReflectionState;
 			}
+			
+			//TODO: next state here depedent on choice of fix?
 			this.nextReflectionState = this.getInstanceFor(DetectLowCoupling.class);
 			return new IntroduceAntagonist(this.controller);			
 		} else {	
 			// there was at least some adversity, check if we can make it stronger
-			if (this.detectLowNegativity("protagonist", er)) {
-				// TODO: IncreaseAdversityFix -- if adversity created by fix, multiply it. If natural... Try to repeat cause?
+			if (this.detectTooWeakNegativity("protagonist", er)) {
+				// TODO: if adversity created by fix, multiply it. If natural... Try to repeat cause?
+				// TODO: Make sure to roll back and try something else if last option didn't work, so no infinite loop
+				return new IncreaseNegativity(this.controller);
 			}
 			
 			// nothing else to do, if we changed next stage to something else, return to initial reasoning cycle cause all is well
@@ -58,17 +63,18 @@ public class DetectLackingAdversity extends ProblemDetectionState {
 		} 
 	}
 
-	private boolean detectLowNegativity(String name, EngageResult er) {
+	private boolean detectTooWeakNegativity(String name, EngageResult er) {
 		XYSeries moodData = er.getMoodData().getSeries(name);
 		Double minP = moodData.getMinY();
 		
 		LauncherAgent chara = er.getAgent(name);
 		Double defP = chara.personality.defaultMood().getP();
 		
-		if ((minP < 1.2*defP) & (minP < 0)) {
-			return true;
+		// Pleasure must be low, but if default mood is already low then it needs to drop even below that
+		if ((minP < NEG_MOOD_THRESHOLD) & (minP < 1.2 * defP)) {
+			return false;
 		}
-		return false;
+		return true;
 	}
 
 	private boolean detectNegativeEmotion(Vertex root, EngageResult er) {
