@@ -1,6 +1,7 @@
 package plotmas;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
@@ -14,6 +15,7 @@ import plotmas.stories.little_red_hen.RedHenLauncher;
 import plotmas.storyworld.Character;
 import plotmas.storyworld.Happening;
 import plotmas.storyworld.HappeningDirector;
+import plotmas.storyworld.Location;
 import plotmas.storyworld.ScheduledHappeningDirector;
 
 
@@ -40,7 +42,8 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	public static final boolean X_AXIS_IS_TIME = true;		// defines whether moods will be mapped based on plotTim or timeStep
 															// in latter case, average mood will be calculated over all cycles in a timeStep
 	
-	public HashMap<String, Character> characters = null;
+	protected HashMap<String, Character> characters = null;
+	protected HashMap<String, Location> locations = null;
 	public HappeningDirector happeningDirector = null; 
 	public EnvType environment = null;
 	public MoodMapper moodMapper = null;
@@ -56,6 +59,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	public PlotModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		this.moodMapper = new MoodMapper();
         this.characters = new HashMap<String, Character>();
+		this.locations = new HashMap<String, Location>();
         
         // add all instantiated agents to world model
         for (LauncherAgent lAgent : agentList) {
@@ -86,6 +90,10 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
         }		
 	}
 	
+	public Collection<Character> getCharacters() {
+		return this.characters.values();
+	}
+	
 	public Character getCharacter(String name) {
 		return this.characters.get(name);
 	}
@@ -100,6 +108,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	public void addCharacter(LauncherAgent lAgent) {
 		// set up connections between agents, model and environment
     	Character character = new Character();
+    	character.setModel(this);
 		this.characters.put(lAgent.name, character);	
 	}
 
@@ -117,7 +126,24 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	}
 
 	public void removeCharacter(String agName) {
-		this.characters.remove(agName);
+		Character character = this.characters.remove(agName);
+		character.setModel(null);
+	}
+	
+	public void createLocation(String name) {
+		this.locations.put(name, new Location(name));
+	}
+	
+	public Location getLocation(String name) {
+		return this.locations.get(name);
+	}
+	
+	public boolean presentAt(String character,  String location) {
+		return this.locations.get(location).present(this.getCharacter(character));
+	}
+	
+	public Collection<Location> getLocations() {
+		return this.locations.values();
 	}
 	
 	/**

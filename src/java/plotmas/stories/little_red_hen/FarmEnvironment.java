@@ -21,20 +21,7 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     @Override
     protected void updateStatePercepts(String agentName) {
     	super.updateStatePercepts(agentName);
-    	
-    	for (String location :getModel().locations.keySet()) {
-    		List<String> agents = getModel().locations.get(location);
-    		if (!agents.isEmpty()) {
-    			for (String agent :agents) {
-    				for (String animal : getModel().characters.keySet()) {
-    					if (animal.equals(agent)) {
-		    				removePerceptsByUnif(agent, Literal.parseLiteral("at(X)"));
-		    				addPercept(agent, Literal.parseLiteral("at(" + location + ")"));
-		    			}
-    				}
-    			}
-    		}
-    	}
+
     	// update publicly known wheat state
     	if (!(getModel().wheat == null)) {
     		removePerceptsByUnif(agentName, Literal.parseLiteral("existant(wheat[X])"));
@@ -113,19 +100,19 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     	
     	else if (action.getFunctor().equals("flatter")) {
     		String targetName = action.getTerm(0).toString();
-    		Character target = getModel().characters.get(targetName);
+    		Character target = getModel().getCharacter(targetName);
 			result = getModel().flatter(agent, target );
     	}
     	
     	else if (action.getFunctor().equals("threaten")) {
     		String targetName = action.getTerm(0).toString();
-    		Character target = getModel().characters.get(targetName);
+    		Character target = getModel().getCharacter(targetName);
 			result = getModel().threaten(agent, target);
     	}
     	
     	else if (action.getFunctor().equals("ask")) {
     		String targetName = action.getTerm(0).toString();
-    		Character target = getModel().characters.get(targetName);
+    		Character target = getModel().getCharacter(targetName);
 			result = getModel().ask(agent, target);
     	}
     	
@@ -139,13 +126,13 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     	}
     	
     	else if (action.getFunctor().equals("handOver")) {
-    		String target = action.getTerm(0).toString();
+    		Character receiver = getModel().getCharacter(action.getTerm(0).toString());
     		String item = action.getTerm(1).toString();
-			result = getModel().handOver(agent, target, item);
+			result = getModel().handOver(agent, receiver, item);
     	}
     	
     	else if (action.getFunctor().equals("refuseToGive")) {
-    		String target = action.getTerm(0).toString();
+    		Character target = getModel().getCharacter(action.getTerm(0).toString());
     		String item = action.getTerm(1).toString();
     		result = getModel().refuseToGive(agent, target, item);
     	}

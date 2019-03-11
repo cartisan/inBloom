@@ -37,6 +37,7 @@ import plotmas.jason.PlotAwareAg;
 import plotmas.jason.PlotAwareAgArch;
 import plotmas.jason.PlotAwareCentralisedAgArch;
 import plotmas.jason.PlotAwareCentralisedRuntimeServices;
+import plotmas.storyworld.Character;
 
 /**
  *  Responsible for relaying action requests from ASL agents to the {@link plotmas.PlotModel Storyworld} and
@@ -360,10 +361,10 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	protected void stepFinished(int step, long elapsedTime, boolean byTimeout) {
 		// if environment is initialized && agents are done setting up && one of the agents didn't choose an action
 		if (this.model != null && byTimeout && step > 5 ) {
-			for (String agName : this.getModel().characters.keySet()) {
-				Object action = this.getActionInSchedule(agName);
+			for (Character chara : this.model.getCharacters()) {
+				Object action = this.getActionInSchedule(chara.getName());
 				if(action == null) {
-					this.agentActions.get(agName).add("--");		// mark inaction by --
+					this.agentActions.get(chara.getName()).add("--");		// mark inaction by --
 				}
 			}
 		}
@@ -375,7 +376,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	
 	public void setModel(ModType model) {
 		this.model = model;
-		updatePercepts();
 	}
 	
 	public ModType getModel() {
@@ -409,8 +409,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	}
 
 	public void updatePercepts() {
-		for(String name: model.characters.keySet()) {
-			updatePercepts(name);
+		for(Character chara : this.model.getCharacters()) {
+			updatePercepts(chara.getName());
 		}
 	}
 	
@@ -430,6 +430,15 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * @see plotmas.stories.little_red_hen.FarmEnvironment#updateStatePercepts(java.lang.String)
      */
     protected void updateStatePercepts(String agentName) {
+    	// update agent location
+    	for (String location : this.getModel().locations.keySet()) {
+			if (this.model.presentAt(agentName, location)) {
+					// this agent is one of the agents at location
+					removePerceptsByUnif(agentName, Literal.parseLiteral("at(X)"));
+					addPercept(agentName, Literal.parseLiteral("at(" + location + ")"));
+				}
+    	}
+    	
     	// update list of present agents (excluding self)
     	removePerceptsByUnif(agentName, Literal.parseLiteral("agents(X)"));
     	Set<String> presentAgents = new HashSet<>(this.model.characters.keySet());
@@ -441,7 +450,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	removePerceptsByUnif(agentName, Literal.parseLiteral("has(X)"));
     	for (String literal : this.model.characters.get(agentName).createInventoryPercepts()) {
     		addPercept(agentName, Literal.parseLiteral(literal));    		
-    	}    		
+    	}
     }
 
     /**
