@@ -24,21 +24,28 @@ import plotmas.jason.PlotAwareAg;
 public class Character {
     static Logger logger = Logger.getLogger(Character.class.getName());
 	
-    public LinkedList<Item> inventory = new LinkedList<Item>();
-    public PlotAwareAg plotAgentPendant;
-    public String name;
+    private PlotAwareAg plotAgentPendant;
+    private PlotModel<?> model;
 
-	private PlotModel<?> model;
+    public LinkedList<Item> inventory = new LinkedList<Item>();
+    public String name = null;
+    public Location location = null;
 
 	public Character() {
 	}
 	
 	public Character(String name) {
-		this.setName(name);
+		this.initialize(name);
 	}
 	
 	public void initialize(LauncherAgent lAgent) {
 		this.setName(lAgent.name);
+		this.setPlotAgentPendant(lAgent.name);
+	}
+	
+	public void initialize(String name) {
+		this.setName(name);
+		this.setPlotAgentPendant(name);
 	}
 	
 	/**
@@ -163,6 +170,7 @@ public class Character {
 	}
 	
 	public boolean flying() {
+		// TODO: find a flexible implementation
 		if (name == "crow") {
 			return true;
 		}
@@ -170,6 +178,7 @@ public class Character {
 	}
 	
 	public boolean farmAnimal() {
+		// TODO: find a flexible implementation
 		if (name == "crow") {
 			return false;
 		}
@@ -197,7 +206,6 @@ public class Character {
 
 	public void setName(String agentName) {
 		this.name = agentName;
-		this.plotAgentPendant = PlotLauncher.runner.getPlotAgent(this.name);
 	}
 	
 	public String getName() {
@@ -206,5 +214,9 @@ public class Character {
 	
 	public void setPlotAgentPendant(PlotAwareAg pAgent) {
 		this.plotAgentPendant = pAgent;
+	}
+	
+	public void setPlotAgentPendant(String pAgentName) {
+		this.plotAgentPendant = PlotLauncher.runner.getPlotAgent(pAgentName);
 	}
 }
