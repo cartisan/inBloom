@@ -116,6 +116,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	    ((PlotEnvironment<?>) this.env.getUserEnvironment()).wake();
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void drawGraphs() {
 		if(!MASConsoleGUI.get().isPause())
 			this.pauseExecution();
@@ -124,7 +125,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 		this.graphs.add(PlotGraphController.getPlotListener().visualizeGraph());
 		
 		// create and visualize mood graph
-		MoodGraph.getMoodListener().createData();
+		MoodGraph.getMoodListener().createData(((PlotEnvironment<PlotModel<?>>)this.getEnvironmentInfraTier().getUserEnvironment()).getModel());
 		this.graphs.add(MoodGraph.getMoodListener().visualizeGraph());
 		
 		this.isDraw = true;

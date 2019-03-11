@@ -71,7 +71,10 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * @return time in ms (Long)
      */
     public static Long getPlotTimeNow() {
-    	return (System.nanoTime() - PlotEnvironment.pauseDuration - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
+    	if (PlotEnvironment.startTime > 0) {
+    		return (System.nanoTime() - PlotEnvironment.pauseDuration - PlotEnvironment.startTime) / 1000000; // normalize nano to milli sec
+    	} 
+    	return 0L;
     }
     
     /**
@@ -344,7 +347,13 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 				this.model.checkHappenings(this.step);
 			else 
 				logger.warning("field model was not set, but a step " + this.step + " was started");
+		} else {
+			// ignore mood data before environment step 1 started
+			if (this.model != null) {
+				this.getModel().moodMapper.startTimes.add(getPlotTimeNow());
 			}
+		}
+		
 	}
 	
 	@Override

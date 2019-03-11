@@ -150,7 +150,20 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 /****** Mood  *******************************/
 /********************************************/
 +mood(hostile) <-
-	!punish.
+	?affect_target(Anims);
+	if (.empty(Anims)) {
+		.print("What a foul mood, and no-one to blame for it!");
+	} else {
+		!punish;
+	}.
+
+// relativised commitment: finish desire if not in hostile mood anymore
+-mood(hostile) <-
+	.drop_desire(punish).
+	
++punished(L) : true <- 
+	-punished(L);
+	.succeed_goal(punish).
 
 // begin declarative goal  (p. 174; Bordini,2007)*/
 +!punish : punished(L) <- true.
@@ -164,7 +177,7 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 		+punished(Anims);		
 	} else {
 		.send(Anims, achieve, eat(X));
-		.print("Asked ", Anims, " to eat ", X, ". But not sharing necessary resources. xoxo");
+		.print("Asked ", Anims, " to eat ", X, ". But not shareing necessary ressources. xoxo");
 		!eat(X);
 		+punished(Anims)
 	}.
@@ -172,14 +185,6 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 // blind commitment: if no means to punish present now, keep trying
 +!punish : true <- 
 	!punish.
-
-// relativised commitment: finish desire if not in hostile mood anymore, or punishment done
--mood(hostile) <-
-	.succeed_goal(punish).
-
-+punished(L) : true <- 
-	-punished(L);
-	.drop_intention(punished(_)).
 	
 /********************************************/
 /***** Plans  *******************************/

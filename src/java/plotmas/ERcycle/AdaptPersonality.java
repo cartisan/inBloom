@@ -133,32 +133,24 @@ public class AdaptPersonality implements ProblemFixCommand {
 	
 	@Override
 	public void execute(EngageResult er) {
-		for (LauncherAgent chara : er.getLastAgents()) {
-			if (chara.name.equals(this.charName)) {
-				this.oldPers = chara.personality.clone();		// save old personality so we can restore it if need be
-				
-				ListIterator<String> it = Personality.TRAITS.listIterator();
-				while (it.hasNext()) {
-					String trait = it.next();
-					if (this.persMask.getTrait(trait) != 0.0) {
-						chara.personality.setTrait(trait, this.persMask.getTrait(trait));
-					}
-				}
-				
-				return;
+		LauncherAgent chara = er.getAgent(this.charName);
+		this.oldPers = chara.personality.clone();		// save old personality so we can restore it if need be
+		
+		ListIterator<String> it = Personality.TRAITS.listIterator();
+		while (it.hasNext()) {
+			String trait = it.next();
+			if (this.persMask.getTrait(trait) != 0.0) {
+				chara.personality.setTrait(trait, this.persMask.getTrait(trait));
 			}
 		}
-		throw new RuntimeException("No character: " + this.charName + " present in ER Cycle.");
+		
+		return;
 	}
 
 	@Override
 	public void undo(EngageResult er) {
-		for (LauncherAgent chara : er.getLastAgents()) {
-			if (chara.name.equals(this.charName)) {
-				chara.personality = this.oldPers;
-				break;
-			}
-		}
+		LauncherAgent chara = er.getAgent(this.charName);
+		chara.personality = this.oldPers;
 	}
 	
 	@Override

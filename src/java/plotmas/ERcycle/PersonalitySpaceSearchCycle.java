@@ -197,8 +197,8 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 	 * @param agentSrc The AgentSpeak source file for all agents
 	 * @param personalityNum Defines how many unique personalities the cycle should iterate over.
 	 */
-	public PersonalitySpaceSearchCycle(String[] agentNames, String agentSrc, int personalityNum) {
-		super(agentNames, agentSrc, !hideGui);
+	public PersonalitySpaceSearchCycle(String agentSrc, int personalityNum) {
+		super(agentSrc, !hideGui);
 
 		// Open a file for writing results
 		try {

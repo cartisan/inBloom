@@ -10,9 +10,11 @@ import plotmas.storyworld.ScheduledHappeningDirector;
 
 public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 	
+	private String[] agNames = new String[] { "hen", "dog", "cow", "pig" };
+	
 	protected RedHenPersonalityCycle() {
 		// Create PlotCycle with needed agents.
-		super(new String[] { "hen", "dog", "cow", "pig" }, "agent", 2);
+		super("agent", 2);
 	}
 
 	@Override
@@ -40,7 +42,7 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 			setupFileLogger();
 		}
 		
-		List<LauncherAgent> agents = createAgs(new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		List<LauncherAgent> agents = createAgs(this.agNames,new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
 		return new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), agents);
 	}
 
@@ -50,7 +52,7 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 		lastRunner = new RedHenLauncher();
 		lastRunner.setShowGui(false);
 		
-		List<LauncherAgent> agents = createAgs(new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		List<LauncherAgent> agents = createAgs(this.agNames,new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
 		ReflectResult rr = new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), agents);
 		
 		log("Cycle " + currentCycle);

@@ -1,5 +1,6 @@
 package plotmas.helper;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.logging.Logger;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.google.common.collect.Tables;
 
 import jason.asSemantics.Mood;
 
@@ -20,9 +22,8 @@ import jason.asSemantics.Mood;
 public class MoodMapper {
 	static protected Logger logger = Logger.getLogger(MoodMapper.class.getName());
 	
-//	private HashMap<String, List<Pair<Long,Mood>>> timedMoodMap = new HashMap<>();
-	private Table<String, Long, List<Mood>> timedMoodMap = HashBasedTable.create();
-	private LinkedList<Long> startTimes = new LinkedList<>();
+	private Table<String, Long, List<Mood>> timedMoodMap = Tables.synchronizedTable(HashBasedTable.create());
+	public List<Long> startTimes = Collections.synchronizedList(new LinkedList<>());
 	
 	/**
 	 * Needs to be called each time the agent's pleasure value changes, in order to make this change accessible for
