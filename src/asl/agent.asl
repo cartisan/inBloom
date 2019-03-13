@@ -10,35 +10,25 @@ is_work(grind(_)).
 is_work(bake(_)).
 
 creatable_from(wheat,bread).
-
 is_pleasant(eat(bread)).
+is_useful(A,true) :- is_pleasant(eat(A)).
 
-obligation(farm_work).
 wish(relax).
 wish(stroll).
-
-is_useful(A,true) :- is_pleasant(eat(A)).
 
 agent(X) :- agents(Agents) & .member(X, Agents).
 location(X) :- locations(Locations) & .member(X, Locations).
 
 !default_activity.
 	
-
 /********************************************/
 /*****      Common sense reasoning ************/
 /********************************************/
 
-// follow work-intensive wishes when somewhat active
-@wish_1[affect(not(mood(arousal,low)))]
-+wish(X) : is_work(X) <-
-	!!X.
++self(farm_animal) <- +obligation(farm_work).
 
-+wish(X)  <-
-	// TODO: what is this one doing here?!
-	!!X.
-
-+see(Thing)[location(Loc), owner(Per),source(Name)] : is_pleasant(eat(Thing)) & hungry(true) <-   // crowfox
++see(Thing)[location(Loc), owner(Per)] : is_pleasant(eat(Thing)) & hungry(true) <-   // crowfox
+	.my_name(Name);
 	.appraise_emotion(hope, Name, "see(Thing)");
 	+want(Thing);
 	+at(Per,Loc);
@@ -68,11 +58,12 @@ location(X) :- locations(Locations) & .member(X, Locations).
 	}.
 
 +compliment  <-  		//crowfox
-	sing.
+	!sing.
 
-+is_dropped(X) : want(X) <-		//crowfox
-	collect(X);
-	-want(X).
++is_dropped(Thing) : want(Thing) <-		//crowfox
+	.appraise_emotion(satisfaction, Name, "is_dropped(Thing)");
+	!collect(Thing);
+	-wish(has(Thing)).
 
 +threat(X)[owner(Y)]<- 				 //crowfox
 	handOver(X, Y).
@@ -162,6 +153,9 @@ location(X) :- locations(Locations) & .member(X, Locations).
 	!X;
 	!default_activity.	
 
+-!default_activity <-
+	!default_activity.
+	
 /********************************************/
 /****** Mood  *******************************/
 /********************************************/
@@ -208,6 +202,7 @@ location(X) :- locations(Locations) & .member(X, Locations).
 
 @create_bread_1[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(seed)])<-
+	-obligation(create(bread));
 	!plant(wheat);
 	!create(bread).
 
@@ -228,8 +223,7 @@ location(X) :- locations(Locations) & .member(X, Locations).
 
 @create_bread_5[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(flour)])<-
-	!bake(bread);
-	-obligation(create(bread)).
+	!bake(bread).
 
 // Reject helping others if "antisocial", but not feeling powerless
 @reject_request_1[affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]
@@ -308,6 +302,12 @@ location(X) :- locations(Locations) & .member(X, Locations).
 	.print("I am so hungry, would you share your ", X," with me please?");
 	ask(Person).	
 
++!collect(Thing) <-
+	collect(Thing).
+
++!sing <-
+	sing.
+
 +!stroll <-      //crowfox
 	stroll.
 
@@ -319,5 +319,3 @@ location(X) :- locations(Locations) & .member(X, Locations).
 	
 +!share(X, Anims) <-
 	share(X, Anims).
-	
-//-!X[_] <- .print("I failed while trying to ", X).

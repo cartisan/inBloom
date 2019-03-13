@@ -1,5 +1,6 @@
 package plotmas.stories.crow_fox;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 
@@ -27,9 +28,8 @@ public class CrowFoxLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         logger.info("Starting up from Launcher!");
         
         PlotControlsLauncher.runner = new CrowFoxLauncher();
-        
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
-        		new LauncherAgent("crow", Collections.singletonList("hungry(false)"),
+        		new LauncherAgent("crow", Arrays.asList("hungry(false)"),
         								  Collections.singletonList("approach(tree)"), 
         								  new Personality(-0.7, 0, 0.3, 0, 0)),
 //        		new LauncherAgent("crow", Collections.singletonList("hungry(false)"),
