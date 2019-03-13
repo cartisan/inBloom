@@ -60,13 +60,7 @@ public class TestModel extends PlotModel<TestEnvironment> {
 
 		@Override
 		public String getItemName() {
-			return "Wallet";
-		}
-
-		@Override
-		public String literal() {
 			return "wallet";
 		}
-		
 	}
 }

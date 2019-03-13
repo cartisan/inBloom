@@ -38,6 +38,7 @@ import plotmas.jason.PlotAwareAgArch;
 import plotmas.jason.PlotAwareCentralisedAgArch;
 import plotmas.jason.PlotAwareCentralisedRuntimeServices;
 import plotmas.storyworld.Character;
+import plotmas.storyworld.Location;
 
 /**
  *  Responsible for relaying action requests from ASL agents to the {@link plotmas.PlotModel Storyworld} and
@@ -435,9 +436,16 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 			if (this.model.presentAt(agentName, location)) {
 					// this agent is one of the agents at location
 					removePerceptsByUnif(agentName, Literal.parseLiteral("at(X)"));
-					addPercept(agentName, Literal.parseLiteral("at(" + location + ")"));
+					
+					Location loc = this.getModel().getLocation(location);
+					Character chara = this.getModel().getCharacter(agentName);
+					addPercept(agentName, loc.createLocationPercept(chara));
 				}
     	}
+    	// update list of possible locations
+    	removePerceptsByUnif(agentName, Literal.parseLiteral("locations(X)"));
+    	List<Term> locList = this.model.locations.keySet().stream().map(ASSyntax::createAtom).collect(Collectors.toList());
+    	addPercept(agentName, ASSyntax.createLiteral("locations", ASSyntax.createList(locList)));
     	
     	// update list of present agents (excluding self)
     	removePerceptsByUnif(agentName, Literal.parseLiteral("agents(X)"));
@@ -448,8 +456,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	
     	// update inventory state for each agents
     	removePerceptsByUnif(agentName, Literal.parseLiteral("has(X)"));
-    	for (String literal : this.model.characters.get(agentName).createInventoryPercepts()) {
-    		addPercept(agentName, Literal.parseLiteral(literal));    		
+    	for (Literal percept : this.model.characters.get(agentName).createInventoryPercepts()) {
+    		addPercept(agentName, percept);    		
     	}
     }
 

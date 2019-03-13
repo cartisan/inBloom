@@ -134,6 +134,10 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		this.locations.put(name, new Location(name));
 	}
 	
+	public void addLocation(Location loc) {
+		this.locations.put(loc.name, loc);
+	}
+	
 	public Location getLocation(String name) {
 		return this.locations.get(name);
 	}
@@ -144,6 +148,10 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	
 	public Collection<Location> getLocations() {
 		return this.locations.values();
+	}
+	
+	public boolean goTo(Character agent, Location target) {
+		return target.enter(agent);
 	}
 	
 	/**

@@ -10,6 +10,7 @@ import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
 import plotmas.PlotEnvironment;
 import plotmas.storyworld.Character;
+import plotmas.storyworld.Location;
 
 /**
  * Custom controller for the "Tale of the Little Red Hen", managed by {@link RedHenLauncher}.
@@ -88,14 +89,13 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     		}
     	}
     	
-    	else if (action.getFunctor().equals("strolling")) {
-    		result = getModel().strolling(agent);
+    	else if (action.getFunctor().equals("stroll")) {
+    		result = getModel().stroll(agent);
     	}
     	
-    	
-    	else if (action.getFunctor().equals("approach")) {
-    		String location = action.getTerm(0).toString();
-    		result = getModel().approach(agent,location );
+    	else if (action.getFunctor().equals("goTo")) {
+    		Location target = getModel().getLocation(action.getTerm(0).toString());
+    		result = getModel().goTo(agent, target );
     	}
     	
     	else if (action.getFunctor().equals("flatter")) {

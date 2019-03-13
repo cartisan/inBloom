@@ -1,13 +1,17 @@
 package plotmas.stories.little_red_hen;
 
+import java.util.LinkedList;
 import java.util.List;
 
+import jason.asSyntax.ASSyntax;
+import jason.asSyntax.Literal;
 import plotmas.LauncherAgent;
 import plotmas.PlotModel;
 import plotmas.helper.PerceptAnnotation;
 import plotmas.storyworld.Character;
 import plotmas.storyworld.HappeningDirector;
 import plotmas.storyworld.Item;
+import plotmas.storyworld.Location;
 
 
 /**
@@ -22,16 +26,12 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	public int actionCount;
 	public boolean wheatFound;
 	
-	public Cheese cheese;
-
-	
 	public FarmModel(List<LauncherAgent> agents, HappeningDirector hapDir) {
 		super(agents, hapDir);
 
 		// create locations
 		this.createLocation("other");
-		this.createLocation("onTree");
-		this.createLocation("underTree");
+		this.addLocation(new Tree(this));
 
 		// set all characters' default location
 		for(Character chara :this.getCharacters()) {
@@ -42,14 +42,13 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		this.wheat = null;
 		this.wheatFound = false;
 		
-		this.cheese = new Cheese();
+		Item bread = new Bread();
 		if( this.characters.containsKey("crow")) {
-			getCharacter("crow").addToInventory(cheese);			
+			getCharacter("crow").addToInventory(bread);			
 		}
 
 	}
 
-	
 	public boolean farmWork(Character agent) {
 		if (agent.farmAnimal()) {
 			this.actionCount += 1;
@@ -120,47 +119,15 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	}
 
 	
-	public boolean strolling(Character agent) {
-		if (!agent.flying() & this.getLocation("other").present(agent))  {
-			logger.info(agent.name + " strolls around");
-			return true;
-		}
-		return false;
-	}
-
-	
-	public boolean approach(Character agent, String location) {
-		if (location.equals("tree")) {
-			if(agent.flying() & this.getLocation("other").present(agent)) { 
-				this.getLocation("onTree").enter(agent);
-				this.getLocation("other").leave(agent);	
-				logger.info(agent.name + ": flies to tree");
-				
-				// everyone sees the inventory of the character on the tree
-				for (String charName : this.characters.keySet()) {
-					if (!charName.equals(agent.name)) {
-						for (Item item : agent.inventory) {
-							this.environment.addEventPerception(charName, "sees(" + item + ")[location(tree), owner("+agent.name+")]"); 
-							logger.info(charName + " sees " + agent.name + " with " + item);
-						}
-					}
-				}
-				return true;
-			}
-			else if (!agent.flying() & this.getLocation("other").present(agent)) {
-				logger.info(agent.name + " walks under the tree and says: Good day, Mistress Crow.");
-				this.getLocation("underTree").enter(agent);
-				this.getLocation("other").leave(agent);
-				return true;
-			}
-		}
-		logger.info(agent.name + " cannot find the right way.");
-		return false;
+	public boolean stroll(Character agent) {
+		logger.info(agent.name + " strolls around");
+		return true;
 	}
 
 	public boolean threaten(Character agent, Character target) {
-		for (Item item : target.inventory) {
-			if (atTree(agent, target)) {
+		// TODO: Rly, asking for all items?!
+		if (agent.location.present(target)) {
+			for (Item item : target.inventory) {
 				logger.info(agent.name + " tells " +target.name + " to hand over " + item + " or " + agent.name + " will take it from " +target.name + " with force.");
 				this.environment.addEventPerception(target.name, "threat(" + item + ")owner("+agent.name+")]", new PerceptAnnotation("fear"));
 				return true;
@@ -169,19 +136,10 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		return false;
 	}
 	
-	public boolean flatter(Character agent, Character target) {
-		if(atTree(agent, target) & !over(agent, target)) { //!over() kann ggf. auch weggelassen werden -->  Erklärung: ich dachte, dass es fox nicht viel bringt wenn er auf dem Baum sitzt und crow unter dem Baum singt - dann kommt fox trotzdem nicht an den Käse
-			logger.info(agent.name + " flatters "+ target.name);
-			this.environment.addEventPerception(target.name, "compliment", new PerceptAnnotation("pride"));
-			return true;
-		}
-		return false;
-	}
-		
-	
 	public boolean ask(Character agent, Character target) {
-		for (Item item : agent.inventory) {
-			if (under(agent, target)) {
+		// TODO: Rly, asking for all items?!
+		if (agent.location.present(target)) {
+			for (Item item : agent.inventory) {
 				logger.info(agent.name + " asks " +target.name + " to share " + item +" with " + agent.name);
 				this.environment.addEventPerception(target.name, "politeQuery(" + item + ")[owner(" + target.name + ")]", new PerceptAnnotation("pity"));
 				return true;
@@ -190,90 +148,57 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		return false;
 	}
 	
+	public boolean flatter(Character agent, Character target) {
+		if(agent.location.present(target)) {
+			logger.info(agent.name + " flatters "+ target.name);
+			this.environment.addEventPerception(target.name, "compliment", new PerceptAnnotation("pride"));
+			return true;
+		}
+		return false;
+	}
+		
 	public boolean sing(Character agent) { 
-		if(agent.flying() & !agent.inventory.isEmpty()) {
+		logger.info(agent.name + " sings.");
+		
+		// if agent is in the sky and sings then they loose whatever they held in their (beak-) inventory
+		if(agent.location.isSkyLevel(agent)) {
 			for (Item item : agent.inventory) {		
 				agent.removeFromInventory(item);
-				for (String listener : this.characters.keySet()) {
-					if (!agent.name.equals(listener)) { 	// diese condition sollte eigentlich nicht nötig sein, aber komischerweise bekommt fox sonst keine Perception über "is_dropped("cheese")"
-						logger.info(agent.name + ": lifted up her head and began to caw her best, ");
-						logger.info(agent.name + ": but the moment she opened her mouth the piece of cheese fell to the ground ");
-						this.environment.addEventPerception(listener, "is_dropped(" + item.getItemName() + ")");
-						this.getLocation("underTree").place(item);
-						return true;
-					}
+				agent.location.place(item);
+				logger.info(agent.name + " lost " + item.getItemName() + " which fell to the ground.");
+				
+				// everyone present see things dropping from the sky
+				for (Character observer : agent.location.getCharacters()) {
+					this.environment.addEventPerception(observer.getName(), "is_dropped(" + item.getItemName() + ")");
 				}
 			}
 		}
-		else if (agent.flying()) {
-			logger.info(agent.name + " sings a song.");
-			return true;
-		}
-		return false;
+				
+		return true;
 	}
 	
 	public boolean collect(Character agent, String thing) {
-		if(this.getLocation("underTree").contains(thing)){
-			agent.addToInventory(cheese); //unschön gelöst. Besser: entweder einen String übergeben oder String in Item umwandeln
-			this.getLocation("other").remove(thing);
+		if(agent.location.contains(thing)) {
+			Item item = agent.location.remove(thing);
+			agent.addToInventory(item);
 			return true;
 		}
 		return false;
 	}
 	
-	public boolean handOver(Character agent, Character receiver, String item) {
-		if (agent.has(item) & atTree(agent, receiver)){
-			Character other = this.characters.get(receiver);
-			other.addToInventory(cheese);		//unschön gelöst.
-			agent.removeFromInventory(cheese);		//unschön gelöst.
-			logger.info(agent.name + " hands over " + item + " to " +receiver);
+	public boolean handOver(Character agent, Character receiver, String itemName) {
+		if (agent.has(itemName) & agent.location.present(receiver)){
+			Item item = agent.removeFromInventory(itemName);
+			receiver.addToInventory(item);
+			logger.info(agent.name + " hands over " + itemName + " to " +receiver);
 			return true;
 		}
 		return false;
 	}
 	
 	public boolean refuseToGive(Character agent, Character enemy, String item) {
-		if (agent.has(item) & atTree(agent, enemy)){
+		if (agent.has(item) & agent.location.present(enemy)){
 			logger.info(agent.name + " does not hand over" + item + " to " +enemy);
-			return true;
-		}
-		return false;
-	}
-	public boolean samePlace(Character agent1, Character agent2){
-		if(getLocation("other").present(agent1) & getLocation("other").present(agent2)) {
-			return true;
-		}
-		else if (getLocation("underTree").present(agent1) & getLocation("underTree").present(agent2)) {
-			return true;
-		}
-		else if (getLocation("onTree").present(agent1) & getLocation("onTree").present(agent2)) {
-			return true;
-		}
-		return false;
-	}
-	
-	public boolean under(Character agent1, Character agent2) {
-		if (getLocation("underTree").present(agent1) & getLocation("onTree").present(agent2)) {
-			return true;
-		}
-		return false;
-	}
-	
-	public boolean over(Character agent1, Character agent2) {
-		if (getLocation("onTree").present(agent1) & getLocation("underTree").present(agent2)) {
-			return true;
-		}
-		return false;
-	}
-	
-	public boolean atTree(Character agent1, Character agent2) {
-		if(samePlace(agent1, agent2)) {
-			return true;
-		}
-		else if(under(agent1, agent2)) {
-			return true;
-		}
-		else if(over(agent1, agent2)) {
 			return true;
 		}
 		return false;
@@ -281,19 +206,154 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	
 	/****** helper classes *******/
 	
+	/**
+	 * Location that allows agents to enter on two different levels: ground and sky. While agents on different levels
+	 * can verbally interact because they are in the same geographical location, they can not interact physically.
+	 * Items can only be places below the tree, since they fall down if placed in the treetop.
+	 * 
+	 * @author Leonid Berov
+	 */
+	public class Tree extends Location {
+		private PlotModel<?> model = null;
+		
+		public List<Character> treetop = null;
+		public List<Character> below = null;
+		
+		public Tree(PlotModel<?> model) {
+			super("tree");
+			this.setCharacters(null);
+			
+			this.model = model;
+			this.treetop = new LinkedList<Character>();
+			this.below = new LinkedList<Character>();
+		}
+		
+		@Override
+		public boolean enter(Character character) {
+			boolean result;
+			
+			if (character.flying()) {
+				result = this.enter(character, this.treetop);
+				logger.info(character.name + " flies to the top of an ancient tree");
+				
+				// everyone sees the inventory of the character on the tree (apart from the character itself)
+				for (Character observer : model.getCharacters()) {
+					if (!observer.equals(character)) {
+						for (Item item : character.inventory) {
+							model.environment.addEventPerception(observer.getName(), "see(" + item + ")[location(tree), owner(" + character.name+")]"); 
+							logger.info(observer.name + " sees " + character.name + " with " + item);
+						}
+					}
+				}
+			} else {
+				result = this.enter(character, this.below);
+				logger.info(character.name + " stands below an ancient tree");
+			}
+			
+			return result;
+		}
+		
+		private boolean enter(Character character, List<Character> loc) {
+			if(null == character.location) {
+				// no prev location, just set this one
+				this.characterLocationUpdate(character, loc);
+				return true;
+			} else if(character.location.leave(character)) {
+				// prev location was present, character left it successfully
+				this.characterLocationUpdate(character, loc);
+				return true;
+			} else {
+				// prev location was present, character couldn't leave
+				return false;
+			}
+		}
+		
+		private void characterLocationUpdate(Character character, List<Character> loc) {
+			loc.add(character);
+			character.location = this;
+		}
+		
+		@Override
+		public boolean leave(Character character) {
+			if (this.present(character)) {
+				this.treetop.remove(character);
+				this.below.remove(character);
+				character.location = null;
+				return true;
+			} else {
+				logger.severe("Location " + this.name + "can't remove agent " + character.name + ". Not present.");
+				return false;
+			}
+		}
+		
+		@Override
+		public boolean present(Character character) {
+			return (this.treetop.contains(character) | this.below.contains(character));
+		}
+		
+		@Override
+		public Literal createLocationPercept(Character character) {
+			Literal loc = super.createLocationPercept(character);
+			
+			if(this.treetop.contains(character)) {
+				loc.addAnnot(ASSyntax.createLiteral("level", ASSyntax.createAtom("ground")));
+			} else if (this.below.contains(character)){
+				loc.addAnnot(ASSyntax.createLiteral("level", ASSyntax.createAtom("sky")));
+			} else {
+				logger.severe("Character "+ character.name +" not present at location " + this.name);
+				return null;
+			}
+			
+			return loc;
+		}
+		
+		@Override
+		public Boolean isGroundLevel(Character character) {
+			if (!this.present(character)) {
+				return null;
+			}
+			if(this.below.contains(character)) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
+		@Override
+		public Boolean isSkyLevel(Character character) {
+			if (!this.present(character)) {
+				return null;
+			}
+			if(this.treetop.contains(character)) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
+		@Override
+		public List<Character> getCharacters() {
+			List<Character> chars = new LinkedList<>();
+			chars.addAll(this.below);
+			chars.addAll(this.treetop);
+			return chars;
+		}
+	}
+	
 	public class Wheat extends Item {
 		static final String itemName = "wheat";
 		public WHEAT_STATE state = WHEAT_STATE.SEED;
 		
 		@Override
-		public String literal() {
-			String res = "wheat[state(%s)]";
-			return String.format(res, state.toString().toLowerCase());
+		public Literal literal() {
+			Literal res = super.literal();
+			res.addAnnot(ASSyntax.createLiteral("state", ASSyntax.createAtom(state.toString().toLowerCase())));
+			return res;
 		}
 
 		@Override
 		public String getItemName() {
-			return itemName;
+			return Wheat.itemName;
 		}
 
 	}
@@ -303,33 +363,12 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		
 		@Override
 		public String getItemName() {
-			return itemName;
+			return Bread.itemName;
 		}
-		
-		public String literal() {
-			return "bread";
-		}
-		
-		public boolean isEdible() {
-			return true;
-		}
-	}
-	
-	public class Cheese extends Item {
-		static final String itemName = "cheese";
 		
 		@Override
-		public String getItemName() {
-			return itemName;
-		}
-		
-		public String literal() {
-			return "cheese";
-		}
-		
 		public boolean isEdible() {
 			return true;
 		}
-
 	}
 }

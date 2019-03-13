@@ -1,5 +1,8 @@
 package plotmas.stories.little_red_hen;
 
+import java.util.Collections;
+import java.util.LinkedList;
+
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
@@ -31,6 +34,8 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
 							new LauncherAgent("hen",					  	   // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
+									Collections.singletonList("hungry(true)"),
+   								    new LinkedList<String>(),
 									new Personality(0,  1, 0.7,  0.3, 0.65)    //punishment
 //									new Personality(0,  1, 0.7,  0.3,  -1)     //low neurot --> no punishment
 //									new Personality(0,  1, 0.7,  0.7,  -1)     //high aggrea --> sharing
@@ -41,14 +46,20 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 //									new Personality(0,  1, 0,    0.7, 0.15)    //low extra, high aggrea --> no help requests, no punishment, sharing
 							),
 							new LauncherAgent("dog",
+									Collections.singletonList("hungry(true)"),
+   								    new LinkedList<String>(),
 									new Personality(0, -1, 0, -0.7, -0.8)
 //									new Personality(0, 1, 0, -0.7, -0.8)	// doggie helps hen v1
 							),
 							new LauncherAgent("cow",
+									Collections.singletonList("hungry(true)"),
+   								    new LinkedList<String>(),
 									new Personality(0, -1, 0, -0.7, -0.8)
 //									new Personality(0, 1, 0, -0.7, -0.8)	// cow helps hen v1
 							),
 							new LauncherAgent("pig",
+									Collections.singletonList("hungry(true)"),
+   								    new LinkedList<String>(),
 									new Personality(0, -1, 0, -0.7, -0.8)
 							)
 						);

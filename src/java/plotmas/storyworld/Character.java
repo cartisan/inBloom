@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import jason.asSemantics.Mood;
 import jason.asSemantics.Personality;
+import jason.asSyntax.ASSyntax;
+import jason.asSyntax.Literal;
 import plotmas.LauncherAgent;
 import plotmas.PlotLauncher;
 import plotmas.PlotModel;
@@ -53,11 +55,11 @@ public class Character {
 	 * agent's inventory, which can be used to generate ASL agent perceptions.
 	 * @return
 	 */
-	public LinkedList<String> createInventoryPercepts() {
-		LinkedList<String> invRepr = new LinkedList<String>();
+	public LinkedList<Literal> createInventoryPercepts() {
+		LinkedList<Literal> invRepr = new LinkedList<>();
 		
 		for (Item item : inventory) {
-			invRepr.add("has(" + item.literal() + ")");
+			invRepr.add(ASSyntax.createLiteral("has", item.literal()));
 		}
 
 		return invRepr;
@@ -67,8 +69,22 @@ public class Character {
 		inventory.add(item);
 	}
 	
-	public void removeFromInventory(Item item) {
-		inventory.remove(item);
+	public Item removeFromInventory(Item item) {
+		if(inventory.remove(item)) {
+			return item;
+		}
+		logger.severe("Character " + this.name + " can't remove item " + item.getItemName() + ". Doesn't have one.");
+		return null;
+	}
+	
+	public Item removeFromInventory(String itemName) {
+		for (Item item : this.inventory) {
+			if (item.getItemName().equals(itemName)) {
+				return item;
+			}
+		}
+		logger.severe("Character " + this.name + " can't remove item " + itemName + ". Doesn't have one.");
+		return null;
 	}
 	
 	public boolean has(String itemType) {

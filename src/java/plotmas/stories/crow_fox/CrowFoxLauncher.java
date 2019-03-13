@@ -1,6 +1,7 @@
 package plotmas.stories.crow_fox;
 
 import java.util.Collections;
+import java.util.LinkedList;
 
 import com.google.common.collect.ImmutableList;
 
@@ -30,19 +31,19 @@ public class CrowFoxLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
         		new LauncherAgent("crow", Collections.singletonList("hungry(false)"),
         								  Collections.singletonList("approach(tree)"), 
-        								  new Personality(0, 0, 0, 0, 0)),
+        								  new Personality(-0.7, 0, 0.3, 0, 0)),
 //        		new LauncherAgent("crow", Collections.singletonList("hungry(false)"),
 //        								  Collections.singletonList("approach(tree)"), 
 //        								  new Personality(0, -1, 0, 0, 0)),
         		
         		new LauncherAgent("fox", Collections.singletonList("hungry(true)"), 
-        								 Collections.singletonList("strolling"), 
-        								 new Personality(0, 0, 0, 0, 0))
+        								 new LinkedList<>(), 
+        								 new Personality(0, -0.8, 0.3, 0, 0))
 //				new LauncherAgent("fox", Collections.singletonList("hungry(true)"),
-//        								 Collections.singletonList("strolling"), 
+//        								 new LinkedList<>(), 
 //        								 new Personality(0, 0, 0, 1, 0))
 //			    new LauncherAgent("fox", Collections.singletonList("hungry(true)"),
-//        								 Collections.singletonList("strolling"),
+//        								 new LinkedList<>(),
 //        								 new Personality(0, 0, 0, -1, 0))
         		);
        

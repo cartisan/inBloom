@@ -9,18 +9,18 @@ is_work(harvest(_)).
 is_work(grind(_)).
 is_work(bake(_)).
 
-is_work(create(bread)).
-
 creatable_from(wheat,bread).
 
 is_pleasant(eat(bread)).
-is_pleasant(eat(cheese)).    //crowfox
-
 
 obligation(farm_work).
 wish(relax).
+wish(stroll).
 
 is_useful(A,true) :- is_pleasant(eat(A)).
+
+agent(X) :- agents(Agents) & .member(X, Agents).
+location(X) :- locations(Locations) & .member(X, Locations).
 
 !default_activity.
 	
@@ -34,23 +34,16 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 +wish(X) : is_work(X) <-
 	!!X.
 
-
 +wish(X)  <-
+	// TODO: what is this one doing here?!
 	!!X.
 
-+sees(X)[location(Y), owner(Z)] : is_pleasant(eat(X)) & hungry(true) <-   // crowfox
-	!want(X)[location(Y), owner(Z)].
-	
-+has(X) : is_pleasant(eat(X)) & has(X) & hungry(false) <-   // crowfox
-	!keep(X).
-
-@has_1[affect(personality(agreeableness,high))]
-+has(X) : is_pleasant(eat(X)) & has(X) & hungry(true) <-   // crowfox
-	!thankOther.
-
-@has_2[affect(personality(agreeableness,medium))]
-+has(X) : is_pleasant(eat(X)) & has(X) & hungry(true) <-   // crowfox
-	!giveAdvice.
++see(Thing)[location(Loc), owner(Per),source(Name)] : is_pleasant(eat(Thing)) & hungry(true) <-   // crowfox
+	.appraise_emotion(hope, Name, "see(Thing)");
+	+want(Thing);
+	+at(Per,Loc);
+	+has(Per,Thing);
+	!has(Thing).
 
 @has_3[affect(personality(agreeableness,low))]
 +has(X) : is_pleasant(eat(X)) & has(X) & hungry(true) <-   // crowfox
@@ -58,13 +51,13 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	
 // Share when very agreeable character, unless in a bad mood
 @share_food_plan2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
-+has(X) : is_pleasant(eat(X)) & has(X) <- 			// still has X when event selected
++has(X) : is_pleasant(eat(X)) & has(X) & hungry(true) <- 			// still has X when event selected
 	?agents(Anims);
 	!share(X, Anims);
 	.print("Shared: ", X, " with the others");
 	!eat(X).
 
-+has(X) : is_pleasant(eat(X)) & has(X)  <-			// still has X when event selected 
++has(X) : is_pleasant(eat(X)) & has(X) & hungry(true)  <-			// still has X when event selected 
 	!eat(X).
 	
 +found(X) <-
@@ -73,6 +66,29 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	if(Z) {
 		+obligation(create(Y));
 	}.
+
++compliment  <-  		//crowfox
+	sing.
+
++is_dropped(X) : want(X) <-		//crowfox
+	collect(X);
+	-want(X).
+
++threat(X)[owner(Y)]<- 				 //crowfox
+	handOver(X, Y).
+	
+@threat_2[affect(personality(conscientiousness,low))]
++threat<- 				 //crowfox
+	.print("No, I will not give you anything!");
+	refuseToGive(X,Y).
+		
++politeQuery(X)[owner(Y)] <- 			 //crowfox
+	handOver(X, Y).
+	
+@politeQuery_1[affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]
++politeQuery(X)[owner(Y)] <-				//crowfox
+	.print("No, I will not give you anything!");
+	refuseToGive(X,Y).
 
 /********************************************/
 /***** Self-specifications  *****************/
@@ -95,11 +111,11 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 		.resume(Req);
 	}.
 
-//+has(X): is_pleasant(eat(X)) & has(X) <-
-//	.appraise_emotion(joy).
-	
 //-has(X): is_pleasant(eat(X)) <-
 //	.appraise_emotion(distress).
+	
+//+has(X): is_pleasant(eat(X)) & has(X) <-
+//	.appraise_emotion(joy).
 
 //+is_dropped(X): at(underTree)  <-
 //	.appraise_emotion(joy).
@@ -233,7 +249,11 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	.send(Name, tell, accepted_request(help_with(X)));
 	help(Name).
 	
-
++!has(Thing) : has(Person, Thing) <- 	//crowfox
+	.print("I want ", Thing, " from ", Person); 
+	!approach(Person);
+	!get(Thing, Person).
+	
 /********************************************/
 /*****      Action Execution Goals **********/
 /********************************************/
@@ -264,60 +284,32 @@ is_useful(A,true) :- is_pleasant(eat(A)).
 	-has(X);
 	.succeed_goal(eat(X)).
 
-+!want(X)[location(Y), owner(Z)] <- 	//crowfox
-	.print("I want ", X, " from ", Z); 
-	.print("To get ", X, " I need to go to ", Y); 
-	!approach(Y);
-	!get(X, Z).
++!approach(Person) : agent(Person) & at(Person, Loc) <-  	//crowfox
+	goTo(Loc).
 
-+!approach(X) <-  	//crowfox
-	approach(X).
++!approach(Loc) : location(Loc) <-  	//crowfox
+	goTo(Loc).
 
 	
-@get_3[affect(personality(agreeableness,medium))]
-+!get(X, Z) <-			//crowfox
+@get_1[affect(personality(agreeableness,medium))]
++!get(Thing, Person) <-			//crowfox
 	.print("How well you are looking today: how glossy your feathers, how bright your eye")
 	.print("I feel sure your voice must surpass that of other birds, just as your figure does")
 	.print("let me hear but one song from you that I may greet you as the Queen of Birds");
-	flatter(Z).
+	flatter(Person).
 
 @get_2[affect(personality(agreeableness,low))]
-+!get(X, Z) <-				//crowfox
++!get(Thing, Person) <-				//crowfox
 	.print("Give ",X, " to me or I will take it from you!");
-	threaten(Z).
+	threaten(Person).
 	
-@get_4[affect(personality(agreeableness,high))]
-+!get(X, Z) <-
+@get_3[affect(personality(agreeableness,high))]
++!get(Thing, Person) <-
 	.print("I am so hungry, would you share your ", X," with me please?");
-	ask(Z).	
+	ask(Person).	
 
-+!strolling <-      //crowfox
-	strolling.
-	
-+!keep(X)<- 
-	.print("I am happy to have my ", X).
-
-+compliment  <-  		//crowfox
-	sing.
-
-+is_dropped(X): at(underTree) <-		//crowfox
-	collect(X).
-
-+threat(X)[owner(Y)]<- 				 //crowfox
-	handOver(X, Y).
-	
-@threat_2[affect(personality(conscientiousness,low))]
-+threat<- 				 //crowfox
-	.print("No, I will not give you anything!");
-	refuseToGive(X,Y).
-		
-+politeQuery(X)[owner(Y)] <- 			 //crowfox
-	handOver(X, Y).
-	
-@politeQuery_1[affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]
-+politeQuery(X)[owner(Y)] <-				//crowfox
-	.print("No, I will not give you anything!");
-	refuseToGive(X,Y).
++!stroll <-      //crowfox
+	stroll.
 
 +!thankOther <-
 	.print("Thank you!").
