@@ -60,10 +60,12 @@ location(X) :- locations(Locations) & .member(X, Locations).
 +compliment  <-  		//crowfox
 	!sing.
 
-+is_dropped(Thing) : want(Thing) <-		//crowfox
-	.appraise_emotion(satisfaction, Name, "is_dropped(Thing)");
-	!collect(Thing);
-	-wish(has(Thing)).
++is_dropped(Thing)[owner(Person)] : .my_name(Person) <-		//crowfox
+	.appraise_emotion(remorse, Person, "is_dropped(Thing)").
+
++is_dropped(Thing)[owner(Person)] : want(Thing) <-		//crowfox
+	.appraise_emotion(gloating, Person, "is_dropped(Thing)");
+	!collect(Thing).
 
 +threat(X)[owner(Y)]<- 				 //crowfox
 	handOver(X, Y).

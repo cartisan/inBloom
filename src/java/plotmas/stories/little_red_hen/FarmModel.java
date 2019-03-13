@@ -7,6 +7,7 @@ import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import plotmas.LauncherAgent;
 import plotmas.PlotModel;
+import plotmas.graph.Edge;
 import plotmas.helper.PerceptAnnotation;
 import plotmas.storyworld.Character;
 import plotmas.storyworld.HappeningDirector;
@@ -169,7 +170,8 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 				
 				// everyone present see things dropping from the sky
 				for (Character observer : agent.location.getCharacters()) {
-					this.environment.addEventPerception(observer.getName(), "is_dropped(" + item.getItemName() + ")");
+					this.environment.addEventPerception(observer.getName(), "is_dropped(" + item.getItemName() + ")[owner("+agent.name+")," + 
+																			 Edge.Type.CAUSALITY.toString() + "(sing)]");
 				}
 			}
 		}
