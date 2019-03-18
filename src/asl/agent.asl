@@ -69,26 +69,26 @@ already_asked(farm_work).
 /********************************************/
 
 +see(Thing)[location(Loc), owner(Per)] : is_pleasant(eat(Thing)) & hungry(true) <-   // crowfox
-	.my_name(Name);
-	.appraise_emotion(hope, Name, "see(Thing)");
-	+want(Thing);
 	+at(Per,Loc);
 	+has(Per,Thing);
-	!has(Thing).
+	.my_name(Name);
+	.appraise_emotion(hope, Name, "see(Thing)");
+	.suspend(wish(relax));
+	+wish(has(Thing)).
 
-@has_3[affect(personality(agreeableness,low))]
-+has(X) : is_pleasant(eat(X)) & has(X) & hungry(true) <-   // crowfox
-	!eat(X).
-	
 // Share when very agreeable character, unless in a bad mood
 @share_food_plan2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +has(X) : is_pleasant(eat(X)) & has(X) & hungry(true) <- 			// still has X when event selected
 	?agents(Anims);
 	!share(X, Anims);
 	.print("Shared: ", X, " with the others");
-	!eat(X).
+	!eat(X);
+	-wish(has(X));
+	.resume(wish(relax)).
 
 +has(X) : is_pleasant(eat(X)) & has(X) & hungry(true)  <-			// still has X when event selected 
+	-wish(has(X));
+	.resume(wish(relax));
 	!eat(X).
 	
 +found(X) <-
@@ -99,32 +99,32 @@ already_asked(farm_work).
 		+obligation(create(Y));
 	}.
 
-+compliment  <-  		//crowfox
-	!sing.
-
 +is_dropped(Thing)[owner(Person)] : .my_name(Person) <-		//crowfox
 	.appraise_emotion(remorse, Person, "is_dropped(Thing)").
 
-+is_dropped(Thing)[owner(Person)] : want(Thing) <-		//crowfox
+@is_dropped[atomic]
++is_dropped(Thing)[owner(Person)] : wish(has(Thing)) <-		//crowfox
 	.appraise_emotion(gloating, Person, "is_dropped(Thing)");
-	!collect(Thing).
+	!collect(Thing);
+	-wish(has(X));
+	.resume(wish(relax)).
 
-+threat(X)[owner(Y)]<- 				 //crowfox
-	handOver(X, Y).
+@compliment[atomic]
++complimented : .my_name(Person)  <-  		//crowfox
+	.appraise_emotion(pride, Person, "complimented");
+	!sing.
+
++threatened(Item)[source(Other)] : .my_name(Me)  <- 				 //crowfox
+	.print("Oh no, don't hurt me!");
+	.appraise_emotion(fear, Me, "threatened(Item)");
+	handOver(Other, Item).
 	
 @threat_2[affect(personality(conscientiousness,low))]
-+threat<- 				 //crowfox
++threatened(Item)[source(Other)]  : .my_name(Me) <- 				 //crowfox
 	.print("No, I will not give you anything!");
-	refuseToGive(X,Y).
+	.appraise_emotion(reproach, Other, "threatened(Item)");
+	refuseToGive(Other,Item).
 		
-+politeQuery(X)[owner(Y)] <- 			 //crowfox
-	handOver(X, Y).
-	
-@politeQuery_1[affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]
-+politeQuery(X)[owner(Y)] <-				//crowfox
-	.print("No, I will not give you anything!");
-	refuseToGive(X,Y).
-
 /********************************************/
 /***** Self-specifications  *****************/
 /*****      Emotion management **************/
@@ -260,9 +260,10 @@ already_asked(farm_work).
 	.send(Name, tell, accepted_request(help_with(X)));
 	help(Name).
 	
-+!has(Thing) : has(Person, Thing) <- 	//crowfox
-	.print("I want ", Thing, " from ", Person); 
-	!approach(Person);
++!has(Thing) : has(Person, Thing) & at(Person, Loc1) & at(Loc2) & not Loc1==Loc2 <- 	//crowfox
+	!approach(Person).
+
++!has(Thing) : has(Person, Thing) & at(Person, Loc1) & at(Loc2) & Loc1==Loc2 <- 	//crowfox
 	!get(Thing, Person).
 	
 /********************************************/
@@ -302,22 +303,24 @@ already_asked(farm_work).
 	goTo(Loc).
 
 	
-@get_1[affect(personality(agreeableness,medium))]
+@get_flatter[affect(personality(agreeableness,medium))]
 +!get(Thing, Person) <-			//crowfox
-	.print("How well you are looking today: how glossy your feathers, how bright your eye")
-	.print("I feel sure your voice must surpass that of other birds, just as your figure does")
-	.print("let me hear but one song from you that I may greet you as the Queen of Birds");
-	flatter(Person).
+	.print("So lovely your feathers, so shiny thy beak!");
+	.send(Person, tell, complimented);
+	.wait({+is_dropped(Thing)}).
 
 @get_2[affect(personality(agreeableness,low))]
 +!get(Thing, Person) <-				//crowfox
-	.print("Give ",X, " to me or I will take it from you!");
-	threaten(Person).
+	.print("Give ", X, " to me or I will take it from you!");
+	.send(Person, tell, threatened(Thing));
+	.wait({+has(Thing)}).
 	
 @get_3[affect(personality(agreeableness,high))]
 +!get(Thing, Person) <-
 	.print("I am so hungry, would you share your ", X," with me please?");
-	ask(Person).	
+	.my_name(Me);
+	.send(Person, achieve, share(Thing, Me));
+	.wait({+has(Thing)}).	
 
 +!collect(Thing) <-
 	collect(Thing).
@@ -325,14 +328,9 @@ already_asked(farm_work).
 +!sing <-
 	sing.
 
-+!stroll <-      //crowfox
-	stroll.
-
-+!thankOther <-
-	.print("Thank you!").
-	
-+!giveAdvice <-
-	.print("I have one advice for you: Never trust a flatterer!").
-	
+@share1[affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +!share(X, Anims) <-
 	share(X, Anims).
+
+@share2[affect(and(personality(agreeableness,low)))]
++!share(X, Anims) <- true.

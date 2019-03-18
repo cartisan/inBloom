@@ -119,45 +119,6 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		return false;
 	}
 
-	
-	public boolean stroll(Character agent) {
-		logger.info(agent.name + " strolls around");
-		return true;
-	}
-
-	public boolean threaten(Character agent, Character target) {
-		// TODO: Rly, asking for all items?!
-		if (agent.location.present(target)) {
-			for (Item item : target.inventory) {
-				logger.info(agent.name + " tells " +target.name + " to hand over " + item + " or " + agent.name + " will take it from " +target.name + " with force.");
-				this.environment.addEventPerception(target.name, "threat(" + item + ")owner("+agent.name+")]", new PerceptAnnotation("fear"));
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	public boolean ask(Character agent, Character target) {
-		// TODO: Rly, asking for all items?!
-		if (agent.location.present(target)) {
-			for (Item item : agent.inventory) {
-				logger.info(agent.name + " asks " +target.name + " to share " + item +" with " + agent.name);
-				this.environment.addEventPerception(target.name, "politeQuery(" + item + ")[owner(" + target.name + ")]", new PerceptAnnotation("pity"));
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	public boolean flatter(Character agent, Character target) {
-		if(agent.location.present(target)) {
-			logger.info(agent.name + " flatters "+ target.name);
-			this.environment.addEventPerception(target.name, "compliment", new PerceptAnnotation("pride"));
-			return true;
-		}
-		return false;
-	}
-		
 	public boolean sing(Character agent) { 
 		logger.info(agent.name + " sings.");
 		
@@ -298,9 +259,9 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 			Literal loc = super.createLocationPercept(character);
 			
 			if(this.treetop.contains(character)) {
-				loc.addAnnot(ASSyntax.createLiteral("level", ASSyntax.createAtom("ground")));
-			} else if (this.below.contains(character)){
 				loc.addAnnot(ASSyntax.createLiteral("level", ASSyntax.createAtom("sky")));
+			} else if (this.below.contains(character)){
+				loc.addAnnot(ASSyntax.createLiteral("level", ASSyntax.createAtom("ground")));
 			} else {
 				logger.severe("Character "+ character.name +" not present at location " + this.name);
 				return null;
