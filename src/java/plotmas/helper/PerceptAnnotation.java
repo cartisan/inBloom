@@ -2,17 +2,21 @@ package plotmas.helper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import jason.asSemantics.Emotion;
 import plotmas.graph.Edge;
 
 public class PerceptAnnotation {
-	   static Logger logger = Logger.getLogger(PerceptAnnotation.class.getName());
+	// TODO: Finish test, refactor to unified annotation storage
+    static Logger logger = Logger.getLogger(PerceptAnnotation.class.getName());
 	   
 	private String cause;
 	private List<String> emotions;
+	private List<String> furtherAnnots = new LinkedList<>();
 	
 	public static PerceptAnnotation fromEmotion(String emotion) {
 		PerceptAnnotation annot = new PerceptAnnotation();
@@ -36,23 +40,37 @@ public class PerceptAnnotation {
 	}
 	
 	public PerceptAnnotation() {
+		furtherAnnots = new LinkedList<>();
 		emotions = new ArrayList<>();
 		cause = "";
 	}
 	
 	public PerceptAnnotation(String... ems) {
+		super();
 		this.emotions = Arrays.asList(ems);
 	}
 	
 	@Override
 	public String toString(){
+		// TODO: Test that this works
+		// TODO: Use it in FarmModel sing and so on
 		String cau = this.causalityAnnotation();
 		String em = this.emotionsAnnotation();
-		String sep = this.separator(cau, em);
+		String more = ""; 
+		if (!this.furtherAnnots.isEmpty()) {
+			more = this.furtherAnnots.stream().collect( Collectors.joining( "," ) );
+			more.substring(0, more.length());
+		}
 		
-		String result = "[" + cau + sep + em + "]";
+		String result = cau + this.separator(cau, em) + em;
+		result = result + this.separator(result, more) + more;
+		result = "[" +result  + "]";
 				
 		return result;
+	}
+	
+	public void addAnnotation(String annot) {
+		this.furtherAnnots.add(annot);
 	}
 	
 	public String separator(String literal1, String literal2) {
@@ -83,7 +101,9 @@ public class PerceptAnnotation {
     	}
     	
     	// remove comma after last emotion
-    	result = result.substring(0, result.length() - 1);
+    	if (result.length() > 0) {
+    		result = result.substring(0, result.length() - 1);
+    	}
     	
     	return result;
     }
