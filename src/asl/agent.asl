@@ -3,29 +3,70 @@
 /*****      Common sense beliefs ************/
 /********************************************/
 
+is_work(farm_work).
+is_work(create(bread)).
 is_work(plant(_)).
 is_work(tend(_)).
 is_work(harvest(_)).
 is_work(grind(_)).
 is_work(bake(_)).
 
+complex_plan(create(bread)).
+
 creatable_from(wheat,bread).
 is_pleasant(eat(bread)).
 is_useful(A,true) :- is_pleasant(eat(A)).
 
 wish(relax).
-wish(stroll).
 
 agent(X) :- agents(Agents) & .member(X, Agents).
 location(X) :- locations(Locations) & .member(X, Locations).
 
-!default_activity.
+already_asked(farm_work).
 	
 /********************************************/
-/*****      Common sense reasoning ************/
+/*****     Wishes and Obligation ************/
 /********************************************/
 
 +self(farm_animal) <- +obligation(farm_work).
+
++obligation(Plan) <-
+	.print("before !obligation(", Plan, ") initial");
+	!obligation(Plan).				// adds desire to fulfill obligation
+	
+-obligation(Plan) <-				// removes desire to fulfill obligation, and obligation
+	.drop_desire(obligation(Plan));
+	.succeed_goal(obligation(Plan)).
+
+@obligation1[affect(personality(conscientiousness,high))]
++!obligation(Plan) : is_work(Plan) <-		// only do hard obligations if conscientious
+	!Plan; 
+	!obligation(Plan).
++!obligation(Plan) : not is_work(Plan) <-
+	!Plan; 
+	!obligation(Plan).
++!obligation(Plan) : true <-		// universal fallback, obligations remain desires even when unfulfillable atm 
+	!obligation(Plan).
+	
+	
++wish(Plan) <-						// adds desire to fulfill wish
+	!wish(Plan).
+-wish(Plan) <-						// removes desire to fulfill wish, and wish
+	.drop_desire(wish(Plan));
+	.succeed_goal(wish(Plan)).
+	
+@wish1[affect(personality(conscientiousness,high))]
++!wish(Plan) : obligation(Plan2) <-	// if conscientious only do wish when no obligations desired
+	!wish(Plan).
++!wish(Plan) <-
+	!Plan; 
+	!wish(Plan).
++!wish(Plan) : true <- 				// universal fallback, wishes remain desires even when unfulfillable atm
+	!wish(Plan).
+
+/********************************************/
+/*****      Common sense reasoning ************/
+/********************************************/
 
 +see(Thing)[location(Loc), owner(Per)] : is_pleasant(eat(Thing)) & hungry(true) <-   // crowfox
 	.my_name(Name);
@@ -54,6 +95,7 @@ location(X) :- locations(Locations) & .member(X, Locations).
 	?creatable_from(X,Y);
 	?is_useful(Y,Z)
 	if(Z) {
+		.suspend(obligation(farm_work));	// only for brevity of graph
 		+obligation(create(Y));
 	}.
 
@@ -119,7 +161,7 @@ location(X) :- locations(Locations) & .member(X, Locations).
 
 // Ask for help if extraverted, unless one feels powerless
 @general_help_acquisition_plan[affect(and(personality(extraversion,positive),not(mood(dominance,low))))]
-+!X[_] : is_work(X) & not already_asked(X) <-
++!X[_] : is_work(X) & not complex_plan(X) & not already_asked(X) <-
 	?agents(Animals);
 	+already_asked(X);
 	for (.member(Animal, Animals)) {
@@ -130,34 +172,6 @@ location(X) :- locations(Locations) & .member(X, Locations).
 	.suspend(X);
 	!X.
 
-@default_activity_1[affect(personality(conscientiousness,high))]
-+!default_activity <-
-	?obligation(X);
-	!X;
-	!default_activity.
-
-// Don't follow obligations if feeling passive, or very "anti-social" tendencies
-@default_activity_2[affect(or(personality(conscientiousness,low), mood(arousal,negative)))]
-+!default_activity <-
-	?wish(X);
-	!X;
-	!default_activity.
-
-// If not high on consc, but feels active: randomly choose between desires and wishes
-@default_activity_3
-+!default_activity <-
-	.random(R);
-	if(R>0.5) {
-		?wish(X);
-	} else {
-		?obligation(X);
-	}
-	!X;
-	!default_activity.	
-
--!default_activity <-
-	!default_activity.
-	
 /********************************************/
 /****** Mood  *******************************/
 /********************************************/
@@ -204,7 +218,6 @@ location(X) :- locations(Locations) & .member(X, Locations).
 
 @create_bread_1[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(seed)])<-
-	-obligation(create(bread));
 	!plant(wheat);
 	!create(bread).
 
@@ -225,7 +238,9 @@ location(X) :- locations(Locations) & .member(X, Locations).
 
 @create_bread_5[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(flour)])<-
-	!bake(bread).
+	!bake(bread);
+	.resume(obligation(farm_work));
+	-obligation(create(bread)).
 
 // Reject helping others if "antisocial", but not feeling powerless
 @reject_request_1[affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]
