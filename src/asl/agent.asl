@@ -33,7 +33,6 @@ already_asked(farm_work).
 
 +obligation(Plan) <-
 	!obligation(Plan).				// adds desire to fulfill obligation
-	
 -obligation(Plan) <-				// removes desire to fulfill obligation, and obligation
 	.drop_desire(obligation(Plan));
 	.succeed_goal(obligation(Plan)).
@@ -49,7 +48,7 @@ already_asked(farm_work).
 	!obligation(Plan).
 -!obligation(Plan) <-				// if obligation satisfaction failed this time, still keep the desire
 	!obligation(Plan).	
-	
+
 +wish(Plan) <-						// adds desire to fulfill wish
 	!wish(Plan).
 -wish(Plan) <-						// removes desire to fulfill wish, and wish
@@ -97,6 +96,7 @@ already_asked(farm_work).
 	?is_useful(Y,Z)
 	if(Z) {
 		.suspend(obligation(farm_work));	// only for brevity of graph
+		.suspend(wish(relax));
 		+obligation(create(Y));
 	}.
 
@@ -230,6 +230,7 @@ already_asked(farm_work).
 +!create(bread) : existant(wheat[state(flour)])<-
 	!bake(bread);
 	.resume(obligation(farm_work));
+	.resume(wish(relax));
 	-obligation(create(bread)).
 
 // Reject helping others if "antisocial", but not feeling powerless

@@ -9,6 +9,7 @@ import jason.JasonException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Event;
+import jason.asSemantics.IntendedMeans;
 import jason.asSemantics.Intention;
 import jason.asSemantics.Mood;
 import jason.asSemantics.Option;
@@ -85,11 +86,15 @@ public class PlotAwareAg extends AffectiveAgent {
         			filteredIntention = event.getIntention().clone();
         			
         			// ignore obligation and wish layers in IntendedMeans stack when tracking motivation
-        			if(filteredIntention.iterator().next().getTrigger().toString().contains("!obligation") | 
-        					filteredIntention.iterator().next().getTrigger().toString().contains("!wish")) {
-        				// skip two layers: [+!obligation(X), +obligation(X), real trigger...]
-    					filteredIntention.pop();
-    					filteredIntention.pop();
+        			while(filteredIntention.iterator().hasNext()) {
+        				IntendedMeans imLayer = filteredIntention.iterator().next();
+        				
+        				if(imLayer.getTrigger().toString().contains("obligation") || imLayer.getTrigger().toString().contains("wish")) {
+        					// skip the obligation/wish layers: [!X, +!obligation(X), -!obligation(X), +obligation(X), real trigger...]
+        					filteredIntention.pop();
+        				} else {
+        					break;
+        				}
         			}
         		}
     			
