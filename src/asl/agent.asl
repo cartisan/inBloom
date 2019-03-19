@@ -12,6 +12,7 @@ is_work(grind(_)).
 is_work(bake(_)).
 
 complex_plan(create(bread)).
+coping_behavior(punish).
 
 creatable_from(wheat,bread).
 is_pleasant(eat(bread)).
@@ -31,7 +32,6 @@ already_asked(farm_work).
 +self(farm_animal) <- +obligation(farm_work).
 
 +obligation(Plan) <-
-	.print("before !obligation(", Plan, ") initial");
 	!obligation(Plan).				// adds desire to fulfill obligation
 	
 -obligation(Plan) <-				// removes desire to fulfill obligation, and obligation
@@ -47,7 +47,8 @@ already_asked(farm_work).
 	!obligation(Plan).
 +!obligation(Plan) : true <-		// universal fallback, obligations remain desires even when unfulfillable atm 
 	!obligation(Plan).
-	
+-!obligation(Plan) <-				// if obligation satisfaction failed this time, still keep the desire
+	!obligation(Plan).	
 	
 +wish(Plan) <-						// adds desire to fulfill wish
 	!wish(Plan).
@@ -56,12 +57,12 @@ already_asked(farm_work).
 	.succeed_goal(wish(Plan)).
 	
 @wish1[affect(personality(conscientiousness,high))]
-+!wish(Plan) : obligation(Plan2) <-	// if conscientious only do wish when no obligations desired
++!wish(Plan) : not coping_behavior(Plan) & obligation(Plan2) <-	// if conscientious only do non-coping wish when no obligations desired
 	!wish(Plan).
 +!wish(Plan) <-
-	!Plan; 
+	!Plan;
 	!wish(Plan).
-+!wish(Plan) : true <- 				// universal fallback, wishes remain desires even when unfulfillable atm
+-!wish(Plan) <-						// if wish satisfaction failed this time, still keep the desire
 	!wish(Plan).
 
 /********************************************/
@@ -180,19 +181,16 @@ already_asked(farm_work).
 	if (.empty(Anims)) {
 		.print("What a foul mood, and no-one to blame for it!");
 	} else {
-		!punish;
+		+wish(punish);
 	}.
 
 // relativised commitment: finish desire if not in hostile mood anymore
 -mood(hostile) <-
-	.drop_desire(punish).
+	-wish(punish).
 	
 +punished(L) : true <- 
 	-punished(L);
-	.succeed_goal(punish).
-
-// begin declarative goal  (p. 174; Bordini,2007)*/
-+!punish : punished(L) <- true.
+	-wish(punish).
 
 // insert all actual punishment plans
 @punished_plan_1[atomic]	
@@ -208,33 +206,25 @@ already_asked(farm_work).
 		+punished(Anims)
 	}.
 	
-// blind commitment: if no means to punish present now, keep trying
-+!punish : true <- 
-	!punish.
-	
 /********************************************/
 /***** Plans  *******************************/
 /********************************************/
 
 @create_bread_1[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(seed)])<-
-	!plant(wheat);
-	!create(bread).
+	!plant(wheat).
 
 @create_bread_2[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(growing)])<-
-	!tend(wheat);
-	!create(bread).
+	!tend(wheat).
 
 @create_bread_3[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(ripe)])<-
-	!harvest(wheat);
-	!create(bread).
+	!harvest(wheat).
 
 @create_bread_4[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(harvested)])<-
-	!grind(wheat);
-	!create(bread).
+	!grind(wheat).
 
 @create_bread_5[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(flour)])<-

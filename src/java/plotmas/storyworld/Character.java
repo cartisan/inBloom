@@ -181,7 +181,7 @@ public class Character {
 	}
 	
 	public boolean relax() {
-		this.model.getEnvironment().addEventPerception(name, "relax", PerceptAnnotation.fromEmotion("joy"));
+//		this.model.getEnvironment().addEventPerception(name, "relax", PerceptAnnotation.fromEmotion("joy"));
 		return true;
 	}
 	

@@ -9,6 +9,7 @@ import jason.JasonException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
 import jason.asSemantics.Event;
+import jason.asSemantics.Intention;
 import jason.asSemantics.Mood;
 import jason.asSemantics.Option;
 import jason.asSemantics.Unifier;
@@ -56,6 +57,11 @@ public class PlotAwareAg extends AffectiveAgent {
         	
         	// Receive intention with bound variables
         	Literal intention = (Literal)o.getPlan().getTrigger().getLiteral().capply(o.getUnifier());
+
+        	// ignore obligation(X) and wish(X) intentions in plotting
+        	if (intention.getFunctor().contains("wish") | intention.getFunctor().contains("obligation")) {
+        		return o;
+        	}
         	
         	// These will later be initialized with the motivation,
         	// once with free variables for recursion check
@@ -73,20 +79,33 @@ public class PlotAwareAg extends AffectiveAgent {
         	// Find the motivation of this intention
         	Event event = this.getTS().getC().getSelectedEvent();
         	if(event != null) {
+        		Intention filteredIntention = null;
+        		
         		if(event.getIntention() != null) {
+        			filteredIntention = event.getIntention().clone();
         			
+        			// ignore obligation and wish layers in IntendedMeans stack when tracking motivation
+        			if(filteredIntention.iterator().next().getTrigger().toString().contains("!obligation") | 
+        					filteredIntention.iterator().next().getTrigger().toString().contains("!wish")) {
+        				// skip two layers: [+!obligation(X), +obligation(X), real trigger...]
+    					filteredIntention.pop();
+    					filteredIntention.pop();
+        			}
+        		}
+    			
+        		if((filteredIntention != null) && (filteredIntention.iterator().hasNext())) {
         			// Get the motivation with free variables in order to
         			// later check for recursion. This prevents intentions
         			// like default_activity and the recurring punished
         			// from being plotted.
-        			Plan motivatingPlan = (Plan)event.getIntention().peek().getPlan().clone();
+        			Plan motivatingPlan = (Plan)filteredIntention.peek().getPlan().clone();
         			motivationNoUnif = (Literal)motivatingPlan.getTrigger().getLiteral().clone();
         			
         			// We do not want a motivation, if the motivation was recursive (e.g. default_activity)
-        			if(!isPlanRecursive(motivatingPlan, event.getIntention().peek().getUnif().clone())) {
-        				type = event.getIntention().peek().getTrigger().getType().toString();				// "!" or ""
-        				operator = event.getIntention().peek().getTrigger().getOperator().toString();		// "+" or "-"
-        				motivation = (Literal)event.getIntention().peek().getTrigger().getLiteral().clone();
+        			if(!isPlanRecursive(motivatingPlan, filteredIntention.peek().getUnif().clone())) {
+        				type = filteredIntention.peek().getTrigger().getType().toString();				// "!" or ""
+        				operator = filteredIntention.peek().getTrigger().getOperator().toString();		// "+" or "-"
+        				motivation = (Literal)filteredIntention.peek().getTrigger().getLiteral().clone();
         			}
         		} else {
         			// If the selected event has no intention, then this
