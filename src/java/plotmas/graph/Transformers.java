@@ -102,7 +102,7 @@ public class Transformers {
         public Paint apply(Vertex v){
         	if(HIGHLIGHT != null) {
         		if(HIGHLIGHT.contains(v)) {
-        			return Color.ORANGE;
+        			return Color.GREEN;
         		}
         	}
         	switch (v.getType()) {
@@ -145,12 +145,22 @@ public class Transformers {
 
     static public Function<Edge, Stroke> edgeStrokeHighlightingTransformer = new Function<Edge,Stroke>(){
         public Stroke apply(Edge e){
-            PickedState<Edge> pickedEdgeState = PlotGraphController.getPlotListener().visViewer.getPickedEdgeState();
-            
-            if (pickedEdgeState.isPicked(e))
-            	return new BasicStroke(3.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f);
-            
-        	return new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f);
+        	// set width according to whether the edges is picked
+        	float width;
+    		PickedState<Edge> pickedEdgeState = PlotGraphController.getPlotListener().visViewer.getPickedEdgeState();
+            if (pickedEdgeState.isPicked(e)) {
+            	width = 3.5f;
+            } else {
+            	width = 1f;
+            }
+        	
+            // E edges are stroked
+        	if (e.getType().equals(Edge.Type.EQUIVALENCE)) {
+        		float[] dash = { 7 };
+        		return new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 10f);
+        	}
+
+        	return new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f);
         }
     };
     
@@ -159,8 +169,6 @@ public class Transformers {
         	switch (e.getType()) {
         	case ROOT:
         		return PlotGraphController.BGCOLOR;
-        	case EQUIVALENCE:
-        		return Color.LIGHT_GRAY;
         	case ACTUALIZATION:
         		return Color.CYAN.darker();
         	case TERMINATION:
@@ -168,7 +176,7 @@ public class Transformers {
         	case CAUSALITY:
         		return Color.getHSBColor(.6f, .73f, .95f);
     		default:
-    			return Color.BLACK;
+    			return Color.LIGHT_GRAY;
         	}
     	}
     };
