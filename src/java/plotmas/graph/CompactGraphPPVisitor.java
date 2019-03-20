@@ -216,7 +216,7 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 		}
 		assert w != null;
 		this.graph.removeEdge(edge);
-		Vertex u = v.clone();
+		Vertex u = v.clone(this.graph);
 		this.graph.addVertex(u);
 		for(Edge e : edgesIn) {
 			if(e == edge)

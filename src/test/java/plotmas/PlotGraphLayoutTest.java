@@ -98,7 +98,7 @@ public class PlotGraphLayoutTest extends TestCase {
 		Vertex vOld = graph.addRoot("root");
 		
 		for (int i = 1; i < 12; i++) {
-			Vertex vNew = new Vertex("node", i); 
+			Vertex vNew = new Vertex("node", i, graph); 
 			graph.addEdge(new Edge(), vOld, vNew);
 			vOld = vNew;
 		}
@@ -117,35 +117,35 @@ public class PlotGraphLayoutTest extends TestCase {
 		
 		// ... first column ...
 		Vertex v1 = graph.addRoot("hen");
-		Vertex v2 = new Vertex("1", 1);
+		Vertex v2 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v2);
 
-		Vertex v3 = new Vertex("1", 1);
+		Vertex v3 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(), v2, v3);
 		
-		Vertex v4 = new Vertex("2", 2);
+		Vertex v4 = new Vertex("2", 2, graph);
 		graph.addEdge(new Edge(), v3, v4);
 		
 		// ... second column ...
 		Vertex v5 = graph.addRoot("dog");
-		Vertex v6 = new Vertex("1", 1);
+		Vertex v6 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v5, v6);
 
-		Vertex v7 = new Vertex("2", 2);
+		Vertex v7 = new Vertex("2", 2, graph);
 		graph.addEdge(new Edge(), v6, v7);
 		
 		// ... third column ...
 		Vertex v8 = graph.addRoot("cow");
-		Vertex v9 = new Vertex("1", 1);
+		Vertex v9 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v8, v9);
 
-		Vertex v10 = new Vertex("1", 1);
+		Vertex v10 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(), v9, v10);
 
-		Vertex v11 = new Vertex("1", 1);
+		Vertex v11 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(), v10, v11);
 
-		Vertex v12 = new Vertex("2", 2);
+		Vertex v12 = new Vertex("2", 2, graph);
 		graph.addEdge(new Edge(), v11, v12);
 		
 		// !!! Check out how it looks
@@ -171,24 +171,24 @@ public class PlotGraphLayoutTest extends TestCase {
 		
 		// ... first column ...
 		Vertex v1 = graph.addRoot("hen");
-		Vertex v2 = new Vertex("1", 1);
+		Vertex v2 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v2);
 
-		Vertex v3 = new Vertex("2", 2);
+		Vertex v3 = new Vertex("2", 2, graph);
 		graph.addEdge(new Edge(), v2, v3);
 		
-		Vertex v4 = new Vertex("3", 3);
+		Vertex v4 = new Vertex("3", 3, graph);
 		graph.addEdge(new Edge(), v3, v4);
 		
 		// ... second column ...
 		Vertex v5 = graph.addRoot("dog");
-		Vertex v6 = new Vertex("1", 1);
+		Vertex v6 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v5, v6);
 
-		Vertex v7 = new Vertex("1", 1);
+		Vertex v7 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(), v6, v7);
 		
-		Vertex v8 = new Vertex("2", 2);
+		Vertex v8 = new Vertex("2", 2, graph);
 		graph.addEdge(new Edge(), v7, v8);
 
 		// !!! Check out how it looks
@@ -209,21 +209,21 @@ public class PlotGraphLayoutTest extends TestCase {
 		
 		// ... first column ...
 		Vertex v1 = graph.addRoot("hen");
-		Vertex v2 = new Vertex("1", 1);
+		Vertex v2 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v2);
 
-		Vertex v3 = new Vertex("1", 1);
+		Vertex v3 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(), v2, v3);
 
-		Vertex v4 = new Vertex("3", 3);
+		Vertex v4 = new Vertex("3", 3, graph);
 		graph.addEdge(new Edge(), v3, v4);		
 		
 		// ... second column ...
 		Vertex v5 = graph.addRoot("dog");
-		Vertex v6 = new Vertex("1", 1);
+		Vertex v6 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v5, v6);
 
-		Vertex v7 = new Vertex("2", 2);
+		Vertex v7 = new Vertex("2", 2, graph);
 		graph.addEdge(new Edge(), v6, v7);
 		
 		// !!! Check out how it looks
@@ -244,21 +244,21 @@ public class PlotGraphLayoutTest extends TestCase {
 		
 		// ... first column ...
 		Vertex v1 = graph.addRoot("hen");
-		Vertex v2 = new Vertex("1", 1);
+		Vertex v2 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v2);
 
-		Vertex v3 = new Vertex("3", 3);
+		Vertex v3 = new Vertex("3", 3, graph);
 		graph.addEdge(new Edge(), v2, v3);
 		
 		// ... second column ...
 		Vertex v4 = graph.addRoot("dog");
-		Vertex v5 = new Vertex("1", 1);
+		Vertex v5 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v4, v5);
 
-		Vertex v6 = new Vertex("2", 2);
+		Vertex v6 = new Vertex("2", 2, graph);
 		graph.addEdge(new Edge(), v5, v6);
 		
-		Vertex v7 = new Vertex("3", 3);
+		Vertex v7 = new Vertex("3", 3, graph);
 		graph.addEdge(new Edge(), v6, v7);
 		
 		// !!! Check out how it looks
@@ -280,24 +280,24 @@ public class PlotGraphLayoutTest extends TestCase {
 		
 		// ... first column ...
 		Vertex v1 = graph.addRoot("hen");
-		Vertex v2 = new Vertex("1", 1);
+		Vertex v2 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v2);
 
-		Vertex v3 = new Vertex("1", 1);
+		Vertex v3 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(), v2, v3);
 
-		Vertex v4 = new Vertex("3", 3);
+		Vertex v4 = new Vertex("3", 3, graph);
 		graph.addEdge(new Edge(), v3, v4);		
 		
 		// ... second column ...
 		Vertex v5 = graph.addRoot("dog");
-		Vertex v6 = new Vertex("1", 1);
+		Vertex v6 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v5, v6);
 
-		Vertex v7 = new Vertex("2", 2);
+		Vertex v7 = new Vertex("2", 2, graph);
 		graph.addEdge(new Edge(), v6, v7);
 		
-		Vertex v8 = new Vertex("2", 2);
+		Vertex v8 = new Vertex("2", 2, graph);
 		graph.addEdge(new Edge(), v7, v8);
 		
 		// !!! Check out how it looks
@@ -321,24 +321,24 @@ public class PlotGraphLayoutTest extends TestCase {
 		
 		// ... first column ...
 		Vertex v1 = graph.addRoot("hen");
-		Vertex v2 = new Vertex("1", 1);
+		Vertex v2 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v1, v2);
 
-		Vertex v3 = new Vertex("2", 2);
+		Vertex v3 = new Vertex("2", 2, graph);
 		graph.addEdge(new Edge(), v2, v3);
 
-		Vertex v4 = new Vertex("3", 3);
+		Vertex v4 = new Vertex("3", 3, graph);
 		graph.addEdge(new Edge(), v3, v4);		
 		
 		// ... second column ...
 		Vertex v5 = graph.addRoot("dog");
-		Vertex v6 = new Vertex("1", 1);
+		Vertex v6 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(Edge.Type.ROOT), v5, v6);
 
-		Vertex v7 = new Vertex("1", 1);
+		Vertex v7 = new Vertex("1", 1, graph);
 		graph.addEdge(new Edge(), v6, v7);
 		
-		Vertex v8 = new Vertex("3", 3);
+		Vertex v8 = new Vertex("3", 3, graph);
 		graph.addEdge(new Edge(), v7, v8);
 		
 		// !!! Check out how it looks

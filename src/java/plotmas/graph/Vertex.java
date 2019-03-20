@@ -1,5 +1,6 @@
 package plotmas.graph;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +31,7 @@ public class Vertex implements Cloneable {
 					 }
 
 	/* NOTE: each new attribute should also be considered in #clone() */
+	private PlotDirectedSparseGraph graph;
 	private String id;
 	private String label;
 	private Type type;
@@ -48,13 +50,14 @@ public class Vertex implements Cloneable {
 	 * in the plot graph visualisation. Set by EdgeLayoutVisitor.
 	 */
 	public int minWidth;
+	
 
 	/**
 	 * Creates a default instance of vertex, with type {@link Vertex.Type#EVENT}.
 	 * @param label vertex content
 	 */
-	public Vertex(String label, int step) {
-		this(label, Vertex.Type.EVENT, step);
+	public Vertex(String label, int step, PlotDirectedSparseGraph graph) {
+		this(label, Vertex.Type.EVENT, step, graph);
 	}
 	
 	/**
@@ -62,12 +65,13 @@ public class Vertex implements Cloneable {
 	 * @param label vertex content
 	 * @param type possible types see {@link Vertex.Type}
 	 */
-	public Vertex(String label, Type type, int step) {
+	public Vertex(String label, Type type, int step, PlotDirectedSparseGraph graph) {
 		this.label = label;
 		this.id = UUID.randomUUID().toString();
 		this.type = type;
 		this.step = step;
 		this.isPolyvalent = false;
+		this.graph = graph;
 	}
 	
 	public String getId() {
@@ -227,9 +231,8 @@ public class Vertex implements Cloneable {
 		}
 	}
 	
-	@Override
-	public Vertex clone() {
-		Vertex clone = new Vertex(this.label, this.type, this.step);
+	public Vertex clone(PlotDirectedSparseGraph graph) {
+		Vertex clone = new Vertex(this.label, this.type, this.step, graph);
 		
 		clone.minWidth = this.minWidth;
 		clone.isPolyvalent = this.isPolyvalent;
@@ -270,5 +273,9 @@ public class Vertex implements Cloneable {
 	
 	public List<String> getEmotions() {
 		return this.emotions;
+	}
+
+	public Collection<Edge> getIncidentEdges() {
+		return this.graph.getIncidentEdges(this);
 	}
 }

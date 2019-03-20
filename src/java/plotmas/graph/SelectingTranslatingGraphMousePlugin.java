@@ -54,25 +54,54 @@ public class SelectingTranslatingGraphMousePlugin extends TranslatingGraphMouseP
 			((ShapePickSupport<Vertex,Edge>) pickSupport).setPickSize(PROXIMITY_DIST);
 			
 			PickedState<Edge> pickedEdgeState = vv.getPickedEdgeState();
+			PickedState<Vertex> pickedVertexState = vv.getPickedVertexState();
             
-			if (pickedEdgeState != null) {
+			if ((pickedEdgeState != null) & (pickedVertexState != null)) {
 				// p is the screen point for the mouse event
 				Point2D p = e.getPoint();
-				Edge selectedEdge = pickSupport.getEdge(vv.getGraphLayout(), p.getX(), p.getY());
 				
+				// first try to do vertex picking
+				Vertex selectedVertex = pickSupport.getVertex(vv.getGraphLayout(), p.getX(), p.getY());
+				if (selectedVertex != null) {
+					vv.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+					if (pickedVertexState.isPicked(selectedVertex) == false) {
+						// if it wasn't picked before, pick it and all its edges, clear all previously picked edges
+						pickedVertexState.clear();
+						pickedEdgeState.clear();
+						
+						pickedVertexState.pick(selectedVertex, true);
+						for (Edge incidentEdge : selectedVertex.getIncidentEdges()) {
+							pickedEdgeState.pick(incidentEdge, true);
+						}
+					} else {
+						// if it was picked before, just unpick it
+						pickedVertexState.clear();
+						pickedEdgeState.clear();
+					}
+					
+					vv.repaint();
+		            e.consume();
+		            return;
+				}
+				
+				// els edge if edge picking worked
+				Edge selectedEdge = pickSupport.getEdge(vv.getGraphLayout(), p.getX(), p.getY());
 				if (selectedEdge != null) {
 					vv.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-//					System.out.println("selectecd edge: " + selectedEdge.toString());
 					if (pickedEdgeState.isPicked(selectedEdge) == false) {
+						// if it wasn't picked before, pick it and clear all previously picked edges
 						pickedEdgeState.clear();
 						pickedEdgeState.pick(selectedEdge, true);
+					} else {
+						// if it was picked before, just unpick it
+						pickedEdgeState.clear();
 					}
 				}
+				
+				vv.repaint();
+	            e.consume();
+	            return;
 			}
-			
-			vv.repaint();
-			
-            e.consume();
 		}
     	
     	if (e.isPopupTrigger()) {
@@ -89,21 +118,8 @@ public class SelectingTranslatingGraphMousePlugin extends TranslatingGraphMouseP
 	 * 
 	 * @param e the event
 	 */
-    @SuppressWarnings("unchecked")
     public void mouseReleased(MouseEvent e) {
     	super.mouseReleased(e);
-    	
-		if (e.getModifiers() == modifiers) {
-			VisualizationViewer<Vertex,Edge> vv = (VisualizationViewer<Vertex,Edge>) e.getSource();
-			PickedState<Edge> pickedEdgeState = vv.getPickedEdgeState();
-			
-			// remove edge that was picked on mouse press
-			pickedEdgeState.clear();
-			
-			vv.repaint();
-			
-            e.consume();
-		}
 		
     	if (e.isPopupTrigger()) {
     		JPopupMenu popup = PlotGraphController.getPlotListener().getPopup(); 
