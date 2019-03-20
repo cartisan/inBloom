@@ -1,84 +1,25 @@
+/******************************************************************************/
+/************ knowledge base  *************************************************/
+/******************************************************************************/
+
+{include("agent-knowledge_base.asl")}
+	
 /********************************************/
-/***** General knowledge  *******************/
-/*****      Common sense beliefs ************/
+/*****     wishes and obligations ***********/
 /********************************************/
 
-is_work(farm_work).
-is_work(create(bread)).
-is_work(plant(_)).
-is_work(tend(_)).
-is_work(harvest(_)).
-is_work(grind(_)).
-is_work(bake(_)).
-
-complex_plan(create(bread)).
-coping_behavior(punish).
-
-creatable_from(wheat,bread).
-is_pleasant(eat(bread)).
-is_useful(A,true) :- is_pleasant(eat(A)).
+{include("agent-desire_wish_management.asl")}
 
 wish(relax).
-
-agent(X) :- agents(Agents) & .member(X, Agents).
-location(X) :- locations(Locations) & .member(X, Locations).
-
-already_asked(farm_work).
-	
-/********************************************/
-/*****     Wishes and Obligation ************/
-/********************************************/
-
 +self(farm_animal) <- +obligation(farm_work).
 
-+obligation(Plan) <-
-	!obligation(Plan).				// adds desire to fulfill obligation
--obligation(Plan) <-				// removes desire to fulfill obligation, and obligation
-	.drop_desire(obligation(Plan));
-	.succeed_goal(obligation(Plan)).
-
-@obligation1[affect(personality(conscientiousness,high))]
-+!obligation(Plan) : is_work(Plan) <-		// only do hard obligations if conscientious
-	!Plan; 
-	!obligation(Plan).
-+!obligation(Plan) : not is_work(Plan) <-
-	!Plan; 
-	!obligation(Plan).
-+!obligation(Plan) : true <-		// universal fallback, obligations remain desires even when unfulfillable atm 
-	!obligation(Plan).
--!obligation(Plan) <-				// if obligation satisfaction failed this time, still keep the desire
-	!obligation(Plan).	
-
-+wish(Plan) <-						// adds desire to fulfill wish
-	!wish(Plan).
--wish(Plan) <-						// removes desire to fulfill wish, and wish
-	.drop_desire(wish(Plan));
-	.succeed_goal(wish(Plan)).
-	
-@wish1[affect(personality(conscientiousness,high))]
-+!wish(Plan) : not coping_behavior(Plan) & obligation(Plan2) <-	// if conscientious only do non-coping wish when no obligations desired
-	!wish(Plan).
-+!wish(Plan) <-
-	!Plan;
-	!wish(Plan).
--!wish(Plan) <-						// if wish satisfaction failed this time, still keep the desire
-	!wish(Plan).
-
-/********************************************/
-/*****      Common sense reasoning ************/
-/********************************************/
-
-+see(Thing)[location(Loc), owner(Per)] : is_pleasant(eat(Thing)) & hungry(true) <-   // crowfox
-	+at(Per,Loc);
-	+has(Per,Thing);
-	.my_name(Name);
-	.appraise_emotion(hope, Name, "see(Thing)");
-	.suspend(wish(relax));
-	+wish(has(Thing)).
+/******************************************************************************/
+/********** perception management *********************************************/
+/******************************************************************************/
 
 // Share when very agreeable character, unless in a bad mood
 @share_food_plan2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
-+has(X) : is_pleasant(eat(X)) & has(X) & hungry(true) <- 			// still has X when event selected
++has(X) : hungry & is_pleasant(eat(X)) & has(X) <- 			// still has X when event selected
 	?agents(Anims);
 	!share(X, Anims);
 	.print("Shared: ", X, " with the others");
@@ -86,14 +27,22 @@ already_asked(farm_work).
 	-wish(has(X));
 	.resume(wish(relax)).
 
-+has(X) : is_pleasant(eat(X)) & has(X) & hungry(true)  <-			// still has X when event selected 
++has(X) : hungry & is_pleasant(eat(X)) & has(X)  <-			// still has X when event selected 
+	!eat(X);
 	-wish(has(X));
-	.resume(wish(relax));
-	!eat(X).
+	.resume(wish(relax)).
+
++see(Thing)[location(Loc), owner(Per)] : is_useful(Thing) <-   // crowfox
+	+at(Per,Loc);
+	+has(Per,Thing);
+	.my_name(Name);
+	.appraise_emotion(hope, Name, "see(Thing)");
+	.suspend(wish(relax));
+	+wish(has(Thing)).
 	
 +found(X) <-
 	?creatable_from(X,Y);
-	?is_useful(Y,Z)
+	?is_useful(Y)
 	if(Z) {
 		.suspend(obligation(farm_work));	// only for brevity of graph
 		.suspend(wish(relax));
@@ -125,11 +74,9 @@ already_asked(farm_work).
 	.print("No, I will not give you anything!");
 	.appraise_emotion(reproach, Other, "threatened(Item)");
 	refuseToGive(Other,Item).
-		
-/********************************************/
-/***** Self-specifications  *****************/
-/*****      Emotion management **************/
-/********************************************/
+	
+/***** request answer management **********************************************/
+/******************************************************************************/
 
 +rejected_request(help_with(Req))[source(Name)] <-
 	.appraise_emotion(anger, Name, "rejected_request(help_with(Req))[source(Name)]", true);
@@ -147,18 +94,23 @@ already_asked(farm_work).
 		.resume(Req);
 	}.
 
-//-has(X): is_pleasant(eat(X)) <-
-//	.appraise_emotion(distress).
+/****** Mood  management ******************************************************/
+/******************************************************************************/
+
++mood(hostile) <-
+	?affect_target(Anims);
+	if (.empty(Anims)) {
+		.print("What a foul mood, and no-one to blame for it!");
+	} else {
+		+wish(punish);
+	}.
+
+-mood(hostile) <-
+	-wish(punish).
 	
-//+has(X): is_pleasant(eat(X)) & has(X) <-
-//	.appraise_emotion(joy).
-
-//+is_dropped(X): at(underTree)  <-
-//	.appraise_emotion(joy).
-
-/********************************************/
-/*****      Personality *********************/
-/********************************************/
+/******************************************************************************/
+/***** Plans  *****************************************************************/
+/******************************************************************************/
 
 // Ask for help if extraverted, unless one feels powerless
 @general_help_acquisition_plan[affect(and(personality(extraversion,positive),not(mood(dominance,low))))]
@@ -172,43 +124,6 @@ already_asked(farm_work).
 	}
 	.suspend(X);
 	!X.
-
-/********************************************/
-/****** Mood  *******************************/
-/********************************************/
-+mood(hostile) <-
-	?affect_target(Anims);
-	if (.empty(Anims)) {
-		.print("What a foul mood, and no-one to blame for it!");
-	} else {
-		+wish(punish);
-	}.
-
-// relativised commitment: finish desire if not in hostile mood anymore
--mood(hostile) <-
-	-wish(punish).
-	
-+punished(L) : true <- 
-	-punished(L);
-	-wish(punish).
-
-// insert all actual punishment plans
-@punished_plan_1[atomic]	
-+!punish : mood(hostile) & has(X) & is_pleasant(eat(X)) & not(hungry(false))<-
-	?affect_target(Anims);
-	if (.empty(Anims)) {
-		!eat(X);
-		+punished(Anims);		
-	} else {
-		.send(Anims, achieve, eat(X));
-		.print("Asked ", Anims, " to eat ", X, ". But not shareing necessary ressources. xoxo");
-		!eat(X);
-		+punished(Anims)
-	}.
-	
-/********************************************/
-/***** Plans  *******************************/
-/********************************************/
 
 @create_bread_1[affect(personality(conscientiousness,high))]
 +!create(bread) : existant(wheat[state(seed)])<-
@@ -232,6 +147,12 @@ already_asked(farm_work).
 	.resume(obligation(farm_work));
 	.resume(wish(relax));
 	-obligation(create(bread)).
+	
++!has(Thing) : has(Person, Thing) & at(Person, Loc1) & at(Loc2) & not Loc1==Loc2 <- 	//crowfox
+	!approach(Person).
+
++!has(Thing) : has(Person, Thing) & at(Person, Loc1) & at(Loc2) & Loc1==Loc2 <- 	//crowfox
+	!get(Thing, Person).
 
 // Reject helping others if "antisocial", but not feeling powerless
 @reject_request_1[affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]
@@ -250,16 +171,23 @@ already_asked(farm_work).
 	.print("I'll help you with ", X, ", ", Name);
 	.send(Name, tell, accepted_request(help_with(X)));
 	help(Name).
-	
-+!has(Thing) : has(Person, Thing) & at(Person, Loc1) & at(Loc2) & not Loc1==Loc2 <- 	//crowfox
-	!approach(Person).
 
-+!has(Thing) : has(Person, Thing) & at(Person, Loc1) & at(Loc2) & Loc1==Loc2 <- 	//crowfox
-	!get(Thing, Person).
+@punish_1[atomic]	
++!punish : mood(hostile) & has(X) & is_pleasant(eat(X)) & hungry <-
+//+!punish : mood(hostile) & has(X) & is_pleasant(eat(X)) & not(hungry(false)) <-
+	?affect_target(Anims);
+	if (.empty(Anims)) {
+		true;
+	} else {
+		.send(Anims, achieve, eat(X));
+		.print("Asked ", Anims, " to eat ", X, ". But not shareing necessary ressources. xoxo");
+	};
+	!eat(X);
+	-wish(punish).
 	
-/********************************************/
-/*****      Action Execution Goals **********/
-/********************************************/
+/******************************************************************************/
+/*****      Action Execution Goals ********************************************/
+/******************************************************************************/
 +!relax <-
 	relax.
 	
@@ -293,7 +221,6 @@ already_asked(farm_work).
 +!approach(Loc) : location(Loc) <-  	//crowfox
 	goTo(Loc).
 
-	
 @get_flatter[affect(personality(agreeableness,medium))]
 +!get(Thing, Person) <-			//crowfox
 	.print("So lovely your feathers, so shiny thy beak!");
@@ -323,5 +250,7 @@ already_asked(farm_work).
 +!share(X, Anims) <-
 	share(X, Anims).
 
-@share2[affect(and(personality(agreeableness,low)))]
-+!share(X, Anims) <- true.
+@share2[affect(personality(agreeableness,low))]
++!share(X, Anims) <- 
+	.print("I'm not sharing with anyone!");
+	true.

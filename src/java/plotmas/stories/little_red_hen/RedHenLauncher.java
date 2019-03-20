@@ -34,7 +34,7 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
 							new LauncherAgent("hen",					  	   // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
-									Arrays.asList("hungry(true)", "self(farm_animal)"),
+									Arrays.asList("hungry", "self(farm_animal)"),
    								    new LinkedList<String>(),
 									new Personality(0,  1, 0.7,  0.3, 0.65)    //punishment
 //									new Personality(0,  1, 0.7,  0.3,  -1)     //low neurot --> no punishment
@@ -46,19 +46,19 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 //									new Personality(0,  1, 0,    0.7, 0.15)    //low extra, high aggrea --> no help requests, no punishment, sharing
 							),
 							new LauncherAgent("dog",
-									Arrays.asList("hungry(true)", "self(farm_animal)"),
+									Arrays.asList("hungry", "self(farm_animal)"),
    								    new LinkedList<String>(),
 									new Personality(0, -1, 0, -0.7, -0.8)
 //									new Personality(0, 1, 0, -0.7, -0.8)	// doggie helps hen v1
 							),
 							new LauncherAgent("cow",
-									Arrays.asList("hungry(true)", "self(farm_animal)"),
+									Arrays.asList("hungry", "self(farm_animal)"),
    								    new LinkedList<String>(),
 									new Personality(0, -1, 0, -0.7, -0.8)
 //									new Personality(0, 1, 0, -0.7, -0.8)	// cow helps hen v1
 							),
 							new LauncherAgent("pig",
-									Arrays.asList("hungry(true)", "self(farm_animal)"),
+									Arrays.asList("hungry", "self(farm_animal)"),
    								    new LinkedList<String>(),
 									new Personality(0, -1, 0, -0.7, -0.8)
 							)
@@ -69,7 +69,7 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 		FindCornHappening findCorn = new FindCornHappening(
 				// hen finds wheat after 2 farm work actions
 				(FarmModel model) -> {
-	            		if(model.actionCount > 2) {
+	            		if(model.actionCount > 0) {
 	            			return true;
 	            		}
 	            		return false; 
