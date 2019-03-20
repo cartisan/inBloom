@@ -55,8 +55,6 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 	@Override
 	public void visitPercept(Vertex vertex) {
 		boolean isInTradeoff = handleTradeoff(vertex);
-		boolean isRelevantMood = handleMood(vertex);
-		
 		
 		for(String emotion : Emotion.getAllEmotions()) {
 			if(vertex.hasEmotion(emotion)) {
@@ -65,12 +63,16 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 			}
 		}
 		
-		if(!(isInTradeoff | isRelevantMood))
+		if(! (isInTradeoff | isRelevantMood(vertex) | isWishObligation(vertex))) {
 			this.graph.removeVertexAndPatchGraphAuto(this.currentRoot, vertex);
+		}
 	}
 	
+	private boolean isWishObligation(Vertex vertex) {
+		return (vertex.getLabel().contains("wish") | vertex.getLabel().contains("obligation"));
+	}
 	
-	private boolean handleMood(Vertex vertex) {
+	private boolean isRelevantMood(Vertex vertex) {
 		if (vertex.toString().contains(Mood.ANNOTATION_FUNCTOR)) {
 			// include mood vertices that are important for other vertices
 			boolean connected = graph.getIncidentEdges(vertex).stream().map(e -> e.getType())

@@ -17,6 +17,7 @@ import jason.asSemantics.Unifier;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Plan;
 import jason.asSyntax.PlanBody;
+import jason.asSyntax.Trigger.TEOperator;
 import plotmas.PlotCircumstanceListener;
 import plotmas.PlotLauncher;
 import plotmas.graph.Edge;
@@ -183,6 +184,11 @@ public class PlotAwareAg extends AffectiveAgent {
      * @return true if the plan is recursive, false otherwise
      */
     private boolean isPlanRecursive(Plan plan, Unifier u) {
+    	// if the trigger was an belief addition/deletion, plan can not be recursive
+    	if (plan.getTrigger().getOperator() == TEOperator.add || plan.getTrigger().getOperator() == TEOperator.del) {
+    		return false;
+    	}
+    	
     	PlanBody pb = plan.getBody();
     	Literal trigger = plan.getTrigger().getLiteral();
     	while(pb != null) {
