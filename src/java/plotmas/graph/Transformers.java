@@ -27,7 +27,7 @@ import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
 public class Transformers {
 	
 	static private Font FONT = new Font("Courier New", Font.PLAIN, 12);
-	static private Font FONT_LABEL = new Font("Courier New", Font.BOLD, 15);
+	static private Font FONT_LABEL = new Font("Arial Black", Font.BOLD, 15);
 	static private int HEIGHT = 20;
 	
 	static public Set<Vertex> HIGHLIGHT;
@@ -54,14 +54,12 @@ public class Transformers {
         	VertexShapeFactory<Vertex> factory = new VertexShapeFactory<Vertex>(vertexSizeTransformer,
         																		vertexAspectRatioTransformer);
         	switch (v.getType()) {
-        		case SPEECHACT:
-        			return factory.getRoundRectangle(v);
+	        	case SPEECHACT:
         		case INTENTION:
-        			return factory.getRoundRectangle(v);
-        		case EMOTION:
-        			return factory.getRectangle(v);
         		case LISTEN:
         		case PERCEPT:
+        			return factory.getRoundRectangle(v);
+        		case ACTION:
         			return factory.getRectangle(v);
         		default:
         			return factory.getEllipse(v);
@@ -72,11 +70,12 @@ public class Transformers {
     static public Function<Vertex, Font> vertexFontTransformer = new Function<Vertex,Font>(){
         public Font apply(Vertex v){
         	switch (v.getType()) {
-        	case AXIS_LABEL:
-        		return FONT_LABEL;
-        	default:
-        		return FONT;
-        	}
+        		case ROOT:
+	        	case AXIS_LABEL:
+	        		return FONT_LABEL;
+	        	default:
+	        		return FONT;
+	        	}
         }
     };
     
@@ -84,11 +83,15 @@ public class Transformers {
         public Paint apply(Vertex v){ 
         	switch (v.getType()) {
 	        	case ROOT:
-	        		return PlotGraphController.BGCOLOR;
 	        	case AXIS_LABEL:
 	        		return PlotGraphController.BGCOLOR;
 	        	case ACTION:
-	        		return Color.getHSBColor(Float.valueOf("0"), Float.valueOf("0"), Float.valueOf("0.95"));
+	        		return Color.getHSBColor(Float.valueOf("0"), Float.valueOf("0"), Float.valueOf("0.55"));
+	        	case PERCEPT: {
+	        		if ((v.getLabel().contains("wish")) | (v.getLabel().contains("obligation")) | (v.getLabel().contains("mood")))
+	        			return PlotGraphController.BGCOLOR;
+	        		return Color.LIGHT_GRAY;
+	        	}
         		default:
         			return Color.LIGHT_GRAY;
         	}
@@ -99,19 +102,35 @@ public class Transformers {
         public Paint apply(Vertex v){
         	if(HIGHLIGHT != null) {
         		if(HIGHLIGHT.contains(v)) {
-        			return Color.YELLOW;
+        			return Color.ORANGE;
         		}
         	}
         	switch (v.getType()) {
 	        	case ROOT:
-	        		return PlotGraphController.BGCOLOR;
 	        	case AXIS_LABEL:
 	        		return PlotGraphController.BGCOLOR;
+	        	case PERCEPT: {
+	        		if ((v.getLabel().contains("wish")) | (v.getLabel().contains("obligation")) | (v.getLabel().contains("mood")))
+	        			return PlotGraphController.BGCOLOR;
+	        	}
         		default:
         			return Color.BLACK;
         	}
         }
     };
+    
+	public static Function<? super Vertex, Stroke> vertexStrokeTransformer =  new Function<Vertex,Stroke>() {
+		public Stroke apply(Vertex v) {
+        	switch (v.getType()) {
+	        	case PERCEPT: {
+	        		if ((v.getLabel().contains("wish")) | (v.getLabel().contains("obligation")) | (v.getLabel().contains("mood")))
+		        		return new BasicStroke(0f);
+	        		}
+	    		default:
+	    			return new BasicStroke(1f);
+        	}			
+		}
+	};
     
 	static public Function<Edge, Shape> edgeShapeTransformer = new Function<Edge,Shape>(){
         public Shape apply(Edge e){
@@ -166,5 +185,4 @@ public class Transformers {
 		}
 		
 	};
-
 }
