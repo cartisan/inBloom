@@ -21,14 +21,12 @@ wish(relax).
 @share_food_plan2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +has(X) : hungry & is_pleasant(eat(X)) & has(X) <- 			// still has X when event selected
 	?agents(Anims);
-	!share(X, Anims);
-	.print("Shared: ", X, " with the others");
-	!eat(X);
+	+wish(share_food(X, Anims));
 	-wish(has(X));
 	.resume(wish(relax)).
 
 +has(X) : hungry & is_pleasant(eat(X)) & has(X)  <-			// still has X when event selected 
-	!eat(X);
+	+wish(eat(X));
 	-wish(has(X));
 	.resume(wish(relax)).
 
@@ -185,6 +183,11 @@ wish(relax).
 	};
 	!eat(X);
 	-wish(punish).
+
++!share_food(Food, Others) <-
+	!share(Food, Others);
+	!eat(Food);
+	-wish(share_food(X, Anims)).
 	
 /******************************************************************************/
 /*****      Action Execution Goals ********************************************/
@@ -214,7 +217,8 @@ wish(relax).
 +!eat(X) <- 
 	eat(X);
 	-has(X);
-	.succeed_goal(eat(X)).
+	-wish(eat(X)).
+//	.succeed_goal(eat(X)).
 
 +!approach(Person) : agent(Person) & at(Person, Loc) <-  	//crowfox
 	goTo(Loc).
@@ -249,6 +253,7 @@ wish(relax).
 
 @share1[affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +!share(X, Anims) <-
+	.print("Sharing: ", X, " with", Anims);
 	share(X, Anims).
 
 @share2[affect(personality(agreeableness,low))]

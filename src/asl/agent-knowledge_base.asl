@@ -12,6 +12,8 @@ is_work(bake(_)).
 
 complex_plan(create(bread)).
 coping_behavior(punish).
+coping_behavior(eat(_)).
+coping_behavior(share_food(_, _)).
 
 creatable_from(wheat,bread).
 is_pleasant(eat(bread)).
