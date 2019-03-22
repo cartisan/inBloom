@@ -42,8 +42,7 @@ wish(relax).
 	
 +found(X) <-
 	?creatable_from(X,Y);
-	?is_useful(Y)
-	if(Z) {
+	if(is_useful(Y)) {
 		.suspend(obligation(farm_work));	// only for brevity of graph
 		.suspend(wish(relax));
 		+obligation(create(Y));
@@ -78,6 +77,9 @@ wish(relax).
 /***** request answer management **********************************************/
 /******************************************************************************/
 
++request(help_with(Plan))[source(Name)] <-
+	+obligation(help_with(Name, Plan)).
+
 +rejected_request(help_with(Req))[source(Name)] <-
 	.appraise_emotion(anger, Name, "rejected_request(help_with(Req))[source(Name)]", true);
 	.abolish(rejected_request(help_with(Req)));
@@ -93,6 +95,23 @@ wish(relax).
 	if(not asking(help_with(Req), _)) {
 		.resume(Req);
 	}.
+
+@reject_request[atomic]
++!reject(Req, Name) <-
+	.concat("request(", Req, ")", Listen);
+	.appraise_emotion(reproach, Name, Listen);
+	.print("can't help you! request(", Req, ") is too much work for me!");
+	.send(Name, tell, rejected_request(Req));
+	-obligation(Req).
+	
+// TODO: How to turn this into an analogous accept without breaking FU structure?	
+@accept_request[atomic]
++!help_with(Name, Plan) <-
+	.print("I'll help you with ", Plan, ", ", Name);
+	.send(Name, tell, accepted_request(help_with(Plan)));
+	help(Name);
+	.appraise_emotion(happy_for, Name, "request(help_with(Plan))");
+	-obligation(help_with(Name, Plan)).
 
 /****** Mood  management ******************************************************/
 /******************************************************************************/
@@ -119,7 +138,7 @@ wish(relax).
 	+already_asked(X);
 	for (.member(Animal, Animals)) {
 		.print("Asking ", Animal, " to help with ", X)
-		.send(Animal, achieve, help_with(X));
+		.send(Animal, tell, request(help_with(X)));
 		+asking(help_with(X), Animal);
 	}
 	.suspend(X);
@@ -153,24 +172,6 @@ wish(relax).
 
 +!has(Thing) : has(Person, Thing) & at(Person, Loc1) & at(Loc2) & Loc1==Loc2 <- 	//crowfox
 	!get(Thing, Person).
-
-// Reject helping others if "antisocial", but not feeling powerless
-@reject_request_1[affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]
-+!help_with(X)[source(Name)] : is_work(X) <-
-	.print("can't help you! ", X, " is too much work for me!");
-	.send(Name, tell, rejected_request(help_with(X))).
-
-// Reject helping others if "anti-social tendencies" and feeling strong
-@reject_request_2[affect(and(personality(conscientiousness,negative), mood(dominance,high)))]
-+!help_with(X)[source(Name)] : is_work(X) <-
-	.print("can't help you! ", X, " is too much work for me!");
-	.send(Name, tell, rejected_request(help_with(X))).
-
-@accept_request
-+!help_with(X)[source(Name)] <-
-	.print("I'll help you with ", X, ", ", Name);
-	.send(Name, tell, accepted_request(help_with(X)));
-	help(Name).
 
 @punish_1[atomic]	
 +!punish : mood(hostile) & has(X) & is_pleasant(eat(X)) & hungry <-

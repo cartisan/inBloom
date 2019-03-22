@@ -3,13 +3,21 @@
 /******************************************************************************/
 
 // adds desire to fulfill obligation
-+obligation(Plan) <-				
++obligation(Plan) <-
 	!obligation(Plan).
 	
 // removes desire to fulfill obligation, and obligation itself
 -obligation(Plan) <-
 	.drop_desire(obligation(Plan));
 	.succeed_goal(obligation(Plan)).
+
+@reject_request_1[atomic, affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]	
++!obligation(help_with(Name, Plan)) <-
+	!reject(help_with(Plan), Name).
+@reject_request_2[atomic, affect(and(personality(conscientiousness,negative), mood(dominance,high)))]
++!obligation(help_with(Name, Plan)) : wish(Y) & is_work(help_with(Plan)) <-
+	!reject(help_with(Plan), Name).
+// if none of these is true, treat it like normal obligation
 
 // only do hard obligations if really conscientious
 @obligation1[affect(personality(conscientiousness,high))]
