@@ -16,7 +16,7 @@ public class PerceptAnnotation {
 	   
 	private String cause;
 	private List<String> emotions;
-	private List<String> furtherAnnots = new LinkedList<>();
+	private List<String> furtherAnnots;
 	
 	public static PerceptAnnotation fromEmotion(String emotion) {
 		PerceptAnnotation annot = new PerceptAnnotation();
@@ -40,14 +40,22 @@ public class PerceptAnnotation {
 	}
 	
 	public PerceptAnnotation() {
-		furtherAnnots = new LinkedList<>();
-		emotions = new ArrayList<>();
-		cause = "";
+		this.furtherAnnots = new LinkedList<>();
+		this.emotions = new ArrayList<>();
+		this.cause = "";
 	}
 	
 	public PerceptAnnotation(String... ems) {
-		super();
-		this.emotions = Arrays.asList(ems);
+		this();
+		
+		for (String em : Arrays.asList(ems)) {
+    		if (Emotion.getAllEmotions().contains(em)) {
+				this.emotions.add(em);
+    		} else {
+				logger.warning("Error: Trying to add an invalid emotion to a percept: " + em);
+				throw new RuntimeException("Trying to add an invalid emotion to a percept: " + em);
+			}
+		}
 	}
 	
 	@Override
@@ -91,13 +99,7 @@ public class PerceptAnnotation {
 		String result = "";
 		
     	for(String em: this.emotions) {
-    		if (Emotion.getAllEmotions().contains(em)) {
     			result += Emotion.ANNOTATION_FUNCTOR + "(" + em + "),";
-    		}
-    		else{
-    			logger.warning("Error: Trying to add an invalid emotion to a percept: " + em);
-    			throw new RuntimeException("Trying to add an invalid emotion to a percept: " + em);
-    		}
     	}
     	
     	// remove comma after last emotion
@@ -110,7 +112,8 @@ public class PerceptAnnotation {
 	
 	public PerceptAnnotation addTargetedEmotion(String emotion, String target) {
     	if (Emotion.getAllEmotions().contains(emotion)) {
-			this.emotions.add(emotion + "," + target);
+			this.emotions.add(emotion);
+			this.addAnnotation("target(" + target + ")");
 		}
 		else {
 			logger.warning("Error: Trying to add an invalid emotion to a percept: " + emotion);
