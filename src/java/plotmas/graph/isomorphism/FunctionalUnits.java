@@ -61,14 +61,16 @@ public class FunctionalUnits {
 		
 		PlotDirectedSparseGraph deniedRequest = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1, deniedRequest);
-		v2 = makeIntention(1, deniedRequest);
+		v2 = makeNegative(1, deniedRequest);
 		deniedRequest.addEdge(makeCommunication(), v1, v2);
 		v3 = makeIntention(2, deniedRequest);
 		deniedRequest.addEdge(makeMotivation(), v2, v3);
-		v2 = makeNegative(3, deniedRequest);
-		deniedRequest.addEdge(makeCommunication(), v3, v2);
+		v2 = makeIntention(3, deniedRequest);
+		deniedRequest.addEdge(makeMotivation(), v3, v2);		
+		v3 = makeNegative(4, deniedRequest);
+		deniedRequest.addEdge(makeCommunication(), v2, v3);
 		DENIED_REQUEST = new FunctionalUnit("Denied Request", deniedRequest);
-		DENIED_REQUEST.setSubject(new Pair<Vertex, String>(v1, "!achieve\\((.*)\\)"));
+		DENIED_REQUEST.setSubject(new Pair<Vertex, String>(v1, "request\\((.*)\\)"));
 		
 		PlotDirectedSparseGraph nestedGoal = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1, nestedGoal);

@@ -239,6 +239,7 @@ public class FunctionalUnit {
 		private Collection<Vertex> vertices;
 		private int start = Integer.MAX_VALUE;
 		private int end = Integer.MIN_VALUE;
+		private String type;
 		
 		private String firstAgent;
 		private String secondAgent;
@@ -252,9 +253,11 @@ public class FunctionalUnit {
 		 * @param graph
 		 * @param vertices
 		 */
-		public Instance(PlotDirectedSparseGraph graph, Collection<Vertex> vertices) {
+		public Instance(PlotDirectedSparseGraph graph, Collection<Vertex> vertices, String type) {
 			this.graph = graph;
 			this.vertices = vertices;
+			this.type = type;
+			
 			for(Vertex v : vertices) {
 				start = Math.min(start, v.getStep());
 				end = Math.max(end, v.getStep());
@@ -305,8 +308,11 @@ public class FunctionalUnit {
 				if(kvp.getValue() == getUnit().subject.getFirst()) {
 					Pattern p = Pattern.compile(getUnit().subject.getSecond());
 					Matcher m = p.matcher(kvp.getKey().getLabel());
-					m.find();
-					this.subject = m.group(1);
+					if (m.find()) {
+						this.subject = m.group(1);
+					} else {
+						logger.severe("Couldn't identify subject of FU " + this.type + " using pattern:" + getUnit().subject.getSecond());
+					}
 				}
 			}
 		}

@@ -155,7 +155,7 @@ public class ConnectivityGraph extends DirectedSparseGraph<FunctionalUnit.Instan
 	 * Merges a set of functional unit instances into a
 	 * single vertex by combining the set of plot vertices they contain,
 	 * the agents of the unit, as well as the subjects. (Subjects are
-	 * usually the same if this is called by mergeTimeEquivalents).
+	 * usually the same if this is called by {@link #mergeTimeEquivalents()}).
 	 * @param set of instances to merge
 	 */
 	private void merge(Set<FunctionalUnit.Instance> set) {
@@ -203,7 +203,7 @@ public class ConnectivityGraph extends DirectedSparseGraph<FunctionalUnit.Instan
 			this.removeVertex(inst);
 		}
 		
-		FunctionalUnit.Instance mergedInstance = unit.new Instance(null, vertices);
+		FunctionalUnit.Instance mergedInstance = unit.new Instance(null, vertices, null);
 		
 		// Build agents
 		String firstAgent = "";
