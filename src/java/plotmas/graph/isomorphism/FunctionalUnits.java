@@ -158,17 +158,17 @@ public class FunctionalUnits {
 		SACRIFICE = new FunctionalUnit("Sacrifice", sacrifice);
 		
 		PlotDirectedSparseGraph honoredRequest = new PlotDirectedSparseGraph();
-		v1 = makeIntention(1,honoredRequest);
-		v2 = makeIntention(1,honoredRequest);
+		v1 = makeIntention(1, honoredRequest);
+		v2 = makePositive(1, honoredRequest);
 		honoredRequest.addEdge(makeCommunication(), v1, v2);
-
 		v3 = makeIntention(2, honoredRequest);
 		honoredRequest.addEdge(makeMotivation(), v2, v3);
-
-		v2 = makePositive(3,honoredRequest);
-		honoredRequest.addEdge(makeCommunication(), v3, v2);
+		v2 = makeIntention(3, honoredRequest);
+		honoredRequest.addEdge(makeMotivation(), v3, v2);		
+		v3 = makePositive(4, honoredRequest);
+		honoredRequest.addEdge(makeCommunication(), v2, v3);
 		HONORED_REQUEST = new FunctionalUnit("Honored Request", honoredRequest);
-		HONORED_REQUEST.setSubject(new Pair<Vertex, String>(v1, "!achieve\\((.*)\\)"));
+		HONORED_REQUEST.setSubject(new Pair<Vertex, String>(v1, "request\\((.*)\\)"));
 		
 		ALL[0] = DENIED_REQUEST;
 		ALL[1] = NESTED_GOAL;
