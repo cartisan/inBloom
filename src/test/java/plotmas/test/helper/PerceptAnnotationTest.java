@@ -18,24 +18,24 @@ public class PerceptAnnotationTest extends TestCase {
 		
 		
 		pa = new PerceptAnnotation();
-		pa.addAnnotation("owner(gollum)");
+		pa.addAnnotation("owner", "gollum");
 		expectation = "[owner(gollum)]";
 		assertEquals(expectation, pa.toString());
 		
-		pa.addAnnotation("location(cave)");
-		expectation = "[owner(gollum),location(cave)]";
+		pa.addAnnotation("location", "cave", "wall");
+		expectation = "[owner(gollum),location(cave,wall)]";
 		assertEquals(expectation, pa.toString());
 		
 		
 		pa = new PerceptAnnotation("joy", "love");
 		pa.setCause("find_ring");
-		pa.addAnnotation("owner(gollum)");
-		pa.addAnnotation("location(cave)");
+		pa.addAnnotation("owner", "gollum");
+		pa.addAnnotation("location", "cave", "wall");
 		assertTrue(pa.toString().contains("emotion(joy)"));
 		assertTrue(pa.toString().contains("emotion(love)"));
 		assertTrue(pa.toString().contains("cause(find_ring)"));
 		assertTrue(pa.toString().contains("owner(gollum)"));
-		assertTrue(pa.toString().contains("location(cave)"));
+		assertTrue(pa.toString().contains("location(cave,wall)"));
 	}
 	
 	public void testFromEmotion() {
