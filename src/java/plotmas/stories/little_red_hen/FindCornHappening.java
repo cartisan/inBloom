@@ -23,7 +23,7 @@ public class FindCornHappening extends Happening<FarmModel> {
 	public void execute(FarmModel model) {
 		Character chara = model.getCharacter(this.getPatient());
 
-		model.wheat = model.new Wheat();
+		model.wheat = new FarmModel.Wheat();
 		chara.addToInventory(model.wheat);
 		model.wheatFound = true;
 		

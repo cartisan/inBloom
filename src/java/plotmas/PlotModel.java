@@ -41,6 +41,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	
 	public static final boolean X_AXIS_IS_TIME = true;		// defines whether moods will be mapped based on plotTim or timeStep
 															// in latter case, average mood will be calculated over all cycles in a timeStep
+	public static final String DEFAULT_LOCATION_NAME = "far far away";
 	
 	protected HashMap<String, Character> characters = null;
 	protected HashMap<String, Location> locations = null;
@@ -60,6 +61,9 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		this.moodMapper = new MoodMapper();
         this.characters = new HashMap<String, Character>();
 		this.locations = new HashMap<String, Location>();
+		
+		// setup default location
+		this.addLocation(DEFAULT_LOCATION_NAME);
         
         // add all instantiated agents to world model
         for (LauncherAgent lAgent : agentList) {
@@ -85,8 +89,8 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	
 	public void initialize(List<LauncherAgent> agentList) {
         for (LauncherAgent lAgent : agentList) {
-        	this.getCharacter(lAgent.name).initialize(lAgent);
         	this.getCharacter(lAgent.name).setModel(this);
+        	this.getCharacter(lAgent.name).initialize(lAgent);
         }		
 	}
 	
@@ -130,7 +134,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		character.setModel(null);
 	}
 	
-	public void createLocation(String name) {
+	public void addLocation(String name) {
 		this.locations.put(name, new Location(name));
 	}
 	

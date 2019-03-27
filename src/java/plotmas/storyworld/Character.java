@@ -43,6 +43,9 @@ public class Character {
 	public void initialize(LauncherAgent lAgent) {
 		this.setName(lAgent.name);
 		this.setPlotAgentPendant(lAgent.name);
+		
+		this.inventory = lAgent.inventory;
+		this.model.getLocation(lAgent.location).enter(this);
 	}
 	
 	public void initialize(String name) {
@@ -185,23 +188,12 @@ public class Character {
 		return true;
 	}
 	
-	public boolean flying() {
+	public boolean canFly() {
 		// TODO: find a flexible implementation
 		if (name == "crow") {
 			return true;
 		}
 		return false;
-	}
-	
-	public boolean farmAnimal() {
-		// TODO: find a flexible implementation
-		if (name == "crow") {
-			return false;
-		}
-		else if (name == "fox") {
-			return false;
-		}
-		return true;
 	}
 
 	public String toString() {

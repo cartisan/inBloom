@@ -30,33 +30,17 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		super(agents, hapDir);
 
 		// create locations
-		this.createLocation("other");
 		this.addLocation(new Tree(this));
-
-		// set all characters' default location
-		for(Character chara :this.getCharacters()) {
-			this.getLocation("other").enter(chara);
-		}
 
 		this.actionCount = 0;
 		this.wheat = null;
 		this.wheatFound = false;
-		
-		Item bread = new Bread();
-		// TODO: Crow gets bread --> to Launcher
-		if( this.characters.containsKey("crow")) {
-			getCharacter("crow").addToInventory(bread);			
-		}
-
 	}
 
 	public boolean farmWork(Character agent) {
-		if (agent.farmAnimal()) {
-			this.actionCount += 1;
-			logger.info("Some farming activity was performed");
-			return true;
-		}
-		return false;
+		this.actionCount += 1;
+		logger.info("Some farming activity was performed");
+		return true;
 	}
 	
 	public boolean plantWheat(Character agent) {
@@ -174,7 +158,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	 * 
 	 * @author Leonid Berov
 	 */
-	public class Tree extends Location {
+	public static class Tree extends Location {
 		private PlotModel<?> model = null;
 		
 		public List<Character> treetop = null;
@@ -193,7 +177,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		public boolean enter(Character character) {
 			boolean result;
 			
-			if (character.flying()) {
+			if (character.canFly()) {
 				result = this.enter(character, this.treetop);
 				logger.info(character.name + " flies to the top of an ancient tree");
 				
@@ -301,7 +285,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		}
 	}
 	
-	public class Wheat extends Item {
+	public static class Wheat extends Item {
 		static final String itemName = "wheat";
 		public WHEAT_STATE state = WHEAT_STATE.SEED;
 		
@@ -319,7 +303,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 
 	}
 	
-	class Bread extends Item {
+	public static class Bread extends Item {
 		static final String itemName = "bread";
 		
 		@Override
