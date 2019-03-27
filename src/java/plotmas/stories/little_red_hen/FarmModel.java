@@ -7,7 +7,6 @@ import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
 import plotmas.LauncherAgent;
 import plotmas.PlotModel;
-import plotmas.graph.Edge;
 import plotmas.helper.PerceptAnnotation;
 import plotmas.storyworld.Character;
 import plotmas.storyworld.HappeningDirector;
@@ -44,6 +43,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		this.wheatFound = false;
 		
 		Item bread = new Bread();
+		// TODO: Crow gets bread --> to Launcher
 		if( this.characters.containsKey("crow")) {
 			getCharacter("crow").addToInventory(bread);			
 		}
@@ -131,8 +131,9 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 				
 				// everyone present see things dropping from the sky
 				for (Character observer : agent.location.getCharacters()) {
-					this.environment.addEventPerception(observer.getName(), "is_dropped(" + item.getItemName() + ")[owner("+agent.name+")," + 
-																			 Edge.Type.CAUSALITY.toString() + "(sing)]");
+					this.environment.addEventPerception(observer.getName(),
+													   "is_dropped(" + item.getItemName() + ")",
+													   PerceptAnnotation.fromCause("sing").addAnnotation("owner", agent.name));
 				}
 			}
 		}
@@ -149,20 +150,17 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		return false;
 	}
 	
-	public boolean handOver(Character agent, Character receiver, String itemName) {
+	public boolean handOver(Character agent, Character receiver, String itemName, Boolean refuse) {
 		if (agent.has(itemName) & agent.location.present(receiver)){
-			Item item = agent.removeFromInventory(itemName);
-			receiver.addToInventory(item);
-			logger.info(agent.name + " hands over " + itemName + " to " +receiver);
-			return true;
-		}
-		return false;
-	}
-	
-	public boolean refuseToGive(Character agent, Character enemy, String item) {
-		if (agent.has(item) & agent.location.present(enemy)){
-			logger.info(agent.name + " does not hand over" + item + " to " +enemy);
-			return true;
+			if (refuse) {
+				logger.info(agent.name + " does not hand over" + itemName + " to " + receiver);
+				return true;				
+			} else {
+				Item item = agent.removeFromInventory(itemName);
+				receiver.addToInventory(item);
+				logger.info(agent.name + " hands over " + itemName + " to " +receiver);
+				return true;
+			}
 		}
 		return false;
 	}

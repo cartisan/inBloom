@@ -106,13 +106,13 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     	else if (action.getFunctor().equals("handOver")) {
     		Character receiver = getModel().getCharacter(action.getTerm(0).toString());
     		String item = action.getTerm(1).toString();
-			result = getModel().handOver(agent, receiver, item);
+			result = getModel().handOver(agent, receiver, item, false);
     	}
     	
     	else if (action.getFunctor().equals("refuseToGive")) {
     		Character target = getModel().getCharacter(action.getTerm(0).toString());
     		String item = action.getTerm(1).toString();
-    		result = getModel().refuseToGive(agent, target, item);
+    		result = getModel().handOver(agent, target, item, true);
     	}
     	
     	else if (action.getFunctor().equals("relax")) {
