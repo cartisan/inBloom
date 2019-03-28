@@ -32,44 +32,49 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         
         PlotControlsLauncher.runner = new RedHenLauncher();
         
-        ImmutableList<LauncherAgent> agents = ImmutableList.of(
-							new LauncherAgent("hen",					  	   // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
-									Arrays.asList("hungry", "self(farm_animal)"),
-   								    new LinkedList<String>(),
-									new Personality(0,  1, 0.7,  0.3, 0.65)    //punishment
-//									new Personality(0,  1, 0.7,  0.3,  -1)     //low neurot --> no punishment
-//									new Personality(0,  1, 0.7,  0.7,  -1)     //high aggrea --> sharing
-									
-//									new Personality(0, -1, 0.7,  0.3, 0.15)    //low consc --> no plot
-									
-//									new Personality(0,  1, 0,    0.3, 0.15)    //low extra --> no help requests, no punishment, no sharing <-- not after update!
-//									new Personality(0,  1, 0,    0.7, 0.15)    //low extra, high aggrea --> no help requests, no punishment, sharing
-							),
-							new LauncherAgent("dog",
-									Arrays.asList("hungry", "self(farm_animal)"),
-   								    new LinkedList<String>(),
-									new Personality(0, -1, 0, -0.7, -0.8)
-//									new Personality(0, 1, 0, -0.7, -0.8)	// doggie helps hen v1
-							),
-							new LauncherAgent("cow",
-									Arrays.asList("hungry", "self(farm_animal)"),
-   								    new LinkedList<String>(),
-									new Personality(0, -1, 0, -0.7, -0.8)
-//									new Personality(0, 1, 0, -0.7, -0.8)	// cow helps hen v1
-							),
-							new LauncherAgent("pig",
-									Arrays.asList("hungry", "self(farm_animal)"),
-   								    new LinkedList<String>(),
-									new Personality(0, -1, 0, -0.7, -0.8)
-							)
-						);
+        LauncherAgent hen = new LauncherAgent("hen",					  	   // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
+					Arrays.asList("hungry", "self(farm_animal)"),
+					    new LinkedList<String>(),
+					    new Personality(0,  1, 0.7,  0.3, 0.65)    //punishment
+	//					new Personality(0,  1, 0.7,  0.3,  -1)     //low neurot --> no punishment
+	//					new Personality(0,  1, 0.7,  0.7,  -1)     //high aggrea --> sharing
+					
+	//					new Personality(0, -1, 0.7,  0.3, 0.15)    //low consc --> no plot
+					
+	//					new Personality(0,  1, 0,    0.3, 0.15)    //low extra --> no help requests, no punishment, no sharing <-- not after update!
+	//					new Personality(0,  1, 0,    0.7, 0.15)    //low extra, high aggrea --> no help requests, no punishment, sharing
+        );
+        LauncherAgent dog = new LauncherAgent("dog",
+					Arrays.asList("hungry", "self(farm_animal)"),
+				    	new LinkedList<String>(),
+						new Personality(0, -1, 0, -0.7, -0.8)
+		//				new Personality(0, 1, 0, -0.7, -0.8)	// doggie helps hen v1
+		);
+        LauncherAgent cow = new LauncherAgent("cow",
+					Arrays.asList("hungry", "self(farm_animal)"),
+				    	new LinkedList<String>(),
+						new Personality(0, -1, 0, -0.7, -0.8)
+		//				new Personality(0, 1, 0, -0.7, -0.8)	// cow helps hen v1
+		);
+        LauncherAgent pig = new LauncherAgent("pig",
+					Arrays.asList("hungry", "self(farm_animal)"),
+						new LinkedList<String>(),
+						new Personality(0, -1, 0, -0.7, -0.8)
+		);     
+
+        hen.location = FarmModel.FARM.name;
+        dog.location = FarmModel.FARM.name;
+        cow.location = FarmModel.FARM.name;
+        pig.location = FarmModel.FARM.name;
+        
+        ImmutableList<LauncherAgent> agents = ImmutableList.of(hen, dog, cow, pig);
         
         // Initialize MAS with a scheduled happening director
         ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 		FindCornHappening findCorn = new FindCornHappening(
 				// hen finds wheat after 2 farm work actions
 				(FarmModel model) -> {
-	            		if(model.actionCount > 0) {
+	            		if(FarmModel.FARM.farmingProgress > 1) {
 	            			return true;
 	            		}
 	            		return false; 

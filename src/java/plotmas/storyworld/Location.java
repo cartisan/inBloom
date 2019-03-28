@@ -6,18 +6,24 @@ import java.util.logging.Logger;
 
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
+import plotmas.PlotModel;
 
 public class Location {
 	static protected Logger logger = Logger.getLogger(Location.class.getName());
 	
 	private List<Character> characters = null; 
 	private List<Item> existents = null;
+	protected PlotModel<?> model = null;
 	public String name = null;
 	
 	public Location(String name) {
 		this.name = name;
 		this.characters = new LinkedList<>();
 		this.existents = new LinkedList<>();
+	}
+	
+	public void initialize(PlotModel<?> model) {
+		this.model = model;
 	}
 	
 	/**

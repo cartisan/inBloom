@@ -19,47 +19,47 @@ import plotmas.storyworld.Location;
  * @author Leonid Berov
  */
 public class FarmModel extends PlotModel<FarmEnvironment>{
-	
-	public static enum WHEAT_STATE {SEED, GROWING, RIPE, HARVESTED, FLOUR;}
+	public static Tree TREE = new Tree();
+	public static Farm FARM = new Farm();
 
-	public Wheat wheat;
-	public int actionCount;
-	public boolean wheatFound;
-	
 	public FarmModel(List<LauncherAgent> agents, HappeningDirector hapDir) {
 		super(agents, hapDir);
 
-		// create locations
-		this.addLocation(new Tree(this));
-
-		this.actionCount = 0;
-		this.wheat = null;
-		this.wheatFound = false;
+		// add locations
+		this.addLocation(TREE);
+		this.addLocation(FARM);
 	}
 
 	public boolean farmWork(Character agent) {
-		this.actionCount += 1;
-		logger.info("Some farming activity was performed");
-		return true;
+		if(agent.location == FARM) {
+			FARM.farmingProgress += 1;
+			logger.info("Some farming activity was performed");
+			return true;
+		}
+		return false;
 	}
 	
 	public boolean plantWheat(Character agent) {
-		Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
-		if (!(wheatItem == null)) {
-				if (wheatItem.state == WHEAT_STATE.SEED) {
-					this.wheat.state = WHEAT_STATE.GROWING;
-					this.environment.addEventPerception(agent.name, "plant(wheat)", PerceptAnnotation.fromEmotion("pride"));
-					logger.info("Wheat planted");
-					return true;
-				}
+		if ((agent.location == FARM) & agent.has(Wheat.itemName) ){
+			Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
+			if (wheatItem.state == Wheat.STATES.SEED) {
+				FARM.produce = wheatItem;
+				agent.removeFromInventory(wheatItem);
+				
+				FARM.produce.state = Wheat.STATES.GROWING;
+				this.environment.addEventPerception(agent.name, "plant(wheat)", PerceptAnnotation.fromEmotion("pride"));
+				logger.info("Wheat planted");
+				
+				return true;
+			}
 		}
-		
+
 		return false;
 	}
 	
 	public boolean tendWheat(Character agent) {
-		if ((this.wheat.state == WHEAT_STATE.GROWING)){
-			this.wheat.state = WHEAT_STATE.RIPE;
+		if ((agent.location == FARM) & (FARM.produce.state == Wheat.STATES.GROWING)){
+			FARM.produce.state = Wheat.STATES.RIPE;
 			logger.info("Wheat has grown and is ripe now");
 			this.environment.addEventPerception(agent.name, "tend(wheat)", PerceptAnnotation.fromEmotion("pride"));
 			return true;
@@ -69,8 +69,11 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	}
 	
 	public boolean harvestWheat(Character agent) {
-		if ((this.wheat.state == WHEAT_STATE.RIPE)){
-			this.wheat.state = WHEAT_STATE.HARVESTED;
+		if ((agent.location == FARM) & (FARM.produce.state == Wheat.STATES.RIPE)){
+			FARM.produce.state = Wheat.STATES.HARVESTED;
+			agent.addToInventory(FARM.produce);
+			FARM.produce = null;
+			
 			logger.info("Wheat was harvested");
 			this.environment.addEventPerception(agent.name, "harvest(wheat)", PerceptAnnotation.fromEmotion("pride"));
 			return true;
@@ -80,8 +83,8 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	}
 	
 	public boolean grindWheat(Character agent) {
-		if ((this.wheat.state == WHEAT_STATE.HARVESTED)){
-			this.wheat.state = WHEAT_STATE.FLOUR;
+		if ((agent.location == FARM) & agent.has(Wheat.itemName) & (((Wheat) agent.get(Wheat.itemName)).state == Wheat.STATES.HARVESTED)){
+			((Wheat) agent.get(Wheat.itemName)).state = Wheat.STATES.FLOUR;
 			logger.info("Wheat was ground to flour");
 			this.environment.addEventPerception(agent.name, "grind(wheat)", PerceptAnnotation.fromEmotion("pride"));
 			return true;
@@ -90,10 +93,10 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	}
 
 	public boolean bakeBread(Character agent) {
-		Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
-		if((!(wheatItem == null)) & (wheatItem.state == WHEAT_STATE.FLOUR)) {
-			agent.addToInventory(new Bread());
+		if ((agent.location == FARM) & agent.has(Wheat.itemName) & (((Wheat) agent.get(Wheat.itemName)).state == Wheat.STATES.FLOUR)){
+			Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 			agent.removeFromInventory(wheatItem);
+			agent.addToInventory(new Bread());
 			
 			logger.info(agent.name + ": baked some bread.");
 			this.environment.addEventPerception(agent.name, "bake(bread)", new PerceptAnnotation("pride", "joy"));
@@ -150,6 +153,18 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	}
 	
 	/****** helper classes *******/
+	public static class Farm extends Location {
+
+		public Wheat produce;
+		public int farmingProgress;
+		
+		public Farm() {
+			super("farm");
+			this.farmingProgress = 0;
+			this.produce = null;
+		}
+	}
+	
 	
 	/**
 	 * Location that allows agents to enter on two different levels: ground and sky. While agents on different levels
@@ -159,16 +174,12 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	 * @author Leonid Berov
 	 */
 	public static class Tree extends Location {
-		private PlotModel<?> model = null;
-		
 		public List<Character> treetop = null;
 		public List<Character> below = null;
 		
-		public Tree(PlotModel<?> model) {
+		public Tree() {
 			super("tree");
 			this.setCharacters(null);
-			
-			this.model = model;
 			this.treetop = new LinkedList<Character>();
 			this.below = new LinkedList<Character>();
 		}
@@ -185,7 +196,10 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 				for (Character observer : model.getCharacters()) {
 					if (!observer.equals(character)) {
 						for (Item item : character.inventory) {
-							model.environment.addEventPerception(observer.getName(), "see(" + item + ")[location(tree), owner(" + character.name+")]"); 
+							model.environment.addEventPerception(observer.getName(),
+																"see(" + item + ")",
+																new PerceptAnnotation().addAnnotation("location", "tree").addAnnotation("owner", character.name));
+							
 							logger.info(observer.name + " sees " + character.name + " with " + item);
 						}
 					}
@@ -286,8 +300,10 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	}
 	
 	public static class Wheat extends Item {
-		static final String itemName = "wheat";
-		public WHEAT_STATE state = WHEAT_STATE.SEED;
+		public static enum STATES {SEED, GROWING, RIPE, HARVESTED, FLOUR;}
+		public static final String itemName = "wheat";
+		
+		public STATES state = Wheat.STATES.SEED;
 		
 		@Override
 		public Literal literal() {

@@ -143,7 +143,7 @@ wish(relax).
 	!X.
 
 @create_bread_1[affect(personality(conscientiousness,high))]
-+!create(bread) : existant(wheat[state(seed)])<-
++!create(bread) : has(wheat[state(seed)])<-
 	!plant(wheat).
 
 @create_bread_2[affect(personality(conscientiousness,high))]
@@ -155,11 +155,11 @@ wish(relax).
 	!harvest(wheat).
 
 @create_bread_4[affect(personality(conscientiousness,high))]
-+!create(bread) : existant(wheat[state(harvested)])<-
++!create(bread) : has(wheat[state(harvested)])<-
 	!grind(wheat).
 
 @create_bread_5[affect(personality(conscientiousness,high))]
-+!create(bread) : existant(wheat[state(flour)])<-
++!create(bread) : has(wheat[state(flour)])<-
 	!bake(bread);
 	.resume(obligation(farm_work));
 	.resume(wish(relax));

@@ -91,7 +91,11 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
         for (LauncherAgent lAgent : agentList) {
         	this.getCharacter(lAgent.name).setModel(this);
         	this.getCharacter(lAgent.name).initialize(lAgent);
-        }		
+        }
+        
+        for (Location loc: this.getLocations()) {
+        	loc.initialize(this);
+        }
 	}
 	
 	public Collection<Character> getCharacters() {
