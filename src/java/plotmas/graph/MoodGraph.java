@@ -82,12 +82,12 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 		
 		logger.fine("Using following mood data to create mood graph:\n" + this.model.moodMapper.toString());
 		Long startTime = this.model.moodMapper.latestStartTime();
+		Long endTime = this.model.moodMapper.latestEndTime();
 		startTime = startTime - (startTime % 10) + 10;		// round up start time to next multiple of 10
 				
 		for(String agName: this.model.moodMapper.mappedAgents()) {
 			this.moodData.addSeries(new XYSeries(agName));
 			
-			Long endTime = this.model.moodMapper.latestMoodEntry(agName);
 			
 			// for every 10ms from start time until end time sample mood and put it into the graph
 			for (Long x_val = startTime; x_val < endTime + 1; x_val += samplingStep) {
