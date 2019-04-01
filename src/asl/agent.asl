@@ -70,7 +70,7 @@ wish(relax).
 +threatened(Item)[source(Other)]  : .my_name(Me) <- 				 //crowfox
 	.print("No, I will not give you anything!");
 	.appraise_emotion(reproach, Other, "threatened(Item)");
-	refuseToGive(Other,Item).
+	refuseHandOver(Other,Item).
 	
 /***** request answer management **********************************************/
 /******************************************************************************/

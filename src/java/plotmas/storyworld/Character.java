@@ -195,6 +195,60 @@ public class Character {
 		}
 		return false;
 	}
+	
+	public boolean sing() { 
+		logger.info(this.name + " sings.");
+		
+		// if character is in the sky and sings then they loose whatever they held in their (mouth/beak-) inventory
+		if(this.location.isSkyLevel(this)) {
+			for (Item item : this.inventory) {		
+				this.removeFromInventory(item);
+				this.location.place(item);
+				logger.info(this.name + " lost " + item.getItemName() + " which fell to the ground.");
+				
+				// everyone present see things dropping from the sky
+				for (Character observer : this.location.getCharacters()) {
+					this.model.environment.addEventPerception(observer.getName(),
+													   "is_dropped(" + item.getItemName() + ")",
+													   PerceptAnnotation.fromCause("sing").addAnnotation("owner", this.name));
+				}
+			}
+		}
+				
+		return true;
+	}
+	
+	public boolean collect(String thing) {
+		if(this.location.contains(thing)) {
+			Item item = this.location.remove(thing);
+			this.addToInventory(item);
+			return true;
+		}
+		return false;
+	}
+
+	public boolean handOver(Character receiver, String itemName, Boolean refuse) {
+		if (this.has(itemName) & this.location.present(receiver)){
+			if (refuse) {
+				logger.info(this.name + " does not hand over" + itemName + " to " + receiver);
+				
+				this.model.getEnvironment().addEventPerception(this.name, "refuseHandOver", PerceptAnnotation.fromEmotion("pride"));
+				this.model.getEnvironment().addEventPerception(receiver.name, "refuseHandOver", PerceptAnnotation.fromEmotion("anger"));
+				
+				return true;				
+			} else {
+				Item item = this.removeFromInventory(itemName);
+				receiver.addToInventory(item);
+				
+				this.model.getEnvironment().addEventPerception(this.name, "handOver", new PerceptAnnotation("fear", "remorse"));
+				this.model.getEnvironment().addEventPerception(receiver.name, "handOver", new PerceptAnnotation("gloating", "pride"));
+				
+				logger.info(this.name + " hands over " + itemName + " to " +receiver);
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public String toString() {
 		return this.name + "-agent_model";

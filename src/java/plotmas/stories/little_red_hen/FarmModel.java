@@ -106,52 +106,6 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		return false;
 	}
 
-	public boolean sing(Character agent) { 
-		logger.info(agent.name + " sings.");
-		
-		// if agent is in the sky and sings then they loose whatever they held in their (beak-) inventory
-		if(agent.location.isSkyLevel(agent)) {
-			for (Item item : agent.inventory) {		
-				agent.removeFromInventory(item);
-				agent.location.place(item);
-				logger.info(agent.name + " lost " + item.getItemName() + " which fell to the ground.");
-				
-				// everyone present see things dropping from the sky
-				for (Character observer : agent.location.getCharacters()) {
-					this.environment.addEventPerception(observer.getName(),
-													   "is_dropped(" + item.getItemName() + ")",
-													   PerceptAnnotation.fromCause("sing").addAnnotation("owner", agent.name));
-				}
-			}
-		}
-				
-		return true;
-	}
-	
-	public boolean collect(Character agent, String thing) {
-		if(agent.location.contains(thing)) {
-			Item item = agent.location.remove(thing);
-			agent.addToInventory(item);
-			return true;
-		}
-		return false;
-	}
-	
-	public boolean handOver(Character agent, Character receiver, String itemName, Boolean refuse) {
-		if (agent.has(itemName) & agent.location.present(receiver)){
-			if (refuse) {
-				logger.info(agent.name + " does not hand over" + itemName + " to " + receiver);
-				return true;				
-			} else {
-				Item item = agent.removeFromInventory(itemName);
-				receiver.addToInventory(item);
-				logger.info(agent.name + " hands over " + itemName + " to " +receiver);
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	/****** helper classes *******/
 	public static class Farm extends Location {
 

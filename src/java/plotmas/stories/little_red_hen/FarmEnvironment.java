@@ -95,24 +95,25 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     	}
     	
     	else if (action.getFunctor().equals("sing")) {
-			result = getModel().sing(agent);
+			result = agent.sing();
     	}
     	
     	else if (action.getFunctor().equals("collect")) {
     		String item = action.getTerm(0).toString();
-    		result = getModel().collect(agent, item ); 
+    		result = agent.collect(item ); 
     	}
     	
     	else if (action.getFunctor().equals("handOver")) {
     		Character receiver = getModel().getCharacter(action.getTerm(0).toString());
     		String item = action.getTerm(1).toString();
-			result = getModel().handOver(agent, receiver, item, false);
+			result = agent.handOver(receiver, item, false);
     	}
     	
-    	else if (action.getFunctor().equals("refuseToGive")) {
+    	else if (action.getFunctor().equals("refuseHandOver")) {
+    		// TODO: rather in speech act?
     		Character target = getModel().getCharacter(action.getTerm(0).toString());
     		String item = action.getTerm(1).toString();
-    		result = getModel().handOver(agent, target, item, true);
+    		result = agent.handOver(target, item, true);
     	}
     	
     	else if (action.getFunctor().equals("relax")) {
