@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import jason.asSyntax.ListTermImpl;
-import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
+import plotmas.LauncherAgent;
 import plotmas.PlotEnvironment;
 import plotmas.storyworld.Character;
 import plotmas.storyworld.Location;
@@ -19,20 +19,13 @@ import plotmas.storyworld.Location;
 public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     static Logger logger = Logger.getLogger(FarmEnvironment.class.getName());
     
-    @Override
-    protected void updateStatePercepts(String agentName) {
-    	super.updateStatePercepts(agentName);
+	@Override
+    public void initialize(List<LauncherAgent> agents) {
+		super.initialize(agents);
 
-    	// update publicly known wheat state
-    	if (!(FarmModel.FARM.produce == null)) {
-    		removePerceptsByUnif(agentName, Literal.parseLiteral("existant(wheat[X])"));
-    		addPercept(agentName, Literal.parseLiteral("existant(" + FarmModel.FARM.produce.literal() + ")"));
-    	}
-
-    	else {
-    		removePerceptsByUnif(agentName, Literal.parseLiteral("existant(wheat[X])"));
-    	}
-    }
+		// Add special initialization of agent percepts for custom environment here.
+		// Left blank intentionally.
+	}
     
 	@Override
     protected boolean doExecuteAction(String agentName, Structure action) {

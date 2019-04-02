@@ -1,10 +1,12 @@
 package plotmas.stories.oedipus;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import jason.asSyntax.Term;
+import plotmas.LauncherAgent;
 import plotmas.PlotEnvironment;
 import plotmas.storyworld.Character;
 
@@ -13,13 +15,12 @@ public class OedipusEnvironment extends PlotEnvironment<OedipusModel> {
 	static Logger logger = Logger.getLogger(OedipusEnvironment.class.getName());
 		
 	@Override
-	protected void updateStatePercepts(String agentName) {
-	   super.updateStatePercepts(agentName);
-	    	
-	   String pos = model.location;
-	   removePerceptsByUnif(agentName, Literal.parseLiteral("position(X)"));
-	   addPercept(agentName, Literal.parseLiteral("position(" + String.valueOf(pos) + ")" ));
-	   }
+    public void initialize(List<LauncherAgent> agents) {
+		super.initialize(agents);
+		   	
+		String pos = model.location;
+		addPercept(Literal.parseLiteral("position(" + String.valueOf(pos) + ")" ));
+	}
 	
 	public boolean doExecuteAction(String agentName, Structure action) {
 		boolean result = false;

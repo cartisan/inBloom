@@ -44,8 +44,11 @@ public class Character {
 		this.setName(lAgent.name);
 		this.setPlotAgentPendant(lAgent.name);
 		
-		this.inventory = lAgent.inventory;
+		// important to set location and inventory using the respective methods, so that percepts are generated for ASL agent
 		this.model.getLocation(lAgent.location).enter(this);
+		for (Item i : lAgent.inventory) {
+			this.addToInventory(i);
+		}
 	}
 	
 	public void initialize(String name) {
@@ -70,10 +73,16 @@ public class Character {
 	
 	public void addToInventory(Item item) {
 		inventory.add(item);
+		
+		// update agents inventory perception
+		this.model.environment.addPercept(this.name, ASSyntax.createLiteral("has", item.literal()));
 	}
 	
 	public Item removeFromInventory(Item item) {
 		if(inventory.remove(item)) {
+			// update agents inventory perception
+			this.model.environment.removePercept(this.name, ASSyntax.createLiteral("has", item.literal()));
+			
 			return item;
 		}
 		logger.severe("Character " + this.name + " can't remove item " + item.getItemName() + ". Doesn't have one.");
@@ -83,6 +92,9 @@ public class Character {
 	public Item removeFromInventory(String itemName) {
 		for (Item item : this.inventory) {
 			if (item.getItemName().equals(itemName)) {
+				// update agents inventory perception
+				this.model.environment.removePercept(this.name, ASSyntax.createLiteral("has", item.literal()));
+				
 				return item;
 			}
 		}

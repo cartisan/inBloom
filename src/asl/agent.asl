@@ -38,6 +38,13 @@ wish(relax).
 	.suspend(wish(relax));
 	+wish(has(Thing)).
 	
++see(Thing)[owner(Per)] : is_useful(Thing) <-   // crowfox
+	+has(Per,Thing);
+	.my_name(Name);
+	.appraise_emotion(hope, Name, "see(Thing)");
+	.suspend(wish(relax));
+	+wish(has(Thing)).
+
 +found(X) <-
 	?creatable_from(X,Y);
 	if(is_useful(Y)) {
@@ -165,10 +172,11 @@ wish(relax).
 	.resume(wish(relax));
 	-obligation(create(bread)).
 	
+// TODO: Unify agents(x,y,z) and at(Person, Loc1) in Environmnet
 +!has(Thing) : has(Person, Thing) & at(Person, Loc1) & at(Loc2) & not Loc1==Loc2 <- 	//crowfox
 	!approach(Person).
 
-+!has(Thing) : has(Person, Thing) & at(Person, Loc1) & at(Loc2) & Loc1==Loc2 <- 	//crowfox
++!has(Thing) : has(Person, Thing) & agents(Present) & .member(Person,Present) <- 	//crowfox
 	!get(Thing, Person).
 
 @punish_1[atomic]	
@@ -226,21 +234,20 @@ wish(relax).
 +!approach(Loc) : location(Loc) <-  	//crowfox
 	goTo(Loc).
 
-@get_flatter[affect(personality(agreeableness,medium))]
-+!get(Thing, Person) <-			//crowfox
+@get_threaten[affect(personality(agreeableness,low))]
++!get(Thing, Person) :	at(Loc)[level(L)] & at(Person,Loc)[level(L)] <-			//crowfox
+	.print("Give ", Thing, " to me or I will take it from you!");
+	.send(Person, tell, threatened(Thing));
+	.wait({+has(Thing)}).
+
+@get_flatter[affect(personality(agreeableness,low))]
++!get(Thing, Person) : at(Loc) & at(Person,Loc) <-			//crowfox
 	.print("So lovely your feathers, so shiny thy beak!");
 	.send(Person, tell, complimented);
 	.wait({+is_dropped(Thing)}).
 
-@get_2[affect(personality(agreeableness,low))]
-+!get(Thing, Person) <-				//crowfox
-	.print("Give ", X, " to me or I will take it from you!");
-	.send(Person, tell, threatened(Thing));
-	.wait({+has(Thing)}).
-	
-@get_3[affect(personality(agreeableness,high))]
-+!get(Thing, Person) <-
-	.print("I am so hungry, would you share your ", X," with me please?");
++!get(Thing, Person) : at(Loc) & at(Person,Loc)  <-
+	.print("I am so hungry, would you share your ", Thing," with me please?");
 	.my_name(Me);
 	.send(Person, achieve, share(Thing, Me));
 	.wait({+has(Thing)}).	

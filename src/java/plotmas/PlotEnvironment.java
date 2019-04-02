@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -38,7 +36,6 @@ import plotmas.jason.PlotAwareAgArch;
 import plotmas.jason.PlotAwareCentralisedAgArch;
 import plotmas.jason.PlotAwareCentralisedRuntimeServices;
 import plotmas.storyworld.Character;
-import plotmas.storyworld.Location;
 
 /**
  *  Responsible for relaying action requests from ASL agents to the {@link plotmas.PlotModel Storyworld} and
@@ -165,6 +162,14 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	PlotEnvironment.startTime = System.nanoTime();
     	initializeActionCounting(agents);
     	this.initialized = true;
+    	
+    	// create initial state perceptions
+		List<Term> locList = this.model.locations.keySet().stream().map(ASSyntax::createAtom).collect(Collectors.toList());
+		Literal locListLit = ASSyntax.createLiteral("locations", ASSyntax.createList(locList));
+		for (LauncherAgent agent : agents) {
+			// inform agents about available locations
+			addPercept(agent.name, locListLit);
+		}
     }
     
     /**
@@ -405,66 +410,13 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 */
 	@Override
 	public Collection<Literal> getPercepts(String agName) {
-		this.updatePercepts(agName);
+		this.updateEventPercepts(agName);
 		return super.getPercepts(agName);
 	}
 
-	public void updatePercepts() {
-		for(Character chara : this.model.getCharacters()) {
-			updatePercepts(chara.getName());
-		}
-	}
-	
-    public void updatePercepts(String agentName) {
-		updateStatePercepts(agentName);
-    	updateEventPercepts(agentName);
-    }
-    
     /**
-     * Updates percepts that are related to the state of the model and the agent,
-     * as opposed to updating percepts related to events. States relate to percepts that are
-     * maintained over time: inventories, creatures being present and so on.
-     * 
-     * Subclass this method to add domain-specific states to the percepts, don't forget to
-     * first call `super.updateStatePercepts(agentName);`
-     * 
-     * @see plotmas.stories.little_red_hen.FarmEnvironment#updateStatePercepts(java.lang.String)
-     */
-    protected void updateStatePercepts(String agentName) {
-    	// update agent location
-    	for (String location : this.getModel().locations.keySet()) {
-			if (this.model.presentAt(agentName, location)) {
-					// this agent is one of the agents at location
-					removePerceptsByUnif(agentName, Literal.parseLiteral("at(X)"));
-					
-					Location loc = this.getModel().getLocation(location);
-					Character chara = this.getModel().getCharacter(agentName);
-					addPercept(agentName, loc.createLocationPercept(chara));
-				}
-    	}
-    	// update list of possible locations
-    	removePerceptsByUnif(agentName, Literal.parseLiteral("locations(X)"));
-    	List<Term> locList = this.model.locations.keySet().stream().map(ASSyntax::createAtom).collect(Collectors.toList());
-    	addPercept(agentName, ASSyntax.createLiteral("locations", ASSyntax.createList(locList)));
-    	
-    	// update list of present agents (excluding self)
-    	removePerceptsByUnif(agentName, Literal.parseLiteral("agents(X)"));
-    	Set<String> presentAgents = new HashSet<>(this.model.characters.keySet());
-    	presentAgents.remove(agentName);
-    	List<Term> agentList = presentAgents.stream().map(ASSyntax::createAtom).collect(Collectors.toList());
-    	addPercept(agentName, ASSyntax.createLiteral("agents", ASSyntax.createList(agentList)));
-    	
-    	// update inventory state for each agents
-    	removePerceptsByUnif(agentName, Literal.parseLiteral("has(X)"));
-    	for (Literal percept : this.model.characters.get(agentName).createInventoryPercepts()) {
-    		addPercept(agentName, percept);    		
-    	}
-    }
-
-    /**
-     * Updates percepts that are related to events that occurred in the mean-time,
-     * as opposed to updating percepts related to states.
-     * Events relates to unique percepts that are delivered to the agent only once.
+     * Updates percepts that are related to events that occurred in the mean-time.
+     * Events relate to unique percepts that are delivered to the agent only once, and removed in the next reasoning cycle.
      */
 	protected void updateEventPercepts(String agentName) {
 		deleteOldUniqueEvents(agentName);
