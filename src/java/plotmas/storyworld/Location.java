@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
-import jason.asSyntax.Term;
 import plotmas.PlotModel;
 import plotmas.helper.PerceptAnnotation;
 
@@ -61,15 +60,6 @@ public class Location {
 		for (Character observer : this.characters) {
 			List<Character> otherChars = this.characters.stream().filter(c -> !c.equals(observer))
 					   											.collect(Collectors.toList());
-			// update all agents perception of present agents
-			List<Term> agentList = otherChars.stream().map(c -> c.name)
-													  .map(ASSyntax::createAtom)
-													  .collect(Collectors.toList());
-			Literal agListLit = ASSyntax.createLiteral("agents", ASSyntax.createList(agentList));
-
-			this.model.environment.removePerceptsByUnif(observer.name, Literal.parseLiteral("agents(X)"));
-			this.model.environment.addPercept(observer.name, agListLit);
-			
 			// newly entered char's perception of already present agents
 			if (observer == character) {
 				for (Character otherChara : otherChars) {
@@ -114,15 +104,8 @@ public class Location {
 			
 			// update all agents perception of present agents
 			for (Character chara : this.characters) {
-				this.model.environment.removePerceptsByUnif(chara.name, Literal.parseLiteral("agents(X)"));
 				// present agents take note of character leaving
 				this.model.environment.removePercept(chara.name, this.createLocationPercept(character, true));
-				
-				List<Term> agentList = this.characters.stream().map(c -> c.name)
-															   .filter(name -> !name.equals(chara.name))
-															   .map(ASSyntax::createAtom).collect(Collectors.toList());
-				Literal agListLit = ASSyntax.createLiteral("agents", ASSyntax.createList(agentList));
-				this.model.environment.addPercept(character.name, agListLit);
 			}
 			
 			return true;

@@ -28,5 +28,7 @@ is_work(help_with(Name, X)) :- is_work(X).
 
 is_useful(A) :- is_pleasant(eat(A)) & hungry.
 
-agent(X) :- agents(Agents) & .member(X, Agents).
+agent(Ag) :- agents(List) & .member(Ag, List).
 location(X) :- locations(Locations) & .member(X, Locations).
+
+present(List) :- .findall(Agent, (at(Agent,Loc) & at(Loc)), List).

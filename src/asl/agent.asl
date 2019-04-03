@@ -20,14 +20,16 @@ wish(relax).
 // Share when very agreeable character, unless in a bad mood
 @share_food_plan2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +has(X) : hungry & is_pleasant(eat(X)) & has(X) <- 			// still has X when event selected
-	?agents(Anims);
-	+wish(share_food(X, Anims));
 	-wish(has(X));
+//	.appraise_emotion(joy, _, "has(X)");
+	?present(Anims);
+	+wish(share_food(X, Anims));
 	.resume(wish(relax)).
 
 +has(X) : hungry & is_pleasant(eat(X)) & has(X)  <-			// still has X when event selected 
-	+wish(eat(X));
 	-wish(has(X));
+//	.appraise_emotion(joy, _, "has(X)");
+	+wish(eat(X));
 	.resume(wish(relax)).
 
 +see(Thing)[location(Loc), owner(Per)] : is_useful(Thing) <-   // crowfox
@@ -77,7 +79,11 @@ wish(relax).
 	.print("No, I will not give you anything!");
 	.appraise_emotion(reproach, Other, "threatened(Item)");
 	!refuseHandOver(Other,Item).
-	
+
++refuseHandOver(Person, Thing) <-
+	// TODO: continune story by an attack mechanism?
+	.resume(wish(relax)).
+		
 /***** request answer management **********************************************/
 /******************************************************************************/
 
@@ -138,7 +144,7 @@ wish(relax).
 // Ask for help if extraverted, unless one feels powerless
 @general_help_acquisition_plan[affect(and(personality(extraversion,positive),not(mood(dominance,low))))]
 +!X[_] : is_work(X) & not complex_plan(X) & not already_asked(X) <-
-	?agents(Animals);
+	?present(Animals);
 	+already_asked(X);
 	for (.member(Animal, Animals)) {
 		.print("Asking ", Animal, " to help with ", X)
@@ -170,12 +176,11 @@ wish(relax).
 	.resume(obligation(farm_work));
 	.resume(wish(relax));
 	-obligation(create(bread)).
-	
-// TODO: Unify agents(x,y,z) and at(Person, Loc1) in Environmnet
+
 +!has(Thing) : has(Person, Thing) & at(Person, Loc1) & at(Loc2) & not Loc1==Loc2 <- 	//crowfox
 	!approach(Person).
 
-+!has(Thing) : has(Person, Thing) & agents(Present) & .member(Person,Present) <- 	//crowfox
++!has(Thing) : has(Person, Thing) & at(Person, Loc1) & at(Loc2)  & Loc1==Loc2 <- 	//crowfox
 	!get(Thing, Person).
 
 @punish_1[atomic]	
@@ -227,7 +232,7 @@ wish(relax).
 	-wish(eat(X)).
 //	.succeed_goal(eat(X)).
 
-+!approach(Person) : agent(Person) & at(Person, Loc) <-  	//crowfox
++!approach(Person) : at(Person, Loc) <-  	//crowfox
 	goTo(Loc).
 
 +!approach(Loc) : location(Loc) <-  	//crowfox
@@ -244,7 +249,7 @@ wish(relax).
 	.print("So lovely your feathers, so shiny thy beak!");
 	.send(Person, tell, complimented);
 	.wait({+is_dropped(Thing)}).
-
+	
 +!get(Thing, Person) : at(Loc) & at(Person,Loc)  <-
 	.print("I am so hungry, would you share your ", Thing," with me please?");
 	.my_name(Me);
@@ -266,6 +271,7 @@ wish(relax).
 +!share(X, Anims) <- 
 	.print("I'm not sharing with anyone!");
 	true.
+
 +!handOver(Agent, Item) <-
 	handOver(Agent, Item).
 

@@ -166,9 +166,15 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	// create initial state perceptions
 		List<Term> locList = this.model.locations.keySet().stream().map(ASSyntax::createAtom).collect(Collectors.toList());
 		Literal locListLit = ASSyntax.createLiteral("locations", ASSyntax.createList(locList));
+		
+		List<Term> agList = agents.stream().map(ag -> ag.name).map(ASSyntax::createAtom).collect(Collectors.toList());
+		Literal agListLit = ASSyntax.createLiteral("agents", ASSyntax.createList(agList));
+		
+		
 		for (LauncherAgent agent : agents) {
 			// inform agents about available locations
 			addPercept(agent.name, locListLit);
+			addPercept(agent.name, agListLit);
 		}
     }
     
