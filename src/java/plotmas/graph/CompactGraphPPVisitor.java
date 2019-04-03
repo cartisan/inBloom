@@ -63,11 +63,26 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 			}
 		}
 		
-		if(! (isInTradeoff | isRelevantMood(vertex) | isWishObligation(vertex))) {
-			this.graph.removeVertexAndPatchGraphAuto(this.currentRoot, vertex);
+		/* do not remove percept if 
+		 *  - is a wish or obligation that is being added or removed
+		 *  - is the start of a mood, or the end of a mood that triggers something 
+		 *	- has motivation edges attached to it
+		 *  - is part of a trade-off simple FU
+		 */
+		if(isInTradeoff | isRelevantMood(vertex) | isWishObligation(vertex) | hasMotivation(vertex)) {
+			return;
 		}
+		this.graph.removeVertexAndPatchGraphAuto(this.currentRoot, vertex);
 	}
 	
+	private boolean hasMotivation(Vertex vertex) {
+		// lets ignore initial beliefs for now, to make graphs less cluttered
+		if (vertex.getStep() == 0) {
+				return false;
+		}
+		return vertex.getIncidentEdges().stream().anyMatch(e -> e.getType().equals(Edge.Type.MOTIVATION));
+	}
+
 	private boolean isWishObligation(Vertex vertex) {
 		return (vertex.getLabel().contains("wish") | vertex.getLabel().contains("obligation"));
 	}
