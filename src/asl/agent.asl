@@ -81,18 +81,18 @@ wish(relax).
 	!refuseHandOver(Other,Item).
 
 +refuseHandOver(Person, Thing) <-
-	// TODO: continune story by an attack mechanism?
+	// TODO: continue story by an attack mechanism?
 	.resume(wish(relax)).
 		
 /***** request answer management **********************************************/
 /******************************************************************************/
 
-+request(help_with(Plan))[source(Name)] <-
-	+obligation(help_with(Name, Plan)).
++request(help_with(Helpee, Plan)) <-
+	+obligation(help_with(Helpee, Plan)).
 
-+rejected_request(help_with(Req))[source(Name)] <-
-	.appraise_emotion(anger, Name, "rejected_request(help_with(Req))[source(Name)]", true);
-	.abolish(rejected_request(help_with(Req)));
++rejected_request(help_with(Helpee,Req))[source(Name)] <-
+	.appraise_emotion(anger, Name, "rejected_request(help_with(Helpee,Req))", true);
+	.abolish(rejected_request(help_with(Helpee,Req)));
 	-asking(help_with(Req), Name);
 	if(not asking(help_with(Req), _)) {
 		.resume(Req);
@@ -100,28 +100,27 @@ wish(relax).
 	
 +accepted_request(help_with(Req))[source(Name)] <-
 	.appraise_emotion(gratitude, Name, "accepted_request(help_with(Req))[source(Name)]", true);
-	.abolish(accepted_help_request(help_with(Req)));
+	.abolish(accepted_help_request(help_with(Helpee,Req)));
 	-asking(help_with(Req), Name);
 	if(not asking(help_with(Req), _)) {
 		.resume(Req);
 	}.
 
 @reject_request[atomic]
-+!reject(Req, Name) <-
-	.concat("request(", Req, ")", Listen);
-	.appraise_emotion(reproach, Name, Listen);
-	.print("can't help you! request(", Req, ") is too much work for me!");
-	.send(Name, tell, rejected_request(Req));
-	-obligation(Req).
++!reject(Helpee, Plan) <-
+	.appraise_emotion(reproach, Helpee, "request(Plan)");
+	.print("can't help you! request(", Plan, ") is too much work for me!");
+	.send(Helpee, tell, rejected_request(Plan));
+	-obligation(Plan).
 	
 // TODO: How to turn this into an analogous accept without breaking FU structure?	
 @accept_request[atomic]
-+!help_with(Name, Plan) <-
-	.print("I'll help you with ", Plan, ", ", Name);
-	.send(Name, tell, accepted_request(help_with(Plan)));
-	help(Name);
-	.appraise_emotion(happy_for, Name, "request(help_with(Plan))");
-	-obligation(help_with(Name, Plan)).
++!help_with(Helpee, Plan) <-
+	.print("I'll help you with ", Plan, ", ", Helpee);
+	.send(Helpee, tell, accepted_request(Plan));
+	help(Helpee);
+	.appraise_emotion(happy_for, Helpee, "request(Plan)");
+	-obligation(Plan).
 
 /****** Mood  management ******************************************************/
 /******************************************************************************/
@@ -148,7 +147,8 @@ wish(relax).
 	+already_asked(X);
 	for (.member(Animal, Animals)) {
 		.print("Asking ", Animal, " to help with ", X)
-		.send(Animal, tell, request(help_with(X)));
+		.my_name(Me);
+		.send(Animal, tell, request(help_with(Me,X)));
 		+asking(help_with(X), Animal);
 	}
 	.suspend(X);

@@ -12,11 +12,11 @@
 	.succeed_goal(obligation(Plan)).
 
 @reject_request_1[atomic, affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]	
-+!obligation(help_with(Name, Plan)) <-
-	!reject(help_with(Plan), Name).
++!obligation(help_with(Helpee, Plan)) <-
+	!reject(Helpee, help_with(Helpee,Plan)).
 @reject_request_2[atomic, affect(and(personality(conscientiousness,negative), mood(dominance,high)))]
-+!obligation(help_with(Name, Plan)) : wish(Y) & is_work(help_with(Plan)) <-
-	!reject(help_with(Plan), Name).
++!obligation(help_with(Helpee, Plan)) : wish(Y) & is_work(help_with(Plan)) <-
+	!reject(Helpee, help_with(Helpee,Plan)).
 // if none of these is true, treat it like normal obligation
 
 // only do hard obligations if really conscientious
