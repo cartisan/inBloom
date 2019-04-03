@@ -33,15 +33,14 @@ wish(relax).
 +see(Thing)[location(Loc), owner(Per)] : is_useful(Thing) <-   // crowfox
 	+at(Per,Loc);
 	+has(Per,Thing);
-	.my_name(Name);
-	.appraise_emotion(hope, Name, "see(Thing)");
+	.appraise_emotion(hope, _, "see(Thing)");
 	.suspend(wish(relax));
 	+wish(has(Thing)).
 	
 +see(Thing)[owner(Per)] : is_useful(Thing) <-   // crowfox
 	+has(Per,Thing);
 	.my_name(Name);
-	.appraise_emotion(hope, Name, "see(Thing)");
+	.appraise_emotion(hope, _, "see(Thing)");
 	.suspend(wish(relax));
 	+wish(has(Thing)).
 
@@ -68,16 +67,16 @@ wish(relax).
 	.appraise_emotion(pride, Person, "complimented");
 	!sing.
 
-+threatened(Item)[source(Other)] : .my_name(Me)  <- 				 //crowfox
++threatened(Item)[source(Other)] <- 				 //crowfox
 	.print("Oh no, don't hurt me!");
-	.appraise_emotion(fear, Me, "threatened(Item)");
-	handOver(Other, Item).
+	.appraise_emotion(fear, _, "threatened(Item)");
+	!handOver(Other, Item).
 	
 @threat_2[affect(personality(conscientiousness,low))]
 +threatened(Item)[source(Other)]  : .my_name(Me) <- 				 //crowfox
 	.print("No, I will not give you anything!");
 	.appraise_emotion(reproach, Other, "threatened(Item)");
-	refuseHandOver(Other,Item).
+	!refuseHandOver(Other,Item).
 	
 /***** request answer management **********************************************/
 /******************************************************************************/
@@ -238,7 +237,7 @@ wish(relax).
 +!get(Thing, Person) :	at(Loc)[level(L)] & at(Person,Loc)[level(L)] <-			//crowfox
 	.print("Give ", Thing, " to me or I will take it from you!");
 	.send(Person, tell, threatened(Thing));
-	.wait({+has(Thing)}).
+	.wait(has(Thing) | refuseHandOver(Person, Thing)).
 
 @get_flatter[affect(personality(agreeableness,low))]
 +!get(Thing, Person) : at(Loc) & at(Person,Loc) <-			//crowfox
@@ -267,3 +266,8 @@ wish(relax).
 +!share(X, Anims) <- 
 	.print("I'm not sharing with anyone!");
 	true.
++!handOver(Agent, Item) <-
+	handOver(Agent, Item).
+
++!refuseHandOver(Agent, Item) <-
+	refuseHandOver(Agent, Item).

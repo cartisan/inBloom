@@ -244,16 +244,20 @@ public class Character {
 			if (refuse) {
 				logger.info(this.name + " does not hand over" + itemName + " to " + receiver);
 				
-				this.model.getEnvironment().addEventPerception(this.name, "refuseHandOver", PerceptAnnotation.fromEmotion("pride"));
-				this.model.getEnvironment().addEventPerception(receiver.name, "refuseHandOver", PerceptAnnotation.fromEmotion("anger"));
+				// TODO: that gonna work in analyzed graph?
+				String eventString = "refuseHandOver(" + receiver.name + "," + itemName + ")";
+				this.model.getEnvironment().addEventPerception(this.name, eventString, PerceptAnnotation.fromEmotion("pride"));
+				this.model.getEnvironment().addEventPerception(receiver.name, eventString, PerceptAnnotation.fromEmotion("anger"));
 				
 				return true;				
 			} else {
 				Item item = this.removeFromInventory(itemName);
-				receiver.addToInventory(item);
 				
-				this.model.getEnvironment().addEventPerception(this.name, "handOver", new PerceptAnnotation("fear", "remorse"));
-				this.model.getEnvironment().addEventPerception(receiver.name, "handOver", new PerceptAnnotation("gloating", "pride"));
+				String eventString = "handOver(" + receiver.name + "," + itemName + ")";
+				this.model.getEnvironment().addEventPerception(this.name, eventString, new PerceptAnnotation("fear", "remorse"));
+				this.model.getEnvironment().addEventPerception(receiver.name, eventString, new PerceptAnnotation("gloating", "pride"));
+				
+				receiver.addToInventory(item);
 				
 				logger.info(this.name + " hands over " + itemName + " to " +receiver);
 				return true;
