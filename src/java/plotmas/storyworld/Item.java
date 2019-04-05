@@ -16,13 +16,13 @@ public abstract class Item {
 	public abstract String getItemName();
 	
 	/**
-	 * Rreturns an AgentSpeak {@link jason.asSyntax.Literal literal} denoting the item and potentially its
+	 * Returns an AgentSpeak {@link jason.asSyntax.Literal literal} denoting the item and potentially its
 	 * current state using annotations.
 	 * @return A literal denoting this item and its current state
 	 * @see plotmas.stories.little_red_hen.FarmModel.Wheat
 	 */
 	public Literal literal() {
-			return new Pred(this.getItemName());
+			return new Pred(this.toString());
 	};
 	
 	public boolean isEdible() {
@@ -30,6 +30,6 @@ public abstract class Item {
 	}
 
 	public String toString() {
-		return literal().toString();
+		return this.getItemName();
 	}
 }

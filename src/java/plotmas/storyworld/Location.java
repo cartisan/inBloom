@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
+import jason.asSyntax.Pred;
 import plotmas.PlotModel;
 import plotmas.helper.PerceptAnnotation;
 
@@ -56,6 +57,8 @@ public class Location {
 		// update agent's position perception for self
 		this.model.environment.removePerceptsByUnif(character.name, Literal.parseLiteral("at(X)"));
 		this.model.environment.addPercept(character.name, this.createLocationPercept(character, false));
+		
+		// TODO: character perceives items
 		
 		for (Character observer : this.characters) {
 			List<Character> otherChars = this.characters.stream().filter(c -> !c.equals(observer))
@@ -128,10 +131,13 @@ public class Location {
 	}
 	
 	public void place(Item item) {
+		// TODO: existent perception is added
 		this.existents.add(item);
 	}
 	
 	public Item remove(Item item) {
+		// TODO: existent perception is removed
+		
 		if (this.existents.contains(item)) {
 			this.existents.remove(item);
 			return item;
@@ -142,6 +148,8 @@ public class Location {
 	}
 	
 	public Item remove(String itemName) {
+		// TODO: existent perception is removed
+		
 		for (Item item: this.existents) {
 			if (item.getItemName().equals(itemName)) {
 				this.remove(item);
@@ -181,14 +189,25 @@ public class Location {
 	public Literal createLocationPercept(Character character, Boolean otherChar) {
 		if (this.present(character)) {
 			if (otherChar) {
-				return ASSyntax.createLiteral("at", ASSyntax.createAtom(character.name), ASSyntax.createAtom(this.name));
+				return ASSyntax.createLiteral("at", character.literal(), this.literal());
 			}
-			return ASSyntax.createLiteral("at", ASSyntax.createAtom(this.name));
+			return ASSyntax.createLiteral("at", this.literal());
 		}
 		
 		logger.severe("Character "+ character.name +" not present at location " + this.name);
 		return null;
 	}
+	
+	/**
+	 * Returns an AgentSpeak {@link jason.asSyntax.Literal literal} denoting this location and potentially its
+	 * current state using annotations.
+	 * @return A literal denoting this item and its current state
+	 * @see plotmas.stories.little_red_hen.FarmModel.Wheat
+	 */
+	public Literal literal() {
+			return new Pred(this.toString());
+	};
+	
 
 	public List<Character> getCharacters() {
 		return characters;

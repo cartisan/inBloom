@@ -9,6 +9,7 @@ import jason.asSemantics.Mood;
 import jason.asSemantics.Personality;
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
+import jason.asSyntax.Pred;
 import plotmas.LauncherAgent;
 import plotmas.PlotLauncher;
 import plotmas.PlotModel;
@@ -271,8 +272,19 @@ public class Character {
 	}
 
 	public String toString() {
-		return this.name + "-agent_model";
+		return this.name;
 	}
+	
+	
+	/**
+	 * Returns an AgentSpeak {@link jason.asSyntax.Literal literal} denoting this character and potentially its
+	 * current state using annotations.
+	 * @return A literal denoting this item and its current state
+	 * @see plotmas.stories.little_red_hen.FarmModel.Wheat
+	 */
+	public Literal literal() {
+			return new Pred(this.toString());
+	};
 	
 	public void setModel(PlotModel<?> model) {
 		this.model = model;
