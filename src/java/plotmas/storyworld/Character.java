@@ -56,6 +56,10 @@ public class Character {
 		this.setPlotAgentPendant(name);
 	}
 	
+	public boolean goTo(Location target) {
+		return target.enter(this);
+	}
+	
 	/**
 	 * Creates a list of {@link jason.asSyntax.Literal literal-}perceptions that represent the complete state of an 
 	 * agent's inventory, which can be used to generate ASL agent perceptions.

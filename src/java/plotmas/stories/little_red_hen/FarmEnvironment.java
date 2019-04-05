@@ -84,7 +84,7 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     	
     	else if (action.getFunctor().equals("goTo")) {
     		Location target = getModel().getLocation(action.getTerm(0).toString());
-    		result = getModel().goTo(agent, target );
+    		result = agent.goTo(target);
     	}
     	
     	else if (action.getFunctor().equals("sing")) {

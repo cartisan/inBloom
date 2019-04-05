@@ -159,10 +159,6 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		return this.locations.values();
 	}
 	
-	public boolean goTo(Character agent, Location target) {
-		return target.enter(agent);
-	}
-	
 	/**
 	 * Called by PlotEnvironment when a new time step is started, before it proceeds with agent action execution.
 	 * This method is responsible for checking whether any happenings are eligible for execution, and executes them. 
