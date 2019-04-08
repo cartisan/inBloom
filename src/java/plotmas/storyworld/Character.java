@@ -131,7 +131,7 @@ public class Character {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			receiver.receive(item, this);
-			this.model.getEnvironment().addEventPerception(name, 
+			this.model.getEnvironment().addEventPercept(name, 
 														   String.format("shared(%s,%s)", item.literal(), receiver.name),
 														   new PerceptAnnotation().addTargetedEmotion("pride", "self"));
 			return true;
@@ -152,7 +152,7 @@ public class Character {
 											   .collect(Collectors.joining(",", "[", "]"))
 											   .toString();
 			
-			this.model.getEnvironment().addEventPerception(name,
+			this.model.getEnvironment().addEventPercept(name,
 														   String.format("share(%s,%s)", item.literal(), recList),
 														   new PerceptAnnotation().addTargetedEmotion("pride", "self"));
 			
@@ -167,7 +167,7 @@ public class Character {
 	public boolean receive(Item item, Character from) {
 		this.addToInventory(item);
 		
-		this.model.getEnvironment().addEventPerception(name,
+		this.model.getEnvironment().addEventPercept(name,
 													   String.format("receive(%s,%s)", item.literal(), this.name),
 													   new PerceptAnnotation().addTargetedEmotion("gratitude", "self"));
 		
@@ -184,7 +184,7 @@ public class Character {
 			
 			if (item.isEdible()) {
 				this.removeFromInventory(item);
-				this.model.getEnvironment().addEventPerception(name, 
+				this.model.getEnvironment().addEventPercept(name, 
 															   String.format("eat(%s)", item.literal()),
 															   PerceptAnnotation.fromEmotion("satisfaction"));
 				
@@ -225,7 +225,7 @@ public class Character {
 				
 				// everyone present see things dropping from the sky
 				for (Character observer : this.location.getCharacters()) {
-					this.model.environment.addEventPerception(observer.getName(),
+					this.model.environment.addEventPercept(observer.getName(),
 													   "is_dropped(" + item.getItemName() + ")",
 													   PerceptAnnotation.fromCause("sing").addAnnotation("owner", this.name));
 				}
@@ -251,16 +251,16 @@ public class Character {
 				
 				// TODO: that gonna work in analyzed graph?
 				String eventString = "refuseHandOver(" + receiver.name + "," + itemName + ")";
-				this.model.getEnvironment().addEventPerception(this.name, eventString, PerceptAnnotation.fromEmotion("pride"));
-				this.model.getEnvironment().addEventPerception(receiver.name, eventString, PerceptAnnotation.fromEmotion("anger"));
+				this.model.getEnvironment().addEventPercept(this.name, eventString, PerceptAnnotation.fromEmotion("pride"));
+				this.model.getEnvironment().addEventPercept(receiver.name, eventString, PerceptAnnotation.fromEmotion("anger"));
 				
 				return true;				
 			} else {
 				Item item = this.removeFromInventory(itemName);
 				
 				String eventString = "handOver(" + receiver.name + "," + itemName + ")";
-				this.model.getEnvironment().addEventPerception(this.name, eventString, new PerceptAnnotation("fear", "remorse"));
-				this.model.getEnvironment().addEventPerception(receiver.name, eventString, new PerceptAnnotation("gloating", "pride"));
+				this.model.getEnvironment().addEventPercept(this.name, eventString, new PerceptAnnotation("fear", "remorse"));
+				this.model.getEnvironment().addEventPercept(receiver.name, eventString, new PerceptAnnotation("gloating", "pride"));
 				
 				receiver.addToInventory(item);
 				

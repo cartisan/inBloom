@@ -171,7 +171,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		for (Happening h : happenings) {
 			h.identifyCause(this.causalityTable);
 			h.execute(this);
-			this.environment.addEventPerception(h.getPatient(), h.getEventPercept());
+			this.environment.addEventPercept(h.getPatient(), h.getEventPercept());
 			
 		}
 		

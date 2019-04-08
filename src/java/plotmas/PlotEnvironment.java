@@ -172,7 +172,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		
 		
 		for (LauncherAgent agent : agents) {
-			// inform agents about available locations
+			// inform agents about available location and other agents
 			addPercept(agent.name, locListLit);
 			addPercept(agent.name, agListLit);
 		}
@@ -231,7 +231,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	}
     	else {
     		// appraise negative emotion if action failed.
-    		this.addEventPerception(agentName, action.toString(), PerceptAnnotation.fromEmotion("disappointment"));
+    		this.addEventPercept(agentName, action.toString(), PerceptAnnotation.fromEmotion("disappointment"));
     	}
     	
     	// allow model to see if action resulted in state change
@@ -485,7 +485,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	/**
 	 * Adds 'percept' to the list of events that need to be added to agentName's perception list this reasoning step.
 	 */	
-	public void addEventPerception(String agentName, String percept) {
+	public void addEventPercept(String agentName, String percept) {
 		List<String> eventList = this.getListCurrentEvents(agentName);
 		eventList.add(percept);
 		this.currentEventsMap.put(agentName, eventList);
@@ -494,7 +494,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	/**
 	 * Adds 'percept' to the list of events that need to be added to agentName's perception list this reasoning step.
 	 */	
-	public void addEventPerception(String agentName, String percept, PerceptAnnotation annot) {
+	public void addEventPercept(String agentName, String percept, PerceptAnnotation annot) {
 		List<String> eventList = this.getListCurrentEvents(agentName);		
 		
 		String event = percept + annot.toString();

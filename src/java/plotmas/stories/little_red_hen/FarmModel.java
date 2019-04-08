@@ -48,7 +48,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 				FARM.produce = wheatItem;
 				FARM.updateProduceState(Wheat.STATES.GROWING);
 				
-				this.environment.addEventPerception(agent.name, "plant(wheat)", PerceptAnnotation.fromEmotion("pride"));
+				this.environment.addEventPercept(agent.name, "plant(wheat)", PerceptAnnotation.fromEmotion("pride"));
 				logger.info("Wheat planted");
 				
 				return true;
@@ -62,7 +62,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		if ((agent.location == FARM) & (FARM.produce.state == Wheat.STATES.GROWING)){
 			FARM.updateProduceState(Wheat.STATES.RIPE);
 			logger.info("Wheat has grown and is ripe now");
-			this.environment.addEventPerception(agent.name, "tend(wheat)", PerceptAnnotation.fromEmotion("pride"));
+			this.environment.addEventPercept(agent.name, "tend(wheat)", PerceptAnnotation.fromEmotion("pride"));
 			return true;
 		}
 		

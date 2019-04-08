@@ -72,7 +72,7 @@ public class Location {
 					
 					// newly entered char perceives all present agents' inventory
 					for (Item item : otherChara.inventory) {
-						model.environment.addEventPerception(observer.getName(),
+						model.environment.addEventPercept(observer.getName(),
 															 "see(" + item.getItemName() + ")",
 															 new PerceptAnnotation().addAnnotation("owner", otherChara.name));
 					}
@@ -86,7 +86,7 @@ public class Location {
 				for (Item item : character.inventory) {
 					
 					// present agents perceive newly entered agents' inventory
-					model.environment.addEventPerception(observer.getName(),
+					model.environment.addEventPercept(observer.getName(),
 														 "see(" + item.getItemName() + ")",
 														 new PerceptAnnotation().addAnnotation("owner", character.name));
 				}
