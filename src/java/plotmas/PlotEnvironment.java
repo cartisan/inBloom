@@ -53,9 +53,9 @@ import plotmas.storyworld.Character;
 public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends TimeSteppedEnvironment {
 	static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
 
-	/** number of times all agents need to repeat an action, before system is paused; -1 to switch off*/
+	/** number of times all agents need to repeat an action sequence before system is paused; -1 to switch off */
 	public static final Integer MAX_REPEATE_NUM = 5;
-	/** number of environment steps, before system automatically pauses; -1 to switch off*/
+	/** number of environment steps, before system automatically pauses; -1 to switch off */
 	public static Integer MAX_STEP_NUM = -1;
 	/** time in ms that {@link TimeSteppedEnvironment} affords agents to propose an action, before each step times out */
 	static final String STEP_TIMEOUT = "100";
@@ -551,7 +551,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	protected void checkPause() {
 		if ((this.initialized) & !PlotLauncher.getRunner().isDebug()) {
 			// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
-	    	if ((MAX_REPEATE_NUM > -1) && (allAgentsRepeating())) {
+	    	if (this.narrativeExquilibrium()) {
 	    		// reset counter
 	    		logger.info("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
 	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
@@ -581,7 +581,17 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		this.agentActions.get(agentName).add(action.toString());
 	}
 	
-    private boolean allAgentsRepeating() {
+    /**
+     * Determines whether the simulation has reached a narrative equilibrium state, and should be paused.
+     * This is the case, when all agents have repeated the same action sequence {@link #MAX_REPEATE_NUM} number of 
+     * times.  
+     * @return
+     */
+    protected boolean narrativeExquilibrium() {
+    	if (MAX_REPEATE_NUM > -1) {
+    		return false;
+    	}
+    	
     	HashMap<String,Boolean> agentsRepeating = new HashMap<>();
     	for (String agent : agentActions.keySet()) {
     		agentsRepeating.put(agent, false);
