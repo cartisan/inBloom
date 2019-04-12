@@ -588,7 +588,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * @return
      */
     protected boolean narrativeExquilibrium() {
-    	if (MAX_REPEATE_NUM > -1) {
+    	if (MAX_REPEATE_NUM < 0) {
     		return false;
     	}
     	
