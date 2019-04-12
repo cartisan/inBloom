@@ -55,7 +55,7 @@ public class SelectingTranslatingGraphMousePlugin extends TranslatingGraphMouseP
 			
 			PickedState<Edge> pickedEdgeState = vv.getPickedEdgeState();
             
-			if (pickSupport != null && pickedEdgeState != null) {
+			if (pickedEdgeState != null) {
 				// p is the screen point for the mouse event
 				Point2D p = e.getPoint();
 				Edge selectedEdge = pickSupport.getEdge(vv.getGraphLayout(), p.getX(), p.getY());

@@ -93,10 +93,11 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 		}
 		
 		// Look for the cause in previous vertices
-		String causeString = matcher.group(Edge.Type.CAUSALITY.toString()).substring(1);
+//		String causeString = matcher.group(Edge.Type.CAUSALITY.toString()).substring(1);
+		String causeString = matcher.group(Edge.Type.CAUSALITY.toString());
 		Vertex cause = null;
 		for(Vertex potentialCause : this.eventList) {
-			if(potentialCause.getLabel().equals(causeString)) {
+			if(potentialCause.getWithoutAnnotation().equals(causeString)) {
 				cause = potentialCause;
 				break;
 			}

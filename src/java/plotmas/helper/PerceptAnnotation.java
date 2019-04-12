@@ -64,9 +64,9 @@ public class PerceptAnnotation {
 	}
 	
 	public String separator(String literal1, String literal2) {
-		if ((literal1 != "") & (literal2 != ""))
-			return ",";
-		return "";
+		if ((literal1.equals("")) || (literal2.equals("")))
+			return "";
+		return ",";
 	}
 	
 	public String causalityAnnotation() {

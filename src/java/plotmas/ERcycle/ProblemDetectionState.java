@@ -8,7 +8,7 @@ import plotmas.stories.little_red_hen.RedHenHappeningCycle;
 
 /**
  * Abstract superclass of all reasoning cycle states used by {@link RedHenHappeningCycle} to detect plot problems.
- * Each extending class has to implement its own {@link #detect(EngageResult)} method. <br>
+ * Each extending class has to implement its own {@link #performDetect(EngageResult)} method. <br>
  * Acts as singleton manager for ProblemDetectionState subclasses, so they don't have to all implement singleton 
  * functionality. <br>
  * 
@@ -23,7 +23,7 @@ public abstract class ProblemDetectionState {
 
     /**
      * Generic singleton implementation that allows subclasses of this to inherit singleton functionality. Can manage 
-     * instances of all subclasses of ProblemDetectionState, either creating a new singleton instance or returing the
+     * instances of all subclasses of ProblemDetectionState, either creating a new singleton instance or returning the
      * existing one.
      *  
      * @param clazz ProblemDetectionState subclass whose instance is requested
@@ -36,7 +36,7 @@ public abstract class ProblemDetectionState {
        
        if(instance==null) {
          instance = createInstance(clazz, controller);
-         INSTANCES.put(clazz, instance);
+         INSTANCES.putIfAbsent(clazz, instance);
        }
        
        return (T) instance;
@@ -63,6 +63,11 @@ public abstract class ProblemDetectionState {
 	 * by {@link #detect(EngageResult)} of subclasses to set the next reasoning step of the reflection cycle.
 	 */
 	protected RedHenHappeningCycle controller;
+	
+	/**
+	 * Each detection state needs to define which ProblemDetectionState will come next in reflection reasoning cycle.
+	 */
+	public ProblemDetectionState nextReflectionState;
 
 	protected ProblemDetectionState(RedHenHappeningCycle controller) {
 		this.controller = controller;
@@ -77,14 +82,26 @@ public abstract class ProblemDetectionState {
 	protected<T extends ProblemDetectionState> T getInstanceFor(Class<T> clazz) {
 		return ProblemDetectionState.getInstance(clazz, this.controller);
 	}
-
+	
 	/**
 	 * Responsible for detecting one specific problem, setting the next state of the reasoning cycle, and returning a 
 	 * fix for the problem (if one was detected) or null.
+	 * 
+	 * @param er EngageResult containing an analyzed plotGraph
+	 * @return a ProblemFixCommand or null
+	 */
+	public ProblemFixCommand detect(EngageResult er) {
+		ProblemFixCommand fix = this.performDetect(er);
+		this.controller.setNextDetectionState(nextReflectionState); // order important: `detect` sometimes sets new nextReflectionState
+		return fix;
+	}
+	
+	/**
+	 * Responsible for custom code to detect one specific problem and return a fix (if a problem was detected) or null.
 	 * Example see e.g. {@link DetectNarrativeEquilibrium}
 	 * 
 	 * @param er EngageResult containing an analyzed plotGraph
 	 * @return a ProblemFixCommand or null
 	 */
-	public abstract ProblemFixCommand detect(EngageResult er);
+	protected abstract ProblemFixCommand performDetect(EngageResult er);
 }

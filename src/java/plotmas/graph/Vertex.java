@@ -1,6 +1,7 @@
 package plotmas.graph;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -267,4 +268,7 @@ public class Vertex implements Cloneable {
 		return this.emotions.contains(emo);
 	}
 	
+	public List<String> getEmotions() {
+		return this.emotions;
+	}
 }

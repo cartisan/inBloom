@@ -13,5 +13,7 @@ public interface HappeningDirector {
 	 * @return a list containing happenings to be executed (or empty list)
 	 */
 	public List<Happening<?>> getTriggeredHappenings(int step);
+	public List<Happening<?>> getAllHappenings();
 	public void setModel(PlotModel<?> model);
+	public HappeningDirector clone();
 }

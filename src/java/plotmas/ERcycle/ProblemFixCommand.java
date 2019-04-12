@@ -15,5 +15,5 @@ import plotmas.stories.little_red_hen.RedHenHappeningCycle;
 public interface ProblemFixCommand {
 	public void execute(EngageResult er);
 	public void undo(EngageResult er);
-	public String toString();
+	public String message();
 }

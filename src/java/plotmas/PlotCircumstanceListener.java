@@ -1,5 +1,7 @@
 package plotmas;
 
+import java.util.logging.Logger;
+
 import jason.asSemantics.CircumstanceListener;
 import jason.asSemantics.Event;
 import jason.asSemantics.Intention;
@@ -10,7 +12,8 @@ import plotmas.graph.Vertex.Type;
 import plotmas.jason.PlotAwareAg;
 
 public class PlotCircumstanceListener implements CircumstanceListener {
-
+	static Logger logger = Logger.getLogger(CircumstanceListener.class.getName());
+	
 	private PlotAwareAg agent;
 	private String name;
 	

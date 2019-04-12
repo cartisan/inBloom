@@ -17,7 +17,7 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 
 	@Override
 	protected ReflectResult reflect(EngageResult er) {
-		logger.info("I am reflecting");
+		//logger.info("I am reflecting");
 		onCycleResult(lastPersonalities, er.getTellability());
 		
 		// Save tellability, graph and hen personality if it was better than the best before
@@ -41,7 +41,7 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 			setupFileLogger();
 		}
 		
-		List<LauncherAgent> agents = createAgs(new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		List<LauncherAgent> agents = createAgs(this.agentNames, new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
 		return new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), agents);
 	}
 
@@ -51,7 +51,7 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 		lastRunner = new RedHenLauncher();
 		lastRunner.setShowGui(false);
 		
-		List<LauncherAgent> agents = createAgs(new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
+		List<LauncherAgent> agents = createAgs(this.agentNames,new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
 		ReflectResult rr = new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), agents);
 		
 		log("Cycle " + currentCycle);

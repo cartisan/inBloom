@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
 import jason.asSemantics.Agent;
+import jason.asSyntax.PlanLibrary;
 import jason.bb.DefaultBeliefBase;
 import jason.infra.centralised.BaseCentralisedMAS;
 import jason.infra.centralised.CentralisedAgArch;
@@ -42,9 +45,11 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
      * Subclasses need to set ENV_CLASS to the class of their PlotEnvironment implementation, e.g.
      * {@code ENV_CLASS = FarmEnvironment.class;}
      */
-	protected static Class<?> ENV_CLASS;
-	protected static Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
-	protected static Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
+	public Class<?> ENV_CLASS;
+	protected Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
+	protected Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
+	
+	protected static Map<String, PlanLibrary> planLibraryCache =  new HashMap<>();
 
     /**
      * Convenience function that casts the runner-singleton to a more appropriate type  
@@ -52,6 +57,16 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
      */
     public static PlotLauncher<?,?> getRunner() {
         return (PlotLauncher<?,?>) BaseCentralisedMAS.getRunner();
+    }
+    
+    
+    /**
+     * Cinvenience function to retrieve an instance of the plan library. Returns the cached library from last execution,
+     * if runner was reseted but not restarted in the meantime.
+     * @return
+     */
+    public static PlanLibrary getPlanLibraryFor(String agentName) {
+    	return PlotLauncher.planLibraryCache.get(agentName);
     }
     
     /**
@@ -164,7 +179,7 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
                     agArch.setConf(agentConf);
                     agArch.setAgName(numberedAg);
                     agArch.setEnvInfraTier(env);
-                    if ((generalConf != RConf.THREADED) && cAg > 0 && ap.getAgArchClasses().isEmpty() && ap.getBBClass().equals(DefaultBeliefBase.class.getName())) {
+                    if ((generalConf != RConf.THREADED) && cAg > 0 && ap.getAgArchClasses().isEmpty() && ap.getBBClass().getClassName().equals(DefaultBeliefBase.class.getName())) {
                         // creation by cloning previous agent (which is faster -- no parsing, for instance)
                         agArch.createArchs(ap.getAgArchClasses(), pag, this);
                     } else {
@@ -226,6 +241,8 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 	 * @param agents
 	 */
 	protected void initializePlotAgents(List<LauncherAgent> agents) {
+		PlotLauncher.planLibraryCache.clear();
+		
 		for (LauncherAgent ag: agents) {
 			if(ag.personality != null) {
 				// initialize personalities
@@ -236,7 +253,9 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 					logger.severe("Failed to initialize mood based on personality: " + ag.personality);
 					e.printStackTrace();
 				}
+				
 				plotAg.initializeMoodMapper();
+				PlotLauncher.planLibraryCache.put(ag.name, plotAg.getPL());
 			}
 		}
 	}

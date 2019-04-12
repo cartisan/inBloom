@@ -42,7 +42,7 @@ public class DetectNarrativeEquilibrium extends ProblemDetectionState {
 		
 		Vertex root = null;
 		for (Vertex v : er.getPlotGraph().getRoots()) {
-			if (v.getLabel() == protagonist) {
+			if (v.getLabel().equals(protagonist)) {
 				root = v;
 				break;
 			}
@@ -52,7 +52,7 @@ public class DetectNarrativeEquilibrium extends ProblemDetectionState {
 	}
 	
 	@Override
-	public ProblemFixCommand detect(EngageResult er) {
+	public ProblemFixCommand performDetect(EngageResult er) {
 		Vertex protagonist = detectPotentialProtagonist(er);
 		
 		// construct list of events for protagonist
@@ -70,22 +70,24 @@ public class DetectNarrativeEquilibrium extends ProblemDetectionState {
 		HashMap<String, Integer> patternCounts = PlotpatternAnalyzer.countAllPatterns(events);
 		for (Entry<String,Integer> patternCount : patternCounts.entrySet()) {
 			if (patternCount.getValue() >= PlotEnvironment.MAX_REPEATE_NUM) {
-				// found narrative equilibrium, identify in which step it starts
-				Pattern pattern = Pattern.compile("(" + Pattern.quote(patternCount.getKey() + PlotpatternAnalyzer.EVENT_SEP) + ")+");
+				// found narrative equilibrium, identify in which step it starts. Use regex: (pattern ){rep_num}
+				Pattern pattern = Pattern.compile(
+						"(" + Pattern.quote(patternCount.getKey() + PlotpatternAnalyzer.EVENT_SEP) + "){" + patternCount.getValue() +"}"
+						);
 				Pair<Integer,Integer> location = PlotpatternAnalyzer.patternLocation(events, pattern);
 				
 				// schedule happening to occur one step after start of previous equilibrium state
 				Integer startStep = positionStepMap.get(location.getFirst()) + 1;
 				
-				// next problem detection step should be to check if the schedule happening is properly realized
-				this.controller.setDetectionState(this.getInstanceFor(DetectUnresolvedHappenings.class));
-				return new ScheduleHappening(startStep, protagonist.getLabel());
+				// we are scheduling happenings, so next problem detection step should always be to check if the
+				// unresolved happenings are present. If no unresolved happenings are detected, defaultNextState
+				// will be changed to its previous value by the responsible class
+				this.nextReflectionState = this.getInstanceFor(DetectUnresolvedHappenings.class);
+				return ScheduleHappening.scheduleRandomHappening(startStep, protagonist.getLabel(), controller);
 			}
 		}
 		
 		// no narrative equilibria identified
-		this.controller.setDetectionState(this.getInstanceFor(DetectInsufficientCoupling.class));
 		return null;
 	}
-
 }

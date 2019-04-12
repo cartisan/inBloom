@@ -111,21 +111,37 @@ wish(relax).
 // If not high on consc, but feels active: randomly choose between desires and wishes
 @default_activity_3
 +!default_activity <-
-	.random(R);
+	?wish(X);
+	!X;
+	!default_activity.
+//	.random(R);
 //	if(R>0.5) {
-		?wish(X);
+//		?wish(X);
 //	} else {
 //		?obligation(X);
 //	}
-	!X;
-	!default_activity.	
+//	!X;
+//	!default_activity.	
 
 /********************************************/
 /****** Mood  *******************************/
 /********************************************/
 +mood(hostile) <-
-	!punish.
+	?affect_target(Anims);
+	if (.empty(Anims)) {
+		.print("What a foul mood, and no-one to blame for it!");
+	} else {
+		!punish;
+	}.
 
+// relativised commitment: finish desire if not in hostile mood anymore
+-mood(hostile) <-
+	.drop_desire(punish).
+	
++punished(L) : true <- 
+	-punished(L);
+	.succeed_goal(punish).
+	
 // begin declarative goal  (p. 174; Bordini,2007)*/
 +!punish : punished(L) <- true.
 
@@ -146,14 +162,6 @@ wish(relax).
 // blind commitment: if no means to punish present now, keep trying
 +!punish : true <- 
 	!punish.
-
-// relativised commitment: finish desire if not in hostile mood anymore, or punishment done
--mood(hostile) <-
-	.succeed_goal(punish).
-
-+punished(L) : true <- 
-	-punished(L);
-	.drop_intention(punished(_)).
 	
 /********************************************/
 /***** Plans  *******************************/

@@ -232,9 +232,12 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 	protected Tellability simulate(List<LauncherAgent> lagents) {
 		
 		logger.info("We start to simulate"); //problem in creating the thread
-		
-		Thread t = new Thread(new Cycle(runner, model, new String[0], lagents, agentSrc));
-		t.start();
+		try {			
+			Thread t = new Thread(new Cycle(runner, model, new String[0], lagents, agentSrc));
+			t.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		runner.deleteUserEnvironment();
 		
 		MASConsoleGUI.get().setPause(false);
