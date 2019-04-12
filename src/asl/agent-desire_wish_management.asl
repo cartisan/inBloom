@@ -9,10 +9,10 @@
 // removes desire to fulfill obligation, and obligation itself
 @oblig_rem[atomic]
 -obligation(Plan) <-
-	.drop_desire(Plan);
-	.succeed_goal(Plan);
 	.drop_desire(obligation(Plan));
-	.succeed_goal(obligation(Plan)).
+	.succeed_goal(obligation(Plan));
+	.drop_desire(Plan);
+	.succeed_goal(Plan).
 
 @reject_request_1[atomic, affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]	
 +!obligation(help_with(Helpee, Plan)) <-
@@ -50,10 +50,10 @@
 // removes desire to fulfill wish, and wish	
 @wish_rem[atomic]
 -wish(Plan) <-
-	.drop_desire(Plan);
-	.succeed_goal(Plan);
 	.drop_desire(wish(Plan));
-	.succeed_goal(wish(Plan)).
+	.succeed_goal(wish(Plan));
+	.drop_desire(Plan);
+	.succeed_goal(Plan).
 
 // if conscientious do not follow (non-coping) wishes when an obligation is desired --> coping wishes, like !punish, don't fall under this
 @wish1[affect(personality(conscientiousness,high))]

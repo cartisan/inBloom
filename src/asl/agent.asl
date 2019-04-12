@@ -229,9 +229,7 @@ wish(relax).
 +!eat(X) <- 
 	eat(X);
 	-hungry;
-	-has(X);
-	-wish(eat(X));
-	.succeed_goal(eat(X)).
+	-wish(eat(X)).
 
 +!eat(X) : not has(X)<- 
 	.appraise_emotion(disappointment, _, "eat(X)").
