@@ -251,7 +251,6 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 						if(runner.getEnvironmentInfraTier().getUserEnvironment() != null) {
 							runner.getUserEnvironment().addListener(this);
 							runner.getUserEnvironment().showListeners();
-							//listeners exist
 							hasAddedListener = true;
 						}
 					}
@@ -261,10 +260,7 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 					isRunning = false;
 					logger.info("TIMEOUT");
 				}
-				//sleep
 				Thread.sleep(150);
-				//logger.info("pzzhh");
-				//listeners are zero
 			} catch (InterruptedException e) {
 				logger.info("InterruptedException");
 			}
@@ -273,10 +269,13 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 		logger.info("Thread has started");
 		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();
 		logger.info("we have got the graph!!!");
+		//current bug: everything is empty!
+		//funny thing: Sven has the same result: tellability is completely empty
 		Tellability tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
 		logger.info("We have got the tellability!!!");
 		double showResult = tel.compute();
-		runner.reset();
+		logger.info(Double.toString(showResult));
+		//runner.reset(); //not needed anymore, because done before
 		isRunning = true;
 		logger.info("Resetting the runner was successful!");
 		return tel;

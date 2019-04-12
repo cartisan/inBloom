@@ -174,6 +174,8 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
 		Tellability tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
 		analyzedGraph.setName("ER Cycle, engagement step " + currentCycle);
+		double telResult = tel.compute();
+		log("Tellability" + Double.toString(telResult));
 		
 		EngageResult er = new EngageResult(analyzedGraph,
 										   tel,

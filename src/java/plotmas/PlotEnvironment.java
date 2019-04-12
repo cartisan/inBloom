@@ -463,11 +463,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 * until its woken up again.
 	 */
 	synchronized void waitWhilePause() {
-		logger.info("before check");
-		this.showListeners();
 		this.checkPause();
-		logger.info("after check");
-		this.showListeners();
         try {
             while (MASConsoleGUI.get().isPause()) {
             	logger.info("Execution paused, switching to console output");
@@ -499,8 +495,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	    		logger.severe("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
 	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
 	    		resetAllAgentActionCounts();
-	    		PlotLauncher.runner.pauseExecution();
-	    		//no listeners!!!!  		
+	    		PlotLauncher.runner.pauseExecution();		
 	    		for(EnvironmentListener l : listeners) {
 	    			logger.severe("listeners get informed");
 	    			l.onPauseRepeat();
