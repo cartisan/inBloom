@@ -7,7 +7,10 @@
 	!obligation(Plan).
 	
 // removes desire to fulfill obligation, and obligation itself
+@oblig_rem[atomic]
 -obligation(Plan) <-
+	.drop_desire(Plan);
+	.succeed_goal(Plan);
 	.drop_desire(obligation(Plan));
 	.succeed_goal(obligation(Plan)).
 
@@ -45,7 +48,10 @@
 	!wish(Plan).
 
 // removes desire to fulfill wish, and wish	
+@wish_rem[atomic]
 -wish(Plan) <-
+	.drop_desire(Plan);
+	.succeed_goal(Plan);
 	.drop_desire(wish(Plan));
 	.succeed_goal(wish(Plan)).
 

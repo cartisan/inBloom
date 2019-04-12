@@ -74,6 +74,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
         hapDir.setModel(this);
         
         //set up a map that tracks the values of all subclass fields, in order to detect change
+        // TODO: include fields of locations, too!
         this.causalityTable = HashBasedTable.create();
         try {
 	        this.fieldValueStore = new HashMap<String, Object>();
@@ -217,6 +218,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	 */
 	public synchronized void noteStateChanges(String causer, String action) {
 		try {
+			// TODO: Include fields of all locations, too!
 	        for (Field f: this.getClass().getDeclaredFields()) {
 	        	Object oldV = fieldValueStore.get(f.getName());
 	        	Object currentV = f.get(this);

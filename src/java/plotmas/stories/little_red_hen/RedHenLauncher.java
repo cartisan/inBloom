@@ -80,8 +80,8 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 	            		return false; 
 	    		},
 				"hen",
-				"actionCount");
-		hapDir.scheduleHappening(findCorn);        
+				"farmingProgress");
+		hapDir.scheduleHappening(findCorn);
         
         FarmModel model = new FarmModel(agents, hapDir);
 

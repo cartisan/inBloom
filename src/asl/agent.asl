@@ -228,11 +228,15 @@ wish(relax).
 @eat_1[atomic]	
 +!eat(X) <- 
 	eat(X);
+	-hungry;
 	-has(X);
-	-wish(eat(X)).
-//	.succeed_goal(eat(X)).
+	-wish(eat(X));
+	.succeed_goal(eat(X)).
 
-+!approach(Person) : at(Person, Loc) <-  	//crowfox
++!eat(X) : not has(X)<- 
+	.appraise_emotion(disappointment, _, "eat(X)").
+
++!approach(Person) : agent(Person) & at(Person, Loc) <-  	//crowfox
 	goTo(Loc).
 
 +!approach(Loc) : location(Loc) <-  	//crowfox

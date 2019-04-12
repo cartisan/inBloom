@@ -44,7 +44,7 @@ public class Character {
 	public void initialize(LauncherAgent lAgent) {
 		this.setName(lAgent.name);
 		this.setPlotAgentPendant(lAgent.name);
-		
+
 		// important to set location and inventory using the respective methods, so that percepts are generated for ASL agent
 		this.model.getLocation(lAgent.location).enter(this);
 		for (Item i : lAgent.inventory) {
@@ -207,9 +207,9 @@ public class Character {
 	
 	public boolean canFly() {
 		// TODO: find a flexible implementation
-		if (name == "crow") {
-			return true;
-		}
+//		if (name == "crow") {
+//			return true;
+//		}
 		return false;
 	}
 	
@@ -243,7 +243,7 @@ public class Character {
 		}
 		return false;
 	}
-
+	
 	public boolean handOver(Character receiver, String itemName, Boolean refuse) {
 		if (this.has(itemName) & this.location.present(receiver)){
 			if (refuse) {
@@ -257,7 +257,7 @@ public class Character {
 				return true;				
 			} else {
 				Item item = this.removeFromInventory(itemName);
-				
+
 				String eventString = "handOver(" + receiver.name + "," + itemName + ")";
 				this.model.getEnvironment().addEventPercept(this.name, eventString, new PerceptAnnotation("fear", "remorse"));
 				this.model.getEnvironment().addEventPercept(receiver.name, eventString, new PerceptAnnotation("gloating", "pride"));

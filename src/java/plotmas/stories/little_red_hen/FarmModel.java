@@ -77,7 +77,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 			FARM.updateProduceState(null);
 			
 			logger.info("Wheat was harvested");
-			this.environment.addEventPerception(agent.name, "harvest(wheat)", PerceptAnnotation.fromEmotion("pride"));
+			this.environment.addEventPercept(agent.name, "harvest(wheat)", PerceptAnnotation.fromEmotion("pride"));
 			return true;
 		}
 		
@@ -90,7 +90,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 			w.state = Wheat.STATES.FLOUR;
 			agent.addToInventory(w);
 			logger.info("Wheat was ground to flour");
-			this.environment.addEventPerception(agent.name, "grind(wheat)", PerceptAnnotation.fromEmotion("pride"));
+			this.environment.addEventPercept(agent.name, "grind(wheat)", PerceptAnnotation.fromEmotion("pride"));
 			return true;
 		}
 		return false;
@@ -103,7 +103,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 			agent.addToInventory(new Bread());
 			
 			logger.info(agent.name + ": baked some bread.");
-			this.environment.addEventPerception(agent.name, "bake(bread)", new PerceptAnnotation("pride", "joy"));
+			this.environment.addEventPercept(agent.name, "bake(bread)", new PerceptAnnotation("pride", "joy"));
 			return true;
 		}
 		
@@ -164,7 +164,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 				List<Character> otherPlacesChars = model.getCharacters().stream().filter(chara -> !chara.location.equals(TREE)).collect(Collectors.toList());
 				for (Character observer : otherPlacesChars) {
 					for (Item item : character.inventory) {
-						model.environment.addEventPerception(observer.getName(),
+						model.environment.addEventPercept(observer.getName(),
 															 "see(" + item.getItemName() + ")",
 															 new PerceptAnnotation().addAnnotation("location", this.name).addAnnotation("owner", character.name));
 						
