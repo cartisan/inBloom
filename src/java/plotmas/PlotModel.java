@@ -8,14 +8,15 @@ import java.util.logging.Logger;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.google.common.collect.Table.Cell;
 
 import jason.asSemantics.Mood;
 import plotmas.helper.MoodMapper;
-import plotmas.stories.little_red_hen.RedHenLauncher;
 import plotmas.storyworld.Character;
 import plotmas.storyworld.Happening;
 import plotmas.storyworld.HappeningDirector;
 import plotmas.storyworld.Location;
+import plotmas.storyworld.ModelState;
 import plotmas.storyworld.ScheduledHappeningDirector;
 
 
@@ -49,9 +50,9 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	public EnvType environment = null;
 	public MoodMapper moodMapper = null;
 
-	/** Stores values of model-subclass fields, so that after each action we can check if storyworld changed. <br>
-	 *  <b>mapping:</b>  fieldName --> old field value */
-	private HashMap<String, Object> fieldValueStore;
+	/** Stores values of model fields (including locations etc.), so that after each action we can check if storyworld changed. <br>
+	 *  <b>mapping:</b>  (field, instance of field) --> old field value */
+	private Table<Field, Object, Object> fieldValueStore;
 	
 	/** Saves for each character, if one of its actions resulted in a change of the storyworld --> allows causality detection. <br>
 	 *  <b>mapping:</b> (characterName, fieldName) --> action*/
@@ -62,6 +63,12 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
         this.characters = new HashMap<String, Character>();
 		this.locations = new HashMap<String, Location>();
 		
+		//set up a map that tracks the values of all subclass fields, in order to detect change
+		this.causalityTable = HashBasedTable.create();
+		this.fieldValueStore = HashBasedTable.create();
+		
+		this.setUpFieldTracking(this);
+
 		// setup default location
 		this.addLocation(DEFAULT_LOCATION_NAME);
         
@@ -72,20 +79,27 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 
         this.happeningDirector = hapDir;
         hapDir.setModel(this);
-        
-        //set up a map that tracks the values of all subclass fields, in order to detect change
-        // TODO: include fields of locations, too!
-        this.causalityTable = HashBasedTable.create();
+	}
+	
+	public void setUpFieldTracking(Object obj) {
         try {
-	        this.fieldValueStore = new HashMap<String, Object>();
-	        for (Field f: this.getClass().getDeclaredFields()) {
-	        	fieldValueStore.put(f.getName(), f.get(this));
+			for (Field f: obj.getClass().getDeclaredFields()) {
+				if (!f.isAnnotationPresent(ModelState.class)) {
+	        		continue;
+	        	}
+	        	f.setAccessible(true);
+	        	if (null != f.get(obj)) {
+	        		this.fieldValueStore.put(f, obj, f.get(obj));
+	        	} else {
+	        		// For some reason Tables do not support putting null values, so we have to put our custom null. 
+	        		// This means that setting the f (from null to a value) will be detectable as state change.
+	        		this.fieldValueStore.put(f, obj, ModelState.DEFAULT_STATES.NOVAL);
+	        	}
 	        }
         } catch (Exception e) {
-        	logger.severe("SEVERE: PlotModel is not able to access instance fields to set up tracking for story world state changes");
+        	logger.severe("SEVERE: PlotModel is not able to access instance field to set up tracking for story world state changes");
         	e.printStackTrace();
-        }
-        	
+        }		
 	}
 	
 	public void initialize(List<LauncherAgent> agentList) {
@@ -118,8 +132,10 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	public void addCharacter(LauncherAgent lAgent) {
 		// set up connections between agents, model and environment
     	Character character = new Character();
-    	character.setModel(this);
-		this.characters.put(lAgent.name, character);	
+    	
+    	// setting name outside of constructor relevant, otherwise char initialization will occur, which at this point might be impossible
+    	character.setName(lAgent.name);
+    	this.addCharcter(character);
 	}
 
 	/**
@@ -130,21 +146,27 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	 */
 	public void addCharacter(String agentName) {
     	Character character = new Character(agentName);
-    	character.setModel(this);
-		this.characters.put(character.name, character);
-		
+    	this.addCharcter(character);
 	}
 
+	private void addCharcter(Character character) {
+    	character.setModel(this);
+		this.characters.put(character.name, character);
+    	this.setUpFieldTracking(character);
+	}
+	
 	public void removeCharacter(String agName) {
 		Character character = this.characters.remove(agName);
 		character.setModel(null);
 	}
 	
 	public void addLocation(String name) {
-		this.locations.put(name, new Location(name));
+		Location loc = new Location(name);
+		this.addLocation(loc);
 	}
 	
 	public void addLocation(Location loc) {
+    	this.setUpFieldTracking(loc);
 		this.locations.put(loc.name, loc);
 	}
 	
@@ -210,27 +232,28 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	}
 	
 	/**
-	 * Checks whether the state of the storyworld, represented by the values of all the fields of the model instance, 
-	 * changed due to an action executed by causer. This needs to be checked after each agent action.
+	 * Checks whether the state of the storyworld, represented by the values of all the fields of the model instance 
+	 * (and it's components) that are tracked due to an {@linkplain ModelState} annotation, changed due to an action
+	 * executed by causer. This needs to be checked after each agent action.
 	 * 
 	 * @param causer Name of agent responsible for action (i.e. in whose plot graph cause will be present)
 	 * @param action Term representing the action that should be noted as cause for state change
 	 */
 	public synchronized void noteStateChanges(String causer, String action) {
 		try {
-			// TODO: Include fields of all locations, too!
-	        for (Field f: this.getClass().getDeclaredFields()) {
-	        	Object oldV = fieldValueStore.get(f.getName());
-	        	Object currentV = f.get(this);
+			for (Cell<Field, Object, Object> cell : this.fieldValueStore.cellSet()) {
+	        	Object oldV = cell.getValue();
+	        	Object currentV = cell.getRowKey().get(cell.getColumnKey());
 	        	
 	        	if((currentV != null) && (!currentV.equals(oldV))) {
 	        		// take note that the value of field f changed because of agentName's action
-	        		this.causalityTable.put(causer, f.getName(), action);
+	        		this.causalityTable.put(causer, cell.getRowKey().getName(), action);
 	        		
 	        		// update new field value in our dict
-	        		fieldValueStore.put(f.getName(), currentV);
+	        		// TODO: Does this change the set we iterate over?!
+	        		this.fieldValueStore.put(cell.getRowKey(), cell.getColumnKey(), currentV);
 	        		
-	        		logger.fine("Storyworld changed due to " + causer + "'s action: " + action + " (property: " + f.getName() + ")");
+	        		logger.fine("Storyworld changed due to " + causer + "'s action: " + action + " (property: " + cell.getRowKey().getName() + ")");
 	        	}
 	        }
 		} catch (Exception e) {
@@ -246,20 +269,17 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	 */
 	public synchronized void noteStateChanges() {
 		try {
-	        for (Field f: this.getClass().getDeclaredFields()) {
-	        	Object oldV = fieldValueStore.get(f.getName());
-	        	Object currentV = f.get(this);
+			for (Cell<Field, Object, Object> cell : this.fieldValueStore.cellSet()) {
+	        	Object oldV = cell.getValue();
+	        	Object currentV = cell.getRowKey().get(cell.getColumnKey());
 	        	if((currentV != null) && (!currentV.equals(oldV))) {
 	        		
-	        		// reset causal connection of this field with any action, cause it was caused by happpening
-	        		// TODO: Would it make sense to switch to saving this character-less? Kinda: Objective
-	        		for(String agentName : this.characters.keySet()) {
-	        			this.causalityTable.remove(agentName, f.getName());
-	        		}
+	        		// reset causal connection of this field with any action, cause current val was caused by happening
+	        		this.causalityTable.columnMap().get(cell.getRowKey()).clear();
 	        		
 	        		// update new field value in our dict
-	        		fieldValueStore.put(f.getName(), currentV);
-	        		logger.fine("Storyworld changed due to happening (property: " + f.getName() + ")");
+	        		fieldValueStore.put(cell.getRowKey(), cell.getColumnKey(), currentV);
+	        		logger.fine("Storyworld changed due to happening (property: " + cell.getRowKey().getName() + ")");
 	        	}
 	        }
 		} catch (Exception e) {

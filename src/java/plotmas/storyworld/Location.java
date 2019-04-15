@@ -13,9 +13,12 @@ import plotmas.helper.PerceptAnnotation;
 
 public class Location {
 	static protected Logger logger = Logger.getLogger(Location.class.getName());
-	
+
+	@ModelState
 	private List<Character> characters = null; 
+	@ModelState
 	private List<Item> existents = null;
+	
 	protected PlotModel<?> model = null;
 	public String name = null;
 	

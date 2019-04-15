@@ -13,6 +13,7 @@ import plotmas.storyworld.Character;
 import plotmas.storyworld.HappeningDirector;
 import plotmas.storyworld.Item;
 import plotmas.storyworld.Location;
+import plotmas.storyworld.ModelState;
 
 
 /**
@@ -112,8 +113,11 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	
 	/****** helper classes *******/
 	public static class Farm extends Location {
-
+		
+		@ModelState 
 		public Wheat produce;
+		
+		@ModelState 
 		public int farmingProgress;
 		
 		public Farm() {

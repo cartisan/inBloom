@@ -30,6 +30,7 @@ public class Character {
     private PlotAwareAg plotAgentPendant;
     private PlotModel<?> model;
 
+	@ModelState
     public LinkedList<Item> inventory = new LinkedList<Item>();
     public String name = null;
     public Location location = null;
