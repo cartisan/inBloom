@@ -3,6 +3,7 @@ package inBloom.ERcycle;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -203,6 +204,13 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 			agents.add(new LauncherAgent(agentNames[i], personalities[i]));
 		}
 		return agents;
+	}
+
+	protected List<LauncherAgent> createAg(String agentName, Collection<String> belief, Collection<String> goal, Personality personality) {
+		List<LauncherAgent> l = new LinkedList<>();
+		l.add(new LauncherAgent(agentName, belief, goal, personality));
+		
+		return l;		
 	}
 	
 	@Override
