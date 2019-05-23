@@ -46,13 +46,11 @@ wish(relax).
 	.suspend(wish(relax));
 	+wish(has(Thing)).
 
-+found(X) <-
-	?creatable_from(X,Y);
-	if(is_useful(Y)) {
-		.suspend(obligation(farm_work));	// only for brevity of graph
-		.suspend(wish(relax));
-		+obligation(create(Y));
-	}.
+//TODO: how to make creatable_from(X,Y) recursive?
++found(X) : creatable_from(X,Y) & is_useful(Y) <-
+	.suspend(obligation(farm_work));	// only for brevity of graph
+	.suspend(wish(relax));
+	+obligation(create(Y)).
 
 +is_dropped(Thing)[owner(Person)] : .my_name(Person) <-		//crowfox
 	.appraise_emotion(remorse, Person, "is_dropped(Thing)").
