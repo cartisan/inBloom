@@ -52,7 +52,6 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 	private PlotLauncher<?, ?> runner;
 	private PlotModel<?> model;
 	private String[] agentNames;
-	private FarmEnvironment farm;
 	
 	/**
 	 * Constructor
@@ -60,7 +59,6 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 	 * @param original : we need the original graph in
 	 * order to calculate the counterfactual scenarios
 	 */
-	//temporary with farmmodel instead of general model!!
 	public CounterfactualityLauncher(PlotDirectedSparseGraph original, String[] agents, String agentSrc, PlotLauncher<?, ?> runner, PlotModel<?> model) {
 		this.original = original;
 		this.lower = -1.0;
@@ -96,7 +94,7 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 	 */
 	public PlotDirectedSparseGraph getCounterfact() {
 		this.calculateCounterfact();
-		//question: will the return wait untill calculateCounterfact() has finished?
+		//question: will the return wait until calculateCounterfact() has finished?
 		//alternative: make a run method for calculating and a getCounterfact() method
 		return counterfact;
 	}
@@ -231,7 +229,7 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 	
 	protected Tellability simulate(List<LauncherAgent> lagents) {
 		
-		logger.info("We start to simulate"); //problem in creating the thread
+		logger.info("We start to simulate");
 		try {			
 			Thread t = new Thread(new Cycle(runner, model, new String[0], lagents, agentSrc));
 			t.start();
