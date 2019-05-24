@@ -17,7 +17,7 @@ public class Happening<T extends PlotModel<?>> extends Event {
 	protected String causalProperty = "";
 
 	/**
-	 * Constructor to be used by inplace creation of happenings, using anonymous functions. Example:
+	 * Constructor to be used for in-place creation of happenings, using anonymous functions. Example:
 	 *<pre><code>
 	 *{@code Happening<FarmModel> findCorn = new Happening<FarmModel>}( 
      *    new {@code Predicate<FarmModel>()}{ 
@@ -28,7 +28,8 @@ public class Happening<T extends PlotModel<?>> extends Event {
      *    },
      *    new {@code Consumer<FarmModel>()} {
      *  	public void accept(FarmModel model) {
-     *           	model.	
+     *      	Character chara = model.getCharacter("hen");
+	 *			chara.addToInventory(new FarmModel.Wheat());
      *      }
      *    }
      *);

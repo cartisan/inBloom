@@ -192,6 +192,7 @@ public class AdaptPersonality implements ProblemFixCommand {
 	 */
 	private List<Set<OCEANConstraints>> collectAllStepConditions(Plan plan, PlanLibrary planLib) {
 		// contains OCEAN settings that are promising in making a candidate plan execute
+		// TODO: Get to create(bread) from new found(wheat) based in obligations and wishes
 		List<Set<OCEANConstraints>> viablePlanstepSettings = new LinkedList<>();
 		
 		// iterate over all steps in plan body and collect affect annotations for each step that is a plan itself
@@ -373,6 +374,10 @@ public class AdaptPersonality implements ProblemFixCommand {
 		
 		@Override
 		public String toString() {
+			if (this.constraints.isEmpty()) {
+				return "personality()";
+			}
+			
 			LinkedList<Pair<String, Integer>> cstrs = new LinkedList<>(this.constraints);
 			
 			// sort list according to traits names

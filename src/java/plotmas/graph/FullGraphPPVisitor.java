@@ -155,15 +155,15 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitPercept(Vertex vertex) {
-		String cause = vertex.getCause();
 		if(!this.eventList.isEmpty()) {
+			String cause = vertex.getCause();
 			for(Vertex targetEvent : this.eventList) {
 				if(targetEvent.getLabel().equals(cause)) {
 					this.graph.addEdge(new Edge(Edge.Type.CAUSALITY), targetEvent, vertex);
 					cause = "";
 				}
-				if(targetEvent.getType() != Vertex.Type.PERCEPT &&
-					targetEvent.getFunctor().equals(vertex.getFunctor())) {
+				// delete percepts that report action outcomes --> collapsing action and action result percept
+				if(targetEvent.getType() == Vertex.Type.ACTION && targetEvent.getFunctor().equals(vertex.getFunctor())) {
 					this.removeVertex(vertex);
 					return;
 				}

@@ -86,13 +86,13 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 * Creates a new vertex that will be used to represent time-step labels
 	 */
 	private void addToAxis(int step, String label) {
-		Vertex labelV = new Vertex(label, Type.AXIS_LABEL, step);
+		Vertex labelV = new Vertex(label, Type.AXIS_LABEL, step, this);
 		yAxis.put(step, labelV);
 		this.addVertex(labelV);
 	}
 
 	public Vertex addRoot(String agName) {
-		Vertex root = new Vertex(agName, Type.ROOT, 0);
+		Vertex root = new Vertex(agName, Type.ROOT, 0, this);
 		
     	boolean result = this.addVertex(root);
     	if (result) {
@@ -113,7 +113,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
     }
 	
 	public synchronized Vertex addEvent(String root, String event, int step, Vertex.Type eventType, Edge.Type linkType) {
-		Vertex newVertex = new Vertex(event, eventType, step);
+		Vertex newVertex = new Vertex(event, eventType, step, this);
 		Vertex parent = lastVertexMap.get(root);
 		
 		if (parent.getType() == Vertex.Type.ROOT) {
@@ -364,7 +364,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		
 		// clone roots in right order
 		for (Vertex root : roots) {
-	        Vertex clone = root.clone();
+	        Vertex clone = root.clone(dest);
 	    	dest.addVertex(clone);
     		cloneMap.put(root, clone);
     		
@@ -374,7 +374,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		
 	    for (Vertex v : this.getVertices()) {
 	    	if (!(v.getType() == Type.ROOT)) {
-	    		Vertex clone = v.clone();
+	    		Vertex clone = v.clone(dest);
 
 	    		// if cloned vertex is an axis, note that in axis map
 	    		if(this.yAxis.containsValue(v)) {

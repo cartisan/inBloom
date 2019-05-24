@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -37,6 +35,7 @@ import plotmas.jason.PlotAwareAg;
 import plotmas.jason.PlotAwareAgArch;
 import plotmas.jason.PlotAwareCentralisedAgArch;
 import plotmas.jason.PlotAwareCentralisedRuntimeServices;
+import plotmas.storyworld.Character;
 
 /**
  *  Responsible for relaying action requests from ASL agents to the {@link plotmas.PlotModel Storyworld} and
@@ -54,9 +53,9 @@ import plotmas.jason.PlotAwareCentralisedRuntimeServices;
 public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends TimeSteppedEnvironment {
 	static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
 
-	/** number of times all agents need to repeat an action, before system is paused; -1 to switch off*/
+	/** number of times all agents need to repeat an action sequence before system is paused; -1 to switch off */
 	public static final Integer MAX_REPEATE_NUM = 5;
-	/** number of environment steps, before system automatically pauses; -1 to switch off*/
+	/** number of environment steps, before system automatically pauses; -1 to switch off */
 	public static Integer MAX_STEP_NUM = -1;
 	/** time in ms that {@link TimeSteppedEnvironment} affords agents to propose an action, before each step times out */
 	static final String STEP_TIMEOUT = "100";
@@ -163,6 +162,20 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	PlotEnvironment.startTime = System.nanoTime();
     	initializeActionCounting(agents);
     	this.initialized = true;
+    	
+    	// create initial state perceptions
+		List<Term> locList = this.model.locations.keySet().stream().map(ASSyntax::createAtom).collect(Collectors.toList());
+		Literal locListLit = ASSyntax.createLiteral("locations", ASSyntax.createList(locList));
+		
+		List<Term> agList = agents.stream().map(ag -> ag.name).map(ASSyntax::createAtom).collect(Collectors.toList());
+		Literal agListLit = ASSyntax.createLiteral("agents", ASSyntax.createList(agList));
+		
+		
+		for (LauncherAgent agent : agents) {
+			// inform agents about available location and other agents
+			addPercept(agent.name, locListLit);
+			addPercept(agent.name, agListLit);
+		}
     }
     
     /**
@@ -227,7 +240,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	}
     	else {
     		// appraise negative emotion if action failed.
-    		this.addEventPerception(agentName, action.toString(), PerceptAnnotation.fromEmotion("disappointment"));
+    		this.addEventPercept(agentName, action.toString(), PerceptAnnotation.fromEmotion("disappointment"));
     	}
     	
     	// allow model to see if action resulted in state change
@@ -369,10 +382,10 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	protected void stepFinished(int step, long elapsedTime, boolean byTimeout) {
 		// if environment is initialized && agents are done setting up && one of the agents didn't choose an action
 		if (this.model != null && byTimeout && step > 5 ) {
-			for (String agName : this.getModel().characters.keySet()) {
-				Object action = this.getActionInSchedule(agName);
+			for (Character chara : this.model.getCharacters()) {
+				Object action = this.getActionInSchedule(chara.getName());
 				if(action == null) {
-					this.agentActions.get(agName).add("--");		// mark inaction by --
+					this.agentActions.get(chara.getName()).add("--");		// mark inaction by --
 				}
 			}
 		}
@@ -383,7 +396,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	
 	public void setModel(ModType model) {
 		this.model = model;
-		updatePercepts();
 	}
 	
 	public ModType getModel() {
@@ -412,50 +424,13 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 */
 	@Override
 	public Collection<Literal> getPercepts(String agName) {
-		this.updatePercepts(agName);
+		this.updateEventPercepts(agName);
 		return super.getPercepts(agName);
 	}
 
-	public void updatePercepts() {
-		for(String name: model.characters.keySet()) {
-			updatePercepts(name);
-		}
-	}
-	
-    public void updatePercepts(String agentName) {
-		updateStatePercepts(agentName);
-    	updateEventPercepts(agentName);
-    }
-    
     /**
-     * Updates percepts that are related to the state of the model and the agent,
-     * as opposed to updating percepts related to events. States relate to percepts that are
-     * maintained over time: inventories, creatures being present and so on.
-     * 
-     * Subclass this method to add domain-specific states to the percepts, don't forget to
-     * first call `super.updateStatePercepts(agentName);`
-     * 
-     * @see plotmas.stories.little_red_hen.FarmEnvironment#updateStatePercepts(java.lang.String)
-     */
-    protected void updateStatePercepts(String agentName) {
-    	// update list of present agents (excluding self)
-    	removePerceptsByUnif(agentName, Literal.parseLiteral("agents(X)"));
-    	Set<String> presentAgents = new HashSet<>(this.model.characters.keySet());
-    	presentAgents.remove(agentName);
-    	List<Term> agentList = presentAgents.stream().map(ASSyntax::createAtom).collect(Collectors.toList());
-    	addPercept(agentName, ASSyntax.createLiteral("agents", ASSyntax.createList(agentList)));
-    	
-    	// update inventory state for each agents
-    	removePerceptsByUnif(agentName, Literal.parseLiteral("has(X)"));
-    	for (String literal : this.model.characters.get(agentName).createInventoryPercepts()) {
-    		addPercept(agentName, Literal.parseLiteral(literal));    		
-    	}    		
-    }
-
-    /**
-     * Updates percepts that are related to events that occurred in the mean-time,
-     * as opposed to updating percepts related to states.
-     * Events relates to unique percepts that are delivered to the agent only once.
+     * Updates percepts that are related to events that occurred in the mean-time.
+     * Events relate to unique percepts that are delivered to the agent only once, and removed in the next reasoning cycle.
      */
 	protected void updateEventPercepts(String agentName) {
 		deleteOldUniqueEvents(agentName);
@@ -518,7 +493,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	/**
 	 * Adds 'percept' to the list of events that need to be added to agentName's perception list this reasoning step.
 	 */	
-	public void addEventPerception(String agentName, String percept) {
+	public void addEventPercept(String agentName, String percept) {
 		List<String> eventList = this.getListCurrentEvents(agentName);
 		eventList.add(percept);
 		this.currentEventsMap.put(agentName, eventList);
@@ -527,7 +502,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	/**
 	 * Adds 'percept' to the list of events that need to be added to agentName's perception list this reasoning step.
 	 */	
-	public void addEventPerception(String agentName, String percept, PerceptAnnotation annot) {
+	public void addEventPercept(String agentName, String percept, PerceptAnnotation annot) {
 		List<String> eventList = this.getListCurrentEvents(agentName);		
 		
 		String event = percept + annot.toString();
@@ -583,7 +558,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	protected void checkPause() {
 		if ((this.initialized) & !PlotLauncher.getRunner().isDebug()) {
 			// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
-	    	if ((MAX_REPEATE_NUM > -1) && (allAgentsRepeating())) {
+	    	if (this.narrativeExquilibrium()) {
 	    		// reset counter
 	    		logger.info("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
 	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
@@ -614,7 +589,17 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		this.agentActions.get(agentName).add(action.toString());
 	}
 	
-    private boolean allAgentsRepeating() {
+    /**
+     * Determines whether the simulation has reached a narrative equilibrium state, and should be paused.
+     * This is the case, when all agents have repeated the same action sequence {@link #MAX_REPEATE_NUM} number of 
+     * times.  
+     * @return
+     */
+    protected boolean narrativeExquilibrium() {
+    	if (MAX_REPEATE_NUM < 0) {
+    		return false;
+    	}
+    	
     	HashMap<String,Boolean> agentsRepeating = new HashMap<>();
     	for (String agent : agentActions.keySet()) {
     		agentsRepeating.put(agent, false);

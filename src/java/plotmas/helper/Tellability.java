@@ -100,7 +100,7 @@ public class Tellability {
 			}
 			
 			for(Map<Vertex, Vertex> map : mappings) {
-				FunctionalUnit.Instance instance = unit.new Instance(graph, map.keySet());
+				FunctionalUnit.Instance instance = unit.new Instance(graph, map.keySet(), unit.getName());
 				instance.identifySubject(map);
 				connectivityGraph.addVertex(instance);
 				
@@ -125,7 +125,7 @@ public class Tellability {
 		for(FunctionalUnit primitiveUnit : FunctionalUnits.PRIMITIVES) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(graph, primitiveUnit.getGraph());
 			for(Map<Vertex, Vertex> map : mappings) {
-				FunctionalUnit.Instance instance = primitiveUnit.new Instance(graph, map.keySet());
+				FunctionalUnit.Instance instance = primitiveUnit.new Instance(graph, map.keySet(), primitiveUnit.getName());
 				connectivityGraph.addVertex(instance);
 			}
 		}

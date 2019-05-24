@@ -565,6 +565,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		// modify vertices
 		vis.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
 		vis.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
+		vis.getRenderContext().setVertexStrokeTransformer(Transformers.vertexStrokeTransformer);
 		vis.getRenderContext().setVertexShapeTransformer(Transformers.vertexShapeTransformer);
 		vis.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
 		vis.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);

@@ -55,8 +55,6 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 	@Override
 	public void visitPercept(Vertex vertex) {
 		boolean isInTradeoff = handleTradeoff(vertex);
-		boolean isRelevantMood = handleMood(vertex);
-		
 		
 		for(String emotion : Emotion.getAllEmotions()) {
 			if(vertex.hasEmotion(emotion)) {
@@ -65,12 +63,31 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 			}
 		}
 		
-		if(!(isInTradeoff | isRelevantMood))
-			this.graph.removeVertexAndPatchGraphAuto(this.currentRoot, vertex);
+		/* do not remove percept if 
+		 *  - is a wish or obligation that is being added or removed
+		 *  - is the start of a mood, or the end of a mood that triggers something 
+		 *	- has motivation edges attached to it
+		 *  - is part of a trade-off simple FU
+		 */
+		if(isInTradeoff | isRelevantMood(vertex) | isWishObligation(vertex) | hasMotivation(vertex)) {
+			return;
+		}
+		this.graph.removeVertexAndPatchGraphAuto(this.currentRoot, vertex);
 	}
 	
+	private boolean hasMotivation(Vertex vertex) {
+		// lets ignore initial beliefs for now, to make graphs less cluttered
+		if (vertex.getStep() == 0) {
+				return false;
+		}
+		return vertex.getIncidentEdges().stream().anyMatch(e -> e.getType().equals(Edge.Type.MOTIVATION));
+	}
+
+	private boolean isWishObligation(Vertex vertex) {
+		return (vertex.getLabel().contains("wish") | vertex.getLabel().contains("obligation"));
+	}
 	
-	private boolean handleMood(Vertex vertex) {
+	private boolean isRelevantMood(Vertex vertex) {
 		if (vertex.toString().contains(Mood.ANNOTATION_FUNCTOR)) {
 			// include mood vertices that are important for other vertices
 			boolean connected = graph.getIncidentEdges(vertex).stream().map(e -> e.getType())
@@ -214,7 +231,7 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 		}
 		assert w != null;
 		this.graph.removeEdge(edge);
-		Vertex u = v.clone();
+		Vertex u = v.clone(this.graph);
 		this.graph.addVertex(u);
 		for(Edge e : edgesIn) {
 			if(e == edge)

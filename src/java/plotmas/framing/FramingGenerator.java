@@ -7,7 +7,6 @@ import java.util.Map;
 
 import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.graph.isomorphism.FunctionalUnits;
-import plotmas.helper.Tellability;
 
 /**
  * Class used to generate a piece of natural language framing information (summary)

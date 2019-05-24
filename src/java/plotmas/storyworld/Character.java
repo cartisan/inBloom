@@ -7,6 +7,9 @@ import java.util.stream.Collectors;
 
 import jason.asSemantics.Mood;
 import jason.asSemantics.Personality;
+import jason.asSyntax.ASSyntax;
+import jason.asSyntax.Literal;
+import jason.asSyntax.Pred;
 import plotmas.LauncherAgent;
 import plotmas.PlotLauncher;
 import plotmas.PlotModel;
@@ -24,21 +27,39 @@ import plotmas.jason.PlotAwareAg;
 public class Character {
     static Logger logger = Logger.getLogger(Character.class.getName());
 	
-    public LinkedList<Item> inventory = new LinkedList<Item>();
-    public PlotAwareAg plotAgentPendant;
-    public String name;
+    private PlotAwareAg plotAgentPendant;
+    private PlotModel<?> model;
 
-	private PlotModel<?> model;
+	@ModelState
+    public LinkedList<Item> inventory = new LinkedList<Item>();
+    public String name = null;
+    public Location location = null;
 
 	public Character() {
 	}
 	
 	public Character(String name) {
-		this.setName(name);
+		this.initialize(name);
 	}
 	
 	public void initialize(LauncherAgent lAgent) {
 		this.setName(lAgent.name);
+		this.setPlotAgentPendant(lAgent.name);
+
+		// important to set location and inventory using the respective methods, so that percepts are generated for ASL agent
+		this.model.getLocation(lAgent.location).enter(this);
+		for (Item i : lAgent.inventory) {
+			this.addToInventory(i);
+		}
+	}
+	
+	public void initialize(String name) {
+		this.setName(name);
+		this.setPlotAgentPendant(name);
+	}
+	
+	public boolean goTo(Location target) {
+		return target.enter(this);
 	}
 	
 	/**
@@ -46,11 +67,11 @@ public class Character {
 	 * agent's inventory, which can be used to generate ASL agent perceptions.
 	 * @return
 	 */
-	public LinkedList<String> createInventoryPercepts() {
-		LinkedList<String> invRepr = new LinkedList<String>();
+	public LinkedList<Literal> createInventoryPercepts() {
+		LinkedList<Literal> invRepr = new LinkedList<>();
 		
 		for (Item item : inventory) {
-			invRepr.add("has(" + item.literal() + ")");
+			invRepr.add(ASSyntax.createLiteral("has", item.literal()));
 		}
 
 		return invRepr;
@@ -58,10 +79,33 @@ public class Character {
 	
 	public void addToInventory(Item item) {
 		inventory.add(item);
+		
+		// update agents inventory perception
+		this.model.environment.addPercept(this.name, ASSyntax.createLiteral("has", item.literal()));
 	}
 	
-	public void removeFromInventory(Item item) {
-		inventory.remove(item);
+	public Item removeFromInventory(Item item) {
+		if(inventory.remove(item)) {
+			// update agents inventory perception
+			this.model.environment.removePercept(this.name, ASSyntax.createLiteral("has", item.literal()));
+			
+			return item;
+		}
+		logger.severe("Character " + this.name + " can't remove item " + item.getItemName() + ". Doesn't have one.");
+		return null;
+	}
+	
+	public Item removeFromInventory(String itemName) {
+		for (Item item : this.inventory) {
+			if (item.getItemName().equals(itemName)) {
+				// update agents inventory perception
+				this.model.environment.removePercept(this.name, ASSyntax.createLiteral("has", item.literal()));
+				
+				return item;
+			}
+		}
+		logger.severe("Character " + this.name + " can't remove item " + itemName + ". Doesn't have one.");
+		return null;
 	}
 	
 	public boolean has(String itemType) {
@@ -88,7 +132,7 @@ public class Character {
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			receiver.receive(item, this);
-			this.model.getEnvironment().addEventPerception(name, 
+			this.model.getEnvironment().addEventPercept(name, 
 														   String.format("shared(%s,%s)", item.literal(), receiver.name),
 														   new PerceptAnnotation().addTargetedEmotion("pride", "self"));
 			return true;
@@ -109,7 +153,7 @@ public class Character {
 											   .collect(Collectors.joining(",", "[", "]"))
 											   .toString();
 			
-			this.model.getEnvironment().addEventPerception(name,
+			this.model.getEnvironment().addEventPercept(name,
 														   String.format("share(%s,%s)", item.literal(), recList),
 														   new PerceptAnnotation().addTargetedEmotion("pride", "self"));
 			
@@ -124,7 +168,7 @@ public class Character {
 	public boolean receive(Item item, Character from) {
 		this.addToInventory(item);
 		
-		this.model.getEnvironment().addEventPerception(name,
+		this.model.getEnvironment().addEventPercept(name,
 													   String.format("receive(%s,%s)", item.literal(), this.name),
 													   new PerceptAnnotation().addTargetedEmotion("gratitude", "self"));
 		
@@ -141,7 +185,7 @@ public class Character {
 			
 			if (item.isEdible()) {
 				this.removeFromInventory(item);
-				this.model.getEnvironment().addEventPerception(name, 
+				this.model.getEnvironment().addEventPercept(name, 
 															   String.format("eat(%s)", item.literal()),
 															   PerceptAnnotation.fromEmotion("satisfaction"));
 				
@@ -158,13 +202,90 @@ public class Character {
 	}
 	
 	public boolean relax() {
-		this.model.getEnvironment().addEventPerception(name, "relax", PerceptAnnotation.fromEmotion("joy"));
+//		this.model.getEnvironment().addEventPerception(name, "relax", PerceptAnnotation.fromEmotion("joy"));
 		return true;
 	}
 	
-	public String toString() {
-		return this.name + "-agent_model";
+	public boolean canFly() {
+		// TODO: find a flexible implementation
+//		if (name == "crow") {
+//			return true;
+//		}
+		return false;
 	}
+	
+	public boolean sing() { 
+		logger.info(this.name + " sings.");
+		
+		// if character is in the sky and sings then they loose whatever they held in their (mouth/beak-) inventory
+		if(this.location.isSkyLevel(this)) {
+			for (Item item : this.inventory) {		
+				this.removeFromInventory(item);
+				this.location.place(item);
+				logger.info(this.name + " lost " + item.getItemName() + " which fell to the ground.");
+				
+				// everyone present see things dropping from the sky
+				for (Character observer : this.location.getCharacters()) {
+					this.model.environment.addEventPercept(observer.getName(),
+													   "is_dropped(" + item.getItemName() + ")",
+													   PerceptAnnotation.fromCause("sing").addAnnotation("owner", this.name));
+				}
+			}
+		}
+				
+		return true;
+	}
+	
+	public boolean collect(String thing) {
+		if(this.location.contains(thing)) {
+			Item item = this.location.remove(thing);
+			this.addToInventory(item);
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean handOver(Character receiver, String itemName, Boolean refuse) {
+		if (this.has(itemName) & this.location.present(receiver)){
+			if (refuse) {
+				logger.info(this.name + " does not hand over" + itemName + " to " + receiver);
+				
+				// TODO: that gonna work in analyzed graph?
+				String eventString = "refuseHandOver(" + receiver.name + "," + itemName + ")";
+				this.model.getEnvironment().addEventPercept(this.name, eventString, PerceptAnnotation.fromEmotion("pride"));
+				this.model.getEnvironment().addEventPercept(receiver.name, eventString, PerceptAnnotation.fromEmotion("anger"));
+				
+				return true;				
+			} else {
+				Item item = this.removeFromInventory(itemName);
+
+				String eventString = "handOver(" + receiver.name + "," + itemName + ")";
+				this.model.getEnvironment().addEventPercept(this.name, eventString, new PerceptAnnotation("fear", "remorse"));
+				this.model.getEnvironment().addEventPercept(receiver.name, eventString, new PerceptAnnotation("gloating", "pride"));
+				
+				receiver.addToInventory(item);
+				
+				logger.info(this.name + " hands over " + itemName + " to " +receiver);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public String toString() {
+		return this.name;
+	}
+	
+	
+	/**
+	 * Returns an AgentSpeak {@link jason.asSyntax.Literal literal} denoting this character and potentially its
+	 * current state using annotations.
+	 * @return A literal denoting this item and its current state
+	 * @see plotmas.stories.little_red_hen.FarmModel.Wheat
+	 */
+	public Literal literal() {
+			return new Pred(this.toString());
+	};
 	
 	public void setModel(PlotModel<?> model) {
 		this.model = model;
@@ -180,7 +301,6 @@ public class Character {
 
 	public void setName(String agentName) {
 		this.name = agentName;
-		this.plotAgentPendant = PlotLauncher.runner.getPlotAgent(this.name);
 	}
 	
 	public String getName() {
@@ -189,5 +309,9 @@ public class Character {
 	
 	public void setPlotAgentPendant(PlotAwareAg pAgent) {
 		this.plotAgentPendant = pAgent;
+	}
+	
+	public void setPlotAgentPendant(String pAgentName) {
+		this.plotAgentPendant = PlotLauncher.runner.getPlotAgent(pAgentName);
 	}
 }

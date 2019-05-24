@@ -35,10 +35,10 @@ public class TestModel extends PlotModel<TestEnvironment> {
 			logger.info(agent.name + " lost their wallet...");
 		}
 
-		this.environment.addEventPerception(agent.name, "do_stuff");
+		this.environment.addEventPercept(agent.name, "do_stuff");
 		
 		if(step == 9) {
-			this.environment.addEventPerception(agent.name,
+			this.environment.addEventPercept(agent.name,
 												"is_holiday(friday)",
 												PerceptAnnotation.fromEmotion("joy"));
 		}
@@ -60,13 +60,7 @@ public class TestModel extends PlotModel<TestEnvironment> {
 
 		@Override
 		public String getItemName() {
-			return "Wallet";
-		}
-
-		@Override
-		public String literal() {
 			return "wallet";
 		}
-		
 	}
 }

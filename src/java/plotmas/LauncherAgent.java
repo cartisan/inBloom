@@ -1,8 +1,10 @@
 package plotmas;
 
 import java.util.Collection;
+import java.util.LinkedList;
 
 import jason.asSemantics.Personality;
+import plotmas.storyworld.Item;
 
 /**
  * Helper class used to encapsulate all parameters needed to initialise ASL Agents from java code.
@@ -14,31 +16,31 @@ public class LauncherAgent {
 	public String beliefs;
 	public String goals;
 	public Personality personality;
+    public LinkedList<Item> inventory;
+    public String location;
 	
 	public LauncherAgent() {
 		this.name = null;
 		this.beliefs = "";
 		this.goals = "";
 		this.personality = null;
+		this.location = PlotModel.DEFAULT_LOCATION_NAME;
+		this.inventory = new LinkedList<Item>();
 	}
 	
 	public LauncherAgent(String name) {
-		this.beliefs = "";
-		this.goals = "";
-		this.personality = null;
-		
+		this();
 		this.name = name;
 	}
 
 	public LauncherAgent(String name, Personality personality) {
-		this.beliefs = "";
-		this.goals = "";
-		
+		this();
 		this.name = name;
 		this.personality = personality;
 	}
 	
 	public LauncherAgent(String name, Collection<String> beliefs, Collection<String> goals, Personality personality) {
+		this();
 		this.name = name;
 		this.beliefs = createLiteralString(beliefs);
 		this.goals = createLiteralString(goals);

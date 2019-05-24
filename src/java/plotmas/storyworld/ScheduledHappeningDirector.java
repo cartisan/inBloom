@@ -8,17 +8,17 @@ import plotmas.PlotModel;
 
 public class ScheduledHappeningDirector implements HappeningDirector, Cloneable{
 
-	private List<Happening<?>> stillScheduledHappenings;    // contains happenings that are scheduled but were not yet executed this round
-	private List<Happening<?>> happeningsSchedule;			// contains happenings that are scheduled (independent of current cycle's state)
+	private List<Happening<?>> scheduledHappenings;    // contains happenings that are scheduled but were not yet executed this round
+	private List<Happening<?>> allHappenings;			// contains happenings that are scheduled (independent of current cycle's state)
 	private PlotModel<?> model;
 	
 	public ScheduledHappeningDirector() {
-		this.happeningsSchedule = new LinkedList<>();
-		this.stillScheduledHappenings = new LinkedList<>();
+		this.allHappenings = new LinkedList<>();
+		this.scheduledHappenings = new LinkedList<>();
 	}
 
 	public List<Happening<?>> getAllHappenings() {
-		return this.happeningsSchedule;
+		return this.allHappenings;
 	}
 	
 	/**
@@ -29,7 +29,7 @@ public class ScheduledHappeningDirector implements HappeningDirector, Cloneable{
 	public List<Happening<?>> getTriggeredHappenings(int step) {
 		List<Happening<?>> triggeredHapps = new LinkedList<>();
 		
-		for (Iterator<Happening<?>> iterator = this.stillScheduledHappenings.iterator(); iterator.hasNext();) {
+		for (Iterator<Happening<?>> iterator = this.scheduledHappenings.iterator(); iterator.hasNext();) {
 		    Happening h = iterator.next();
 			if (h.triggered(this.model)) {
 				triggeredHapps.add(h);
@@ -41,14 +41,14 @@ public class ScheduledHappeningDirector implements HappeningDirector, Cloneable{
 
 	@SuppressWarnings({ "rawtypes" })
 	public void scheduleHappening(Happening h) {
-		this.happeningsSchedule.add(h);		
-		this.stillScheduledHappenings.add(h);		
+		this.allHappenings.add(h);		
+		this.scheduledHappenings.add(h);		
 	}
 
 	@SuppressWarnings("rawtypes")
 	public void removeHappening(Happening h) {
-		this.happeningsSchedule.remove(h);		
-		this.stillScheduledHappenings.remove(h);		
+		this.allHappenings.remove(h);		
+		this.scheduledHappenings.remove(h);		
 	}
 	
 	@Override
@@ -63,7 +63,7 @@ public class ScheduledHappeningDirector implements HappeningDirector, Cloneable{
 	 */
 	@SuppressWarnings("unchecked")
 	public void reset() {
-		this.stillScheduledHappenings = (LinkedList<Happening<?>>) ((LinkedList<Happening<?>>) this.happeningsSchedule).clone();
+		this.scheduledHappenings = (LinkedList<Happening<?>>) ((LinkedList<Happening<?>>) this.allHappenings).clone();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -71,7 +71,7 @@ public class ScheduledHappeningDirector implements HappeningDirector, Cloneable{
 	public ScheduledHappeningDirector clone() {
 		ScheduledHappeningDirector clone = new ScheduledHappeningDirector();
 		clone.model = this.model;
-		clone.happeningsSchedule = (LinkedList<Happening<?>>) ((LinkedList<Happening<?>>) this.happeningsSchedule).clone();
+		clone.allHappenings = (LinkedList<Happening<?>>) ((LinkedList<Happening<?>>) this.allHappenings).clone();
 		
 		clone.reset();
 		return clone;

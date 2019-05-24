@@ -315,8 +315,8 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
         
 		this.setupPlotLogger();
 		this.initializePlotEnvironment(agents, (ModType) model);
-		this.initializePlotAgents(agents);
 		this.initializePlotModel(agents);
+		this.initializePlotAgents(agents);
 	}
 	
 		

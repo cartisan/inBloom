@@ -54,6 +54,19 @@ public class MoodMapper {
 	}
 	
 	/**
+	 * Returns the end time of the agent that ended its reasoning cycle last.
+	 * @return time in ms
+	 */
+	public Long latestEndTime() {
+		Long endTime = 0l;
+		for (String agName: this.mappedAgents()) {
+			Long agEndTime = latestMoodEntry(agName);
+			endTime = (agEndTime > endTime ? agEndTime : endTime);
+		}
+		return endTime;
+	}
+	
+	/**
 	 * Returns the names of all agents whose moods were mapped during the execution
 	 * @return as set of agent names
 	 */

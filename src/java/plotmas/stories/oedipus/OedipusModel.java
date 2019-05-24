@@ -29,8 +29,8 @@ public class OedipusModel extends PlotModel<OedipusEnvironment> {
 		logger.info("Someone was chilling");
 		
 		if(this.actionCount == 20) {
-			this.environment.addEventPerception("jocaste", "pregnant");
-			this.environment.addEventPerception("laios", "wifePregnant");
+			this.environment.addEventPercept("jocaste", "pregnant");
+			this.environment.addEventPercept("laios", "wifePregnant");
 			pregnancytimeCount ++;
 			
 			
@@ -47,8 +47,8 @@ public class OedipusModel extends PlotModel<OedipusEnvironment> {
 		logger.info("Someone was working");
 		
 		if(this.actionCount == 20) {
-			this.environment.addEventPerception("jocaste", "pregnant");
-			this.environment.addEventPerception("laios", "wifePregnant");
+			this.environment.addEventPercept("jocaste", "pregnant");
+			this.environment.addEventPercept("laios", "wifePregnant");
 			pregnancytimeCount ++;
 			
 			
@@ -61,7 +61,7 @@ public class OedipusModel extends PlotModel<OedipusEnvironment> {
 	public boolean ask(Character asker, Character asked){
 		this.actionCount +=1;
 		logger.info(asker.name +" asked "+ asked.name);
-		this.environment.addEventPerception(asked.name, "wasAsked");
+		this.environment.addEventPercept(asked.name, "wasAsked");
 		
 		return true;
 	}
@@ -70,7 +70,7 @@ public class OedipusModel extends PlotModel<OedipusEnvironment> {
 		this.actionCount +=1;
 		logger.info(answerer.name +" answered "+ answered.name);
 		if (answered.name == "laios") {
-			this.environment.addEventPerception(answered.name, "sonKillsMe");
+			this.environment.addEventPercept(answered.name, "sonKillsMe");
 			logger.info(answered.name +"getsAnswer sonKillsMe");
 		}
 		return true;
@@ -80,7 +80,7 @@ public class OedipusModel extends PlotModel<OedipusEnvironment> {
 	public boolean getChild(Character agent) {
 		
 		if(agent.name == "jocaste") {
-			this.environment.addEventPerception(agent.name, "gotChild");
+			this.environment.addEventPercept(agent.name, "gotChild");
 			this.actionCount +=1;
 			
 			this.environment.createAgent("Oedipus", "agent_oedipus.asl", new Personality(0,0,0,0,0));
@@ -95,7 +95,7 @@ public class OedipusModel extends PlotModel<OedipusEnvironment> {
 	public boolean giveChildTo(Character giver, Character receiver){
 		this.actionCount +=1;
 		logger.info(giver.name +" gave "+ "Oedipus " + "to " + receiver.name);
-		this.environment.addEventPerception(receiver.name, "guardianOfOedipus");
+		this.environment.addEventPercept(receiver.name, "guardianOfOedipus");
 		logger.info(receiver.name + " is guardian of Oedipus");
 		
 		return true;
@@ -105,8 +105,8 @@ public class OedipusModel extends PlotModel<OedipusEnvironment> {
 	public boolean adopt(Character adopter, Character adopted){
 		this.actionCount +=1;
 		logger.info(adopter.name +" adopted" + adopted.name);
-		this.environment.addEventPerception(adopter.name, "parentsOfOedipus");
-		this.environment.addEventPerception(adopted.name, "childOfPolybosAndMerope");
+		this.environment.addEventPercept(adopter.name, "parentsOfOedipus");
+		this.environment.addEventPercept(adopted.name, "childOfPolybosAndMerope");
 		
 		return true;
 	}

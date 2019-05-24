@@ -22,11 +22,7 @@ public class FindCornHappening extends Happening<FarmModel> {
 	@Override
 	public void execute(FarmModel model) {
 		Character chara = model.getCharacter(this.getPatient());
-
-		model.wheat = model.new Wheat();
-		chara.addToInventory(model.wheat);
-		model.wheatFound = true;
-		
+		chara.addToInventory(new FarmModel.Wheat());
 		model.getLogger().info(this.getPatient() + " found a grain of wheat"); 
 	}
 }
