@@ -1,4 +1,4 @@
-package plotmas.test.story;
+package inBloom.test.story;
 
 import java.util.List;
 

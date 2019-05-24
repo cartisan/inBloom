@@ -1,4 +1,4 @@
-package plotmas.test.helper;
+package inBloom.test.helper;
 
 import java.util.LinkedList;
 import java.util.List;

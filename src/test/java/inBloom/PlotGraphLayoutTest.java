@@ -1,4 +1,4 @@
-package plotmas;
+package inBloom;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;

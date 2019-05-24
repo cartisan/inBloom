@@ -1,4 +1,4 @@
-package plotmas.test.helper;
+package inBloom.test.helper;
 
 import inBloom.helper.PerceptAnnotation;
 import junit.framework.TestCase;

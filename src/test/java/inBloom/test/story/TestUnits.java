@@ -1,4 +1,4 @@
-package plotmas.test.story;
+package inBloom.test.story;
 
 import inBloom.graph.Edge;
 import inBloom.graph.PlotDirectedSparseGraph;
