@@ -17,12 +17,13 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 
 	@Override
 	protected ReflectResult reflect(EngageResult er) {
-		//logger.info("I am reflecting");
+		log("I am reflecting");
+		double currTellability = er.getTellability().compute();
 		onCycleResult(lastPersonalities, er.getTellability());
-		
+		log(" Current Tellability: " + currTellability);
 		// Save tellability, graph and hen personality if it was better than the best before
-		if(er.getTellability().compute() > bestTellability) {
-			bestTellability = er.getTellability().compute();
+		if(currTellability > bestTellability) {
+			bestTellability = currTellability;
 			log("New best: " + bestTellability);
 			bestPersonalities = lastPersonalities;
 		}
@@ -42,7 +43,9 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 		}
 		
 		List<LauncherAgent> agents = createAgs(this.agentNames, new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
-		return new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), agents);
+		//without happening:
+		//return new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), agents);
+		return new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), getHappeningDirector()), agents);
 	}
 
 	@Override
@@ -52,8 +55,9 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 		lastRunner.setShowGui(false);
 		
 		List<LauncherAgent> agents = createAgs(this.agentNames,new Personality[] {lastPersonalities[0], lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});
-		ReflectResult rr = new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), agents);
-		
+		//without happening
+		//ReflectResult rr = new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector()), agents);
+		ReflectResult rr = new ReflectResult(lastRunner, new FarmModel(new ArrayList<LauncherAgent>(), getHappeningDirector()), agents);
 		log("Cycle " + currentCycle);
 		
 		// Create a new file logger if the log file name depends on the cycle number.
@@ -75,6 +79,25 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 		
 		// flush and close handled by super implementation
 		super.finish(er);
+	}
+	
+	// added by Julia
+	// currently there are no happenings
+	// this method should solve the problem:
+	private ScheduledHappeningDirector getHappeningDirector() {
+		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
+		FindCornHappening findCorn = new FindCornHappening(
+				// hen finds wheat after 2 farm work actions
+				(FarmModel model) -> {
+	            		if(model.actionCount > 2) {
+	            			return true;
+	            		}
+	            		return false; 
+	    		},
+				"hen",
+				"actionCount");
+		hapDir.scheduleHappening(findCorn);
+		return hapDir;
 	}
 	
 	public static void main(String[] args) {
