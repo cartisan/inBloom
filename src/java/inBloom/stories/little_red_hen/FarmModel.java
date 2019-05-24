@@ -21,20 +21,20 @@ import jason.asSyntax.Literal;
  * @author Leonid Berov
  */
 public class FarmModel extends PlotModel<FarmEnvironment>{
-	public static Tree TREE = new Tree();
-	public static Farm FARM = new Farm();
+	public Tree tree = new Tree();
+	public Farm farm = new Farm();
 
 	public FarmModel(List<LauncherAgent> agents, HappeningDirector hapDir) {
 		super(agents, hapDir);
 
 		// add locations
-		this.addLocation(TREE);
-		this.addLocation(FARM);
+		this.addLocation(tree);
+		this.addLocation(farm);
 	}
 
 	public boolean farmWork(Character agent) {
-		if(agent.location == FARM) {
-			FARM.farmingProgress += 1;
+		if(agent.location == farm) {
+			farm.farmingProgress += 1;
 			logger.info("Some farming activity was performed");
 			return true;
 		}
@@ -42,12 +42,12 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	}
 	
 	public boolean plantWheat(Character agent) {
-		if ((agent.location == FARM) & agent.has(Wheat.itemName) ){
+		if ((agent.location == farm) & agent.has(Wheat.itemName) ){
 			Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 			if (wheatItem.state == Wheat.STATES.SEED) {
 				agent.removeFromInventory(wheatItem);
-				FARM.produce = wheatItem;
-				FARM.updateProduceState(Wheat.STATES.GROWING);
+				farm.produce = wheatItem;
+				farm.updateProduceState(Wheat.STATES.GROWING);
 				
 				this.environment.addEventPercept(agent.name, "plant(wheat)", PerceptAnnotation.fromEmotion("pride"));
 				logger.info("Wheat planted");
@@ -60,8 +60,8 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	}
 	
 	public boolean tendWheat(Character agent) {
-		if ((agent.location == FARM) & (FARM.produce.state == Wheat.STATES.GROWING)){
-			FARM.updateProduceState(Wheat.STATES.RIPE);
+		if ((agent.location == farm) & (farm.produce.state == Wheat.STATES.GROWING)){
+			farm.updateProduceState(Wheat.STATES.RIPE);
 			logger.info("Wheat has grown and is ripe now");
 			this.environment.addEventPercept(agent.name, "tend(wheat)", PerceptAnnotation.fromEmotion("pride"));
 			return true;
@@ -71,11 +71,11 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	}
 	
 	public boolean harvestWheat(Character agent) {
-		if ((agent.location == FARM) & (FARM.produce.state == Wheat.STATES.RIPE)){
-			Wheat w =  FARM.produce;
+		if ((agent.location == farm) & (farm.produce.state == Wheat.STATES.RIPE)){
+			Wheat w =  farm.produce;
 			w.state = Wheat.STATES.HARVESTED;
 			agent.addToInventory(w);
-			FARM.updateProduceState(null);
+			farm.updateProduceState(null);
 			
 			logger.info("Wheat was harvested");
 			this.environment.addEventPercept(agent.name, "harvest(wheat)", PerceptAnnotation.fromEmotion("pride"));
@@ -86,7 +86,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	}
 	
 	public boolean grindWheat(Character agent) {
-		if ((agent.location == FARM) & agent.has(Wheat.itemName) & (((Wheat) agent.get(Wheat.itemName)).state == Wheat.STATES.HARVESTED)){
+		if ((agent.location == farm) & agent.has(Wheat.itemName) & (((Wheat) agent.get(Wheat.itemName)).state == Wheat.STATES.HARVESTED)){
 			Wheat w =  (Wheat) agent.removeFromInventory(Wheat.itemName);
 			w.state = Wheat.STATES.FLOUR;
 			agent.addToInventory(w);
@@ -98,7 +98,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	}
 
 	public boolean bakeBread(Character agent) {
-		if ((agent.location == FARM) & agent.has(Wheat.itemName) & (((Wheat) agent.get(Wheat.itemName)).state == Wheat.STATES.FLOUR)){
+		if ((agent.location == farm) & agent.has(Wheat.itemName) & (((Wheat) agent.get(Wheat.itemName)).state == Wheat.STATES.FLOUR)){
 			Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 			agent.removeFromInventory(wheatItem);
 			agent.addToInventory(new Bread());
@@ -133,7 +133,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 				this.produce = null;
 			} else{
 				this.produce.state = state;
-				this.model.environment.addPercept(Literal.parseLiteral("existant(" + FarmModel.FARM.produce.literal() + ")"));
+				this.model.environment.addPercept(Literal.parseLiteral("existant(" + this.produce.literal() + ")"));
 			}
 		}
 	}
@@ -165,7 +165,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 				logger.info(character.name + " flies to the top of an ancient tree");
 				
 				// characters in other places see the inventory of the character on the tree (apart from the character itself)
-				List<Character> otherPlacesChars = model.getCharacters().stream().filter(chara -> !chara.location.equals(TREE)).collect(Collectors.toList());
+				List<Character> otherPlacesChars = model.getCharacters().stream().filter(chara -> !chara.location.equals(this)).collect(Collectors.toList());
 				for (Character observer : otherPlacesChars) {
 					for (Item item : character.inventory) {
 						model.environment.addEventPercept(observer.getName(),

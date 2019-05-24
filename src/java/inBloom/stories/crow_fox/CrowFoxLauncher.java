@@ -47,7 +47,6 @@ public class CrowFoxLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 //        LauncherAgent fox = new LauncherAgent("fox", Collections.singletonList("hungry"),
 //				 new LinkedList<>(),
 //				 new Personality(0, 0, 0, -1, 0));
-        fox.location = FarmModel.TREE.name;
         
         ImmutableList<LauncherAgent> agents = ImmutableList.of(crow,fox);
        
@@ -55,6 +54,7 @@ public class CrowFoxLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
         
         FarmModel model = new FarmModel(agents, hapDir);
+        fox.location = model.tree.name;
 
 		// Execute MAS
 		runner.initialize(args, model, agents, "agent");

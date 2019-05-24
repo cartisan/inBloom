@@ -110,7 +110,7 @@ public class RedHenHappeningCycle extends PlotCycle {
 														 new LinkedList<String>(),
 														 new Personality(0, 0, 0, 0, 0));
 		for (LauncherAgent ag : startAgents) {
-			ag.location = FarmModel.FARM.name;
+			ag.location = model.farm.name;
 		}
 		
 		this.charCount = startAgents.size();

@@ -5,7 +5,6 @@ import java.util.LinkedList;
 
 import inBloom.LauncherAgent;
 import inBloom.ERcycle.PlotCycle.EngageResult;
-import inBloom.stories.little_red_hen.FarmModel;
 import inBloom.stories.little_red_hen.RedHenHappeningCycle;
 import jason.asSemantics.Personality;
 
@@ -23,12 +22,13 @@ public class IntroduceAntagonist implements ProblemFixCommand {
 										    Arrays.asList("hungry", "self(farm_animal)"),
 											new LinkedList<String>(),
 				 							new Personality(0, -1, 0, -1, 1));
-		this.antagonist.location = FarmModel.FARM.name;
 	}
 	
 	@Override
 	public void execute(EngageResult er) {
-		// Create Agent with low agreeableness
+		// TODO: This just gets the protagonist's location, more reasoning here 
+		this.antagonist.location = er.getLastAgents().get(0).location;
+		
 		er.getLastAgents().add(this.antagonist);
 		this.controller.updateCharCount(1);		// notify that we added one char
 	}
