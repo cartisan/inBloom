@@ -75,6 +75,10 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		this(agentNames, agentSrc, true);
 	}
 	
+	protected PlotCycle(String agentSrc) {
+		this(new String[3], agentSrc);
+	}
+	
 	private void initGui() {
 		cycleFrame = new JFrame("Plot Cycle");
 		cycleFrame.setLayout(new BorderLayout());
