@@ -4,16 +4,16 @@ import java.util.List;
 
 import org.junit.Before;
 
-import plotmas.LauncherAgent;
-import plotmas.ERcycle.PlotCycle;
-import plotmas.graph.PlotDirectedSparseGraph;
-import plotmas.graph.PlotGraphController;
-import plotmas.helper.EnvironmentListener;
-import plotmas.helper.Tellability;
-import plotmas.storyworld.ScheduledHappeningDirector;
+import inBloom.LauncherAgent;
+import inBloom.ERcycle.PlotCycle;
+import inBloom.graph.PlotDirectedSparseGraph;
+import inBloom.graph.PlotGraphController;
+import inBloom.helper.EnvironmentListener;
+import inBloom.helper.Tellability;
+import inBloom.storyworld.ScheduledHappeningDirector;
 
 /**
- * Abstract superclass for all plotmas unit tests that need to run a simulation. 
+ * Abstract superclass for all inBloom unit tests that need to run a simulation. 
  * Enables unit tests to run a single simulation (and analyses the plotgraph) before they start
  * executing their @Test methods.
  * @author Leonid Berov

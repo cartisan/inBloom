@@ -2,12 +2,12 @@ package plotmas.test.story;
 
 import java.util.List;
 
-import plotmas.LauncherAgent;
-import plotmas.PlotModel;
-import plotmas.helper.PerceptAnnotation;
-import plotmas.storyworld.Character;
-import plotmas.storyworld.HappeningDirector;
-import plotmas.storyworld.Item;
+import inBloom.LauncherAgent;
+import inBloom.PlotModel;
+import inBloom.helper.PerceptAnnotation;
+import inBloom.storyworld.Character;
+import inBloom.storyworld.HappeningDirector;
+import inBloom.storyworld.Item;
 
 public class TestModel extends PlotModel<TestEnvironment> {
 

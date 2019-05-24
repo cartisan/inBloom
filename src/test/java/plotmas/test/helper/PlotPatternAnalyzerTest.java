@@ -5,8 +5,8 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import inBloom.helper.PlotpatternAnalyzer;
 import junit.framework.TestCase;
-import plotmas.helper.PlotpatternAnalyzer;
 
 public class PlotPatternAnalyzerTest extends TestCase {
 	

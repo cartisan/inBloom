@@ -8,11 +8,11 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import inBloom.LauncherAgent;
+import inBloom.graph.Vertex;
+import inBloom.graph.Vertex.Type;
 import jason.asSemantics.Personality;
 import jason.util.Pair;
-import plotmas.LauncherAgent;
-import plotmas.graph.Vertex;
-import plotmas.graph.Vertex.Type;
 
 public class TellabilityTest extends AbstractPlotTest {
 	

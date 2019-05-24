@@ -1,7 +1,7 @@
 package plotmas.test.helper;
 
+import inBloom.helper.PerceptAnnotation;
 import junit.framework.TestCase;
-import plotmas.helper.PerceptAnnotation;
 
 public class PerceptAnnotationTest extends TestCase {
 

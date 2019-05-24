@@ -7,13 +7,13 @@ import java.util.Collection;
 
 import com.google.common.collect.ImmutableList;
 
+import inBloom.LauncherAgent;
+import inBloom.PlotControlsLauncher;
+import inBloom.PlotLauncher;
+import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.JasonException;
 import jason.asSemantics.Personality;
 import jason.infra.centralised.BaseCentralisedMAS;
-import plotmas.LauncherAgent;
-import plotmas.PlotControlsLauncher;
-import plotmas.PlotLauncher;
-import plotmas.storyworld.ScheduledHappeningDirector;
 
 public class TestLauncher extends PlotLauncher<TestEnvironment, TestModel> {
 
@@ -24,7 +24,7 @@ public class TestLauncher extends PlotLauncher<TestEnvironment, TestModel> {
 	}
 	
 	/**
-	 * Implements same functionality as {@link plotmas.PlotLauncher#createMas2j}, but changes directory
+	 * Implements same functionality as {@link inBloom.PlotLauncher#createMas2j}, but changes directory
 	 * of agent ASL files to {@code src/test/asl}.
 	 */
 	@Override

@@ -11,10 +11,10 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import inBloom.LauncherAgent;
+import inBloom.graph.Vertex;
+import inBloom.graph.isomorphism.UnitFinder;
 import jason.asSemantics.Personality;
-import plotmas.LauncherAgent;
-import plotmas.graph.Vertex;
-import plotmas.graph.isomorphism.UnitFinder;
 
 public class PrimitiveUnitTest extends AbstractPlotTest {
 	

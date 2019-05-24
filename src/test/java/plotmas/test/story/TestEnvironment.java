@@ -1,8 +1,8 @@
 package plotmas.test.story;
 
+import inBloom.PlotEnvironment;
+import inBloom.storyworld.Character;
 import jason.asSyntax.Structure;
-import plotmas.PlotEnvironment;
-import plotmas.storyworld.Character;
 
 public class TestEnvironment extends PlotEnvironment<TestModel> {
 	

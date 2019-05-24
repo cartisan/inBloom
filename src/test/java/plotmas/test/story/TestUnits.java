@@ -1,9 +1,9 @@
 package plotmas.test.story;
 
-import plotmas.graph.Edge;
-import plotmas.graph.PlotDirectedSparseGraph;
-import plotmas.graph.Vertex;
-import plotmas.graph.isomorphism.FunctionalUnit;
+import inBloom.graph.Edge;
+import inBloom.graph.PlotDirectedSparseGraph;
+import inBloom.graph.Vertex;
+import inBloom.graph.isomorphism.FunctionalUnit;
 
 @SuppressWarnings("unused")
 public class TestUnits {

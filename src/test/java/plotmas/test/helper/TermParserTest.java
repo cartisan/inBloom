@@ -6,11 +6,11 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+import inBloom.ERcycle.AdaptPersonality.OCEANConstraints;
+import inBloom.helper.TermParser;
 import jason.asSyntax.Literal;
 import jason.util.Pair;
 import junit.framework.TestCase;
-import plotmas.ERcycle.AdaptPersonality.OCEANConstraints;
-import plotmas.helper.TermParser;
 
 public class TermParserTest extends TestCase {
 	

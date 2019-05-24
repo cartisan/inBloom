@@ -11,13 +11,14 @@ import com.google.common.cache.LoadingCache;
 
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import inBloom.LauncherAgent;
+import inBloom.graph.Edge;
+import inBloom.graph.PlotDirectedSparseGraph;
+import inBloom.graph.PlotGraphController;
+import inBloom.graph.PlotGraphLayout;
+import inBloom.graph.Transformers;
+import inBloom.graph.Vertex;
 import junit.framework.TestCase;
-import plotmas.graph.Edge;
-import plotmas.graph.PlotDirectedSparseGraph;
-import plotmas.graph.PlotGraphController;
-import plotmas.graph.PlotGraphLayout;
-import plotmas.graph.Transformers;
-import plotmas.graph.Vertex;
 
 public class PlotGraphLayoutTest extends TestCase {
 
