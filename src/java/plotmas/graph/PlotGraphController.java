@@ -8,6 +8,7 @@ import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
 
@@ -41,12 +42,14 @@ import plotmas.LauncherAgent;
 import plotmas.PlotControlsLauncher;
 import plotmas.PlotLauncher;
 import plotmas.PlotModel;
+import plotmas.ERcycle.PlotCycle.ReflectResult;
 import plotmas.graph.isomorphism.FunctionalUnit;
 import plotmas.graph.isomorphism.FunctionalUnits;
 import plotmas.graph.visitor.EdgeLayoutVisitor;
 import plotmas.helper.Tellability;
 import plotmas.stories.little_red_hen.FarmEnvironment;
 import plotmas.stories.little_red_hen.FarmModel;
+import plotmas.stories.little_red_hen.FindCornHappening;
 import plotmas.stories.little_red_hen.RedHenLauncher;
 import plotmas.storyworld.HappeningDirector;
 import plotmas.storyworld.ScheduledHappeningDirector;
@@ -249,15 +252,25 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
     				//getting the current graph and give it to the CounterfactualityLauncher
         			originalGraph = PlotGraphController.getPlotListener().getGraph();
         			
-        			//for the beginning: we give it all information (runner, persNum, etc)
-        			//only for testing, will be removed later
+        			//for the beginning: we give it all the story specific information (runner, persNum, etc)
         			ImmutableList<LauncherAgent> lagents = ImmutableList.of(
  							new LauncherAgent("hen",new Personality(0,  1, 0.7,  0.3, 0.15)),
  							new LauncherAgent("dog",new Personality(0, -1, 0, -0.7, -0.8)),
  							new LauncherAgent("cow",new Personality(0, -1, 0, -0.7, -0.8)),
  							new LauncherAgent("pig", new Personality(0, -1, 0, -0.7, -0.8)));
         			logger.info("Launcher Agents created in PlotGraphController");
-        			ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
+        	        ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
+        			FindCornHappening findCorn = new FindCornHappening(
+        					// hen finds wheat after 2 farm work actions
+        					(FarmModel model) -> {
+        		            		if(model.actionCount > 2) {
+        		            			return true;
+        		            		}
+        		            		return false; 
+        		    		},
+        					"hen",
+        					"actionCount");
+        			hapDir.scheduleHappening(findCorn);  
         			logger.info("Happening Scheduler created");
         			PlotModel<FarmEnvironment> model = new FarmModel(lagents, hapDir);
         			logger.info("PlotModel created");
