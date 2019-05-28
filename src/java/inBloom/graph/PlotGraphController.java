@@ -373,8 +373,8 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		
 		// Create analysed graph with semantically interpretable edges and collapsed vertices
 		PlotDirectedSparseGraph g = new FullGraphPPVisitor().apply(this.graph);
+		g = new CompactGraphPPVisitor().apply(g);
 		g.setName("Analyzed Plot Graph");
-		g.accept(new CompactGraphPPVisitor(g));
 
 		// compute all necessary statictics for tellability
 		analysisResult = new Tellability(g);
@@ -388,7 +388,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		addInformation("Tellability: " + this.analysisResult.compute());
 		
 		// Insert spacing between motivation edges
-		g.accept(new EdgeLayoutVisitor(g, 9));
+		g = new EdgeLayoutVisitor(9).apply(g);
 		
 		this.addGraph(g);
 		this.graphTypeList.setSelectedItem(g);

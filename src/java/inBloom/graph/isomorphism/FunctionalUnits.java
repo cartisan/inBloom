@@ -186,8 +186,7 @@ public class FunctionalUnits {
 		for(int i = 1; i < ALL.length; i++) {
 			ALL[i].getDisplayGraph().cloneInto(allUnitsGraph);
 		}
-		EdgeLayoutVisitor elv = new EdgeLayoutVisitor(allUnitsGraph, 9);
-		allUnitsGraph.accept(elv);
+		allUnitsGraph = new EdgeLayoutVisitor(9).apply(allUnitsGraph);
 		allUnitsGraph.setName("Functional Units");
 		ALL_UNITS_GRAPH = allUnitsGraph;
 		

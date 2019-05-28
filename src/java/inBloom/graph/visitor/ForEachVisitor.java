@@ -77,5 +77,4 @@ public class ForEachVisitor extends PlotGraphVisitorAdapter {
 				return EdgeVisitResult.TERMINATE;
 		}
 	}
-
 }

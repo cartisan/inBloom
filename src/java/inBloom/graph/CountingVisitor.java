@@ -30,13 +30,17 @@ public class CountingVisitor implements PlotGraphVisitor {
 	private String currentRoot;
 	private PlotDirectedSparseGraph graph;
 	
-	public CountingVisitor apply(PlotDirectedSparseGraph graph) {
+	/**
+	 * Performs counting in order to compute plot statistics. Unlike common visitors, this does not modify the graph.
+	 * @see inBloom.graph.visitor.PlotGraphVisitor#apply(inBloom.graph.PlotDirectedSparseGraph)
+	 */
+	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
 		conflictCounter = new HashMap<>();
 		productiveConflicts = new HashMap<>();
 		
 		this.graph = graph;
 		this.graph.accept(this);
-		return this;
+		return graph;
 	}
 	
 

@@ -1,6 +1,7 @@
 package inBloom.graph.visitor;
 
 import inBloom.graph.Edge;
+import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.Vertex;
 
 /**
@@ -9,6 +10,12 @@ import inBloom.graph.Vertex;
  */
 public abstract class PlotGraphVisitorAdapter implements PlotGraphVisitor {
 
+	@Override
+	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
+		graph.accept(this);
+		return graph;
+	}
+	
 	public void visitVertex(Vertex vertex) {}
 	
 	@Override
@@ -34,5 +41,4 @@ public abstract class PlotGraphVisitorAdapter implements PlotGraphVisitor {
 
 	@Override
 	public abstract EdgeVisitResult visitEdge(Edge edge);
-
 }

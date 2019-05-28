@@ -1,6 +1,7 @@
 package inBloom.graph.visitor;
 
 import inBloom.graph.Edge;
+import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.Vertex;
 
 /**
@@ -12,6 +13,13 @@ import inBloom.graph.Vertex;
  */
 public interface PlotGraphVisitor {
 
+	/**
+	 * Initiates the visiting process on graph. Usually implemented via double dispatch by calling {@code graph.accept(this)}.
+	 * @param graph the graph to be visited
+	 * @return the visited graph with all resulting modifications
+	 */
+	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph);
+	
 	public void visitRoot		(Vertex vertex);
 	public void visitEvent		(Vertex vertex);
 	public void visitAction		(Vertex vertex);

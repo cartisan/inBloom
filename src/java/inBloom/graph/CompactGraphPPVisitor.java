@@ -28,14 +28,17 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 	protected static Logger logger = Logger.getLogger(FullGraphPPVisitor.class.getName());
 	
 	private PlotDirectedSparseGraph graph;
-	
-	private Vertex currentRoot = null;
-	private LinkedList<Vertex> stateList = new LinkedList<Vertex>();
-	
-	public CompactGraphPPVisitor(PlotDirectedSparseGraph graph) {
-		this.graph = graph;
-	}
+	private Vertex currentRoot;
+	private LinkedList<Vertex> stateList;
 
+	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
+		this.graph = graph;
+		this.stateList = new LinkedList<Vertex>();
+		this.graph.accept(this);
+		
+		return this.graph;
+	}
+	
 	@Override
 	public void visitRoot(Vertex vertex) {
 		currentRoot = vertex;
@@ -63,16 +66,16 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 			}
 		}
 		
-		/* do not remove percept if 
-		 *  - is a wish or obligation that is being added or removed
-		 *  - is the start of a mood, or the end of a mood that triggers something 
+		/* remove percept if it is not
+		 *  - a wish or obligation that is being added or removed
+		 *  - the start of a mood, or the end of a mood that triggers something 
 		 *	- has motivation edges attached to it
-		 *  - is part of a trade-off simple FU
+		 *  - part of a trade-off simple FU
 		 */
-		if(isInTradeoff | isRelevantMood(vertex) | isWishObligation(vertex) | hasMotivation(vertex)) {
-			return;
+		if (! (isInTradeoff | isRelevantMood(vertex) | isWishObligation(vertex) | hasMotivation(vertex)) ) {
+			this.graph.removeVertexAndPatchGraphAuto(this.currentRoot, vertex);
 		}
-		this.graph.removeVertexAndPatchGraphAuto(this.currentRoot, vertex);
+		return;
 	}
 	
 	private boolean hasMotivation(Vertex vertex) {

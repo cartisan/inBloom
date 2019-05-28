@@ -27,10 +27,17 @@ public class EdgeLayoutVisitor implements PlotGraphVisitor {
 	 * @param g
 	 * @param numLanes
 	 */
-	public EdgeLayoutVisitor(PlotDirectedSparseGraph g, int numLanes) {
-		this.graph = g;
+	public EdgeLayoutVisitor(int numLanes) {
 		this.occupanceLeft = new Vertex[numLanes];
 		this.occupanceRight = new Vertex[numLanes];
+	}
+	
+
+	@Override
+	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
+		this.graph = graph;
+		this.graph.accept(this);
+		return this.graph;
 	}
 	
 	private void visitVertex(Vertex vertex) {
