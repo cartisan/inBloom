@@ -32,21 +32,21 @@ public class CrowFoxLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         
         LauncherAgent crow = new LauncherAgent("crow", Arrays.asList(),
 											   Collections.singletonList("approach(tree)"), 
-											   new Personality(-0.7, -1, 0.3, 0, 0));
+											   new Personality(-0.7, -1, 0.3, 1, 0));
 //        LauncherAgent crow = new LauncherAgent("crow", Arrays.asList(),
 //				  								 Collections.singletonList("approach(tree)"), 
 //				  								 new Personality(0, 0, 0.3, -1, 0));
         crow.inventory.add(new FarmModel.Bread());
         
-        LauncherAgent fox = new LauncherAgent("fox", Collections.singletonList("hungry"), 
-				 new LinkedList<>(), 
-				 new Personality(0, -0.8, 0.3, 0, 0));
+//        LauncherAgent fox = new LauncherAgent("fox", Collections.singletonList("hungry"), 
+//				 new LinkedList<>(), 
+//				 new Personality(0, -0.8, 0.3, 0, 0));
 //        LauncherAgent fox = new LauncherAgent("fox", Collections.singletonList("hungry"),
 //				 new LinkedList<>(), 
 //				 new Personality(0, 0, 0, 1, 0));
-//        LauncherAgent fox = new LauncherAgent("fox", Collections.singletonList("hungry"),
-//				 new LinkedList<>(),
-//				 new Personality(0, 0, 0, -1, 0));
+        LauncherAgent fox = new LauncherAgent("fox", Collections.singletonList("hungry"),
+				 new LinkedList<>(),
+				 new Personality(0, 0, 0, -1, 0));
         
         ImmutableList<LauncherAgent> agents = ImmutableList.of(crow,fox);
        

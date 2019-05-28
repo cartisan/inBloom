@@ -98,7 +98,7 @@ wish(relax).
 	
 +accepted_request(help_with(Req))[source(Name)] <-
 	.appraise_emotion(gratitude, Name, "accepted_request(help_with(Req))[source(Name)]", true);
-	.abolish(accepted_help_request(help_with(Helpee,Req)));
+	.abolish(accepted_request(help_with(Helpee,Req)));
 	-asking(help_with(Req), Name);
 	if(not asking(help_with(Req), _)) {
 		.resume(Req);
@@ -253,8 +253,8 @@ wish(relax).
 +!get(Thing, Person) : at(Loc) & at(Person,Loc)  <-
 	.print("I am so hungry, would you share your ", Thing," with me please?");
 	.my_name(Me);
-	.send(Person, achieve, share(Thing, Me));
-	.wait({+has(Thing)}).	
+	.send(Person, achieve, share_food(Thing, Me));
+	.wait(has(Thing)  | refuseHandOver(Person, Thing)).	
 
 +!collect(Thing) <-
 	collect(Thing).
@@ -263,14 +263,14 @@ wish(relax).
 	sing.
 
 @share1[affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
-+!share(X, Anims) <-
-	.print("Sharing: ", X, " with", Anims);
-	share(X, Anims).
++!share(Item, Anim) <-
+	.print("Sharing: ", Item, " with", Anim);
+	share(Item, Anim).
 
 @share2[affect(personality(agreeableness,low))]
-+!share(X, Anims) <- 
++!share(Item, Anim) <- 
 	.print("I'm not sharing with anyone!");
-	true.
+	!refuseHandOver(Anim,Item).
 
 +!handOver(Agent, Item) <-
 	handOver(Agent, Item).
