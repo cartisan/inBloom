@@ -104,12 +104,12 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
             public void actionPerformed(ActionEvent evt) {
             	if(cycle_args.length == 0) {
 	            	cycle_args = new String[]{"-debug"};
-	            	PlotLauncher.getRunner().setShowGui(true);
-	                btDebug.setEnabled(false);
+            		btDebug.setText("Stop Debug & Finish Cycle");
             	} else {
-            		cycle_args = new String[0];
-            		PlotLauncher.getRunner().setShowGui(false);
             		btDebug.setText("Debug Next Cycle");
+            		cycle_args = new String[0];
+            		PlotLauncher.getRunner().setDebug(false);
+            		isRunning=false;
             	}
             }
         });
