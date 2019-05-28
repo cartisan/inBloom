@@ -17,7 +17,7 @@ public class Location {
 	@ModelState
 	private List<Character> characters = null; 
 	@ModelState
-	private List<Item> existents = null;
+	private List<Item> items = null;
 	
 	protected PlotModel<?> model = null;
 	public String name = null;
@@ -25,7 +25,7 @@ public class Location {
 	public Location(String name) {
 		this.name = name;
 		this.characters = new LinkedList<>();
-		this.existents = new LinkedList<>();
+		this.items = new LinkedList<>();
 	}
 	
 	public void initialize(PlotModel<?> model) {
@@ -61,7 +61,11 @@ public class Location {
 		this.model.environment.removePerceptsByUnif(character.name, Literal.parseLiteral("at(X)"));
 		this.model.environment.addPercept(character.name, this.createLocationPercept(character, false));
 		
-		// TODO: character perceives items
+		// character perceives free items at this location
+		for (Item item : this.items) {
+			this.model.environment.addPercept(character.name, ASSyntax.createLiteral("at", item.literal(), this.literal()));
+			model.environment.addEventPercept(character.getName(), "see(" + item.getItemName() + ")");
+		}
 		
 		for (Character observer : this.characters) {
 			List<Character> otherChars = this.characters.stream().filter(c -> !c.equals(observer))
@@ -134,15 +138,24 @@ public class Location {
 	}
 	
 	public void place(Item item) {
-		// TODO: existent perception is added
-		this.existents.add(item);
+		this.items.add(item);
+		
+		// item perception is created for everyone present
+		for (Character character : this.characters) {
+			this.model.environment.addPercept(character.name, ASSyntax.createLiteral("at", item.literal(), this.literal()));
+			model.environment.addEventPercept(character.getName(), "see(" + item.getItemName() + ")");
+		}
 	}
 	
 	public Item remove(Item item) {
-		// TODO: existent perception is removed
-		
-		if (this.existents.contains(item)) {
-			this.existents.remove(item);
+		if (this.items.contains(item)) {
+			this.items.remove(item);
+			
+			// item perception is removed for everyone present
+			for (Character character : this.characters) {		
+				this.model.environment.removePercept(character.name, ASSyntax.createLiteral("at", item.literal(), this.literal()));
+			}
+			
 			return item;
 		} else {
 			logger.warning("Location " + this.name + "can't remove item " + item.getItemName() + ". Not present.");
@@ -151,9 +164,7 @@ public class Location {
 	}
 	
 	public Item remove(String itemName) {
-		// TODO: existent perception is removed
-		
-		for (Item item: this.existents) {
+		for (Item item: this.items) {
 			if (item.getItemName().equals(itemName)) {
 				this.remove(item);
 				return item;
@@ -165,12 +176,12 @@ public class Location {
 	}
 	
 	public boolean contains(Item item) {
-		return this.existents.contains(item);
+		return this.items.contains(item);
 	}
 	
 	
 	public boolean contains(String itemName) {
-		for (Item item : this.existents) {
+		for (Item item : this.items) {
 			if (item.getItemName().equals(itemName)) {
 				return true;
 			}
@@ -221,10 +232,10 @@ public class Location {
 	}
 
 	public List<Item> getExistents() {
-		return existents;
+		return items;
 	}
 
 	protected void setExistents(List<Item> existents) {
-		this.existents = existents;
+		this.items = existents;
 	}
 }
