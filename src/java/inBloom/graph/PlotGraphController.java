@@ -4,11 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
 
@@ -24,6 +22,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 
 import org.freehep.graphicsbase.util.export.ExportDialog;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RefineryUtilities;
 
 import com.google.common.collect.ImmutableList;
@@ -40,7 +39,6 @@ import inBloom.LauncherAgent;
 import inBloom.PlotControlsLauncher;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
-import inBloom.ERcycle.PlotCycle.ReflectResult;
 import inBloom.graph.isomorphism.FunctionalUnit;
 import inBloom.graph.isomorphism.FunctionalUnits;
 import inBloom.graph.visitor.EdgeLayoutVisitor;
@@ -48,8 +46,6 @@ import inBloom.helper.Tellability;
 import inBloom.stories.little_red_hen.FarmEnvironment;
 import inBloom.stories.little_red_hen.FarmModel;
 import inBloom.stories.little_red_hen.FindCornHappening;
-import inBloom.stories.little_red_hen.RedHenLauncher;
-import inBloom.storyworld.HappeningDirector;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.asSemantics.Message;
 import jason.asSemantics.Personality;
@@ -251,6 +247,8 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
     						
     				//getting the current graph and give it to the CounterfactualityLauncher
         			originalGraph = PlotGraphController.getPlotListener().getGraph();
+        			MoodGraph.getMoodListener().createData(PlotControlsLauncher.runner.getUserModel());
+        			XYSeriesCollection moodData = MoodGraph.getMoodListener().getData();
         			
         			//for the beginning: we give it all the story specific information (runner, persNum, etc)
         			ImmutableList<LauncherAgent> lagents = ImmutableList.of(

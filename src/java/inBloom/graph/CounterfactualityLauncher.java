@@ -182,7 +182,6 @@ public class CounterfactualityLauncher implements EnvironmentListener {
 	}
 	
 	protected Personality[] createPersonalitySpace(double[] posVal){
-		//as in createPersonalitySpace and createPlotSpace
 		List<Personality> personalities = new LinkedList<Personality>();
 		List<int[]> values = allCombinations(5, posVal.length, true);
 		for(int[] ocean : values) {
