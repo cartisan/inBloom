@@ -8,10 +8,10 @@ import java.util.UUID;
  */
 public class Edge implements Cloneable {
 	
-	public enum Type { ROOT,
+	public enum Type {ROOT,
 					  TEMPORAL,
 					  MOTIVATION {public String toString() { return "motivation"; } },
-					  COMMUNICATION,
+					  CROSSCHARACTER,
 					  ACTUALIZATION,
 					  TERMINATION,
 					  EQUIVALENCE,

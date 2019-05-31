@@ -22,7 +22,7 @@ import inBloom.graph.visitor.PlotGraphVisitor;
 import inBloom.graph.visitor.RemovedEdge;
 
 /**
- * Storyplot-aware graph implementation, that does not consider edges of type {@code Edge.Type.COMMUNICATION} as
+ * Storyplot-aware graph implementation, that does not consider edges of type {@code Edge.Type.CROSSCHARACTER} as
  * linking a vertex to its successor.
  * 
  * @author Leonid Berov
@@ -150,7 +150,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	
 	public Vertex addMsgReceive(String receiver, String message, Vertex sendV, int step) {
 		Vertex recV = addEvent(receiver, message, step, Vertex.Type.LISTEN,  Edge.Type.TEMPORAL);
-		this.addEdge(new Edge(Edge.Type.COMMUNICATION), sendV, recV);
+		this.addEdge(new Edge(Edge.Type.CROSSCHARACTER), sendV, recV);
 		this.vertexAgentMap.put(recV, receiver);
 		return recV;
 	}
@@ -227,7 +227,6 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
             return null;
         
         for (Edge edge : getOutgoing_internal(vertex))
-        	//if (edge.getType() != Edge.Type.COMMUNICATION && edge.getType() != Edge.Type.MOTIVATION) {
         	if(edge.getType() == Edge.Type.TEMPORAL || edge.getType() == Edge.Type.ROOT) {
         		return this.getDest(edge);
         	}
@@ -241,12 +240,12 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 * @param vertex for which char-predecessor is sought
 	 * @return successor vertex if present, or null
 	 */
-	private Vertex getCharPredecessor(Vertex vertex) {
+	public Vertex getCharPredecessor(Vertex vertex) {
 		if(!containsVertex(vertex))
 			return null;
 		
 		for(Edge edge : getIncoming_internal(vertex)) {
-			if(edge.getType() == Edge.Type.TEMPORAL) {
+			if(edge.getType() == Edge.Type.TEMPORAL || edge.getType() == Edge.Type.ROOT) {
 				return this.getSource(edge);
 			}
 		}
@@ -255,8 +254,8 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	
 	/**
 	 * Returns the position of this vertex inside the step.
-	 * 0 means this vertex is the first of its step, -1 is the second,
-	 * -2 the third, and so on.
+	 * 0 means this vertex is the first of its step, 1 is the second,
+	 * 2 the third, and so on.
 	 * @param vertex
 	 * @return position
 	 */

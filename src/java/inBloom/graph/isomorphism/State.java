@@ -520,12 +520,12 @@ public class State {
 		if(isWildcard) {
 			int crossCharacterCount = 0;
 			for(Edge e : unitEdges) {
-				if(e.getType() == Edge.Type.COMMUNICATION) {
+				if(e.getType() == Edge.Type.CROSSCHARACTER) {
 					crossCharacterCount++;
 				}
 			}
 			for(Edge e : plotEdges) {
-				if(e.getType() == Edge.Type.COMMUNICATION) {
+				if(e.getType() == Edge.Type.CROSSCHARACTER) {
 					crossCharacterCount--;
 				}
 			}

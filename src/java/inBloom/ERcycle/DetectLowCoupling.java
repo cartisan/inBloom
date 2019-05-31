@@ -17,7 +17,7 @@ public class DetectLowCoupling extends ProblemDetectionState {
 	protected ProblemFixCommand performDetect(EngageResult er) {
 		if (this.controller.charCount > 1) {
 			// count number of inter-character edges as proxy for character coupling
-			double speechNum = (double) er.getPlotGraph().getEdges().stream().filter(e -> e.getType() == Edge.Type.COMMUNICATION)
+			double speechNum = (double) er.getPlotGraph().getEdges().stream().filter(e -> e.getType() == Edge.Type.CROSSCHARACTER)
 												 			      			 .count();
 			double totalSemanticEdges = (double) er.getPlotGraph().getEdges().stream().filter(e -> e.getType() != Edge.Type.ROOT)
 																		  			  .filter(e -> e.getType() != Edge.Type.TEMPORAL)

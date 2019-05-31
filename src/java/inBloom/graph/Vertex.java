@@ -271,11 +271,34 @@ public class Vertex implements Cloneable {
 		return this.emotions.contains(emo);
 	}
 	
+	public boolean hasEmotion() {
+		return !this.emotions.isEmpty();
+	}
+	
 	public List<String> getEmotions() {
 		return this.emotions;
 	}
 
 	public Collection<Edge> getIncidentEdges() {
 		return this.graph.getIncidentEdges(this);
+	}
+
+	/**
+	 * Returns the character/root node for this vertex by recursively traversing backwards through
+	 * temporal and root egdes.
+	 * @return
+	 */
+	public Vertex getRoot() {
+		Vertex pred = this.graph.getCharPredecessor(this);
+		
+		if (pred == null) {
+			if(this.type.equals(Vertex.Type.ROOT)) {
+				return this;
+			} else {
+				throw new RuntimeException("Found non-root vertex without predecessor: " + this.getLabel());
+			}
+		} else {
+			return pred.getRoot();
+		}
 	}
 }

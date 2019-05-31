@@ -1,9 +1,20 @@
 package inBloom.graph;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
+import com.google.common.collect.Table.Cell;
 
 import inBloom.graph.Edge.Type;
 import inBloom.graph.visitor.EdgeVisitResult;
@@ -30,11 +41,18 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 	private PlotDirectedSparseGraph graph;
 	private Vertex currentRoot;
 	private LinkedList<Vertex> stateList;
+	/** Saves which perception was generated at which step, so that shared events can be identified during post-processing.
+	 *  Maps: (step, percept label w/out annotations) -> List of vertices fitting that description.
+	 *  Whenever several vertices are in one cell they are shared events. **/
+	private Table<Integer, String, List<Vertex>> stepPerceptTable;
 
 	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
 		this.graph = graph;
 		this.stateList = new LinkedList<Vertex>();
+		this.stepPerceptTable = HashBasedTable.create();
+		
 		this.graph.accept(this);
+		this.postProcessing();
 		
 		return this.graph;
 	}
@@ -59,23 +77,48 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 	public void visitPercept(Vertex vertex) {
 		boolean isInTradeoff = handleTradeoff(vertex);
 		
-		for(String emotion : Emotion.getAllEmotions()) {
-			if(vertex.hasEmotion(emotion)) {
-				handleAffectiveState(vertex);
-				return;
-			}
+		if(vertex.hasEmotion()) {
+			handleAffectiveState(vertex);
 		}
 		
 		/* remove percept if it is not
 		 *  - a wish or obligation that is being added or removed
 		 *  - the start of a mood, or the end of a mood that triggers something 
 		 *	- has motivation edges attached to it
+		 *  - has at least one emotion
 		 *  - part of a trade-off simple FU
 		 */
-		if (! (isInTradeoff | isRelevantMood(vertex) | isWishObligation(vertex) | hasMotivation(vertex)) ) {
+		if (! (isInTradeoff | isRelevantMood(vertex) | isWishObligation(vertex) | hasMotivation(vertex) | vertex.hasEmotion()) ) {
 			this.graph.removeVertexAndPatchGraphAuto(this.currentRoot, vertex);
+			return;
 		}
-		return;
+		
+		// only perceptions of physical, non-listen events are candidates for shared events
+		if (!isWishObligation(vertex) & !isRelevantMood(vertex) & !isListen(vertex) & vertex.getLabel().startsWith("+")) {
+			this.safeSharedEventCandidate(vertex);
+		}
+	}
+
+	private boolean isListen(Vertex vertex) {
+		if( this.graph.getInEdges(vertex).stream().anyMatch(e -> e.getType().equals(Edge.Type.CROSSCHARACTER))) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Safes the vertex in stepPerceptTable because it is a candidate for a shared perception.
+	 * Checks if appropriate cell is already initialized with a list. If true just adds new candidate vertex,
+	 * else initialize with a list first.
+	 * @param vertex
+	 */
+	private void safeSharedEventCandidate(Vertex vertex) {
+		if (this.stepPerceptTable.contains(vertex.getStep(), vertex.getWithoutAnnotation())) {
+			this.stepPerceptTable.get(vertex.getStep(), vertex.getWithoutAnnotation()).add(vertex);
+		} else {
+			List<Vertex> l = Lists.newArrayList(vertex);
+			this.stepPerceptTable.put(vertex.getStep(), vertex.getWithoutAnnotation(), l);
+		}
 	}
 	
 	private boolean hasMotivation(Vertex vertex) {
@@ -149,11 +192,9 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 				if(!target.getWithoutAnnotation().substring(0, 1).equals(vertex.getWithoutAnnotation().substring(0, 1))) {
 					boolean isPositive = false;
 					boolean isNegative = false;
-					for(String em : Emotion.getAllEmotions()) {
-						if(vertex.hasEmotion(em)) {
-							isPositive |= Emotion.getEmotion(em).getP() > 0;
-							isNegative |= Emotion.getEmotion(em).getP() < 0;
-						}
+					for(String em : vertex.getEmotions()) {
+						isPositive |= Emotion.getEmotion(em).getP() > 0;
+						isNegative |= Emotion.getEmotion(em).getP() < 0;
 					}
 					// This is either loss or resolution (second vertex has both valences!)
 					if(isPositive && isNegative) {
@@ -162,20 +203,18 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 						break;
 					// If there is only one valence check the first vertex:
 					} else {
-						for(String em : Emotion.getAllEmotions()) {
-							if(target.hasEmotion(em)) {
-								// This is a loss!
-								if(!isPositive && Emotion.getEmotion(em).getP() > 0) {
-									createTermination(vertex, target);
-									//toRemove = target;
-									break;
-								} else
-								// This is a resolution!
-								if(!isNegative && Emotion.getEmotion(em).getP() < 0) {
-									createTermination(vertex, target);
-									//toRemove = target;
-									break;
-								}
+						for(String em : target.getEmotions()) {
+							// This is a loss!
+							if(!isPositive && Emotion.getEmotion(em).getP() > 0) {
+								createTermination(vertex, target);
+								//toRemove = target;
+								break;
+							} else
+							// This is a resolution!
+							if(!isNegative && Emotion.getEmotion(em).getP() < 0) {
+								createTermination(vertex, target);
+								//toRemove = target;
+								break;
 							}
 						}
 					}
@@ -200,7 +239,6 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitListen(Vertex vertex) {
-		
 	}
 	
 	@Override
@@ -249,5 +287,42 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 		this.graph.addEdge(new Edge(Edge.Type.TEMPORAL), w, u);
 		this.graph.addEdge(new Edge(Edge.Type.TEMPORAL), u, v);
 		return u;
+	}
+	
+	/**
+	 * Performs all post-processing tasks needed to finish the compact graph. This includes:
+	 * <ul>
+	 *   <li> Creating cross-character edges for all perception vertices with same content and step but perceived 
+	 *        by different agents. That is conecting the vertices of each cell in {@linkplain #stepPerceptTable} that 
+	 *        has multiple entries. </li>
+     * 	 <li> Trimming the repeated actions at the end of the plot that caused execution to pause.</li>
+     * </ul>
+	 */
+	private void postProcessing() {
+		for (Cell<Integer, String, List<Vertex>> cell : this.stepPerceptTable.cellSet()) {
+			// create edges between all vertices in cell (cell obv. should have more than one vertex
+			if (cell.getValue().size() > 1) {
+				// create all pairwise combinations for vertices in cell, connect all pairs
+				Set<Set<Vertex>> pairs = Sets.combinations(new HashSet<Vertex>(cell.getValue()), 2);
+				
+				for(Set<Vertex> pair : pairs) {
+					ArrayList<Vertex> pList = new ArrayList<>(pair);
+					
+					// if both vertices belong to same character, no cross-character edge is required 
+					if (pList.get(0).getRoot().equals(pList.get(1).getRoot())) {
+						continue;
+					}
+					
+					// create x-character edges
+					this.graph.addEdge(new Edge(Edge.Type.CROSSCHARACTER), pList);
+					
+					// connect bi-directionally by creating reversed edges
+					Collections.reverse(pList);
+					this.graph.addEdge(new Edge(Edge.Type.CROSSCHARACTER), pList);
+				}
+			}
+		}
+		
+		// TODO: Remove repeating pattern at end?
 	}
 }

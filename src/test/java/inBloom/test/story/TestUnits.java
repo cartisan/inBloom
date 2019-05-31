@@ -79,7 +79,7 @@ public class TestUnits {
 	}
 	
 	private static Edge makeCommunication() {
-		return new Edge(Edge.Type.COMMUNICATION);
+		return new Edge(Edge.Type.CROSSCHARACTER);
 	}
 	
 	private static Edge makeMotivation() {

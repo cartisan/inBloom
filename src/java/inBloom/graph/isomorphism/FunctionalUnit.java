@@ -211,7 +211,7 @@ public class FunctionalUnit {
 					if(toAdd == vert) {
 						toAdd = displayGraph.getDest(e);
 					}
-					if(e.getType() == Edge.Type.COMMUNICATION) {
+					if(e.getType() == Edge.Type.CROSSCHARACTER) {
 						dump.add(toAdd);
 					} else {
 						queue.add(toAdd);

@@ -302,7 +302,7 @@ public class PlotGraphLayoutTest extends TestCase {
 		graph.addEdge(new Edge(), v7, v8);
 		
 		// !!! Check out how it looks
-		visuallyInspectLayout(graph);
+//		visuallyInspectLayout(graph);
 		
 //		// ..... Testing locations ......
 		Layout<Vertex, Edge> layout = new PlotGraphLayout(graph);
