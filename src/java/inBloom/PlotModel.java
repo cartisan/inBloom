@@ -200,6 +200,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		
     	// update saved storyworld state, but do not enter the happenings as causes for the change,
 		// because happenings are not present in agents embedded narrative plot graphs
+		// TODO: get this into for-loop, so that we can check changes after each happening, and have happenings in causality table
     	this.noteStateChanges();
 	}
 	
@@ -275,7 +276,10 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	        	if((currentV != null) && (!currentV.equals(oldV))) {
 	        		
 	        		// reset causal connection of this field with any action, cause current val was caused by happening
-	        		this.causalityTable.columnMap().get(cell.getRowKey()).clear();
+	        		if(this.causalityTable.columnMap().containsKey(cell.getRowKey())) {
+	        			this.causalityTable.columnMap().get(cell.getRowKey()).clear();
+	        		}
+	        		// TODO: note down in causality table that new state was caused by happening, so we can have causality edges between happenings?
 	        		
 	        		// update new field value in our dict
 	        		fieldValueStore.put(cell.getRowKey(), cell.getColumnKey(), currentV);
