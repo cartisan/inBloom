@@ -46,6 +46,7 @@ import inBloom.helper.Tellability;
 import inBloom.stories.little_red_hen.FarmEnvironment;
 import inBloom.stories.little_red_hen.FarmModel;
 import inBloom.stories.little_red_hen.FindCornHappening;
+import inBloom.stories.little_red_hen.RedHenCounterfactualityTest;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.asSemantics.Message;
 import jason.asSemantics.Personality;
@@ -250,31 +251,33 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
         			MoodGraph.getMoodListener().createData(PlotControlsLauncher.runner.getUserModel());
         			XYSeriesCollection moodData = MoodGraph.getMoodListener().getData();
         			
-        			//for the beginning: we give it all the story specific information (runner, persNum, etc)
-        			ImmutableList<LauncherAgent> lagents = ImmutableList.of(
- 							new LauncherAgent("hen",new Personality(0,  1, 0.7,  0.3, 0.15)),
- 							new LauncherAgent("dog",new Personality(0, -1, 0, -0.7, -0.8)),
- 							new LauncherAgent("cow",new Personality(0, -1, 0, -0.7, -0.8)),
- 							new LauncherAgent("pig", new Personality(0, -1, 0, -0.7, -0.8)));
-        			logger.info("Launcher Agents created in PlotGraphController");
-        	        ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
-        			FindCornHappening findCorn = new FindCornHappening(
-        					// hen finds wheat after 2 farm work actions
-        					(FarmModel model) -> {
-        		            		if(model.FARM.farmingProgress > 2) {
-        		            			return true;
-        		            		}
-        		            		return false; 
-        		    		},
-        					"hen",
-        					"actionCount");
-        			hapDir.scheduleHappening(findCorn);  
-        			logger.info("Happening Scheduler created");
-        			PlotModel<FarmEnvironment> model = new FarmModel(lagents, hapDir);
-        			logger.info("PlotModel created");
-        			counterfactRunner = new CounterfactualityLauncher(originalGraph, new String[] { "hen", "dog", "cow", "pig" }, "agent", PlotControlsLauncher.runner, model);
-    				counterfactGraph = counterfactRunner.getCounterfact();
-    				
+//        			//for the beginning: we give it all the story specific information (runner, persNum, etc)
+//        			ImmutableList<LauncherAgent> lagents = ImmutableList.of(
+// 							new LauncherAgent("hen",new Personality(0,  1, 0.7,  0.3, 0.15)),
+// 							new LauncherAgent("dog",new Personality(0, -1, 0, -0.7, -0.8)),
+// 							new LauncherAgent("cow",new Personality(0, -1, 0, -0.7, -0.8)),
+// 							new LauncherAgent("pig", new Personality(0, -1, 0, -0.7, -0.8)));
+//        			logger.info("Launcher Agents created in PlotGraphController");
+//        	        ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
+//        			FindCornHappening findCorn = new FindCornHappening(
+//        					// hen finds wheat after 2 farm work actions
+//        					(FarmModel model) -> {
+//        		            		if(model.farm.farmingProgress > 2) {
+//        		            			return true;
+//        		            		}
+//        		            		return false; 
+//        		    		},
+//        					"hen",
+//        					"actionCount");
+//        			hapDir.scheduleHappening(findCorn);  
+//        			logger.info("Happening Scheduler created");
+//        			PlotModel<FarmEnvironment> model = new FarmModel(lagents, hapDir);
+//        			logger.info("PlotModel created");
+//        			counterfactRunner = new CounterfactualityLauncher(originalGraph, new String[] { "hen", "dog", "cow", "pig" }, "agent", PlotControlsLauncher.runner, model);
+//    				counterfactGraph = counterfactRunner.getCounterfact();
+        			//we give RedHeneCounterfactualityTest the originalGraph and the moodData
+    				RedHenCounterfactualityTest counterfact = new RedHenCounterfactualityTest();
+    				counterfact.run();
     				
     				//TODO how to deal with the graph graphically
     				//PlotGraphController.getPlotListener().addGraph(counterfactGraph);

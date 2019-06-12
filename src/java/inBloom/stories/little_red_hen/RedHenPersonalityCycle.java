@@ -89,7 +89,7 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 		FindCornHappening findCorn = new FindCornHappening(
 				// hen finds wheat after 2 farm work actions
 				(FarmModel model) -> {
-	            		if(model.FARM.farmingProgress > 2) {
+	            		if(model.farm.farmingProgress > 2) {
 	            			return true;
 	            		}
 	            		return false; 

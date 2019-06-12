@@ -35,6 +35,10 @@ public class RedHenCounterfactualityCycle extends PlotCycle {
 	private double upper = 1;
 	private double step = 1;
 	/**
+	 * The last cycle to run. If 300 -> all possible cycles will be run
+	 */
+	private int endCycle = 100;
+	/**
 	 * The personalities corresponding to the
 	 * best counterfactuality score.
 	 */
@@ -61,6 +65,10 @@ public class RedHenCounterfactualityCycle extends PlotCycle {
 	 * The best tellability score.
 	 */
 	protected double bestTellability = -1f;
+	/**
+	 * The best Engage Result.
+	 */
+	protected EngageResult bestResult;
 	
 	public RedHenCounterfactualityCycle() {
 		//red hen specific
@@ -138,17 +146,7 @@ public class RedHenCounterfactualityCycle extends PlotCycle {
 		}
 	}
 	
-	protected List<LauncherAgent> createAgents(Personality[] personalities){
-		if(personalities.length != this.agentNames.length) {
-			throw new IllegalArgumentException("There should be as many personalities as there are agents."
-					+ "(Expected: " + agentNames.length + ", Got: " + personalities.length + ")");
-		}
-		List<LauncherAgent> agents = new LinkedList<LauncherAgent>();
-		for(int i = 0; i < agentNames.length; i++) {
-			agents.add(new LauncherAgent(agentNames[i], personalities[i]));
-		}
-		return agents;
-	}
+
 	
 	public List<Personality[]> createPlotSpace(Personality[] personalitySpace, int characters) {
 		//we only want the personality of the protagonist to change, but no other personalities
@@ -184,7 +182,20 @@ public class RedHenCounterfactualityCycle extends PlotCycle {
 		return allPersonalityCombinations;
 	}
 	
+	protected List<LauncherAgent> createAgents(Personality[] personalities){
+		if(personalities.length != this.agentNames.length) {
+			throw new IllegalArgumentException("There should be as many personalities as there are agents."
+					+ "(Expected: " + agentNames.length + ", Got: " + personalities.length + ")");
+		}
+		List<LauncherAgent> agents = new LinkedList<LauncherAgent>();
+		for(int i = 0; i < agentNames.length; i++) {
+			agents.add(new LauncherAgent(agentNames[i], personalities[i]));
+		}
+		return agents;
+	}
+	
 	//red hen specific, overriding same method in plotcycle
+	@Override
 	protected List<LauncherAgent> createAgs(String[] agentNames, Personality[] personalities) {
 		if(personalities.length != agentNames.length) {
 			throw new IllegalArgumentException("There should be as many personalities as there are agents."
@@ -211,11 +222,12 @@ public class RedHenCounterfactualityCycle extends PlotCycle {
 			bestTellability = currTellability;
 			log("New best: " + bestTellability);
 			bestPersonalities = lastPersonalities;
-			showGraph(er);
+			bestResult = er;
+			
 		}
 		log("Best Tellability So Far: " + bestTellability);
 		// Stop cycle if there are no other personality combinations
-		if(!personalityIterator.hasNext() || currentCycle >= 72/**|| currentCycle >= endCycle**/) {
+		if(!personalityIterator.hasNext() || currentCycle >= endCycle) {
 			return new ReflectResult(null, null, null, false);
 		}
 		
@@ -232,6 +244,11 @@ public class RedHenCounterfactualityCycle extends PlotCycle {
 		
 		//FarmModel model = new FarmModel(new ArrayList<LauncherAgent>(), er.getLastModel().happeningDirector.clone());
 		FarmModel model = new FarmModel(new ArrayList<LauncherAgent>(), getHappeningDirector(agents));
+		
+		//red hen specific
+		for (LauncherAgent ag : agents) {
+			ag.location = model.farm.name;
+		}
 		return new ReflectResult(lastRunner, model, agents);
 	}
 
@@ -241,7 +258,7 @@ public class RedHenCounterfactualityCycle extends PlotCycle {
 		lastPersonalities = personalityIterator.next();
 		PlotLauncher<?, ?> runner = new RedHenLauncher();
 		runner.setShowGui(false);	
-		List<LauncherAgent> agents = createAgs(this.agentNames,new Personality[] {new Personality(-1.0, 1.0, 1.0, -1.0,  -1.0), lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});			
+		List<LauncherAgent> agents = createAgs(this.agentNames,new Personality[] {new Personality(0, 0, 0, 0, 0), lastPersonalities[1], lastPersonalities[1], lastPersonalities[1]});			
 		FarmModel model = new FarmModel(new ArrayList<LauncherAgent>(agents), getHappeningDirector(agents));
 		ReflectResult rr = new ReflectResult(runner, model, agents);
 		log("Cycle " + currentCycle);
@@ -256,20 +273,31 @@ public class RedHenCounterfactualityCycle extends PlotCycle {
 		for(Personality p : bestPersonalities) {
 			log("\t" + p.toString());
 		}
-		
+		showGraph(bestResult);
 		// flush and close handled by super implementation
 		super.finish(er);
 	}
 	
+	/**
+	 * Shows the Graph of a given EngageResult. All Graphs are added,
+	 * but only the best Graph is selected.
+	 * @param er - the bestResult from the Cycle Results
+	 */
 	protected void showGraph(EngageResult er) {
 		log("Displaying resulting story...");
 		
 		PlotGraphController graphViewer = new PlotGraphController();
 		for (PlotDirectedSparseGraph graph : stories) {
 			graphViewer.addGraph(graph);
-			graphViewer.setSelectedGraph(graph);
+			//graphViewer.setSelectedGraph(graph);
 		}
+
+		PlotDirectedSparseGraph bestGraph = er.getPlotGraph();
+		graphViewer.addGraph(bestGraph);
+		graphViewer.setSelectedGraph(bestGraph);
 		
+		
+		// modify for best tellability and best graph
 		// for last graph
 		for (FunctionalUnit fu : er.getTellability().plotUnitTypes) {
 			graphViewer.addDetectedPlotUnitType(fu);
@@ -287,15 +315,11 @@ public class RedHenCounterfactualityCycle extends PlotCycle {
 	// currently there are no happenings
 	// this method should solve the problem:
 	private ScheduledHappeningDirector getHappeningDirector(List<LauncherAgent> agents) {
-		// TODO that in createAgs
-		for (LauncherAgent agent : agents) {
-			agent.location = FarmModel.FARM.name;
-		}
 		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 		FindCornHappening findCorn = new FindCornHappening(
 				// hen finds wheat after 2 farm work actions
 				(FarmModel model) -> {
-	            		if(model.FARM.farmingProgress > 2) {
+	            		if(model.farm.farmingProgress > 2) {
 	            			return true;
 	            		}
 	            		return false; 
