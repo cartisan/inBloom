@@ -133,7 +133,7 @@ public class Character {
 			Item item = this.get(itemType);
 			receiver.receive(item, this);
 			this.model.getEnvironment().addEventPercept(name, 
-														   String.format("shared(%s,%s)", item.literal(), receiver.name),
+														   String.format("share(%s,%s)", item.literal(), receiver.name),
 														   new PerceptAnnotation().addTargetedEmotion("pride", "self"));
 			return true;
 		}
@@ -208,9 +208,9 @@ public class Character {
 	
 	public boolean canFly() {
 		// TODO: find a flexible implementation
-//		if (name == "crow") {
-//			return true;
-//		}
+		if (name == "crow") {
+			return true;
+		}
 		return false;
 	}
 	
@@ -227,8 +227,8 @@ public class Character {
 				// everyone present see things dropping from the sky
 				for (Character observer : this.location.getCharacters()) {
 					this.model.environment.addEventPercept(observer.getName(),
-													   "is_dropped(" + item.getItemName() + ")",
-													   PerceptAnnotation.fromCause("sing").addAnnotation("owner", this.name));
+													       "is_dropped(" + item.getItemName() + ")",
+													       PerceptAnnotation.fromCause("sing").addAnnotation("owner", this.name));
 				}
 			}
 		}

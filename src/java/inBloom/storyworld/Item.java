@@ -10,7 +10,7 @@ import jason.asSyntax.Pred;
 public abstract class Item {
 	
 	/**
-	 * Each item should have a human-readable item name like: "Chair" used for logging and ASL representation purposes.
+	 * Each item should have a human-readable item name like: "chair" used for logging and ASL representation purposes.
 	 * @return a String representation of the item name implemented by this class
 	 */
 	public abstract String getItemName();

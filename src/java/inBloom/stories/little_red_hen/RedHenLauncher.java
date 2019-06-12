@@ -62,11 +62,6 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 						new LinkedList<String>(),
 						new Personality(0, -1, 0, -0.7, -0.8)
 		);     
-
-        hen.location = FarmModel.FARM.name;
-        dog.location = FarmModel.FARM.name;
-        cow.location = FarmModel.FARM.name;
-        pig.location = FarmModel.FARM.name;
         
         ImmutableList<LauncherAgent> agents = ImmutableList.of(hen, dog, cow, pig);
         
@@ -75,7 +70,7 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 		FindCornHappening findCorn = new FindCornHappening(
 				// hen finds wheat after 2 farm work actions
 				(FarmModel model) -> {
-	            		if(FarmModel.FARM.farmingProgress > 1) {
+	            		if(model.farm.farmingProgress > 1) {
 	            			return true;
 	            		}
 	            		return false; 
@@ -85,6 +80,11 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 		hapDir.scheduleHappening(findCorn);
         
         FarmModel model = new FarmModel(agents, hapDir);
+
+        hen.location = model.farm.name;
+        dog.location = model.farm.name;
+        cow.location = model.farm.name;
+        pig.location = model.farm.name;
 
 		// Execute MAS
 		runner.initialize(args, model, agents, "agent");

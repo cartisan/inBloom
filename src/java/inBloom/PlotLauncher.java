@@ -80,8 +80,6 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
         }
         if (env != null) {
             env.stop();
-            logger.info("env stopped");
-            //env is also here not null!
             env = null;
             
         }
@@ -348,5 +346,9 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 
 	public void deleteUserEnvironment() {
 		this.env = null;
+	}
+	
+	public void setDebug(Boolean bool) {
+		PlotLauncher.debug = bool;
 	}
 }

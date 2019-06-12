@@ -192,7 +192,6 @@ public class AdaptPersonality implements ProblemFixCommand {
 	 */
 	private List<Set<OCEANConstraints>> collectAllStepConditions(Plan plan, PlanLibrary planLib) {
 		// contains OCEAN settings that are promising in making a candidate plan execute
-		// TODO: Get to create(bread) from new found(wheat) based in obligations and wishes
 		List<Set<OCEANConstraints>> viablePlanstepSettings = new LinkedList<>();
 		
 		// iterate over all steps in plan body and collect affect annotations for each step that is a plan itself
@@ -200,9 +199,20 @@ public class AdaptPersonality implements ProblemFixCommand {
 		while (planStep != null) {
 			if ((planStep.getBodyType().equals(PlanBody.BodyType.achieve)) ||			// only look for preconditions on plans
 					(planStep.getBodyType().equals(PlanBody.BodyType.achieveNF))) {
+				
+				// Step is a simple goal
 				String step = "+!" + planStep.getBodyTerm().toString();
 				viablePlanstepSettings.add(this.determineAllEnablingOCEANsettings(step, planLib));
+			
+			} else if ( planStep.getBodyType().equals(PlanBody.BodyType.addBel) &
+				      ( planStep.getBodyTerm().toString().contains("obligation") | planStep.getBodyTerm().toString().contains("wish"))) {
+				
+				// step is addition of wish or obligation, which eventually might be translated into a goal 
+				// TODO: this does not take into account personality conditions in !wish and !obligation yet
+				String step = "+!" + Literal.parseLiteral(planStep.getBodyTerm().toString()).getTerm(0);
+				viablePlanstepSettings.add(this.determineAllEnablingOCEANsettings(step, planLib));
 			}
+			
 			planStep = planStep.getBodyNext();
 		}
 		

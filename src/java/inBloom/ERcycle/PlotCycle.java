@@ -1,15 +1,19 @@
 package inBloom.ERcycle;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
@@ -27,6 +31,7 @@ import inBloom.helper.EnvironmentListener;
 import inBloom.helper.Tellability;
 import jason.JasonException;
 import jason.asSemantics.Personality;
+import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
 
 /**
@@ -48,6 +53,9 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	
 	/** Whether the next cycle should start after the current one is finished. */
 	private boolean isPaused;
+	
+	/** can be used to provide args to PlotLauncher */
+	public String[] cycle_args = new String[0]; 
 	
 	private JFrame cycleFrame;
 	private JTextArea logTextArea = new JTextArea(10, 40);
@@ -82,10 +90,13 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	private void initGui() {
 		cycleFrame = new JFrame("Plot Cycle");
 		cycleFrame.setLayout(new BorderLayout());
+		
+		// setup text field
 		JScrollPane scroll = new JScrollPane(logTextArea);
 		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		cycleFrame.add(scroll, BorderLayout.CENTER);
 		
+		// setup buttons
 		JButton pauseButton = new JButton("Pause");
 		pauseButton.addActionListener(new ActionListener()
 			{
@@ -96,8 +107,30 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 			  	}
 			});
 		
-		cycleFrame.add(pauseButton, BorderLayout.SOUTH);
+		JButton btDebug = new JButton("Debug Next Cycle", new ImageIcon(RunCentralisedMAS.class.getResource("/images/debug.gif")));
+        btDebug.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+            	if(cycle_args.length == 0) {
+	            	cycle_args = new String[]{"-debug"};
+            		btDebug.setText("Stop Debug & Finish Cycle");
+            	} else {
+            		btDebug.setText("Debug Next Cycle");
+            		cycle_args = new String[0];
+            		PlotLauncher.getRunner().setDebug(false);
+            		isRunning=false;
+            	}
+            }
+        });
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(pauseButton);
+		buttonPanel.add(btDebug);
+		buttonPanel.revalidate();
 		
+		cycleFrame.add(buttonPanel, BorderLayout.SOUTH);
+		
+		// finalize UI
 		cycleFrame.pack();
 		cycleFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		cycleFrame.setVisible(true);
@@ -139,7 +172,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		PlotLauncher<?,?> runner = rr.getRunner();
 
 		try {
-			Thread t = new Thread(new Cycle(runner, rr.getModel(), new String[0], rr.getAgents(), this.agentSrc));
+			Thread t = new Thread(new Cycle(runner, rr.getModel(), cycle_args, rr.getAgents(), this.agentSrc));
 			t.start();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -215,6 +248,13 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		}
 		return agents;
 	}
+
+	protected List<LauncherAgent> createAg(String agentName, Collection<String> belief, Collection<String> goal, Personality personality) {
+		List<LauncherAgent> l = new LinkedList<>();
+		l.add(new LauncherAgent(agentName, belief, goal, personality));
+		
+		return l;		
+	}
 	
 	@Override
 	public void onPauseRepeat() {
@@ -289,9 +329,6 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		@Override
 		public void run() {
 			try {
-//				String[] args = {"-debug"};
-//				runner.setShowGui(true);
-				
 				runner.initialize(args, model, agents, agSrc);
 				runner.run();
 			} catch (JasonException e) {

@@ -1,6 +1,7 @@
 package inBloom.stories.little_red_hen;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -102,9 +103,16 @@ public class RedHenHappeningCycle extends PlotCycle {
 		// start with model that has no happenings
 		FarmModel model = new FarmModel(new ArrayList<LauncherAgent>(), new ScheduledHappeningDirector());
 		
-		// start with neutral personalities
-		List<LauncherAgent> startAgents = this.createAgs(new String[]{"protagonist"}, 
-														 new Personality[] {new Personality(0, 0, 0, 0, 0)});
+		// start with neural antagonist
+		// TODO: what about automatizing these initial beliefs and location
+		List<LauncherAgent> startAgents = this.createAg("protagonist",
+													     Arrays.asList("hungry", "self(farm_animal)"),
+														 new LinkedList<String>(),
+														 new Personality(0, 0, 0, 0, 0));
+		for (LauncherAgent ag : startAgents) {
+			ag.location = model.farm.name;
+		}
+		
 		this.charCount = startAgents.size();
 		
 		return new ReflectResult(runner, model, startAgents);
