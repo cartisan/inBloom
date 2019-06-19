@@ -157,10 +157,15 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	public void visitPercept(Vertex vertex) {
 		if(!this.eventList.isEmpty()) {
 			String cause = vertex.getCause();
+			
 			for(Vertex targetEvent : this.eventList) {
-				if(targetEvent.getLabel().equals(cause)) {
+				// create causality edge from cause annotation of a happening-perception
+				if(targetEvent.getWithoutAnnotation().equals(cause) |  //our cause was an action, so targetEvent was perceived as-is
+				  targetEvent.getWithoutAnnotation().equals("+" + cause))  // our cause was a happening, so targetEvent was perceived as +cause 
+				{
 					this.graph.addEdge(new Edge(Edge.Type.CAUSALITY), targetEvent, vertex);
 					cause = "";
+					break;
 				}
 				// delete percepts that report action outcomes --> collapsing action and action result percept
 				if(targetEvent.getType() == Vertex.Type.ACTION && targetEvent.getFunctor().equals(vertex.getFunctor())) {

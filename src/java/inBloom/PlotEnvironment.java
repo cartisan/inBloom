@@ -446,6 +446,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 				this.perceivedEventsMap.put(agentName, remList);
 				
 			} catch (ParseException e) {
+				logger.severe("Couldn't parse event: " + event.toString() + " in PlotEnvironment#addNewUniqueEvents.");
 				logger.severe(e.getMessage());
 			}
     	}

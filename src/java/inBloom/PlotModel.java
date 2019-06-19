@@ -54,8 +54,8 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	 *  <b>mapping:</b>  (field, instance of field) --> old field value */
 	private Table<Field, Object, Object> fieldValueStore;
 	
-	/** Saves for each character, if one of its actions resulted in a change of the storyworld --> allows causality detection. <br>
-	 *  <b>mapping:</b> (characterName, fieldName) --> action*/
+	/** Saves for each character, if one of its actions/happenings resulted in a change of the storyworld --> allows causality detection. <br>
+	 *  <b>mapping:</b> (characterName, fieldName) --> action/happening */
 	private Table<String, String, String> causalityTable;
 
 	public PlotModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
@@ -196,12 +196,9 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 			h.execute(this);
 			this.environment.addEventPercept(h.getPatient(), h.getEventPercept());
 			
+			// update saved storyworld state, so that the happening h is entered as causes for the change
+			this.noteStateChanges(h);
 		}
-		
-    	// update saved storyworld state, but do not enter the happenings as causes for the change,
-		// because happenings are not present in agents embedded narrative plot graphs
-		// TODO: get this into for-loop, so that we can check changes after each happening, and have happenings in causality table
-    	this.noteStateChanges();
 	}
 	
 	/**
@@ -268,18 +265,14 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	 * changed due to a happening. If this is the case it resets any actions that have been noted as causally responsible
 	 * for the state.  
 	 */
-	public synchronized void noteStateChanges() {
+	public synchronized void noteStateChanges(Happening<?> hap) {
 		try {
 			for (Cell<Field, Object, Object> cell : this.fieldValueStore.cellSet()) {
 	        	Object oldV = cell.getValue();
 	        	Object currentV = cell.getRowKey().get(cell.getColumnKey());
 	        	if((currentV != null) && (!currentV.equals(oldV))) {
-	        		
-	        		// reset causal connection of this field with any action, cause current val was caused by happening
-	        		if(this.causalityTable.columnMap().containsKey(cell.getRowKey())) {
-	        			this.causalityTable.columnMap().get(cell.getRowKey()).clear();
-	        		}
-	        		// TODO: note down in causality table that new state was caused by happening, so we can have causality edges between happenings?
+	        		// take note that the value of field f changed because of this happening (as perceived by its patient)
+	        		this.causalityTable.put(hap.patient, cell.getRowKey().getName(), hap.percept);
 	        		
 	        		// update new field value in our dict
 	        		fieldValueStore.put(cell.getRowKey(), cell.getColumnKey(), currentV);

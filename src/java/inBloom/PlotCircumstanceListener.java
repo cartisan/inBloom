@@ -12,7 +12,7 @@ import jason.asSemantics.Event;
 import jason.asSemantics.Intention;
 
 public class PlotCircumstanceListener implements CircumstanceListener {
-	static Logger logger = Logger.getLogger(CircumstanceListener.class.getName());
+	static Logger logger = Logger.getLogger(PlotCircumstanceListener.class.getName());
 	
 	private PlotAwareAg agent;
 	private String name;
