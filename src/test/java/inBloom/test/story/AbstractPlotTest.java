@@ -1,6 +1,7 @@
 package inBloom.test.story;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.junit.Before;
 
@@ -19,23 +20,26 @@ import inBloom.storyworld.ScheduledHappeningDirector;
  * @author Leonid Berov
  */
 public abstract class AbstractPlotTest {
-	protected static final boolean VISUALIZE = false;
+	protected static boolean VISUALIZE = false;
+	
+	static protected Logger logger = Logger.getLogger(AbstractPlotTest.class.getName());
 
 	protected static TestLauncher runner; 
+	protected static PlotDirectedSparseGraph fullGraph;
 	protected static PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();
 	protected static Tellability analysis;
 	
 	private static boolean hasSimulationFinished = false;
 	private static Object simulationMonitor = new Object();
 	
-	public static void startSimulation(String agentFile, List<LauncherAgent> agents) throws Exception {
+	public static void startSimulation(String agentFile, List<LauncherAgent> agents, ScheduledHappeningDirector hapDir) throws Exception {
 		runner = new TestLauncher();
 
-        // Initialize MAS with a scheduled happening director
-        ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
         TestModel model = new TestModel(agents, hapDir);
         
         PlotCycle.Cycle simulation = new PlotCycle.Cycle(runner, model, new String[0], agents, agentFile);
+//        String[] args = new String[]{"-debug"}; 
+//        PlotCycle.Cycle simulation = new PlotCycle.Cycle(runner, model, args, agents, agentFile);
 		Thread t = new Thread(simulation);
 		t.start();
 		while(runner.getEnvironmentInfraTier() == null || runner.getUserEnvironment() == null) {
@@ -46,9 +50,14 @@ public abstract class AbstractPlotTest {
 			@Override
 			public void onPauseRepeat() {
 				synchronized(simulationMonitor) {
+					fullGraph = PlotGraphController.getPlotListener().getGraph();
 					analysis = PlotGraphController.getPlotListener().analyze(analyzedGraph);
+					
 					if (VISUALIZE) {
 						PlotGraphController graphView = PlotGraphController.fromGraph(analyzedGraph);
+						graphView.addGraph(fullGraph);
+						graphView.addGraph(TestUnits.ALL_UNITS_GRAPH);
+						
 						graphView.visualizeGraph();
 					} 
 					else {

@@ -8,12 +8,19 @@ import inBloom.helper.PerceptAnnotation;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.HappeningDirector;
 import inBloom.storyworld.Item;
+import inBloom.storyworld.ModelState;
 
 public class TestModel extends PlotModel<TestEnvironment> {
 
 	public int step = 0;
 
 	public Wallet wallet = new Wallet();
+	
+	@ModelState
+	public boolean isDrunk = false;
+
+	@ModelState
+	public boolean hasFriend = false;
 
 	public TestModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		super(agentList, hapDir);
@@ -37,11 +44,23 @@ public class TestModel extends PlotModel<TestEnvironment> {
 
 		this.environment.addEventPercept(agent.name, "do_stuff");
 		
+		// problem and enablement
+		if(step == 7) {
+			this.environment.addEventPercept(agent.name,
+					"step_on(poo)",
+					PerceptAnnotation.fromEmotion("hate"));
+			
+			this.environment.addEventPercept(agent.name,
+					"avoid_accident",
+					PerceptAnnotation.fromEmotion("relief"));
+		}
+		
 		if(step == 9) {
 			this.environment.addEventPercept(agent.name,
-												"is_holiday(friday)",
-												PerceptAnnotation.fromEmotion("joy"));
+											 "is_holiday(friday)",
+											 PerceptAnnotation.fromEmotion("joy"));
 		}
+		
 		step++;
 		return true;
 	}
@@ -53,6 +72,12 @@ public class TestModel extends PlotModel<TestEnvironment> {
 			logger.info(agent.name + " found their wallet!");
 		}
 		step++;
+		return true;
+	}
+	
+	public boolean getDrink(Character agent) {
+		this.getEnvironment().addEventPercept(agent.name, "get(drink)", PerceptAnnotation.fromEmotion("joy")); // positive outcome for prim. unit success
+		this.isDrunk = true;
 		return true;
 	}
 

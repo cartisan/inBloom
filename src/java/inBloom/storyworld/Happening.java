@@ -31,17 +31,22 @@ public class Happening<T extends PlotModel<?>> extends Event {
      *      	Character chara = model.getCharacter("hen");
 	 *			chara.addToInventory(new FarmModel.Wheat());
      *      }
-     *    }
+     *    },
+     *    "hen",
+     *    "farmingProgress",
+     *    "found(wheat)"
      *);
      *</code></pre>
      * @param trigger predicate that takes instances  of type T and returns true when the happening is to be executed
      * @param effect function that takes an instance of T and induces the changes that are described by this happenings
+     * @param patient name of agent that happening is happening to
      * @param causalProperty fieldName of T, whose change in value can trigger this happening (i.e. on which it is causally dependent)
      * @param percept perception term (without annotations), which will be generated for the happening e.g. `found(wheat)`
 	 */
-	public Happening(Predicate<T> trigger, Consumer<T> effect, String causalProperty, String percept) {
+	public Happening(Predicate<T> trigger, Consumer<T> effect, String patient, String causalProperty, String percept) {
 		this.trigger = trigger;
 		this.effect = effect;
+		this.patient = patient;
 		this.causalProperty = causalProperty;
 		this.percept = percept;
 	}
@@ -87,7 +92,7 @@ public class Happening<T extends PlotModel<?>> extends Event {
 	}
 	
 	public String toString() {
-		return this.getClass().getSimpleName();
+		return this.getClass().getSimpleName() + ": " + this.patient + " << " + this.percept;
 	}
 	
 	public String getCausalProperty() {
@@ -101,7 +106,8 @@ public class Happening<T extends PlotModel<?>> extends Event {
 	/**
 	 * Determines which agent-action was responsible for triggering the execution of this happening (if any), and updates
 	 * the state of this happening accordingly, including updating annotations.
-	 * @param causalityTable Table that maps (agentName, fieldProperty) to last agentAction that changed field value in model 
+	 * @param causalityTable Table that maps (agentName, fieldProperty) to last agentAction/happening that changed field
+	 * value in model.
 	 */
 	public void identifyCause(Table<String, String, String> causalityTable) {
 		String cause = causalityTable.get(this.getPatient(), this.getCausalProperty());

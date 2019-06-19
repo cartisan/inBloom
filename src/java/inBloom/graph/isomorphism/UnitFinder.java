@@ -21,7 +21,7 @@ public class UnitFinder {
 	 * @param plotGraph The graph to find subgraphs in
 	 * @param unitGraph The graph describing the subgraphs to look for
 	 * @return Set which contains a map for each instance of unitGraph in plotGraph.
-	 * 		   The maps map from vertices of the plotGraph to vertices of the unitGraph.
+	 * 		   The map maps from vertices of the plotGraph to vertices of the unitGraph.
 	 */
 	public Set<Map<Vertex, Vertex>> findUnits(PlotDirectedSparseGraph plotGraph, PlotDirectedSparseGraph unitGraph) {
 		HashSet<Map<Vertex, Vertex>> allMappings = new HashSet<Map<Vertex, Vertex>>();

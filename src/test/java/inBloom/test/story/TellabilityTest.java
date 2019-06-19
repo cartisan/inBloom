@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import inBloom.LauncherAgent;
 import inBloom.graph.Vertex;
 import inBloom.graph.Vertex.Type;
+import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.asSemantics.Personality;
 import jason.util.Pair;
 
@@ -18,13 +19,18 @@ public class TellabilityTest extends AbstractPlotTest {
 	
 	@BeforeClass
 	public static void getAgentFileName() throws Exception {
+		VISUALIZE = false;
+		
 		ImmutableList<LauncherAgent> agents = ImmutableList.of(
 				new LauncherAgent("jeremy",
 						new Personality(0,  1,  0.7,  0.3, 0.3)
 						)
 				);
 		
-		startSimulation("agent_primitive_unit", agents);
+        // Initialize happenings
+        ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
+		
+		startSimulation("agent_primitive_unit", agents, hapDir);
 	}
 
 	@Test

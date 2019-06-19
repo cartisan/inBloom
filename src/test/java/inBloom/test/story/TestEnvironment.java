@@ -19,6 +19,14 @@ public class TestEnvironment extends PlotEnvironment<TestModel> {
 	    	if(action.getFunctor().equals("search")) {
 	    		result = getModel().search(agent, action.getTerm(0).toString());
 	    	}
+	    	
+	    	if(action.getFunctor().equals("clean")) {
+	    		result = false;		// negative outcome for primitive unite failure
+	    	}
+	    	
+	    	if(action.getFunctor().equals("get")) {
+	    		result = getModel().getDrink(agent);
+	    	}
     	}
     	
     	return result;

@@ -3,6 +3,7 @@
 /*********************/
 
 is_important(wallet).
+smelly(poo).
 
 /***********************/
 /* Entry point & drive */
@@ -50,7 +51,7 @@ is_important(wallet).
 
 -has(X) <-
 	if(is_important(X)) {
-		.appraise_emotion(fear, "self", "has(X)[source(percept)]", false);
+		.appraise_emotion(distress, "self", "has(X)[source(percept)]", false);
 		+self(has_purpose);
 	};
 	+lost(X).
@@ -62,8 +63,8 @@ is_important(wallet).
 	.appraise_emotion(relief, "self", "has(X)[source(percept)]");
 	.succeed_goal(find(X));
 	-self(has_purpose);
-	-lost(X);
-	.appraise_emotion(joy, "self", "lost(X)[source(self)]");
+	-lost(X);												  // creates termination edge to lost
+	.appraise_emotion(joy, "self", "lost(X)[source(self)]");  // artifice to create positive trade-off of second kind (see Wilke thesis pp. 19) 
 	+is_bad(lost(X)).
 	
 	
@@ -71,8 +72,21 @@ is_important(wallet).
 	.print("I need to find my ", X, ", it's very important to me! :(");
 	!find(X).
 	
+
++step_on(X) : smelly(X) <-
+	!clean.
+	
++avoid_accident <-
+	!get(drink).
+
 +!find(X) <-
 	search(X);
 	if(lost(X)) {
 		!find(X)
 	}.
+	
++!clean <-
+	clean.
+	
++!get(drink) <-
+	get(drink).
