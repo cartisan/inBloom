@@ -38,8 +38,8 @@ public class TellabilityTest extends AbstractPlotTest {
 		assertTrue(2 < analysis.suspense);		// actual suspense varies between 4 and 5
 		
 		// test that its the right intention that is most suspensefull
-		assertEquals("+lost(wallet)", analysis.counter.mostSuspensefulIntention.getSecond().getWithoutAnnotation());
-		assertEquals("search(wallet)", analysis.counter.mostSuspensefulIntention.getThird().getLabel());
+		assertEquals("!intrinsic_motivation", analysis.counter.mostSuspensefulIntention.getSecond().getLabel());
+		assertEquals("do_stuff", analysis.counter.mostSuspensefulIntention.getThird().getLabel());
 		
 	}
 	
