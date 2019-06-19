@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import inBloom.PlotCircumstanceListener;
 import inBloom.PlotLauncher;
 import inBloom.graph.Edge;
 import inBloom.graph.PlotGraphController;

@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableList;
 
 import inBloom.graph.PlotGraphController;
 import inBloom.jason.PlotAwareAg;
-import inBloom.jason.PlotAwareAgArch;
 import inBloom.jason.PlotAwareCentralisedAgArch;
 import jason.JasonException;
 import jason.asSemantics.Agent;
@@ -46,7 +45,6 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
      * {@code ENV_CLASS = FarmEnvironment.class;}
      */
 	public Class<?> ENV_CLASS;
-	protected Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
 	protected Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
 	
 	protected static Map<String, PlanLibrary> planLibraryCache =  new HashMap<>();
@@ -211,7 +209,6 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 		    			MessageFormat.format(" " + agentFileName + "[beliefs=\"{0}\", goals=\"{1}\"]",
 		    								 agent.beliefs,
 		    								 agent.goals) +
-		    	" agentArchClass " + AG_ARCH_CLASS.getName() + 
 		    	" agentClass "+ AG_CLASS.getName() +
 		    	";";   
 		    	writer.println(line);

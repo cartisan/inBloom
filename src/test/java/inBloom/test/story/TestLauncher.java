@@ -45,7 +45,6 @@ public class TestLauncher extends PlotLauncher<TestEnvironment, TestModel> {
 		    			MessageFormat.format(" " + agentFileName + "[beliefs=\"{0}\", goals=\"{1}\"]",
 		    								 agent.beliefs,
 		    								 agent.goals) +
-		    	" agentArchClass " + AG_ARCH_CLASS.getName() + 
 		    	" agentClass "+ AG_CLASS.getName() +
 		    	";";   
 		    	writer.println(line);

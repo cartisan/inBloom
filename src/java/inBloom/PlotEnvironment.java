@@ -1,6 +1,5 @@
 package inBloom;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,7 +18,6 @@ import inBloom.helper.PerceptAnnotation;
 import inBloom.helper.PlotpatternAnalyzer;
 import inBloom.helper.TermParser;
 import inBloom.jason.PlotAwareAg;
-import inBloom.jason.PlotAwareAgArch;
 import inBloom.jason.PlotAwareCentralisedAgArch;
 import inBloom.jason.PlotAwareCentralisedRuntimeServices;
 import inBloom.storyworld.Character;
@@ -280,7 +278,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 * @param personality an instance of {@linkplain jason.asSemantics.Personality} that will affect the agents behavior
 	 */
 	public void createAgent(String name, String aslFile, Personality personality) {
-		ArrayList<String> agArchs = new ArrayList<String>(Arrays.asList(PlotAwareAgArch.class.getName()));
 		String agName = null;
 		
         try {
@@ -290,7 +287,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
         	PlotGraphController.getPlotListener().addCharacter(name);
         	
         	// create Agent
-        	agName = this.getRuntimeServices().createAgent(name, aslFile, PlotAwareAg.class.getName(), agArchs, null, null, null);
+        	agName = this.getRuntimeServices().createAgent(name, aslFile, PlotAwareAg.class.getName(), null, null, null, null);
 
         	// set the agents personality
         	AffectiveAgent ag = ((PlotLauncher<?,?>) PlotLauncher.getRunner()).getPlotAgent(agName);

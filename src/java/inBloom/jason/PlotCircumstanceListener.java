@@ -1,12 +1,12 @@
-package inBloom;
+package inBloom.jason;
 
 import java.util.logging.Logger;
 
+import inBloom.PlotLauncher;
 import inBloom.graph.Edge;
 import inBloom.graph.PlotGraphController;
 import inBloom.graph.Vertex;
 import inBloom.graph.Vertex.Type;
-import inBloom.jason.PlotAwareAg;
 import jason.asSemantics.CircumstanceListener;
 import jason.asSemantics.Event;
 import jason.asSemantics.Intention;
