@@ -21,6 +21,7 @@ import inBloom.storyworld.ScheduledHappeningDirector;
  */
 public abstract class AbstractPlotTest {
 	protected static boolean VISUALIZE = false;
+	protected static boolean DEBUG = false;
 	
 	static protected Logger logger = Logger.getLogger(AbstractPlotTest.class.getName());
 
@@ -34,12 +35,14 @@ public abstract class AbstractPlotTest {
 	
 	public static void startSimulation(String agentFile, List<LauncherAgent> agents, ScheduledHappeningDirector hapDir) throws Exception {
 		runner = new TestLauncher();
-
         TestModel model = new TestModel(agents, hapDir);
         
-        PlotCycle.Cycle simulation = new PlotCycle.Cycle(runner, model, new String[0], agents, agentFile);
-//        String[] args = new String[]{"-debug"}; 
-//        PlotCycle.Cycle simulation = new PlotCycle.Cycle(runner, model, args, agents, agentFile);
+        String[] args = new String[0];
+        if(DEBUG) {
+        	args = new String[]{"-debug"};
+        }
+        
+        PlotCycle.Cycle simulation = new PlotCycle.Cycle(runner, model, args, agents, agentFile);
 		Thread t = new Thread(simulation);
 		t.start();
 		while(runner.getEnvironmentInfraTier() == null || runner.getUserEnvironment() == null) {

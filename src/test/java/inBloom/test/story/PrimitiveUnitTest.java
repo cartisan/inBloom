@@ -26,6 +26,7 @@ public class PrimitiveUnitTest extends AbstractPlotTest {
 	@BeforeClass
 	public static void setUp() throws Exception {
 		VISUALIZE = false;
+		DEBUG = false;
 		
 		// initialize agents
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
@@ -64,7 +65,7 @@ public class PrimitiveUnitTest extends AbstractPlotTest {
         
 		startSimulation("agent_primitive_unit", agents, hapDir);
 	}
-	
+
 	@Test
 	public void testResolution() {
 		UnitFinder finder = new UnitFinder();

@@ -24,6 +24,7 @@ public class HappeningCausalityTest extends AbstractPlotTest {
 	@BeforeClass
 	public static void setUp() throws Exception {
 		VISUALIZE = false;
+		DEBUG = false;
 		
 		// initialize agents
         ImmutableList<LauncherAgent> agents = ImmutableList.of(
