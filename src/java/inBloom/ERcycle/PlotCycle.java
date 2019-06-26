@@ -67,18 +67,33 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	private boolean isRunning = true;
 	protected String[] agentNames;
 	
+	boolean counterPlotCycle = false;
+	// only relevant if we want to create a counterfactual plot:
+	private String counterAgent;
+	private MoodMapper originalMood;
+	
+	//TODO right order for constructor chaining
+	
 	/**
 	 * Creates a new cycle object with specified agents.
 	 * @param agentNames an array of the names of all agents
 	 * @param agentSrc the name of the source file for the agent code
 	 */
 	protected PlotCycle(String[] agentNames, String agentSrc, boolean showGui) {
+		this.counterPlotCycle = false;
 		this.agentNames = agentNames;
 		this.agentSrc = agentSrc;
 		stories = new LinkedList<>();
 		if(showGui) {
 			initGui();
-		}
+		}	
+	}
+	// PlotCycle Constructor for Counterfactual Stories
+	protected PlotCycle(String[] agentNames, String agentSrc, boolean showGui, String counterAgent, MoodMapper originalMood) {
+		this(agentNames, agentSrc, showGui);	
+		this.counterPlotCycle = true;
+		this.counterAgent = counterAgent;
+		this.originalMood = originalMood;
 	}
 	
 	protected PlotCycle(String[] agentNames, String agentSrc) {
@@ -217,17 +232,11 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		log("Tellability" + Double.toString(telResult));
 		
 		
-		// get mood data to store in EngageResult
-		//MoodGraph.getMoodListener().createData(runner.getUserModel().moodMapper);
-		//XYSeriesCollection moodData = MoodGraph.getMoodListener().getData();
 		MoodMapper moodData = runner.getUserModel().moodMapper;
+		EngageResult er = createEngageResult(rr, runner, analyzedGraph, tel, moodData);
 		
 		
-		EngageResult er = new EngageResult(analyzedGraph,
-										   tel,
-										   rr.getAgents(),
-										   runner.getUserModel(),
-										   moodData);
+		
 		
 		if (PlotCycle.SHOW_FULL_GRAPH) {
 			PlotDirectedSparseGraph displayGraph = PlotGraphController.getPlotListener().getGraph().clone();
@@ -239,7 +248,18 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		isRunning = true;
 		return er;
 	}
+	protected EngageResult createEngageResult(ReflectResult rr, PlotLauncher<?, ?> runner,
+			PlotDirectedSparseGraph analyzedGraph, Tellability tel, MoodMapper moodData) {
+		EngageResult er;
+		er = new EngageResult(analyzedGraph,
+									   tel,
+									   rr.getAgents(),
+									   runner.getUserModel(),
+									   moodData);
+		return er;
+	}
 	
+
 	protected List<LauncherAgent> createAgs(String[] agentNames, Personality[] personalities) {
 		if(personalities.length != agentNames.length) {
 			throw new IllegalArgumentException("There should be as many personalities as there are agents."
@@ -340,142 +360,5 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		}
 	}
 	
-	/**
-	 * Result of the reflect method. Contains PlotLauncher instance
-	 * and personalities for the next simulation.
-	 * Can be extended to allow further parameters.
-	 */
-	public class ReflectResult {
-		/**
-		 * Instance of the PlotLauncher for
-		 * the story in question.
-		 */
-		private PlotLauncher<?, ?> runner;
-		/**
-		 * Agents that will be used by the runner 
-		 * to generate characters. Personalities
-		 * should be set appropriately already.
-		 */
-		private List<LauncherAgent> agents;
-		/**
-		 * Instance of PlotModel for the
-		 * next simulation. Will add
-		 * agents automatically.
-		 */
-		private PlotModel<?> model;
-		/**
-		 * If this is false, the cycle will not execute another
-		 * simulation and call finish().
-		 * runner and personalities do not matter in this case.
-		 */
-		private boolean shouldContinue;
-		
-		public ReflectResult(PlotLauncher<?, ?> runner, PlotModel<?> model, List<LauncherAgent> agents) {
-			this(runner, model, agents, true);
-		}
-		
-		public ReflectResult(PlotLauncher<?, ?> runner, PlotModel<?> model, List<LauncherAgent> agents, boolean shouldContinue) {
-			this.runner = runner;
-			this.model = model;
-			this.shouldContinue = shouldContinue;
-			this.agents = agents;
-		}
-		
-		public PlotLauncher<?, ?> getRunner() {
-			return this.runner;
-		}
-		
-		public PlotModel<?> getModel() {
-			return this.model;
-		}
-		
-		public List<LauncherAgent> getAgents() {
-			return this.agents;
-		}
-		
-		public boolean shouldContinue() {
-			return this.shouldContinue;
-		}
-		
-		public String toString() {
-			String result = "Agents: ";
-			for (LauncherAgent ag : this.agents) {
-				result += ag.name + ": " + ag.personality + ", ";
-			}
-			
-			result += "Happenings: ";
-			result += this.model.happeningDirector.getAllHappenings().toString();
-				
-			return result;
-		}
-	}
 	
-	/**
-	 * Result of the engage method. Contains plot graph of
-	 * the last simulation and the tellability score.
-	 * Can be extended to allow further return values.
-	 */
-	public class EngageResult {
-		private PlotDirectedSparseGraph plotGraph;
-		private MoodMapper moodData; 
-		private PlotDirectedSparseGraph auxiliaryGraph;
-		private Tellability tellability;
-		private PlotModel<?> lastModel;
-		private List<LauncherAgent> lastAgents;
-		
-		// TODO add counterfactuality here!!!! (and change everything accordingly)
-		public EngageResult(PlotDirectedSparseGraph plotGraph, Tellability tellability, List<LauncherAgent> lastAgents, PlotModel<?> lastModel, MoodMapper moodData) {
-			this.plotGraph = plotGraph;
-			this.tellability = tellability;
-			this.lastAgents = lastAgents;
-			this.lastModel = lastModel; 
-			this.moodData = moodData;
-		}
-		
-		public LauncherAgent getAgent(String name) {
-			List<LauncherAgent> agList = this.lastAgents.stream().filter(ag -> ag.name.compareTo(name) == 0)
-		    													 .collect(Collectors.toList());
-			
-			if (agList.size() == 0) {
-				throw new RuntimeException("No character: " + name + " present in ER Cycle.");
-			} else if (agList.size() > 1) {
-				throw new RuntimeException("Too many characters with name: " + name + " present in ER Cycle.");
-			}
-				
-			return agList.get(0);
-		}
-		
-		public PlotModel<?> getLastModel() {
-			return lastModel;
-		}
-
-		public List<LauncherAgent> getLastAgents() {
-			return lastAgents;
-		}
-
-		public PlotDirectedSparseGraph getPlotGraph() {
-			return this.plotGraph;
-		}
-		
-		public Tellability getTellability() {
-			return this.tellability;
-		}
-		
-		
-		public PlotDirectedSparseGraph getAuxiliaryGraph() {
-			return this.auxiliaryGraph;
-		}
-
-		public void setAuxiliaryGraph(PlotDirectedSparseGraph g) {
-			this.auxiliaryGraph = g;
-		}
-
-		public MoodMapper getMoodData() {
-			return moodData;
-		}
-
-		public void setMoodData(MoodMapper moodData) {
-			this.moodData = moodData;
-		}
-	}
 }

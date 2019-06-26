@@ -5,7 +5,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import inBloom.LauncherAgent;
-import inBloom.ERcycle.PlotCycle.EngageResult;
+import inBloom.ERcycle.EngageResult;
 
 public class MakeExtraverted implements ProblemFixCommand {
 

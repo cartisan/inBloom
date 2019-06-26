@@ -2,7 +2,7 @@ package inBloom.ERcycle;
 
 import java.lang.reflect.InvocationTargetException;
 
-import inBloom.ERcycle.PlotCycle.EngageResult;
+import inBloom.ERcycle.EngageResult;
 import inBloom.stories.little_red_hen.RedHenHappeningCycle;
 
 public class IncreaseNegativity implements ProblemFixCommand {

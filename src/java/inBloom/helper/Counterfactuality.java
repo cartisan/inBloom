@@ -48,6 +48,7 @@ public class Counterfactuality {
 			List<Mood> orgMood = originalMoodMap.get(k);
 			if(counterMoodMap.containsKey(k)) {
 				List<Mood> conMood = counterMoodMap.get(k);
+				
 				counterValue = counterValue + Math.abs(pleasureEval(orgMood) - pleasureEval(conMood));
 			}
 			

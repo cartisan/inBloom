@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 import inBloom.LauncherAgent;
-import inBloom.ERcycle.PlotCycle.EngageResult;
+import inBloom.ERcycle.EngageResult;
 import inBloom.stories.little_red_hen.RedHenHappeningCycle;
 import jason.asSemantics.Personality;
 

@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import inBloom.PlotEnvironment;
-import inBloom.ERcycle.PlotCycle.EngageResult;
+import inBloom.ERcycle.EngageResult;
 import inBloom.graph.Vertex;
 import inBloom.helper.PlotpatternAnalyzer;
 import inBloom.stories.little_red_hen.RedHenHappeningCycle;

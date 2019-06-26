@@ -18,7 +18,7 @@ import org.chocosolver.solver.variables.IntVar;
 
 import inBloom.LauncherAgent;
 import inBloom.PlotLauncher;
-import inBloom.ERcycle.PlotCycle.EngageResult;
+import inBloom.ERcycle.EngageResult;
 import inBloom.helper.TermParser;
 import jason.asSemantics.Affect;
 import jason.asSemantics.Personality;

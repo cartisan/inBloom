@@ -10,9 +10,11 @@ import inBloom.LauncherAgent;
 import inBloom.PlotLauncher;
 import inBloom.ERcycle.DetectLackingAdversity;
 import inBloom.ERcycle.DetectNarrativeEquilibrium;
+import inBloom.ERcycle.EngageResult;
 import inBloom.ERcycle.PlotCycle;
 import inBloom.ERcycle.ProblemDetectionState;
 import inBloom.ERcycle.ProblemFixCommand;
+import inBloom.ERcycle.ReflectResult;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
 import inBloom.graph.isomorphism.FunctionalUnit;
@@ -168,5 +170,6 @@ public class RedHenHappeningCycle extends PlotCycle {
 		RedHenHappeningCycle cycle = new RedHenHappeningCycle("agent");
 		cycle.run();
 	}
+
 
 }

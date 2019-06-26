@@ -100,7 +100,7 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 	 * a subclass in order to get all necessary information.
 	 */
 	public CounterfactualityCycle(String agentSource, String[] agentNames, PlotDirectedSparseGraph originalGraph, MoodMapper originalMood, String counterAgent) {
-		super(agentNames, agentSource);
+		super(agentNames, agentSource, true, counterAgent, originalMood);
 		this.originalGraph = originalGraph;
 		this.originalMood = originalMood;
 		this.counterAgent = counterAgent;
@@ -161,8 +161,8 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 	}
 
 	@Override
-	protected ReflectResult reflect(/*PlotCycle.*/EngageResult er) {
-		//EngageResult er = (EngageResult) erOriginal;
+	protected ReflectResult reflect(EngageResult erOriginal) {
+		CounterfactualityEngageResult er = (CounterfactualityEngageResult) erOriginal;
 		log("I am reflecting");
 		// TELLABILITY
 		Tellability tellability = er.getTellability();
@@ -171,9 +171,7 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 		// Save tellability, graph and agent's personality if it was better than the best before
 		if(currTellability > bestTellability) {
 			bestTellability = currTellability;
-			
-			
-			log("New best: " + bestTellability);
+			log("New best Tellability: " + bestTellability);
 			bestPersonalities = lastPersonalities;
 			bestResult = er;
 			
@@ -182,15 +180,15 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 		
 		
 		// COUNTERFACTUALITY
-//		Counterfactuality counterfactuality = new Counterfactuality(originalMood, er.getMoodData(), currTellability, counterAgent);
-//		double currCounterfactuality = counterfactuality.compute();
-//		log(" Current Counterfactuality: " + currCounterfactuality);
-//		if(currCounterfactuality > bestCounterfactuality) {
-//			bestCounterfactuality = currCounterfactuality;
-//			log("New best counterfactuality: " + bestCounterfactuality);
-//			bestPersonalities = lastPersonalities;
-//			bestResult = er;
-//		}
+		Counterfactuality counterfactuality = er.getCounterfactuality();
+		double currCounterfactuality = counterfactuality.compute();
+		log(" Current Counterfactuality: " + currCounterfactuality);
+		if(currCounterfactuality > bestCounterfactuality) {
+			bestCounterfactuality = currCounterfactuality;
+			log("New best counterfactuality: " + bestCounterfactuality);
+			bestPersonalities = lastPersonalities;
+			bestResult = er;
+		}
 		log("Best Counterfactuality So Far: " + bestCounterfactuality);
 		
 		// Stop cycle if there are no other personality combinations
@@ -229,8 +227,8 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 	}
 	
 	@Override
-	protected void finish(/*PlotCycle.*/EngageResult er) {
-		//EngageResult er = (EngageResult) erOriginal;
+	protected void finish(EngageResult erOriginal) {
+		CounterfactualityEngageResult er = (CounterfactualityEngageResult) erOriginal;
 		// Print results
 		log("Best tellability: " + bestTellability);
 		log("Personalities:");
@@ -240,6 +238,20 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 		showGraph(bestResult);
 		// flush and close handled by super implementation
 		super.finish(er);
+	}
+	
+	@Override
+	protected EngageResult createEngageResult(ReflectResult rr, PlotLauncher<?, ?> runner,
+			PlotDirectedSparseGraph analyzedGraph, Tellability tel, MoodMapper moodData) {
+		Counterfactuality counterfactuality = new Counterfactuality(this.originalMood, moodData, tel.compute(), this.counterAgent);
+		EngageResult er;
+		er = new CounterfactualityEngageResult(counterfactuality,		   
+									   analyzedGraph,
+									   tel,
+									   rr.getAgents(),
+									   runner.getUserModel(),
+									   moodData);
+		return er;
 	}
 	
 	// TODO modify background colours etc.
@@ -327,23 +339,6 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 	 * @return the PlotModel of a specific story.
 	 */
 	public abstract PlotModel<?> getPlotModel(List<LauncherAgent> agents);
-		/** 
-		 * Herits from the same inner class in PlotCycle
-		 * and adds values and methods for counterfactuality
-		 */
-		/*public class EngageResult extends PlotCycle.EngageResult {
-			private Counterfactuality counterfactuality;
-			
-			public EngageResult(Counterfactuality counterfactuality, PlotDirectedSparseGraph plotGraph, Tellability tellability, List<LauncherAgent> lastAgents, PlotModel<?> lastModel, MoodMapper moodData) {
-				super(plotGraph, tellability, lastAgents, lastModel, moodData);
-				this.counterfactuality = counterfactuality;
-			}
-			
-			public Counterfactuality getCounterfactuality() {
-				return this.counterfactuality;
-			}
-		
-		}
-	*/
+	
 
 }

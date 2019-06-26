@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import inBloom.LauncherAgent;
+import inBloom.ERcycle.EngageResult;
 import inBloom.ERcycle.PersonalitySpaceSearchCycle;
+import inBloom.ERcycle.ReflectResult;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.asSemantics.Personality;
 
@@ -106,4 +108,5 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 		RedHenPersonalityCycle cycle = new RedHenPersonalityCycle();
 		cycle.run();
 	}
+
 }
