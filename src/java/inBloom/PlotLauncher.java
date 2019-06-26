@@ -45,6 +45,7 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
      * {@code ENV_CLASS = FarmEnvironment.class;}
      */
 	public Class<?> ENV_CLASS;
+	public Class<?> COUNTERFACT_CLASS;
 	protected Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
 	
 	protected static Map<String, PlanLibrary> planLibraryCache =  new HashMap<>();
@@ -336,6 +337,10 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 
 	public ModType getUserModel() {
 		return (ModType) this.getUserEnvironment().getModel();
+	}
+	
+	public void deleteUserEnvironment() {
+		this.env = null;
 	}
 	
 	public void setDebug(Boolean bool) {

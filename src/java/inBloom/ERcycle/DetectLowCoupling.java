@@ -1,6 +1,6 @@
 package inBloom.ERcycle;
 
-import inBloom.ERcycle.PlotCycle.EngageResult;
+import inBloom.ERcycle.EngageResult;
 import inBloom.graph.Edge;
 import inBloom.stories.little_red_hen.RedHenHappeningCycle;
 

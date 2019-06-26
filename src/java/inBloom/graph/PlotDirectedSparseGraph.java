@@ -370,31 +370,34 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 			dest.roots.add(clone);
 			dest.vertexAgentMap.put(clone, vertexAgentMap.get(root));
 		}
-		
-	    for (Vertex v : this.getVertices()) {
-	    	if (!(v.getType() == Type.ROOT)) {
-	    		Vertex clone = v.clone(dest);
-
-	    		// if cloned vertex is an axis, note that in axis map
-	    		if(this.yAxis.containsValue(v)) {
-	    			if(!dest.yAxis.containsKey(v.getStep())) {
-	    				dest.yAxis.put(v.getStep(), clone);
-	    			} else {
-	    				cloneMap.put(v, v);
-	    				continue;
-	    			}
+		synchronized(this.vertices) {
+		    for (Vertex v : this.getVertices()) {
+		    	if (!(v.getType() == Type.ROOT)) {
+		    		Vertex clone = v.clone(dest);
+	
+		    		// if cloned vertex is an axis, note that in axis map
+		    		if(this.yAxis.containsValue(v)) {
+		    			if(!dest.yAxis.containsKey(v.getStep())) {
+		    				dest.yAxis.put(v.getStep(), clone);
+		    			} else {
+		    				cloneMap.put(v, v);
+		    				continue;
+		    			}
+		    		}
+		    		dest.addVertex(clone);
+	    			cloneMap.put(v, clone);
+	    		
+	    			dest.vertexAgentMap.put(clone, vertexAgentMap.get(v));
 	    		}
-	    		dest.addVertex(clone);
-    			cloneMap.put(v, clone);
-    		
-    			dest.vertexAgentMap.put(clone, vertexAgentMap.get(v));
-    		}
-	    }
+		    }
+		}   
 
 	    // clone edges, make sure that incident vertices are translated into their cloned counterparts
-	    for (Edge e : this.getEdges()) {
-	    	Collection<Vertex> vClones = this.getIncidentVertices(e).stream().map( v -> cloneMap.get(v)).collect(Collectors.toList());
-	        dest.addEdge(e.clone(), vClones);
+	    synchronized(this.edges) {
+		    for (Edge e : this.getEdges()) {
+		    	Collection<Vertex> vClones = this.getIncidentVertices(e).stream().map( v -> cloneMap.get(v)).collect(Collectors.toList());
+		        dest.addEdge(e.clone(), vClones);
+		    }
 	    }
 	    
 	    for(Map.Entry<FunctionalUnit, Set<Vertex>> entry : unitVertexGroups.entrySet()) {

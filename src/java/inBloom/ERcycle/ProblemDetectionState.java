@@ -3,7 +3,7 @@ package inBloom.ERcycle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import inBloom.ERcycle.PlotCycle.EngageResult;
+import inBloom.ERcycle.EngageResult;
 import inBloom.stories.little_red_hen.RedHenHappeningCycle;
 
 /**

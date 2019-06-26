@@ -193,7 +193,6 @@ public abstract class PersonalitySpaceSearchCycle extends PlotCycle {
 	
 	/**
 	 * Initializes a cycle with given agents.
-	 * @param agentNames The names of the agents
 	 * @param agentSrc The AgentSpeak source file for all agents
 	 * @param personalityNum Defines how many unique personalities the cycle should iterate over.
 	 */

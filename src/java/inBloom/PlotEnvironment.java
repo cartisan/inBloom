@@ -377,7 +377,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 				}
 			}
 		}
-		
 		// check if pause mode is enabled, wait with execution while it is
 		this.waitWhilePause();
 	}
@@ -522,7 +521,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 */
 	synchronized void waitWhilePause() {
 		this.checkPause();
-		
         try {
             while (MASConsoleGUI.get().isPause()) {
             	logger.info("Execution paused, switching to console output");
@@ -554,8 +552,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	    		logger.info("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
 	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
 	    		resetAllAgentActionCounts();
-	
-	    		PlotLauncher.runner.pauseExecution();
+	    		PlotLauncher.runner.pauseExecution();		
 	    		for(EnvironmentListener l : listeners) {
 	    			l.onPauseRepeat();
 	    		}

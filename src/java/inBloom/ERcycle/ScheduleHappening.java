@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import inBloom.PlotModel;
-import inBloom.ERcycle.PlotCycle.EngageResult;
+import inBloom.ERcycle.EngageResult;
 import inBloom.stories.little_red_hen.RedHenHappeningCycle;
 import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;

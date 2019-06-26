@@ -3,9 +3,11 @@ package inBloom.ERcycle;
 import java.util.List;
 
 import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 import inBloom.LauncherAgent;
-import inBloom.ERcycle.PlotCycle.EngageResult;
+import inBloom.ERcycle.EngageResult;
+import inBloom.graph.MoodGraph;
 import inBloom.graph.Vertex;
 import inBloom.stories.little_red_hen.RedHenHappeningCycle;
 import jason.asSemantics.Emotion;
@@ -64,7 +66,10 @@ public class DetectLackingAdversity extends ProblemDetectionState {
 	}
 
 	private boolean detectTooWeakNegativity(String name, EngageResult er) {
-		XYSeries moodData = er.getMoodData().getSeries(name);
+		MoodGraph.getMoodListener().createData(er.getMoodData());
+		XYSeriesCollection moodDataAll = MoodGraph.getMoodListener().getData();
+		XYSeries moodData = moodDataAll.getSeries(name);
+		
 		Double minP = moodData.getMinY();
 		
 		LauncherAgent chara = er.getAgent(name);

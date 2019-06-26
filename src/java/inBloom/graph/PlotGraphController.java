@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Logger;
 
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -34,9 +35,11 @@ import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import inBloom.LauncherAgent;
 import inBloom.PlotControlsLauncher;
 import inBloom.PlotLauncher;
+import inBloom.ERcycle.CounterfactualityCycle;
 import inBloom.graph.isomorphism.FunctionalUnit;
 import inBloom.graph.isomorphism.FunctionalUnits;
 import inBloom.graph.visitor.EdgeLayoutVisitor;
+import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
 import jason.asSemantics.Message;
 
@@ -65,6 +68,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
 	private JComboBox<PlotDirectedSparseGraph> graphTypeList = new JComboBox<>();	// ComboBox that is displayed on the graph to change display type
 	public VisualizationViewer<Vertex, Edge> visViewer = null;
+	private JButton counterfactButton;
 	private JPanel infoPanel = new JPanel(); // parent of information JLabels
 	private GraphZoomScrollPane scrollPane = null; //panel used to display scrolling bars
 	private JPopupMenu popup = null;	
@@ -200,6 +204,51 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
         result.add(pngItem);
 
         this.popup = result;
+    }
+    
+	/**
+     * Adds a Button to the menu that will switch from Counterfactuality
+     * to originial and the other way around
+     * 
+     * Can be extended by different buttons and a createButtons method
+     */
+    
+    protected void createCounterfactButton() {
+    	logger.info("creating counterfactuality button");
+    	JButton btCounterfact = new JButton("Counterfactuality!");
+    	btCounterfact.addActionListener(new ActionListener() {
+			//boolean for first time -> calculating
+    		private boolean firstClick = true;
+   			//distinguishing: counterfactual click or original click?
+    		private boolean counterfact = true;
+    		public void actionPerformed(ActionEvent click) {
+    			
+    			PlotDirectedSparseGraph originalGraph = new PlotDirectedSparseGraph();
+    			if(firstClick) {
+    						
+    				//getting the current graph and give it to the CounterfactualityLauncher
+        			originalGraph = PlotGraphController.getPlotListener().getGraph();
+        			MoodMapper moodData = PlotControlsLauncher.runner.getUserModel().moodMapper;
+        			
+        			// get counterfactuality class
+        			CounterfactualityCycle counterfact;
+        			try {
+        				counterfact = (CounterfactualityCycle) PlotLauncher.getRunner().COUNTERFACT_CLASS.getConstructors()[0].newInstance(originalGraph, moodData);
+        				counterfact.run();
+        			} catch (Exception e) {
+						System.err.println("Error instantiating counterfactuality class");
+						System.exit(0);
+					}
+        			
+          			//set firstClick false
+        			firstClick = false;
+        			logger.info("The first click was done!");
+    			}
+
+    			counterfact = !counterfact;
+    		}
+    	});
+    	this.counterfactButton = btCounterfact;
     }
     
 	/**
@@ -422,6 +471,11 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		// c information panel
 		infoPanel.setLayout(new FlowLayout(SwingConstants.LEADING, 15, 5));
 		
+		//counterfactuality Button
+		this.createCounterfactButton();
+		this.counterfactButton.setText("Counterfactuality!");
+		//add Button to infopanel
+		this.infoPanel.add(counterfactButton);
 		// second: register a listener that redraws the plot when selection changes. Careful here: order with last command matters
 		this.graphTypeList.setActionCommand(CHANGE_VIEW_COMMAND);
 		this.graphTypeList.addActionListener(this);

@@ -21,8 +21,10 @@ import jason.infra.centralised.BaseCentralisedMAS;
  */
 public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 	
+	
 	public RedHenLauncher() {
 		ENV_CLASS = FarmEnvironment.class;
+		COUNTERFACT_CLASS = RedHenCounterfactualityCycle.class;
 		PlotControlsLauncher.runner = this;
 		BaseCentralisedMAS.runner = this;
 	}
