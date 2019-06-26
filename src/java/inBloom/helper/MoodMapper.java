@@ -25,6 +25,11 @@ public class MoodMapper {
 	private Table<String, Long, List<Mood>> timedMoodMap = Tables.synchronizedTable(HashBasedTable.create());
 	public List<Long> startTimes = Collections.synchronizedList(new LinkedList<>());
 	
+	public Map<Long, List<Mood>> getMoodByAgent(String agName) {
+		Map<Long, List<Mood>> timeMoodMap = timedMoodMap.row(agName);
+		return timeMoodMap;
+	}
+	
 	/**
 	 * Needs to be called each time the agent's pleasure value changes, in order to make this change accessible for
 	 * later analysis, as e.g. by {@link inBloom.graph.MoodGraph}. 

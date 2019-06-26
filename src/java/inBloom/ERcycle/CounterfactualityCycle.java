@@ -1,4 +1,4 @@
-package inBloom.stories.little_red_hen;
+package inBloom.ERcycle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,16 +6,18 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.jfree.data.xy.XYSeriesCollection;
 
 import inBloom.LauncherAgent;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
-import inBloom.ERcycle.PlotCycle;
-import inBloom.ERcycle.PlotCycle.EngageResult;
-import inBloom.ERcycle.PlotCycle.ReflectResult;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
 import inBloom.graph.isomorphism.FunctionalUnit;
+import inBloom.helper.Counterfactuality;
+import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
 import jason.asSemantics.Personality;
 
@@ -67,7 +69,11 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 	/**
 	 * The best tellability score.
 	 */
-	protected double bestTellability = -1f;
+	protected double bestTellability = -1f;	
+	/**
+	 * The best counterfactuality score.
+	 */
+	protected double bestCounterfactuality = -1f;
 	/**
 	 * The best Engage Result.
 	 */
@@ -76,13 +82,28 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 	 * set of domain-specific happenings allowed to be scheduled by the ER Cycle 
 	 */
 	public HashSet<Class<?>> availableHappenings = new HashSet<>();
-	
+	/**
+	 * Original Graph.
+	 */
+	private PlotDirectedSparseGraph originalGraph;
+	/**
+	 * Original Mood Data.
+	 */
+	private MoodMapper originalMood;
+	/**
+	 * Name of the Agent for whom a counterfactual story should be found.
+	 */
+	private String counterAgent;
+
 	/**
 	 * Constructor of CounterfactualityCycle, must be called by
 	 * a subclass in order to get all necessary information.
 	 */
-	public CounterfactualityCycle(String agentSource, String[] agentNames) {
+	public CounterfactualityCycle(String agentSource, String[] agentNames, PlotDirectedSparseGraph originalGraph, MoodMapper originalMood, String counterAgent) {
 		super(agentNames, agentSource);
+		this.originalGraph = originalGraph;
+		this.originalMood = originalMood;
+		this.counterAgent = counterAgent;
 		//calculate all possible personalities
 		double[] personalityValues = this.calcAllPersonalityValues();
 		Personality[] personalitySpace = createPersonalitySpace(personalityValues);
@@ -139,22 +160,39 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 		}
 	}
 
-
 	@Override
-	protected ReflectResult reflect(EngageResult er) {
+	protected ReflectResult reflect(/*PlotCycle.*/EngageResult er) {
+		//EngageResult er = (EngageResult) erOriginal;
 		log("I am reflecting");
+		// TELLABILITY
 		Tellability tellability = er.getTellability();
 		double currTellability = tellability.compute();
 		log(" Current Tellability: " + currTellability);
 		// Save tellability, graph and agent's personality if it was better than the best before
 		if(currTellability > bestTellability) {
 			bestTellability = currTellability;
+			
+			
 			log("New best: " + bestTellability);
 			bestPersonalities = lastPersonalities;
 			bestResult = er;
 			
 		}
 		log("Best Tellability So Far: " + bestTellability);
+		
+		
+		// COUNTERFACTUALITY
+//		Counterfactuality counterfactuality = new Counterfactuality(originalMood, er.getMoodData(), currTellability, counterAgent);
+//		double currCounterfactuality = counterfactuality.compute();
+//		log(" Current Counterfactuality: " + currCounterfactuality);
+//		if(currCounterfactuality > bestCounterfactuality) {
+//			bestCounterfactuality = currCounterfactuality;
+//			log("New best counterfactuality: " + bestCounterfactuality);
+//			bestPersonalities = lastPersonalities;
+//			bestResult = er;
+//		}
+		log("Best Counterfactuality So Far: " + bestCounterfactuality);
+		
 		// Stop cycle if there are no other personality combinations
 		if(!personalityIterator.hasNext() || currentCycle >= endCycle) {
 			return new ReflectResult(null, null, null, false);
@@ -178,6 +216,7 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 
 	@Override
 	protected ReflectResult createInitialReflectResult() {
+		log("Creating initial Reflect Results");
 		lastPersonalities = personalityIterator.next();
 		//this kills the programm
 		PlotLauncher<?, ?> runner = getPlotLauncher();
@@ -190,7 +229,8 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 	}
 	
 	@Override
-	protected void finish(EngageResult er) {
+	protected void finish(/*PlotCycle.*/EngageResult er) {
+		//EngageResult er = (EngageResult) erOriginal;
 		// Print results
 		log("Best tellability: " + bestTellability);
 		log("Personalities:");
@@ -287,6 +327,23 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 	 * @return the PlotModel of a specific story.
 	 */
 	public abstract PlotModel<?> getPlotModel(List<LauncherAgent> agents);
-	
+		/** 
+		 * Herits from the same inner class in PlotCycle
+		 * and adds values and methods for counterfactuality
+		 */
+		/*public class EngageResult extends PlotCycle.EngageResult {
+			private Counterfactuality counterfactuality;
+			
+			public EngageResult(Counterfactuality counterfactuality, PlotDirectedSparseGraph plotGraph, Tellability tellability, List<LauncherAgent> lastAgents, PlotModel<?> lastModel, MoodMapper moodData) {
+				super(plotGraph, tellability, lastAgents, lastModel, moodData);
+				this.counterfactuality = counterfactuality;
+			}
+			
+			public Counterfactuality getCounterfactuality() {
+				return this.counterfactuality;
+			}
+		
+		}
+	*/
 
 }

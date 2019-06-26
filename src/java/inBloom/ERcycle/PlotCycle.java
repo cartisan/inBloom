@@ -27,7 +27,9 @@ import inBloom.graph.CounterfactualityLauncher;
 import inBloom.graph.MoodGraph;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
+import inBloom.helper.Counterfactuality;
 import inBloom.helper.EnvironmentListener;
+import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
 import jason.JasonException;
 import jason.asSemantics.Personality;
@@ -216,8 +218,9 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		
 		
 		// get mood data to store in EngageResult
-		MoodGraph.getMoodListener().createData(runner.getUserModel());
-		XYSeriesCollection moodData = MoodGraph.getMoodListener().getData();
+		//MoodGraph.getMoodListener().createData(runner.getUserModel().moodMapper);
+		//XYSeriesCollection moodData = MoodGraph.getMoodListener().getData();
+		MoodMapper moodData = runner.getUserModel().moodMapper;
 		
 		
 		EngageResult er = new EngageResult(analyzedGraph,
@@ -414,13 +417,14 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 */
 	public class EngageResult {
 		private PlotDirectedSparseGraph plotGraph;
-		private XYSeriesCollection moodData; 
+		private MoodMapper moodData; 
 		private PlotDirectedSparseGraph auxiliaryGraph;
 		private Tellability tellability;
 		private PlotModel<?> lastModel;
 		private List<LauncherAgent> lastAgents;
 		
-		public EngageResult(PlotDirectedSparseGraph plotGraph, Tellability tellability, List<LauncherAgent> lastAgents, PlotModel<?> lastModel, XYSeriesCollection moodData) {
+		// TODO add counterfactuality here!!!! (and change everything accordingly)
+		public EngageResult(PlotDirectedSparseGraph plotGraph, Tellability tellability, List<LauncherAgent> lastAgents, PlotModel<?> lastModel, MoodMapper moodData) {
 			this.plotGraph = plotGraph;
 			this.tellability = tellability;
 			this.lastAgents = lastAgents;
@@ -457,6 +461,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 			return this.tellability;
 		}
 		
+		
 		public PlotDirectedSparseGraph getAuxiliaryGraph() {
 			return this.auxiliaryGraph;
 		}
@@ -465,11 +470,11 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 			this.auxiliaryGraph = g;
 		}
 
-		public XYSeriesCollection getMoodData() {
+		public MoodMapper getMoodData() {
 			return moodData;
 		}
 
-		public void setMoodData(XYSeriesCollection moodData) {
+		public void setMoodData(MoodMapper moodData) {
 			this.moodData = moodData;
 		}
 	}

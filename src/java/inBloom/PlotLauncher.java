@@ -46,6 +46,7 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
      * {@code ENV_CLASS = FarmEnvironment.class;}
      */
 	public Class<?> ENV_CLASS;
+	public Class<?> COUNTERFACT_CLASS;
 	protected Class<PlotAwareAgArch> AG_ARCH_CLASS = PlotAwareAgArch.class;
 	protected Class<PlotAwareAg> AG_CLASS = PlotAwareAg.class;
 	

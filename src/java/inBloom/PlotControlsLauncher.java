@@ -125,7 +125,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 		this.graphs.add(PlotGraphController.getPlotListener().visualizeGraph());
 		
 		// create and visualize mood graph
-		MoodGraph.getMoodListener().createData(((PlotEnvironment<PlotModel<?>>)this.getEnvironmentInfraTier().getUserEnvironment()).getModel());
+		MoodGraph.getMoodListener().createData(((PlotEnvironment<PlotModel<?>>)this.getEnvironmentInfraTier().getUserEnvironment()).getModel().moodMapper);
 		this.graphs.add(MoodGraph.getMoodListener().visualizeGraph());
 		
 		this.isDraw = true;

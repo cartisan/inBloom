@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableMap;
 import inBloom.PlotControlsLauncher;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
+import inBloom.helper.MoodMapper;
 
 
 /**
@@ -71,27 +72,28 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 		this.selectedMoodDimension = MOOD_DIMS[0];
 	}
 	
-	public void createData(PlotModel<?> model) {
-		this.createData(SAMPLING_STEP, model);
+//	public void createData(PlotModel<?> model) {
+	public void createData(MoodMapper mapper) {
+		this.createData(SAMPLING_STEP, mapper);
 	}
 	
-	public void createData(int samplingStep, PlotModel<?> model) {
+	public void createData(int samplingStep, MoodMapper mapper) {
 		MoodGraph.SAMPLING_STEP = samplingStep;
 		this.deleteGraphData();
-		this.model  = model;
+//		this.model  = model;
 		
-		logger.fine("Using following mood data to create mood graph:\n" + this.model.moodMapper.toString());
-		Long startTime = this.model.moodMapper.latestStartTime();
-		Long endTime = this.model.moodMapper.latestEndTime();
+		logger.fine("Using following mood data to create mood graph:\n" + mapper.toString());
+		Long startTime = mapper.latestStartTime();
+		Long endTime = mapper.latestEndTime();
 		startTime = startTime - (startTime % 10) + 10;		// round up start time to next multiple of 10
 				
-		for(String agName: this.model.moodMapper.mappedAgents()) {
+		for(String agName: mapper.mappedAgents()) {
 			this.moodData.addSeries(new XYSeries(agName));
 			
 			
 			// for every 10ms from start time until end time sample mood and put it into the graph
 			for (Long x_val = startTime; x_val < endTime + 1; x_val += samplingStep) {
-				Double sampledMood = this.model.moodMapper.sampleMood(agName, x_val).get(selectedMoodDimension);
+				Double sampledMood = mapper.sampleMood(agName, x_val).get(selectedMoodDimension);
 				this.addMoodPoint(sampledMood, x_val, agName);
 			}
 		}
@@ -152,7 +154,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 				String selectedDimension = (String) combo.getSelectedItem();
 				
 				MoodGraph.getMoodListener().selectedMoodDimension = selectedDimension;
-				MoodGraph.getMoodListener().createData(model);
+				MoodGraph.getMoodListener().createData(model.moodMapper);
 				
 				((XYPlot) MoodGraph.getMoodListener().chart.getPlot()).getRangeAxis().setLabel(
 						MoodGraph.getMoodListener().selectedMoodDimension
