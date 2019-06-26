@@ -29,7 +29,7 @@ public class RedHenCounterfactualityCycle extends CounterfactualityCycle {
 		// add Story-Specific Happening to superclass attribute avaibleHappenings
 		this.availableHappenings.add(FindCornHappening.class);
 		// outcomment setEndCycle for running through all possibilities
-		setEndCycle(10);
+//		setEndCycle(10);
 		allCharacters = false;
 	}
 	

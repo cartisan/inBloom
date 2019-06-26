@@ -41,9 +41,9 @@ public class Counterfactuality {
 		Map<Long, List<Mood>> counterMoodMap = counterMood.getMoodByAgent(counterAgent);
 		
 		for(Long k : originalMoodMap.keySet()) {
-			List<Mood> orgMood = originalMoodMap.get(k);
+			Mood orgMood = originalMood.sampleMood(counterAgent, k);
 			if(counterMoodMap.containsKey(k)) {
-				List<Mood> conMood = counterMoodMap.get(k);
+				Mood conMood = counterMood.sampleMood(counterAgent, k);
 				
 				counterValue = counterValue + Math.abs(pleasureEval(orgMood) - pleasureEval(conMood));
 			}
@@ -68,16 +68,16 @@ public class Counterfactuality {
 		return counterValue;
 	}
 	
-	private double pleasureEval(List<Mood> moods) {
-		return moods.stream().map(m -> m.getP()).mapToDouble(l -> l).average().getAsDouble();
+	private double pleasureEval(Mood mood) {
+		return mood.getP();
 	}
 	
-	private double arousalEval(List<Mood> moods) {
-		return moods.stream().map(m -> m.getA()).mapToDouble(l -> l).average().getAsDouble();
+	private double arousalEval(Mood mood) {
+		return mood.getA();
 	}
 	
-	private double dominanceEval(List<Mood> moods) {
-		return moods.stream().map(m -> m.getD()).mapToDouble(l -> l).average().getAsDouble();
+	private double dominanceEval(Mood mood) {
+		return mood.getD();
 	}
 	
 	// TODO where are the different moods stored??
