@@ -72,7 +72,7 @@ smelly(poo).
 	.print("I need to find my ", X, ", it's very important to me! :(");
 	!find(X).
 	
-
+@p1[atomic]
 +step_on(X) : smelly(X) <-
 	!clean.
 	
@@ -84,9 +84,14 @@ smelly(poo).
 	if(lost(X)) {
 		!find(X)
 	}.
-	
+
+@p2[atomic]	
 +!clean <-
 	clean.
 	
 +!get(drink) <-
 	get(drink).
+
+/* Change of Mind */
++bored <- !rethink_life.
++!rethink_life <- .drop_desire(intrinsic_motivation).

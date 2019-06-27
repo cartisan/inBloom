@@ -61,6 +61,10 @@ public class TestModel extends PlotModel<TestEnvironment> {
 											 PerceptAnnotation.fromEmotion("joy"));
 		}
 		
+		if(step == 9) {
+			this.environment.addEventPercept(agent.name, "bored", PerceptAnnotation.fromEmotion("distress"));  // initiates change of mind intention
+		}
+		
 		step++;
 		return true;
 	}

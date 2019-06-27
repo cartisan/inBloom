@@ -98,7 +98,7 @@ public class PrimitiveUnitTest extends AbstractPlotTest {
 	public void testMotivation() {
 		UnitFinder finder = new UnitFinder();
 		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(analyzedGraph, TestUnits.MOTIVATION.getGraph());
-		assertTrue(mappings.size() >= 9);
+		assertTrue(mappings.size() >= 8);
 	}
 	
 	@Test
