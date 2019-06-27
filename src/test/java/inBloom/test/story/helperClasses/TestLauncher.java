@@ -1,4 +1,4 @@
-package inBloom.test.story;
+package inBloom.test.story.helperClasses;
 
 import java.io.IOException;
 import java.io.PrintWriter;

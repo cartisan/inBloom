@@ -15,6 +15,9 @@ import inBloom.LauncherAgent;
 import inBloom.graph.Vertex;
 import inBloom.graph.isomorphism.UnitFinder;
 import inBloom.storyworld.ScheduledHappeningDirector;
+import inBloom.test.story.helperClasses.AbstractPlotTest;
+import inBloom.test.story.helperClasses.HappeningsCollection;
+import inBloom.test.story.helperClasses.TestUnits;
 import jason.asSemantics.Personality;
 
 public class PrimitiveUnitTest extends AbstractPlotTest {

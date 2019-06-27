@@ -17,6 +17,9 @@ import inBloom.graph.Vertex;
 import inBloom.helper.PerceptAnnotation;
 import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
+import inBloom.test.story.helperClasses.AbstractPlotTest;
+import inBloom.test.story.helperClasses.HappeningsCollection;
+import inBloom.test.story.helperClasses.TestModel;
 import jason.asSemantics.Personality;
 
 public class HappeningCausalityTest extends AbstractPlotTest {

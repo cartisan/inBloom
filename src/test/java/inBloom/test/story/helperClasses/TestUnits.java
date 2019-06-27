@@ -1,4 +1,4 @@
-package inBloom.test.story;
+package inBloom.test.story.helperClasses;
 
 import inBloom.graph.Edge;
 import inBloom.graph.PlotDirectedSparseGraph;

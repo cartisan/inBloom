@@ -12,6 +12,7 @@ import inBloom.LauncherAgent;
 import inBloom.graph.Vertex;
 import inBloom.graph.Vertex.Type;
 import inBloom.storyworld.ScheduledHappeningDirector;
+import inBloom.test.story.helperClasses.AbstractPlotTest;
 import jason.asSemantics.Personality;
 import jason.util.Pair;
 

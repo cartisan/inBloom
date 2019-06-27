@@ -1,4 +1,4 @@
-package inBloom.test.story;
+package inBloom.test.story.helperClasses;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
