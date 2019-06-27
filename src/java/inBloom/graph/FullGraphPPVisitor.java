@@ -68,7 +68,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	
 	public void handleDropIntention(Vertex vertex) {
 		String label = vertex.getLabel();
-		Pattern pattern = Pattern.compile("drop_intention\\((?<drop>.*?)\\)\\[" + Edge.Type.CAUSALITY.toString() + "\\((?<cause>.*)\\)\\]");
+		Pattern pattern = Pattern.compile("drop_intention\\((?<drop>.*?)\\)\\[" + Edge.Type.CAUSALITY.toString() + "\\(\\+?(?<cause>.*)\\)\\]");
 		Matcher matcher = pattern.matcher(label);
 		
 		// Remove the vertex if it is somehow degenerate (pattern could not be matched)
@@ -93,7 +93,6 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 		}
 		
 		// Look for the cause in previous vertices
-//		String causeString = matcher.group(Edge.Type.CAUSALITY.toString()).substring(1);
 		String causeString = matcher.group(Edge.Type.CAUSALITY.toString());
 		Vertex cause = null;
 		for(Vertex potentialCause : this.eventList) {

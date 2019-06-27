@@ -107,7 +107,7 @@ public class Vertex implements Cloneable {
 	 * Example: <br />
 	 * <pre>
 	 * {@code
-	 * 	eat(bread)[source(self)] -> eat
+	 * 	!eat(bread)[source(self)] -> eat
 	 * }
 	 * </pre>
 	 * 
@@ -131,18 +131,14 @@ public class Vertex implements Cloneable {
 	 * Example: <br />
 	 * <pre>
 	 * {@code
-	 * 	eat(bread)[source(self)] -> eat(bread)
+	 * 	!eat(bread)[source(self)] -> !eat(bread)
 	 * }
 	 * </pre>
 	 * 
 	 * @return
 	 */	
 	public String getWithoutAnnotation() {
-		String removedAnnots = TermParser.removeAnnots(getLabel());
-		if(removedAnnots.startsWith("!")) {
-			removedAnnots = removedAnnots.substring(1);
-		}
-		return removedAnnots;
+		return TermParser.removeAnnots(getLabel());
 	}
 	
 	/**
