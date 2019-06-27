@@ -37,30 +37,8 @@ public class HappeningCausalityTest extends AbstractPlotTest {
         // Initialize happenings
         ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 
-        // Set up positive happening "find friend" that is triggered by positive action perception "get(drink)" for
-        // primitive unit complex positive event
-        Happening<TestModel> findFriendHap = new Happening<TestModel>(
-        		new Predicate<TestModel>() {
-					@Override
-					public boolean test(TestModel model) {
-						if (model.isDrunk) {
-							return true;
-						}
-						return false;
-					}
-        			
-        		},
-        		new Consumer<TestModel>() {
-					@Override
-					public void accept(TestModel model) {
-						model.hasFriend = true;
-					}
-        		},
-        		"jeremy",
-        		"isDrunk",
-        		"found(friend)");
-        findFriendHap.setAnnotation(PerceptAnnotation.fromEmotion("joy"));
-        hapDir.scheduleHappening(findFriendHap);
+        // Set up positive happening "find friend" that is triggered by positive action perception "get(drink)"
+        hapDir.scheduleHappening(HappeningsCollection.findFriendHap);
         
         Happening<TestModel> findSecondFriend = new Happening<TestModel>(
         		new Predicate<TestModel>() {

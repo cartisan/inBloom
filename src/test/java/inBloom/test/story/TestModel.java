@@ -21,6 +21,9 @@ public class TestModel extends PlotModel<TestEnvironment> {
 
 	@ModelState
 	public boolean hasFriend = false;
+	
+	@ModelState
+	public boolean brokenLeg = false;
 
 	public TestModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		super(agentList, hapDir);
@@ -61,7 +64,7 @@ public class TestModel extends PlotModel<TestEnvironment> {
 											 PerceptAnnotation.fromEmotion("joy"));
 		}
 		
-		if(step == 9) {
+		if(step == 10) {
 			this.environment.addEventPercept(agent.name, "bored", PerceptAnnotation.fromEmotion("distress"));  // initiates change of mind intention
 		}
 		

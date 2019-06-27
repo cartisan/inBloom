@@ -5,8 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,8 +14,6 @@ import com.google.common.collect.ImmutableList;
 import inBloom.LauncherAgent;
 import inBloom.graph.Vertex;
 import inBloom.graph.isomorphism.UnitFinder;
-import inBloom.helper.PerceptAnnotation;
-import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.asSemantics.Personality;
 
@@ -38,30 +34,11 @@ public class PrimitiveUnitTest extends AbstractPlotTest {
         // Initialize happenings
         ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 
-        // Set up positive happening "find friend" that is triggered by positive action perception "get(drink)" for
-        // primitive unit complex positive event
-        Happening<TestModel> findFriendHap = new Happening<TestModel>(
-        		new Predicate<TestModel>() {
-					@Override
-					public boolean test(TestModel model) {
-						if (model.isDrunk) {
-							return true;
-						}
-						return false;
-					}
-        			
-        		},
-        		new Consumer<TestModel>() {
-					@Override
-					public void accept(TestModel model) {
-						model.hasFriend = true;
-					}
-        		},
-        		"jeremy",
-        		"isDrunk",
-        		"found(friend)");
-        findFriendHap.setAnnotation(PerceptAnnotation.fromEmotion("joy"));
-        hapDir.scheduleHappening(findFriendHap);
+        // happening for primitive unit complex positive event
+        hapDir.scheduleHappening(HappeningsCollection.findFriendHap);
+        // happenings for primitive unit hidden blessing
+        hapDir.scheduleHappening(HappeningsCollection.breakLeg);
+        hapDir.scheduleHappening(HappeningsCollection.winDamages);
         
 		startSimulation("agent_primitive_unit", agents, hapDir);
 	}
@@ -140,6 +117,13 @@ public class PrimitiveUnitTest extends AbstractPlotTest {
 	public void testChangeOfMind() {
 		UnitFinder finder = new UnitFinder();
 		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(analyzedGraph, TestUnits.CHANGE_OF_MIND.getGraph());
+		assertTrue(mappings.size() >= 1);
+	}
+		
+	@Test
+	public void testHiddenBlessing() throws InterruptedException {
+		UnitFinder finder = new UnitFinder();
+		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(analyzedGraph, TestUnits.HIDDEN_BLESSING.getGraph());
 		assertTrue(mappings.size() >= 1);
 	}
 }

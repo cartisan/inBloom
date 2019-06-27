@@ -264,25 +264,25 @@ public class FunctionalUnits {
 		g = new PlotDirectedSparseGraph();
 		v1 = makePositive(1, g);
 		v2 = makeNegative(2, g);
-		g.addEdge(makeEquivalence(), v2, v1);
+		g.addEdge(makeCausality(), v1, v2);
 		PRIMITIVES[11] = new FunctionalUnit("Mixed Blessing", g);
 		
 		g = new PlotDirectedSparseGraph();
 		v1 = makeNegative(1, g);
 		v2 = makePositive(2, g);
-		g.addEdge(makeEquivalence(), v2, v1);
+		g.addEdge(makeCausality(), v1, v2);
 		PRIMITIVES[12] = new FunctionalUnit("Hidden Blessing", g);
 		
 		g = new PlotDirectedSparseGraph();
 		v1 = makePositive(1, g);
 		v2 = makePositive(2, g);
-		g.addEdge(makeEquivalence(), v2, v1);
+		g.addEdge(makeCausality(), v1, v2);
 		PRIMITIVES[13] = new FunctionalUnit("Complex Positive Event", g);
 		
 		g = new PlotDirectedSparseGraph();
 		v1 = makeNegative(1, g);
 		v2 = makeNegative(2, g);
-		g.addEdge(makeEquivalence(), v2, v1);
+		g.addEdge(makeCausality(), v1, v2);
 		PRIMITIVES[14] = new FunctionalUnit("Complex Negative Event", g);
 		
 		g = new PlotDirectedSparseGraph();
@@ -390,5 +390,9 @@ public class FunctionalUnits {
 	
 	private static Edge makeEquivalence() {
 		return new Edge(Edge.Type.EQUIVALENCE);
+	}
+	
+	private static Edge makeCausality() {
+		return new Edge(Edge.Type.CAUSALITY);
 	}
 }
