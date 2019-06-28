@@ -223,6 +223,10 @@ public class Location {
 	};
 	
 
+	/**
+	 * Returns a list of characters present at this location.
+	 * @return
+	 */
 	public List<Character> getCharacters() {
 		return characters;
 	}

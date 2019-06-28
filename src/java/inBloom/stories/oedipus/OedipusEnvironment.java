@@ -3,6 +3,7 @@ package inBloom.stories.oedipus;
 import java.util.List;
 import java.util.logging.Logger;
 
+import inBloom.ActionReport;
 import inBloom.LauncherAgent;
 import inBloom.PlotEnvironment;
 import inBloom.storyworld.Character;
@@ -22,8 +23,8 @@ public class OedipusEnvironment extends PlotEnvironment<OedipusModel> {
 		addPercept(Literal.parseLiteral("position(" + String.valueOf(pos) + ")" ));
 	}
 	
-	public boolean doExecuteAction(String agentName, Structure action) {
-		boolean result = false;
+	public ActionReport doExecuteAction(String agentName, Structure action) {
+		ActionReport result = null;
 		Character agent = getModel().getCharacter(agentName);
 		
 		if (action.getFunctor().equals("chilling")) {

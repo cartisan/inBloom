@@ -1,7 +1,9 @@
 package inBloom;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +25,7 @@ import inBloom.jason.PlotAwareCentralisedRuntimeServices;
 import inBloom.storyworld.Character;
 import jason.asSemantics.ActionExec;
 import jason.asSemantics.AffectiveAgent;
+import jason.asSemantics.Emotion;
 import jason.asSemantics.Intention;
 import jason.asSemantics.Personality;
 import jason.asSyntax.ASSyntax;
@@ -222,15 +225,39 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		
     	// let the domain specific subclass handle the actual action execution
     	// ATTENTION: this is were domain-specific action handling code goes
-    	boolean result = this.doExecuteAction(agentName, action);		
+		ActionReport actionReport = this.doExecuteAction(agentName, action);
+    	
+		// Create percepts of action-results for all present agents
+    	List<Character> presentChars = this.getModel().getCharacter(agentName).location.getCharacters();
+    	
+    	for (Character currentChar : presentChars) {
+    		if(currentChar.getName().equals(agentName)) {
+    			// reporting results for acting agent
+    			// TODO: insert "self" into terms on position 0? Or rather do this ASL side?
+    			if (!actionReport.success) {
+    				// if action failed, acting character feels disappointment
+    				actionReport.getAnnotation(currentChar.name).addAnnotation(Emotion.ANNOTATION_FUNCTOR, "disappointment");
+    			}
+    			this.addEventPercept(currentChar.name, action.toString(), actionReport.getAnnotation(currentChar.name));
+    		} else {
+    			// reporting results for other present agents --> insert acting agent as first term
+    			int arity = action.getArity();
+    			Term[] terms = new Term[arity+1];
+    			terms[0] = ASSyntax.createAtom(agentName);
+    			
+    			//shift prior terms from position i to i+1, because agent name is inserted in 0
+    			if (arity > 0 ) {
+	    			for(int i = 0; i < arity; ++i) {
+	    				terms[i+1] = action.getTerm(i);
+	    			}
+    			}
+    			
+    			Structure percept = ASSyntax.createStructure(action.getFunctor(), terms);
+    			this.addEventPercept(currentChar.name, percept.toString(), actionReport.getAnnotation(currentChar.name));
+    		}
+    	}
 		
-    	if(result) {
-    		logger.info(String.format("%s performed %s", agentName, action.toString()));
-    	}
-    	else {
-    		// appraise negative emotion if action failed.
-    		this.addEventPercept(agentName, action.toString(), PerceptAnnotation.fromEmotion("disappointment"));
-    	}
+		logger.info(String.format("%s performed %s", agentName, action.toString()));
     	
     	// allow model to see if action resulted in state change
     	this.getModel().noteStateChanges(agentName, action.toString());
@@ -238,7 +265,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	// make provisions for pause mode
     	this.updateActionCount(agentName, action);
     	
-		return result;
+		return actionReport.success;
 	}
 	
 	/**
@@ -249,13 +276,13 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 * 
 	 * @see inBloom.stories.little_red_hen.FarmEnvironment
 	 */
-	protected boolean doExecuteAction(String agentName, Structure action) {
+	protected ActionReport doExecuteAction(String agentName, Structure action) {
 		PlotLauncher.runner.pauseExecution();
 		logger.severe("SEVERE: doExecuteAction method is not implemented in PlotEnvironment, it's subclass responsibility to implement it");
 		logger.severe("Stopping simulation execution...");
 		PlotLauncher.runner.finish();
 		
-		return false;
+		return null;
 	}
 	
 	/**
@@ -422,30 +449,33 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      */
 	protected void updateEventPercepts(String agentName) {
 		deleteOldUniqueEvents(agentName);
-    	addNewUniqueEvents(agentName);
+		addNewUniqueEvents(agentName);
 	}
 	
 	/**
 	 * Adds percepts of events that happened during last cycle to agent's perception list.
 	 */
 	private void addNewUniqueEvents(String agentName) {
-    	for( String event : this.getListCurrentEvents(agentName) ) {
-    		try {
-    			Literal percept = ASSyntax.parseLiteral(event);
-				addPercept(agentName, percept);
-				
-				//get list of events to be removed next cycle
-				List<Literal> remList = getListRemEvents(agentName);
-				
-				// add percept to this list and put new list back into storing map 
-				remList.add(percept);
-				this.perceivedEventsMap.put(agentName, remList);
-				
-			} catch (ParseException e) {
-				logger.severe("Couldn't parse event: " + event.toString() + " in PlotEnvironment#addNewUniqueEvents.");
-				logger.severe(e.getMessage());
-			}
-    	}
+    	List<String> eventList = this.getListCurrentEvents(agentName);
+		synchronized(eventList) {											// make sure to block writing, while iterating here
+	    	for(String event : eventList) {
+	    		try {
+	    			Literal percept = ASSyntax.parseLiteral(event);
+					addPercept(agentName, percept);
+					
+					//get list of events to be removed next cycle
+					List<Literal> remList = getListRemEvents(agentName);
+					
+					// add percept to this list and put new list back into storing map 
+					remList.add(percept);
+					this.perceivedEventsMap.put(agentName, remList);
+					
+				} catch (ParseException e) {
+					logger.severe("Couldn't parse event: " + event.toString() + " in PlotEnvironment#addNewUniqueEvents.");
+					logger.severe(e.getMessage());
+				}
+	    	}
+		}
     	this.currentEventsMap.remove(agentName);
 	}
 	
@@ -468,7 +498,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 * Returns the list of events that need to be added to agents perception list this reasoning step.
 	 */	
 	protected List<String> getListCurrentEvents(String agentName) {
-		return this.currentEventsMap.getOrDefault(agentName, new LinkedList<String>());
+		// the lists need to be synchronized, so that agents adding events and environment reading events do not lead to concurrency conditions
+		return this.currentEventsMap.getOrDefault(agentName, Collections.synchronizedList(new ArrayList<String>()));
 	}
 	
 	/**

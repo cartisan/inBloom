@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import inBloom.ActionReport;
 import inBloom.LauncherAgent;
 import inBloom.PlotEnvironment;
 import inBloom.storyworld.Character;
@@ -28,8 +29,8 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
 	}
     
 	@Override
-    protected boolean doExecuteAction(String agentName, Structure action) {
-		boolean result = false;
+    protected ActionReport doExecuteAction(String agentName, Structure action) {
+		ActionReport result = null;
 		Character agent = getModel().getCharacter(agentName);
     	
     	if (action.getFunctor().equals("farm_work")) {
@@ -62,7 +63,7 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     	}
 
     	else if (action.getFunctor().equals("help")) {
-    		result = true;
+    		result = new ActionReport(true);
     	}
     	
     	else if (action.getFunctor().equals("share")) {
@@ -99,14 +100,14 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
     	else if (action.getFunctor().equals("handOver")) {
     		Character receiver = getModel().getCharacter(action.getTerm(0).toString());
     		String item = action.getTerm(1).toString();
-			result = agent.handOver(receiver, item, false);
+			result = agent.handOver(receiver, item);
     	}
     	
     	else if (action.getFunctor().equals("refuseHandOver")) {
     		// TODO: rather in speech act?
     		Character target = getModel().getCharacter(action.getTerm(0).toString());
     		String item = action.getTerm(1).toString();
-    		result = agent.handOver(target, item, true);
+    		result = agent.refuseHandOver(target, item);
     	}
     	
     	else if (action.getFunctor().equals("relax")) {

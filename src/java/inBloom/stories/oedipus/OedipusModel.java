@@ -2,6 +2,7 @@ package inBloom.stories.oedipus;
 
 import java.util.List;
 
+import inBloom.ActionReport;
 import inBloom.LauncherAgent;
 import inBloom.PlotModel;
 import inBloom.storyworld.Character;
@@ -23,7 +24,7 @@ public class OedipusModel extends PlotModel<OedipusEnvironment> {
 	}
 	
 	
-	public boolean chilling(Character agent){
+	public ActionReport chilling(Character agent){
 		this.actionCount +=1;
 		logger.info("Someone was chilling");
 		
@@ -41,7 +42,7 @@ public class OedipusModel extends PlotModel<OedipusEnvironment> {
 		
 	}
 	
-	public boolean working(Character agent){
+	public ActionReport working(Character agent){
 		this.actionCount +=1;
 		logger.info("Someone was working");
 		
@@ -54,30 +55,29 @@ public class OedipusModel extends PlotModel<OedipusEnvironment> {
 			logger.info("jocaste is pregnant");
 		}
 		
-		return true; 
+		return new ActionReport(true); 
 	}
 	
-	public boolean ask(Character asker, Character asked){
+	public ActionReport ask(Character asker, Character asked){
 		this.actionCount +=1;
 		logger.info(asker.name +" asked "+ asked.name);
 		this.environment.addEventPercept(asked.name, "wasAsked");
 		
-		return true;
+		return new ActionReport(true);
 	}
 	
-	public boolean answer_question(Character answerer, Character answered){
+	public ActionReport answer_question(Character answerer, Character answered){
 		this.actionCount +=1;
 		logger.info(answerer.name +" answered "+ answered.name);
 		if (answered.name == "laios") {
 			this.environment.addEventPercept(answered.name, "sonKillsMe");
 			logger.info(answered.name +"getsAnswer sonKillsMe");
 		}
-		return true;
+		return new ActionReport(true);
 	}
 	
 	
-	public boolean getChild(Character agent) {
-		
+	public ActionReport getChild(Character agent) {
 		if(agent.name == "jocaste") {
 			this.environment.addEventPercept(agent.name, "gotChild");
 			this.actionCount +=1;
@@ -87,31 +87,26 @@ public class OedipusModel extends PlotModel<OedipusEnvironment> {
 			
 		}
 		
-		return true; 
+		return new ActionReport(true); 
 		
 	}
 	
-	public boolean giveChildTo(Character giver, Character receiver){
+	public ActionReport giveChildTo(Character giver, Character receiver){
 		this.actionCount +=1;
 		logger.info(giver.name +" gave "+ "Oedipus " + "to " + receiver.name);
 		this.environment.addEventPercept(receiver.name, "guardianOfOedipus");
 		logger.info(receiver.name + " is guardian of Oedipus");
 		
-		return true;
+		return new ActionReport(true);
 	}
 	
 	
-	public boolean adopt(Character adopter, Character adopted){
+	public ActionReport adopt(Character adopter, Character adopted){
 		this.actionCount +=1;
 		logger.info(adopter.name +" adopted" + adopted.name);
 		this.environment.addEventPercept(adopter.name, "parentsOfOedipus");
 		this.environment.addEventPercept(adopted.name, "childOfPolybosAndMerope");
 		
-		return true;
+		return new ActionReport(true);
 	}
-
-
-	
-	
-
 }

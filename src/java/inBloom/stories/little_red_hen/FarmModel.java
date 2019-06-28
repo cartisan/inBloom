@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import inBloom.ActionReport;
 import inBloom.LauncherAgent;
 import inBloom.PlotModel;
 import inBloom.helper.PerceptAnnotation;
@@ -32,16 +33,18 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		this.addLocation(farm);
 	}
 
-	public boolean farmWork(Character agent) {
+	public ActionReport farmWork(Character agent) {
 		if(agent.location == farm) {
 			farm.farmingProgress += 1;
 			logger.info("Some farming activity was performed");
-			return true;
+			return new ActionReport(true);
 		}
-		return false;
+		return new ActionReport(false);
 	}
 	
-	public boolean plantWheat(Character agent) {
+	public ActionReport plantWheat(Character agent) {
+		ActionReport res = new ActionReport();
+		
 		if ((agent.location == farm) & agent.has(Wheat.itemName) ){
 			Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 			if (wheatItem.state == Wheat.STATES.SEED) {
@@ -49,28 +52,32 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 				farm.produce = wheatItem;
 				farm.updateProduceState(Wheat.STATES.GROWING);
 				
-				this.environment.addEventPercept(agent.name, "plant(wheat)", PerceptAnnotation.fromEmotion("pride"));
 				logger.info("Wheat planted");
+				res.addPerception(agent.name,PerceptAnnotation.fromEmotion("pride"));
 				
-				return true;
+				res.success = true;
 			}
 		}
 
-		return false;
+		return res;
 	}
 	
-	public boolean tendWheat(Character agent) {
+	public ActionReport tendWheat(Character agent) {
+		ActionReport res = new ActionReport();
+		
 		if ((agent.location == farm) & (farm.produce.state == Wheat.STATES.GROWING)){
 			farm.updateProduceState(Wheat.STATES.RIPE);
 			logger.info("Wheat has grown and is ripe now");
-			this.environment.addEventPercept(agent.name, "tend(wheat)", PerceptAnnotation.fromEmotion("pride"));
-			return true;
+			res.addPerception(agent.name, PerceptAnnotation.fromEmotion("pride"));
+			res.success = true;
 		}
 		
-		return false;
+		return res;
 	}
 	
-	public boolean harvestWheat(Character agent) {
+	public ActionReport harvestWheat(Character agent) {
+		ActionReport res = new ActionReport();
+		
 		if ((agent.location == farm) & (farm.produce.state == Wheat.STATES.RIPE)){
 			Wheat w =  farm.produce;
 			w.state = Wheat.STATES.HARVESTED;
@@ -78,37 +85,41 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 			farm.updateProduceState(null);
 			
 			logger.info("Wheat was harvested");
-			this.environment.addEventPercept(agent.name, "harvest(wheat)", PerceptAnnotation.fromEmotion("pride"));
-			return true;
+			res.addPerception(agent.name, PerceptAnnotation.fromEmotion("pride"));
+			res.success = true;
 		}
 		
-		return false;
+		return res;
 	}
 	
-	public boolean grindWheat(Character agent) {
+	public ActionReport grindWheat(Character agent) {
+		ActionReport res = new ActionReport();
+		
 		if ((agent.location == farm) & agent.has(Wheat.itemName) & (((Wheat) agent.get(Wheat.itemName)).state == Wheat.STATES.HARVESTED)){
 			Wheat w =  (Wheat) agent.removeFromInventory(Wheat.itemName);
 			w.state = Wheat.STATES.FLOUR;
 			agent.addToInventory(w);
 			logger.info("Wheat was ground to flour");
-			this.environment.addEventPercept(agent.name, "grind(wheat)", PerceptAnnotation.fromEmotion("pride"));
-			return true;
+			res.addPerception(agent.name, PerceptAnnotation.fromEmotion("pride"));
+			res.success =  true;
 		}
-		return false;
+		return res;
 	}
 
-	public boolean bakeBread(Character agent) {
+	public ActionReport bakeBread(Character agent) {
+		ActionReport res = new ActionReport();
+		
 		if ((agent.location == farm) & agent.has(Wheat.itemName) & (((Wheat) agent.get(Wheat.itemName)).state == Wheat.STATES.FLOUR)){
 			Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 			agent.removeFromInventory(wheatItem);
 			agent.addToInventory(new Bread());
 			
 			logger.info(agent.name + ": baked some bread.");
-			this.environment.addEventPercept(agent.name, "bake(bread)", new PerceptAnnotation("pride", "joy"));
-			return true;
+			res.addPerception(agent.name, new PerceptAnnotation("pride", "joy"));
+			res.success =  true;
 		}
 		
-		return false;
+		return res;
 	}
 	
 	/****** helper classes *******/

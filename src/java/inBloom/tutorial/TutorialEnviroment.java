@@ -1,5 +1,6 @@
 package inBloom.tutorial;
 
+import inBloom.ActionReport;
 import inBloom.PlotEnvironment;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
@@ -7,8 +8,8 @@ import jason.asSyntax.Structure;
 public class TutorialEnviroment extends PlotEnvironment<TutorialModel> {
 
     @Override
-    public boolean doExecuteAction(String agentName, Structure action) {
-    	boolean result = false;
+    public ActionReport doExecuteAction(String agentName, Structure action) {
+    	ActionReport result = new ActionReport();
     	
 		// check which action is executed by agent
 		if (action.getFunctor().equals("add")) {
@@ -20,7 +21,7 @@ public class TutorialEnviroment extends PlotEnvironment<TutorialModel> {
 			addPercept(agentName, Literal.parseLiteral(String.format("sum(%d)", sum)));
 			
 			// indicate that action was successful
-			result = true;
+			result.success = true;
       }
 
     	return result;

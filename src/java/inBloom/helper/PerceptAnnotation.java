@@ -39,6 +39,10 @@ public class PerceptAnnotation {
 		this.annots = new LinkedList<>();
 	}
 	
+	/**
+	 * Creates a PerceptAnnotation from a number of emotion strings.
+	 * @param ems
+	 */
 	public PerceptAnnotation(String... ems) {
 		this();
 		

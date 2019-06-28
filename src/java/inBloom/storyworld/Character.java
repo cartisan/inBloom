@@ -3,8 +3,8 @@ package inBloom.storyworld;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
+import inBloom.ActionReport;
 import inBloom.LauncherAgent;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
@@ -58,8 +58,8 @@ public class Character {
 		this.setPlotAgentPendant(name);
 	}
 	
-	public boolean goTo(Location target) {
-		return target.enter(this);
+	public ActionReport goTo(Location target) {
+		return new ActionReport(target.enter(this));
 	}
 	
 	/**
@@ -128,93 +128,65 @@ public class Character {
 		return null;
 	}
 	
-	public boolean share(String itemType, Character receiver) {
-		if (this.has(itemType)) {
-			Item item = this.get(itemType);
-			receiver.receive(item, this);
-			this.model.getEnvironment().addEventPercept(name, 
-														   String.format("share(%s,%s)", item.literal(), receiver.name),
-														   new PerceptAnnotation().addTargetedEmotion("pride", "self"));
-			return true;
-		}
+	public ActionReport share(String itemType, Character receiver) {
+		ActionReport res = new ActionReport();
 		
-		return false;
-	}
-	
-	public boolean share(String itemType, List<Character> receivers) {
 		if (this.has(itemType)) {
+			// sharing (as opposed to giving) doesn't remove item from giver's inventory... Yay cornucopia!
 			Item item = this.get(itemType);
-			
-			for(Character receiver : receivers) {
-				receiver.receive(item, this);
-			}
-			
-			String recList = receivers.stream().map(rec -> rec.name)
-											   .collect(Collectors.joining(",", "[", "]"))
-											   .toString();
-			
-			this.model.getEnvironment().addEventPercept(name,
-														   String.format("share(%s,%s)", item.literal(), recList),
-														   new PerceptAnnotation().addTargetedEmotion("pride", "self"));
-			
+			receiver.addToInventory(item);
 			logger.info(this.name + " shared some " + item.literal() + ".");
 			
-			return true;
+			res.addPerception(this.name, new PerceptAnnotation().addTargetedEmotion("pride", "self"));
+			res.addPerception(receiver.name, new PerceptAnnotation().addTargetedEmotion("gratitude", receiver.name));
+			res.success = true;
 		}
 		
-		return false;
+		return res;
 	}
 	
-	public boolean receive(Item item, Character from) {
-		this.addToInventory(item);
+	public ActionReport share(String itemType, List<Character> receivers) {
+		ActionReport res = new ActionReport();
 		
-		this.model.getEnvironment().addEventPercept(name,
-													   String.format("receive(%s,%s)", item.literal(), this.name),
-													   new PerceptAnnotation().addTargetedEmotion("gratitude", "self"));
+		if (this.has(itemType)) {
+			Item item = this.get(itemType);
+			res.addPerception(this.name, new PerceptAnnotation().addTargetedEmotion("pride", "self"));
+			res.success = true;
+			logger.info(this.name + " shared some " + item.literal() + ".");
+			
+			for(Character receiver : receivers) {
+				// sharing (as opposed to giving) doesn't remove item from giver's inventory... Yay cornucopia!
+				receiver.addToInventory(item);
+				res.addPerception(receiver.name, new PerceptAnnotation().addTargetedEmotion("gratitude", receiver.name));
+			}
+		}
 		
-		//logger.info(this.name + " received some " + item.literal() + ".");
-		logger.info(this.name + " received some " + item.getItemName() + ".");
-	
-	
-		return true;
+		return res;
 	}
 
-	public boolean eat(String itemType) {
+	public ActionReport eat(String itemType) {
+		ActionReport res = new ActionReport();
+		
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
 			
 			if (item.isEdible()) {
 				this.removeFromInventory(item);
-				this.model.getEnvironment().addEventPercept(name, 
-															   String.format("eat(%s)", item.literal()),
-															   PerceptAnnotation.fromEmotion("satisfaction"));
-				
-				// in theory: here double dispatch
-				// so food can affect agent in specific
-				// way
-				
-				logger.info(this.name + " ate some " + item.literal() + ".");
-				return true;
+				res.addPerception(this.name, PerceptAnnotation.fromEmotion("satisfaction"));
+				res.success = true;
 			}
 		}
 			
-		return false;
+		return res;
 	}
 	
-	public boolean relax() {
-//		this.model.getEnvironment().addEventPerception(name, "relax", PerceptAnnotation.fromEmotion("joy"));
-		return true;
+	public ActionReport relax() {
+		return new ActionReport(true);
 	}
 	
-	public boolean canFly() {
-		// TODO: find a flexible implementation
-		if (name == "crow") {
-			return true;
-		}
-		return false;
-	}
-	
-	public boolean sing() { 
+	public ActionReport sing() { 
+		ActionReport res = new ActionReport(true);
+		
 		logger.info(this.name + " sings.");
 		
 		// if character is in the sky and sings then they loose whatever they held in their (mouth/beak-) inventory
@@ -233,45 +205,59 @@ public class Character {
 			}
 		}
 				
-		return true;
+		return res;
 	}
 	
-	public boolean collect(String thing) {
+	public ActionReport collect(String thing) {
+		ActionReport res = new ActionReport();
+				
 		if(this.location.contains(thing)) {
 			Item item = this.location.remove(thing);
 			this.addToInventory(item);
+			res.success =  true;
+		}
+		return res;
+	}
+	
+	public ActionReport handOver(Character receiver, String itemName) {
+		ActionReport res = new ActionReport();
+		
+		if (this.has(itemName) & this.location.present(receiver)){
+			Item item = this.removeFromInventory(itemName);
+			receiver.addToInventory(item);
+			logger.info(this.name + " hands over " + itemName + " to " +receiver);
+			
+			res.addPerception(this.name, new PerceptAnnotation("fear", "remorse"));
+			res.addPerception(receiver.name, new PerceptAnnotation("gloating", "pride"));
+			res.success = true;
+		}
+		
+		return res;
+	}
+	
+	public ActionReport refuseHandOver(Character receiver, String itemName) {
+		ActionReport res = new ActionReport();
+
+		if (this.has(itemName) & this.location.present(receiver)){
+			logger.info(this.name + " does not hand over" + itemName + " to " + receiver);
+			
+			res.addPerception(this.name, PerceptAnnotation.fromEmotion("pride"));
+			res.addPerception(receiver.name, PerceptAnnotation.fromEmotion("anger"));
+			res.success = true;
+		}
+		
+		return res;
+	}
+
+	
+	public boolean canFly() {
+		// TODO: find a flexible implementation
+		if (name == "crow") {
 			return true;
 		}
 		return false;
 	}
 	
-	public boolean handOver(Character receiver, String itemName, Boolean refuse) {
-		if (this.has(itemName) & this.location.present(receiver)){
-			if (refuse) {
-				logger.info(this.name + " does not hand over" + itemName + " to " + receiver);
-				
-				// TODO: that gonna work in analyzed graph?
-				String eventString = "refuseHandOver(" + receiver.name + "," + itemName + ")";
-				this.model.getEnvironment().addEventPercept(this.name, eventString, PerceptAnnotation.fromEmotion("pride"));
-				this.model.getEnvironment().addEventPercept(receiver.name, eventString, PerceptAnnotation.fromEmotion("anger"));
-				
-				return true;				
-			} else {
-				Item item = this.removeFromInventory(itemName);
-
-				String eventString = "handOver(" + receiver.name + "," + itemName + ")";
-				this.model.getEnvironment().addEventPercept(this.name, eventString, new PerceptAnnotation("fear", "remorse"));
-				this.model.getEnvironment().addEventPercept(receiver.name, eventString, new PerceptAnnotation("gloating", "pride"));
-				
-				receiver.addToInventory(item);
-				
-				logger.info(this.name + " hands over " + itemName + " to " +receiver);
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public String toString() {
 		return this.name;
 	}

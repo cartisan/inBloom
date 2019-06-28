@@ -2,6 +2,7 @@ package inBloom.test.story.helperClasses;
 
 import java.util.List;
 
+import inBloom.ActionReport;
 import inBloom.LauncherAgent;
 import inBloom.PlotModel;
 import inBloom.helper.PerceptAnnotation;
@@ -37,16 +38,14 @@ public class TestModel extends PlotModel<TestEnvironment> {
 		}	
 	}
 	
-	public boolean doStuff(Character agent) {
-		
+	public ActionReport doStuff(Character agent) {
 		logger.info("Doing stuff.");
+		
 		if(step == 1) {
 			agent.removeFromInventory(wallet);
 			logger.info(agent.name + " lost their wallet...");
 		}
 
-		this.environment.addEventPercept(agent.name, "do_stuff");
-		
 		// problem and enablement
 		if(step == 7) {
 			this.environment.addEventPercept(agent.name,
@@ -69,23 +68,26 @@ public class TestModel extends PlotModel<TestEnvironment> {
 		}
 		
 		step++;
-		return true;
+		return new ActionReport(true);
 	}
 	
-	public boolean search(Character agent, String item) {
+	public ActionReport search(Character agent, String item) {
 		logger.info(agent.name + " is looking for their " + item + "!");
 		if(step == 5) {
 			agent.addToInventory(wallet);
 			logger.info(agent.name + " found their wallet!");
 		}
 		step++;
-		return true;
+		return new ActionReport(true);
 	}
 	
-	public boolean getDrink(Character agent) {
-		this.getEnvironment().addEventPercept(agent.name, "get(drink)", PerceptAnnotation.fromEmotion("joy")); // positive outcome for prim. unit success
+	public ActionReport getDrink(Character agent) {
 		this.isDrunk = true;
-		return true;
+
+		ActionReport res = new ActionReport(true);
+		res.addPerception(agent.name, PerceptAnnotation.fromEmotion("joy")); // positive outcome for prim. unit success
+		
+		return res;
 	}
 
 	class Wallet extends Item {
