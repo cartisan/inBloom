@@ -52,4 +52,54 @@ public class TermParserTest extends TestCase {
 		Set<OCEANConstraints> results2 = TermParser.solutionsForPersonalityAnnotation(annotation);
 		assertEquals(ImmutableSet.copyOf(results), ImmutableSet.copyOf(results2));
 	}
+	
+	public void testRemoveAnnots() {
+		String noAnnot = "farmwork";
+		assertEquals("farmwork", TermParser.removeAnnots(noAnnot));
+		
+		String atom = "farmwork[source(self)]";
+		assertEquals("farmwork", TermParser.removeAnnots(atom));
+		
+		String multi = "farmwork[source(self),cause(life)]";
+		assertEquals("farmwork", TermParser.removeAnnots(multi));
+		
+		String embedd = "farmwork[source(self),cause(life[location(universe)])]";
+		assertEquals("farmwork", TermParser.removeAnnots(embedd));
+		
+		String predicate = "plant(wheat)[source(self),cause(life[location(universe)])]";
+		assertEquals("plant(wheat)", TermParser.removeAnnots(predicate));
+		
+		String predicate_embedd = "plant(wheat[state(great)])[source(self),cause(life[location(universe)])]";
+		assertEquals("plant(wheat[state(great)])", TermParser.removeAnnots(predicate_embedd));
+		
+		String rec_embedd = "at(loc(tree)[level(top)])[source(self),cause(life[location(universe)])]";
+		assertEquals("at(loc(tree)[level(top)])", TermParser.removeAnnots(rec_embedd));
+	}
+	
+	
+	public void testGetAnnots() {
+		String noAnnot = "farmwork";
+		assertEquals("", TermParser.getAnnots(noAnnot));
+		
+		String atom = "farmwork[source(self)]";
+		assertEquals("[source(self)]", TermParser.getAnnots(atom));
+		
+		String multi = "farmwork[source(self),cause(life)]";
+		assertEquals("[source(self),cause(life)]", TermParser.getAnnots(multi));
+		
+		String embedd = "farmwork[source(self), cause(life[location(universe)])]";
+		assertEquals("[source(self), cause(life[location(universe)])]", TermParser.getAnnots(embedd));
+		
+		String predicate = "plant(wheat)[source(self),cause(life[location(universe)])]";
+		assertEquals("[source(self),cause(life[location(universe)])]", TermParser.getAnnots(predicate));
+		
+		String predicate_embedd = "plant(wheat[state(great)])[source(self),cause(life[location(universe)])]";
+		assertEquals("[source(self),cause(life[location(universe)])]", TermParser.getAnnots(predicate_embedd));
+		
+		String rec_embedd = "at(loc(tree)[level(top)])[source(self),cause(life[location(universe)])]";
+		assertEquals("[source(self),cause(life[location(universe)])]", TermParser.getAnnots(rec_embedd));
+		
+		String rec_embedd_no_brack = "at(loc(tree)[level(top)])[source(self),cause(life[location(universe)])]";
+		assertEquals("source(self),cause(life[location(universe)])", TermParser.getAnnots(rec_embedd_no_brack, true));
+	}
 }

@@ -79,29 +79,50 @@ public class TermParser {
 	}
 
 	public static String removeAnnots(String s) {
-		// TODO: Create regex expression to do this task
 		String result = "";
-		boolean hasArguments = false;
-		boolean argumentsClosed = false;
+		int openParens = 0;
+		
 		for(char c : s.toCharArray()) {
-			if(c == '[') {
-				if(!hasArguments) {
-					break;
-				} else {
-					if(argumentsClosed) {
+			if( (c == '[') & (openParens == 0)) {
 						break;
 					}
-				}
-			}
+			
 			if(c == '(') {
-				hasArguments = true;
-			}
-			if(c == ')' && hasArguments) {
-				argumentsClosed = true;
+				openParens += 1;
+			} else if(c == ')' ) {
+				openParens -= 1;
 			}
 			result += c;
 		}
 		return result;
+	}
+	
+	/**
+	 * Returns the annotations of a ASL term, ignoring any embedded annotations. Convenience
+	 * function that keeps outer brackets on extracted annotations.
+	 * E.g. "at(loc(tree)[level(top)])[source(self)]" -> "[source(self)]"
+	 * @param s ASL term in string form
+	 * @return the annotations in string form
+	 */
+	public static String getAnnots(String s) {
+		return TermParser.getAnnots(s, false);
+	}
+	
+	/**
+	 * Returns the annotations of a ASL term, ignoring any embedded annotations. You can choose
+	 * to also strip surrounding square brackets. E.g.
+	 * {@code getAnnots("at(loc(tree)[level(top)])[source(self)]", true)} -> {@code "source(self)" }
+	 * @param s ASL term in string form
+	 * @return the annotations in string form
+	 */
+	public static String getAnnots(String s, boolean removeOuterBrackets) {
+		String termNoAnnots = TermParser.removeAnnots(s);
+		String annots =  s.substring(termNoAnnots.length());
+		
+		if(removeOuterBrackets) {
+			return annots.substring(1, annots.length() - 1);
+		}
+		return annots;
 	}
 	
 	/**
