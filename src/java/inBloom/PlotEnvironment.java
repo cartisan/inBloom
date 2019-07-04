@@ -231,6 +231,9 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	List<Character> presentChars = this.getModel().getCharacter(agentName).location.getCharacters();
     	
     	for (Character currentChar : presentChars) {
+    		// Add annotation to this action perception that allow plot graph post processing to insert cross-character edges
+    		actionReport.getAnnotation(currentChar.name).addCrossCharAnnotation(action.toString(), actionReport.eventTime);
+    		
     		if(currentChar.getName().equals(agentName)) {
     			// reporting results for acting agent
     			// TODO: insert "self" into terms on position 0? Or rather do this ASL side?

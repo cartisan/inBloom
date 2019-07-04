@@ -11,7 +11,7 @@ public class Edge implements Cloneable {
 	public enum Type {ROOT,
 					  TEMPORAL,
 					  MOTIVATION {public String toString() { return "motivation"; } },
-					  CROSSCHARACTER,
+					  CROSSCHARACTER  {public String toString() { return "crossChar"; } },
 					  ACTUALIZATION,
 					  TERMINATION,
 					  EQUIVALENCE,

@@ -18,12 +18,18 @@ import inBloom.helper.PerceptAnnotation;
  */
 public class ActionReport {
 
+	/** Notes whether the action was successfully executed or failed. */
 	public boolean success;
+	/** Map from character name to individual percept-annotations of this action for the respective character- */
 	public Map<String, PerceptAnnotation> perceptMap;
+	/** Plot time when this action report was generated, can e.g. be used to generate unique IDs so that x-character
+	 * edges between different char's perception of this action can be connected. */
+	public long eventTime;
 	
 	public ActionReport() {
 		this.success = false;
 		this.perceptMap = new HashMap<>();
+		this.eventTime = PlotEnvironment.getPlotTimeNow();
 	}
 	
 	public ActionReport(boolean result) {

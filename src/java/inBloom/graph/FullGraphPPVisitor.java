@@ -7,10 +7,11 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jason.asSemantics.Emotion;
+
 import inBloom.graph.visitor.EdgeVisitResult;
 import inBloom.graph.visitor.PlotGraphVisitor;
 import inBloom.helper.TermParser;
-import jason.asSemantics.Emotion;
 
 /**
  * This post-process visitor is intended to be used on the
@@ -32,7 +33,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	
 	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
 		this.graph = graph.clone();
-		this.eventList = new LinkedList<Vertex>();
+		this.eventList = new LinkedList<>();
 		this.graph.accept(this);
 		return this.graph;
 	}
@@ -103,7 +104,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 		}
 		
 		if(cause != null) {
-			graph.addEdge(new Edge(Edge.Type.TERMINATION), cause, droppedIntention);
+			this.graph.addEdge(new Edge(Edge.Type.TERMINATION), cause, droppedIntention);
 			this.removeVertex(vertex);
 		} else {
 			if(causeString.startsWith("!")) {
@@ -112,7 +113,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 				vertex.setType(Vertex.Type.PERCEPT);
 			}
 			vertex.setLabel(causeString);
-			graph.addEdge(new Edge(Edge.Type.TERMINATION), vertex, droppedIntention);
+			this.graph.addEdge(new Edge(Edge.Type.TERMINATION), vertex, droppedIntention);
 			this.eventList.add(vertex);
 		}
 	}
@@ -142,8 +143,8 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 
 			// Needs to match with and without '+'
 			// with for percepts, without for actions
-			if(((targetString.equals(cause) || targetString.equals("+" + cause))) 
-					& !(targetEvent.hasEmotion(emotion.getName()))) {
+			if((targetString.equals(cause) || targetString.equals("+" + cause))
+					& !targetEvent.hasEmotion(emotion.getName())) {
 				
 				targetEvent.addEmotion(emotion.getName());
 				this.removeVertex(vertex);
@@ -166,8 +167,14 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 					cause = "";
 					break;
 				}
-				// delete percepts that report action outcomes --> collapsing action and action result percept
-				if(targetEvent.getType() == Vertex.Type.ACTION && targetEvent.getFunctor().equals(vertex.getFunctor())) {
+
+				// merge percepts that report action outcomes (which are always event additions) into respective action vertex
+				if(targetEvent.getType() == Vertex.Type.ACTION && targetEvent.getFunctor().equals(vertex.getFunctor()) && !vertex.getLabel().startsWith("-")) {
+					// Extract annotations from vertex and add them to target, which is an action and has no own annotation
+					// TODO: Make sure action doesn't already have annotations from previous merge
+					String annots = TermParser.getAnnots(vertex.getLabel());
+					targetEvent.setLabel(targetEvent.getLabel() + annots);
+
 					this.removeVertex(vertex);
 					return;
 				}
@@ -185,7 +192,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	public void visitIntention(Vertex vertex) {
 		String label = vertex.getLabel();
 		if(label.startsWith("drop_intention")) {
-			handleDropIntention(vertex);
+			this.handleDropIntention(vertex);
 			return;
 		}
 		
@@ -196,7 +203,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	private void lookForPerseverance(Vertex vertex) {
 		for(Vertex target : this.eventList) {
 			if(target.getIntention().equals(vertex.getIntention())) {
-				graph.addEdge(new Edge(Edge.Type.EQUIVALENCE), vertex, target);
+				this.graph.addEdge(new Edge(Edge.Type.EQUIVALENCE), vertex, target);
 				return;
 			}
 		}
@@ -209,7 +216,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 		if(parts.length > 1) {
 			String[] motivations = parts[1].substring(0, parts[1].length() - 2).split(";");
 			String resultingLabel = parts[0];
-			Set<Vertex> motivationVertices = new HashSet<Vertex>();
+			Set<Vertex> motivationVertices = new HashSet<>();
 			for(String motivation : motivations) {
 				motivation = TermParser.removeAnnots(motivation);
 				for(Vertex target : this.eventList) {
@@ -235,8 +242,9 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 				}
 			}
 			
-			if(!KEEP_MOTIVATION || !motivationVertices.isEmpty())
+			if(!KEEP_MOTIVATION || !motivationVertices.isEmpty()) {
 				vertex.setLabel(resultingLabel);
+			}
 		}
 		
 		this.eventList.addFirst(vertex);
@@ -293,8 +301,9 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 			}
 			successor = this.graph.getCharSuccessor(successor);
 		}
-		if(successor == null)
+		if(successor == null) {
 			return;
+		}
 		vertex.setLabel(successor.getLabel());
 		vertex.setType(successor.getType());
 		this.removeVertex(successor);

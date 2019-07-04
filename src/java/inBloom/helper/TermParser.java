@@ -17,6 +17,7 @@ import org.chocosolver.solver.variables.IntVar;
 import inBloom.ERcycle.AdaptPersonality;
 import inBloom.ERcycle.AdaptPersonality.OCEANConstraints;
 import inBloom.graph.Edge;
+import inBloom.graph.Vertex;
 import jason.asSemantics.Affect;
 import jason.asSemantics.AffectiveDimensionChecks;
 import jason.asSemantics.Emotion;
@@ -35,6 +36,7 @@ import jason.util.Pair;
 public class TermParser {
 	
 	private static final Pattern EMOTION_PATTERN = Pattern.compile("(?<emotion>\\w*)\\["+ Edge.Type.CAUSALITY.toString() +"\\((?<cause>.*)\\)\\]\\(.\\)");
+	public static final Pattern CROSSCHAR_PATTERN = Pattern.compile(Edge.Type.CROSSCHARACTER + "\\((<?id>.+)\\)");
 	public static final String PERSO_PATTERN = "personality\\((?<trait>.+?),(?<scope>.+?)\\)";
 	public static final String AFFECT_PATTERN = "affect\\((?<trait>.+?),(?<scope>.+?)\\)";
 			
@@ -58,7 +60,8 @@ public class TermParser {
 	
 	/**
 	 * Retrieves the content of an annotation of a term with
-	 * a given functor.
+	 * a given functor. When applied to vertices, always base it on {@link Vertex#getLabel()} and not on
+	 * {@link Vertex#toString()}.
 	 * @param term with annotations
 	 * @param annot The functor of the annotation to retrieve
 	 * @return content of the annotation if available, empty string otherwise

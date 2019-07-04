@@ -31,7 +31,7 @@ public class PerceptAnnotation {
 	
 	public static PerceptAnnotation fromCause(String cause) {
 		PerceptAnnotation annot = new PerceptAnnotation();
-		annot.addAnnotation(Edge.Type.CAUSALITY.toString(), cause);
+		annot.setCause(cause);
 		return annot;
 	}
 	
@@ -61,10 +61,7 @@ public class PerceptAnnotation {
 		String result = "";
 		
 		if (!this.annots.isEmpty()) {
-			result += "[";
-			result += this.annots.stream().collect( Collectors.joining( "," ) );
-			result.substring(0, result.length());
-			result += "]";
+			result += this.annots.stream().collect(Collectors.joining( ",", "[", "]") );
 		}
 				
 		return result;
@@ -107,6 +104,11 @@ public class PerceptAnnotation {
 	}
 	
 	public void setCause(String cause) {
-		this.addAnnotation(Edge.Type.CAUSALITY.toString(), cause);
+		this.addAnnotation(Edge.Type.CAUSALITY.toString(), TermParser.removeAnnots(cause));
+	}
+	
+	public void addCrossCharAnnotation(String eventName, long eventTime) {
+		Integer hashCode = Math.abs((eventName + eventTime).hashCode());	// need to take abs value because toString() puts negative numbers in brackets like "(-5)"
+		this.addAnnotation(Edge.Type.CROSSCHARACTER.toString(), hashCode.toString());
 	}
 }

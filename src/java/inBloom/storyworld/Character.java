@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import inBloom.ActionReport;
 import inBloom.LauncherAgent;
+import inBloom.PlotEnvironment;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
 import inBloom.helper.PerceptAnnotation;
@@ -132,14 +133,14 @@ public class Character {
 		ActionReport res = new ActionReport();
 		
 		if (this.has(itemType)) {
+			res.addPerception(this.name, new PerceptAnnotation().addTargetedEmotion("pride", "self"));
+			res.addPerception(receiver.name, new PerceptAnnotation().addTargetedEmotion("gratitude", receiver.name));
+			res.success = true;
+			
 			// sharing (as opposed to giving) doesn't remove item from giver's inventory... Yay cornucopia!
 			Item item = this.get(itemType);
 			receiver.addToInventory(item);
 			logger.info(this.name + " shared some " + item.literal() + ".");
-			
-			res.addPerception(this.name, new PerceptAnnotation().addTargetedEmotion("pride", "self"));
-			res.addPerception(receiver.name, new PerceptAnnotation().addTargetedEmotion("gratitude", receiver.name));
-			res.success = true;
 		}
 		
 		return res;
@@ -150,15 +151,16 @@ public class Character {
 		
 		if (this.has(itemType)) {
 			Item item = this.get(itemType);
-			res.addPerception(this.name, new PerceptAnnotation().addTargetedEmotion("pride", "self"));
-			res.success = true;
-			logger.info(this.name + " shared some " + item.literal() + ".");
 			
+			res.addPerception(this.name, new PerceptAnnotation().addTargetedEmotion("pride", "self"));
 			for(Character receiver : receivers) {
 				// sharing (as opposed to giving) doesn't remove item from giver's inventory... Yay cornucopia!
-				receiver.addToInventory(item);
 				res.addPerception(receiver.name, new PerceptAnnotation().addTargetedEmotion("gratitude", receiver.name));
+				receiver.addToInventory(item);
 			}
+
+			res.success = true;
+			logger.info(this.name + " shared some " + item.literal() + ".");
 		}
 		
 		return res;
@@ -196,11 +198,16 @@ public class Character {
 				this.location.place(item);
 				logger.info(this.name + " lost " + item.getItemName() + " which fell to the ground.");
 				
-				// everyone present see things dropping from the sky
+				// everyone present sees things dropping from the sky
+				String perceptString = "is_dropped(" + item.getItemName() + ")";
+				PerceptAnnotation annots = PerceptAnnotation.fromCause("sing");
+				annots.addAnnotation("owner", this.name);
+				annots.addCrossCharAnnotation(perceptString, PlotEnvironment.getPlotTimeNow());
+				
 				for (Character observer : this.location.getCharacters()) {
 					this.model.environment.addEventPercept(observer.getName(),
-													       "is_dropped(" + item.getItemName() + ")",
-													       PerceptAnnotation.fromCause("sing").addAnnotation("owner", this.name));
+													       perceptString,
+													       annots);
 				}
 			}
 		}
