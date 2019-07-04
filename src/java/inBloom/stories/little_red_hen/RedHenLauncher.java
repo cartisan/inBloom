@@ -5,13 +5,14 @@ import java.util.LinkedList;
 
 import com.google.common.collect.ImmutableList;
 
+import jason.JasonException;
+import jason.asSemantics.Personality;
+import jason.infra.centralised.BaseCentralisedMAS;
+
 import inBloom.LauncherAgent;
 import inBloom.PlotControlsLauncher;
 import inBloom.PlotLauncher;
 import inBloom.storyworld.ScheduledHappeningDirector;
-import jason.JasonException;
-import jason.asSemantics.Personality;
-import jason.infra.centralised.BaseCentralisedMAS;
 
 
 /**
@@ -20,29 +21,29 @@ import jason.infra.centralised.BaseCentralisedMAS;
  * @author Leonid Berov
  */
 public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
-	
-	
+
+
 	public RedHenLauncher() {
-		ENV_CLASS = FarmEnvironment.class;
-		COUNTERFACT_CLASS = RedHenCounterfactualityCycle.class;
+		this.ENV_CLASS = FarmEnvironment.class;
+		this.COUNTERFACT_CLASS = RedHenCounterfactualityCycle.class;
 		PlotControlsLauncher.runner = this;
 		BaseCentralisedMAS.runner = this;
 	}
-	
+
 	public static void main(String[] args) throws JasonException {
         logger.info("Starting up from Launcher!");
-        
+
         PlotControlsLauncher.runner = new RedHenLauncher();
-        
+
         LauncherAgent hen = new LauncherAgent("hen",					  	   // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
 					Arrays.asList("hungry", "self(farm_animal)"),
 					    new LinkedList<String>(),
-//					    new Personality(0,  1, 0.7,  0.3, 0.65)    //punishment
+					    new Personality(0,  1, 0.7,  0.3, 0.65)    //punishment
 	//					new Personality(0,  1, 0.7,  0.3,  -1)     //low neurot --> no punishment
-						new Personality(0,  1, 0.7,  0.7,  -1)     //high aggrea --> sharing
-					
+//						new Personality(0,  1, 0.7,  0.7,  -1)     //high aggrea --> sharing
+
 	//					new Personality(0, -1, 0.7,  0.3, 0.15)    //low consc --> no plot
-					
+
 	//					new Personality(0,  1, 0,    0.3, 0.15)    //low extra --> no help requests, no punishment, no sharing <-- not after update!
 	//					new Personality(0,  1, 0,    0.7, 0.15)    //low extra, high aggrea --> no help requests, no punishment, sharing
         );
@@ -62,10 +63,10 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 					Arrays.asList("hungry", "self(farm_animal)"),
 						new LinkedList<String>(),
 						new Personality(0, -1, 0, -0.7, -0.8)
-		);     
-        
+		);
+
         ImmutableList<LauncherAgent> agents = ImmutableList.of(hen, dog, cow, pig);
-        
+
         // Initialize MAS with a scheduled happening director
         ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 		FindCornHappening findCorn = new FindCornHappening(
@@ -74,12 +75,12 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 	            		if(model.farm.farmingProgress > 1) {
 	            			return true;
 	            		}
-	            		return false; 
+	            		return false;
 	    		},
 				"hen",
 				"farmingProgress");
 		hapDir.scheduleHappening(findCorn);
-        
+
         FarmModel model = new FarmModel(agents, hapDir);
 
         hen.location = model.farm.name;
@@ -90,6 +91,6 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 		// Execute MAS
 		runner.initialize(args, model, agents, "agent");
 		runner.run();
-        
+
 	}
 }

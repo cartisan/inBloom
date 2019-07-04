@@ -24,20 +24,20 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	protected static Logger logger = Logger.getLogger(FullGraphPPVisitor.class.getName());
 
 	private static final boolean KEEP_MOTIVATION = true;
-	
-	
+
+
 	private PlotDirectedSparseGraph graph;
-	
+
 	private LinkedList<Vertex> eventList;
 	private Vertex currentRoot;
-	
+
 	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
 		this.graph = graph.clone();
 		this.eventList = new LinkedList<>();
 		this.graph.accept(this);
 		return this.graph;
 	}
-	
+
 	@Override
 	public void visitRoot(Vertex vertex) {
 		this.eventList.clear();
@@ -48,7 +48,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	public void visitEvent(Vertex vertex) {
 		logger.warning("Located semantically underspecified EVENT vertex: " + vertex.getLabel());
 	}
-	
+
 	@Override
 	public void visitAction(Vertex vertex) {
  		String[] parts = vertex.getLabel().split("\\[motivation\\(");
@@ -66,12 +66,12 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 		}
 		this.eventList.addFirst(vertex);
 	}
-	
+
 	public void handleDropIntention(Vertex vertex) {
 		String label = vertex.getLabel();
 		Pattern pattern = Pattern.compile("drop_intention\\((?<drop>.*?)\\)\\[" + Edge.Type.CAUSALITY.toString() + "\\(\\+?(?<cause>.*)\\)\\]");
 		Matcher matcher = pattern.matcher(label);
-		
+
 		// Remove the vertex if it is somehow degenerate (pattern could not be matched)
 		if(!matcher.find()) {
 			this.removeVertex(vertex);
@@ -92,7 +92,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 			this.removeVertex(vertex);
 			return;
 		}
-		
+
 		// Look for the cause in previous vertices
 		String causeString = matcher.group(Edge.Type.CAUSALITY.toString());
 		Vertex cause = null;
@@ -102,7 +102,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 				break;
 			}
 		}
-		
+
 		if(cause != null) {
 			this.graph.addEdge(new Edge(Edge.Type.TERMINATION), cause, droppedIntention);
 			this.removeVertex(vertex);
@@ -121,31 +121,31 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	@Override
 	public void visitEmotion(Vertex vertex) {
 		Emotion emotion;
-		
+
 		// Create emotion from toString() representation of emotion
 		// (instead of previously used literal representation)
 		emotion = TermParser.emotionFromString(vertex.getLabel());
-		
+
 		if(emotion == null) {
 			Logger.getGlobal().info("Emotion in PP was invalid. " + vertex.toString());
 			return;
 		}
-		
+
 		String cause = TermParser.removeAnnots(emotion.getCause());
 
 		for(Vertex targetEvent : this.eventList) {
-			
+
 			if(!targetEvent.getIntention().isEmpty()) {
 				continue;
 			}
-			
+
 			String targetString = targetEvent.getWithoutAnnotation();
 
 			// Needs to match with and without '+'
 			// with for percepts, without for actions
 			if((targetString.equals(cause) || targetString.equals("+" + cause))
 					& !targetEvent.hasEmotion(emotion.getName())) {
-				
+
 				targetEvent.addEmotion(emotion.getName());
 				this.removeVertex(vertex);
 				break;
@@ -157,11 +157,11 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	public void visitPercept(Vertex vertex) {
 		if(!this.eventList.isEmpty()) {
 			String cause = vertex.getCause();
-			
+
 			for(Vertex targetEvent : this.eventList) {
 				// create causality edge from cause annotation of a happening-perception
 				if(targetEvent.getWithoutAnnotation().equals(cause) |  //our cause was an action, so targetEvent was perceived as-is
-				  targetEvent.getWithoutAnnotation().equals("+" + cause))  // our cause was a happening, so targetEvent was perceived as +cause 
+				  targetEvent.getWithoutAnnotation().equals("+" + cause))  // our cause was a happening, so targetEvent was perceived as +cause
 				{
 					this.graph.addEdge(new Edge(Edge.Type.CAUSALITY), targetEvent, vertex);
 					cause = "";
@@ -187,7 +187,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 	public void visitSpeech(Vertex vertex) {
 		this.attachMotivation(vertex);
 	}
-	
+
 	@Override
 	public void visitIntention(Vertex vertex) {
 		String label = vertex.getLabel();
@@ -195,11 +195,11 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 			this.handleDropIntention(vertex);
 			return;
 		}
-		
+
 		this.lookForPerseverance(vertex);
 		this.attachMotivation(vertex);
 	}
-	
+
 	private void lookForPerseverance(Vertex vertex) {
 		for(Vertex target : this.eventList) {
 			if(target.getIntention().equals(vertex.getIntention())) {
@@ -208,11 +208,11 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 			}
 		}
 	}
-	
+
 	private void attachMotivation(Vertex vertex) {
 		String label = vertex.getLabel();
 		String[] parts = label.split("\\[" + Edge.Type.MOTIVATION.toString() + "\\(");
-		
+
 		if(parts.length > 1) {
 			String[] motivations = parts[1].substring(0, parts[1].length() - 2).split(";");
 			String resultingLabel = parts[0];
@@ -221,19 +221,19 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 				motivation = TermParser.removeAnnots(motivation);
 				for(Vertex target : this.eventList) {
 					boolean isMotivation = false;
-					
+
 					// Check for intentions
 					isMotivation = isMotivation ||
 							motivation.equals(target.getIntention());
-					
+
 					// Check for percepts
 					isMotivation = isMotivation ||
 							motivation.equals(TermParser.removeAnnots(target.getLabel()));
-					
+
 					// Check for listens
 					isMotivation = isMotivation ||
 							motivation.equals(TermParser.removeAnnots(target.getLabel()).substring(1));
-					
+
 					if(isMotivation && !motivationVertices.contains(target)) {
 						this.graph.addEdge(new Edge(Edge.Type.MOTIVATION), target, vertex);
 						motivationVertices.add(target);
@@ -241,12 +241,12 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 					}
 				}
 			}
-			
+
 			if(!KEEP_MOTIVATION || !motivationVertices.isEmpty()) {
 				vertex.setLabel(resultingLabel);
 			}
 		}
-		
+
 		this.eventList.addFirst(vertex);
 	}
 
@@ -273,7 +273,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 					break;
 				}
 			}
-			
+
 			for(Vertex target : this.eventList) {
 				if(target.getType() == Vertex.Type.SPEECHACT) {
 					if(target.getFunctor().startsWith("achieve")) {
@@ -288,11 +288,11 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 			}
 		}*/
 		Vertex successor = this.graph.getCharSuccessor(vertex);
-		String checkTell = "+" + vertex.toString();
-		String checkAchieve = vertex.toString();
+		String checkTell = "+" + vertex.getLabel();
+		String checkAchieve = vertex.getLabel();
 		while(successor != null) {
 			if(successor.getType() == Vertex.Type.PERCEPT || successor.getType() == Vertex.Type.INTENTION) {
-				if(successor.toString().equals(checkTell)) {
+				if(TermParser.removeAnnots(successor.getLabel()).equals(checkTell)) {
 					break;
 				}
 				if(TermParser.removeAnnots(successor.getLabel()).equals(checkAchieve)) {
@@ -309,7 +309,7 @@ public class FullGraphPPVisitor implements PlotGraphVisitor {
 		this.removeVertex(successor);
 		this.eventList.addFirst(vertex);
 	}
-	
+
 	@Override
 	public EdgeVisitResult visitEdge(Edge edge) {
 		switch(edge.getType()) {

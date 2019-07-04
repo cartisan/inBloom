@@ -9,6 +9,7 @@ import inBloom.PlotLauncher;
 import inBloom.graph.Edge;
 import inBloom.graph.PlotGraphController;
 import inBloom.graph.Vertex;
+import inBloom.helper.TermParser;
 import jason.JasonException;
 import jason.asSemantics.AffectiveAgent;
 import jason.asSemantics.Emotion;
@@ -135,7 +136,7 @@ public class PlotAwareAg extends AffectiveAgent {
         	String intentionString = "!" + intention.toString();
         	// if motivation was an intention, just use type "!", otherwise perception, use operator "+" or "-" 
         	// results in sth like [motivation(+found(wheat)]
-        	String motivationString = motivation == null ? "" : "[" + Edge.Type.MOTIVATION.toString() + "(" + (type == "" ? operator : type) + motivation.toString() + ")]";
+        	String motivationString = motivation == null ? "" : "[" + Edge.Type.MOTIVATION.toString() + "(" + (type == "" ? operator : type) + TermParser.removeAnnots(motivation.toString()) + ")]";
         	
         	if(motivation != null) {
         		if(motivation.getFunctor().equals(Mood.ANNOTATION_FUNCTOR)) {

@@ -52,7 +52,7 @@ public class TermParser {
 		Matcher matcher = EMOTION_PATTERN.matcher(emo);
 		if(matcher.find()) {
 			Emotion emotion = Emotion.getEmotion(matcher.group(Emotion.ANNOTATION_FUNCTOR).toLowerCase());
-			emotion.setCause(matcher.group(Edge.Type.CAUSALITY.toString()));
+			emotion.setCause(TermParser.removeAnnots(matcher.group(Edge.Type.CAUSALITY.toString())));
 			return emotion;
 		}
 		return null;
@@ -87,8 +87,8 @@ public class TermParser {
 		
 		for(char c : s.toCharArray()) {
 			if( (c == '[') & (openParens == 0)) {
-						break;
-					}
+				break;
+			}
 			
 			if(c == '(') {
 				openParens += 1;

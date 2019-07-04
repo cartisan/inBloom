@@ -7,6 +7,7 @@ import inBloom.graph.Edge;
 import inBloom.graph.PlotGraphController;
 import inBloom.graph.Vertex;
 import inBloom.graph.Vertex.Type;
+import inBloom.helper.TermParser;
 import jason.asSemantics.CircumstanceListener;
 import jason.asSemantics.Event;
 import jason.asSemantics.Intention;
@@ -32,7 +33,7 @@ public class PlotCircumstanceListener implements CircumstanceListener {
 			if(e.getTrigger().toString().endsWith("[source(self)]") && e.getIntention() != null) {
 				toAdd = e.getTrigger().toString().split("\\[source\\(self\\)\\]")[0];
 				source = String.format("[source(%s)]",
-						e.getIntention().peek().getTrigger().getLiteral().toString());
+						TermParser.removeAnnots(e.getIntention().peek().getTrigger().getLiteral().toString()));
 				toAdd += source;
 			} else {
 				toAdd = e.getTrigger().toString();
@@ -52,7 +53,7 @@ public class PlotCircumstanceListener implements CircumstanceListener {
 		if(!i.isFinished()) {
 			String drop = "" + i.peek().getTrigger();
 			String cause = "" + this.agent.getTS().getC().getSelectedOption().getPlan().getTrigger();
-			PlotGraphController.getPlotListener().addEvent(this.name, "drop_intention(" + drop + ")[" + Edge.Type.CAUSALITY.toString() +"(" + cause + ")]", Type.INTENTION, PlotLauncher.getRunner().getUserEnvironment().getStep());
+			PlotGraphController.getPlotListener().addEvent(this.name, "drop_intention(" + drop + ")[" + Edge.Type.CAUSALITY.toString() +"(" + TermParser.removeAnnots(cause) + ")]", Type.INTENTION, PlotLauncher.getRunner().getUserEnvironment().getStep());
 		}
 	}	
 
