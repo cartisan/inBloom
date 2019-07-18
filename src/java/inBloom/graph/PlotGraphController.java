@@ -24,14 +24,8 @@ import javax.swing.SwingConstants;
 import org.freehep.graphicsbase.util.export.ExportDialog;
 import org.jfree.ui.RefineryUtilities;
 
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
-import edu.uci.ics.jung.visualization.VisualizationImageServer;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
-import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
-import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
+import jason.asSemantics.Message;
+
 import inBloom.LauncherAgent;
 import inBloom.PlotControlsLauncher;
 import inBloom.PlotLauncher;
@@ -41,20 +35,28 @@ import inBloom.graph.isomorphism.FunctionalUnits;
 import inBloom.graph.visitor.EdgeLayoutVisitor;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
-import jason.asSemantics.Message;
+
+import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.visualization.BasicVisualizationServer;
+import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import edu.uci.ics.jung.visualization.VisualizationImageServer;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
+import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 
 /**
  * Responsible for maintaining and visualizing the graph that represents the emergent plot of the narrative universe.
  * Class provides an instance: <i>plotListener</i>, which is accessible throughout inBloom for saving plot-relevant
- * events. In order to open a JFrame with the graph call the  non-static 
+ * events. In order to open a JFrame with the graph call the  non-static
  * {@link #visualizeGraph(boolean) visualizeGraph} method.
  * @author Leonid Berov
  */
 @SuppressWarnings("serial")
 public class PlotGraphController extends JFrame implements PlotmasGraph, ActionListener {
-    
+
 	protected static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
-    
+
 	/** Singleton instance used to collect the plot */
 	private static PlotGraphController plotListener = null;
 
@@ -64,14 +66,14 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	public static final String SAVE_COMMAND = "SAVE";
 	/** Change plot view action command. */
     public static final String CHANGE_VIEW_COMMAND = "CHANGE_VIEW";
-	
+
 	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
 	private JComboBox<PlotDirectedSparseGraph> graphTypeList = new JComboBox<>();	// ComboBox that is displayed on the graph to change display type
 	public VisualizationViewer<Vertex, Edge> visViewer = null;
 	private JButton counterfactButton;
 	private JPanel infoPanel = new JPanel(); // parent of information JLabels
 	private GraphZoomScrollPane scrollPane = null; //panel used to display scrolling bars
-	private JPopupMenu popup = null;	
+	private JPopupMenu popup = null;
 	private Tellability analysisResult = null;
 	private JComboBox<FunctionalUnit> unitComboBox = null;
 
@@ -92,7 +94,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	public static void instantiatePlotListener(Collection<LauncherAgent> characters) {
 		PlotGraphController.plotListener = new PlotGraphController(characters);
 	}
-	
+
 
 	/**
 	 * Creates a PlotGraphController instance that can be used to display graph.
@@ -105,7 +107,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		PlotGraphController.plotListener = new PlotGraphController(graph);
 		return PlotGraphController.plotListener;
 	}
-	
+
 	/**
 	 * Creates a new instance of {@link PlotDirectedSparseGraph}, which is used to capture new events.
 	 * Sets up a subgraphs for each character agent.
@@ -113,17 +115,17 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	 */
 	public PlotGraphController(Collection<LauncherAgent> characters) {
 		super("Plot Graph");
-		
+
 		// create and initialize the plot graph the will be created by this listener
 		this.graph = new PlotDirectedSparseGraph();
 		this.graph.setName("Full Plot Graph");
-		
+
 		// set up a "named" tree for each character
 		for (LauncherAgent character : characters) {
 			this.addCharacter(character.name);
 		}
 
-		setUp();
+		this.setUp();
 		this.addGraph(this.graph);
 		this.graphTypeList.setSelectedItem(this.graph);
 	}
@@ -137,10 +139,10 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 
 		// create and initialize the plot graph the will be created by this listener
 		this.graph = graph;
-		
-		setUp();
-		addGraph(this.graph);
-		graphTypeList.setSelectedItem(this.graph);
+
+		this.setUp();
+		this.addGraph(this.graph);
+		this.graphTypeList.setSelectedItem(this.graph);
 	}
 
 	/**
@@ -149,10 +151,10 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	 */
 	public PlotGraphController() {
 		super("Plot Graph");
-		setUp();
+		this.setUp();
 		PlotGraphController.plotListener = this;
 	}
-	
+
 	/**
 	 * Sets up an instance of this class, after {@code this.graph} has been set in the constructor.
 	 */
@@ -166,11 +168,11 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 			}
 		}
 				);
-		
+
 		this.createPopupMenu();
-		
+
 		// Initialize functional unit combo box
-		this.unitComboBox = new JComboBox<FunctionalUnit>();
+		this.unitComboBox = new JComboBox<>();
 		this.unitComboBox.addItem(null);
 		this.unitComboBox.setSelectedItem(null);
 		this.unitComboBox.addActionListener(new ActionListener() {
@@ -182,15 +184,15 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 				if(selectedUnit == null) {
 					Transformers.HIGHLIGHT = null;
 				} else {
-					Transformers.HIGHLIGHT = ((PlotDirectedSparseGraph)graphTypeList.getSelectedItem()).getUnitVertices(selectedUnit);
+					Transformers.HIGHLIGHT = ((PlotDirectedSparseGraph) PlotGraphController.this.graphTypeList.getSelectedItem()).getUnitVertices(selectedUnit);
 				}
 				PlotGraphController.getPlotListener().visViewer.repaint();
 			}
 		});
-		
-		addGraph(FunctionalUnits.ALL_UNITS_GRAPH);
+
+		this.addGraph(FunctionalUnits.ALL_UNITS_GRAPH);
 	}
-	
+
     /**
      * Initializes the a popup menu that will appear on left-click.
      */
@@ -205,14 +207,14 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 
         this.popup = result;
     }
-    
+
 	/**
      * Adds a Button to the menu that will switch from Counterfactuality
      * to originial and the other way around
-     * 
+     *
      * Can be extended by different buttons and a createButtons method
      */
-    
+
     protected void createCounterfactButton() {
     	logger.info("creating counterfactuality button");
     	JButton btCounterfact = new JButton("Counterfactuality!");
@@ -222,14 +224,14 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
    			//distinguishing: counterfactual click or original click?
     		private boolean counterfact = true;
     		public void actionPerformed(ActionEvent click) {
-    			
+
     			PlotDirectedSparseGraph originalGraph = new PlotDirectedSparseGraph();
-    			if(firstClick) {
-    						
+    			if(this.firstClick) {
+
     				//getting the current graph and give it to the CounterfactualityLauncher
         			originalGraph = PlotGraphController.getPlotListener().getGraph();
         			MoodMapper moodData = PlotControlsLauncher.runner.getUserModel().moodMapper;
-        			
+
         			// get counterfactuality class
         			CounterfactualityCycle counterfact;
         			try {
@@ -239,46 +241,46 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 						System.err.println("Error instantiating counterfactuality class");
 						System.exit(0);
 					}
-        			
+
           			//set firstClick false
-        			firstClick = false;
+        			this.firstClick = false;
         			logger.info("The first click was done!");
     			}
 
-    			counterfact = !counterfact;
+    			this.counterfact = !this.counterfact;
     		}
     	});
     	this.counterfactButton = btCounterfact;
     }
-    
+
 	/**
 	 * Method which allows this to registered as an ActionListener. Performs the handling of all events
-	 * that result from interactions with UI elements of this JFrame. 
+	 * that result from interactions with UI elements of this JFrame.
 	 * @param event Event that specifies how to react
 	 */
 	@Override
 	public void actionPerformed(ActionEvent event) {
         String command = event.getActionCommand();
-        
+
         if (command.equals(SAVE_COMMAND)) {
             try {
-                doSaveAs();
+                this.doSaveAs();
             }
             catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "I/O error occurred.", 
+                JOptionPane.showMessageDialog(this, "I/O error occurred.",
                         "Save Graph", JOptionPane.WARNING_MESSAGE);
             }
         } else if (command.equals(CHANGE_VIEW_COMMAND)) {
 			@SuppressWarnings("unchecked")
 			JComboBox<PlotDirectedSparseGraph> combo = (JComboBox<PlotDirectedSparseGraph>) event.getSource();
 			PlotDirectedSparseGraph selectedGraph = (PlotDirectedSparseGraph) combo.getSelectedItem();
-			
+
 			Layout<Vertex, Edge> layout = new PlotGraphLayout(selectedGraph);
 			PlotGraphController.getPlotListener().visViewer.setGraphLayout(layout);
 			PlotGraphController.getPlotListener().visViewer.repaint();
         }
 	}
-	
+
 	/**
 	 * Saves currently displayed plot graph as PNG image. Displays a FileChoose to select name and target dir.
 	 * @throws IOException
@@ -286,10 +288,10 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	private void doSaveAs() throws IOException {
         // instantiate and configure image-able visualization viewer
         VisualizationImageServer<Vertex, Edge> vis =
-        	    new VisualizationImageServer<Vertex, Edge>(this.visViewer.getGraphLayout(),
+        	    new VisualizationImageServer<>(this.visViewer.getGraphLayout(),
         	    										   this.visViewer.getGraphLayout().getSize());
 
-        setUpAppearance(vis);
+        this.setUpAppearance(vis);
 
         ExportDialog export = new ExportDialog();
         export.showExportDialog(vis, "Export view as ...", vis, "export");
@@ -298,37 +300,37 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	public JPopupMenu getPopup() {
 		return this.popup;
 	}
-	
+
 	public JComboBox<FunctionalUnit> getUnitComboBox() {
-		return unitComboBox;
+		return this.unitComboBox;
 	}
-	
+
 	public Tellability getAnalysisResult() {
-		return analysisResult;
+		return this.analysisResult;
 	}
-	
+
 	public PlotDirectedSparseGraph getGraph() {
 		return this.graph;
 	}
 
 	public void closeGraph() {
 		logger.info("Closing and reseting plot graph view");
-		
-		this.getContentPane().remove(scrollPane);
+
+		this.getContentPane().remove(this.scrollPane);
     	this.dispose();
-    	
+
     	PlotControlsLauncher gui = PlotLauncher.getRunner();
     	gui.graphClosed(this);
 	}
-	
+
 	public void addCharacter(String agName) {
-		this.graph.addRoot(agName);		
-	}	
-	
+		this.graph.addRoot(agName);
+	}
+
 	public void addEvent(String character, String event, Vertex.Type eventType, int step) {
 		this.graph.addEvent(character, event, step, eventType, Edge.Type.TEMPORAL);
 	}
-	
+
 	public Vertex addMsgSend(Message m, String motivation, int step) {
 		// Format message to intention format, i.e. "!performative(content)"
 		Vertex senderV = this.graph.addMsgSend(m.getSender(), "!" + m.getIlForce() + "(" + m.getPropCont().toString() + ")" + motivation, step);
@@ -341,24 +343,24 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		Vertex recV = this.graph.addMsgReceive(m.getReceiver(), (m.getIlForce().startsWith("achieve") ? "!" : "") + m.getPropCont().toString(), senderV, step);
 		return recV;
 	}
-	
+
 	/**
 	 * Adds an information label to the bottom of the graph window.
 	 * @param info Information string to display
 	 */
 	public void addInformation(String info) {
-		infoPanel.add(new JLabel(info));
-		infoPanel.validate();
-		infoPanel.repaint();
+		this.infoPanel.add(new JLabel(info));
+		this.infoPanel.validate();
+		this.infoPanel.repaint();
 	}
-	
+
 	public void addInformation(String label, JComponent component) {
-		infoPanel.add(new JLabel(label));
-		infoPanel.add(component);
-		infoPanel.validate();
-		infoPanel.repaint();
+		this.infoPanel.add(new JLabel(label));
+		this.infoPanel.add(component);
+		this.infoPanel.validate();
+		this.infoPanel.repaint();
 	}
-	
+
 	/**
 	 * Adds a graph to the graph type list.
 	 * If a graph with the same name is already in the list,
@@ -366,18 +368,18 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	 * @param g Graph to add
 	 */
 	public void addGraph(PlotDirectedSparseGraph g) {
-		for(int i = 0; i < graphTypeList.getItemCount(); i++) {
-			String n = graphTypeList.getItemAt(i).toString();
+		for(int i = 0; i < this.graphTypeList.getItemCount(); i++) {
+			String n = this.graphTypeList.getItemAt(i).toString();
 			if(n.equals(g.toString())) {
-				graphTypeList.removeItemAt(i);
-				graphTypeList.addItem(g);
+				this.graphTypeList.removeItemAt(i);
+				this.graphTypeList.addItem(g);
 				return;
 			}
 		}
-		graphTypeList.addItem(g);
-		graphTypeList.repaint();
+		this.graphTypeList.addItem(g);
+		this.graphTypeList.repaint();
 	}
-	
+
 	/**
 	 * Adds a functional unit to the drop down menu for highlighting units in plot graph
 	 * @param unit
@@ -385,24 +387,24 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	public void addDetectedPlotUnitType(FunctionalUnit unit) {
 		this.unitComboBox.addItem(unit);
 	}
-	
+
 	/**
 	 * Uses the combobox graphTypeList to select graph g. Results in {@linkplain #visualizeGraph} showing this graph.
 	 * @param g
 	 */
-	public void setSelectedGraph(PlotDirectedSparseGraph g) { 
-		graphTypeList.setSelectedItem(g);
+	public void setSelectedGraph(PlotDirectedSparseGraph g) {
+		this.graphTypeList.setSelectedItem(g);
 	}
-	
+
 	/**
 	 * Analyzes the plot graph, computes the plots tellability and returns it.
 	 * Unlike {@link analyze(PlotDirectedSparseGraph) analyze}, does not store the
 	 * analyzed version of the graph for further processing.
 	 */
 	public Tellability analyze() {
-		return analyze(null);
+		return this.analyze(null);
 	}
-	
+
 	/**
 	 * Analyzes the plot graph, computes the plots tellability and returns it.
 	 * <ul>
@@ -416,37 +418,37 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	 * @return
 	 */
 	public Tellability analyze(PlotDirectedSparseGraph analyzedGraphContainer) {
-		if(analysisResult != null) {
-			return analysisResult;
+		if(this.analysisResult != null) {
+			return this.analysisResult;
 		}
-		
+
 		// Create analysed graph with semantically interpretable edges and collapsed vertices
 		PlotDirectedSparseGraph g = new FullGraphPPVisitor().apply(this.graph);
 		g = new CompactGraphPPVisitor().apply(g);
 		g.setName("Analyzed Plot Graph");
 
 		// compute all necessary statictics for tellability
-		analysisResult = new Tellability(g);
-		
+		this.analysisResult = new Tellability(g);
+
 		// Create GUI representation of tellability analysis
-		addInformation("#Functional Units: " + this.analysisResult.numFunctionalUnits);
-		addInformation("Highlight Units:");
-		this.infoPanel.add(unitComboBox);
-		addInformation("#Polyvalent Vertices: " + this.analysisResult.numPolyvalentVertices);
-		addInformation("Suspense: " + this.analysisResult.suspense);
-		addInformation("Tellability: " + this.analysisResult.compute());
-		
+		this.addInformation("#Functional Units: " + this.analysisResult.numFunctionalUnits);
+		this.addInformation("Highlight Units:");
+		this.infoPanel.add(this.unitComboBox);
+		this.addInformation("#Polyvalent Vertices: " + this.analysisResult.numPolyvalentVertices);
+		this.addInformation("Suspense: " + this.analysisResult.suspense);
+		this.addInformation("Tellability: " + this.analysisResult.compute());
+
 		// Insert spacing between motivation edges
 		g = new EdgeLayoutVisitor(9).apply(g);
-		
+
 		this.addGraph(g);
 		this.graphTypeList.setSelectedItem(g);
-		
+
 		if(analyzedGraphContainer != null) {
 			g.cloneInto(analyzedGraphContainer);
 		}
-		
-		return analysisResult;
+
+		return this.analysisResult;
 	}
 
 	/**
@@ -455,54 +457,54 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	 */
 	public PlotGraphController visualizeGraph() {
 		Layout<Vertex, Edge> layout = new PlotGraphLayout((PlotDirectedSparseGraph)this.graphTypeList.getSelectedItem());
-		
+
 		// Create a viewing server
-		this.visViewer = new VisualizationViewer<Vertex, Edge>(layout);
-		this.setUpAppearance(visViewer);
-		
+		this.visViewer = new VisualizationViewer<>(layout);
+		this.setUpAppearance(this.visViewer);
+
 		// Add a mouse to translate the graph.
 		PluggableGraphMouse gm = new PluggableGraphMouse();
 		gm.add(new SelectingTranslatingGraphMousePlugin());
 		this.visViewer.setGraphMouse(gm);
 
 		// enable scrolling control bar
-		this.scrollPane = new GraphZoomScrollPane(visViewer);
+		this.scrollPane = new GraphZoomScrollPane(this.visViewer);
 
 		// c information panel
-		infoPanel.setLayout(new FlowLayout(SwingConstants.LEADING, 15, 5));
-		
+		this.infoPanel.setLayout(new FlowLayout(SwingConstants.LEADING, 15, 5));
+
 		//counterfactuality Button
 		this.createCounterfactButton();
 		this.counterfactButton.setText("Counterfactuality!");
 		//add Button to infopanel
-		this.infoPanel.add(counterfactButton);
+		this.infoPanel.add(this.counterfactButton);
 		// second: register a listener that redraws the plot when selection changes. Careful here: order with last command matters
 		this.graphTypeList.setActionCommand(CHANGE_VIEW_COMMAND);
 		this.graphTypeList.addActionListener(this);
-		this.add(graphTypeList, BorderLayout.NORTH);
-		
-		this.add(graphTypeList, BorderLayout.NORTH);	
-		this.add(infoPanel, BorderLayout.SOUTH);
-		
+		this.add(this.graphTypeList, BorderLayout.NORTH);
+
+		this.add(this.graphTypeList, BorderLayout.NORTH);
+		this.add(this.infoPanel, BorderLayout.SOUTH);
+
 		this.getContentPane().add(this.scrollPane);
 		this.pack();
-		
+
 		RefineryUtilities.positionFrameOnScreen(this, 0.0, 0.2);
-		
+
 		this.setVisible(true);
-		
+
 		return this;
 	}
-	
+
 
 	/**
-	 * Sets up an VisualizationServer instance with all the details and renders defining the graphs appearance. 
+	 * Sets up an VisualizationServer instance with all the details and renders defining the graphs appearance.
 	 * @param vis
 	 */
 	private void setUpAppearance(BasicVisualizationServer<Vertex, Edge> vis) {
 		vis.setBackground(BGCOLOR);
 		vis.setPreferredSize(new Dimension(1500, 600)); // Sets the viewing area
-		
+
 		// modify vertices
 		vis.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
 		vis.getRenderContext().setVertexFontTransformer(Transformers.vertexFontTransformer);
@@ -511,7 +513,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		vis.getRenderContext().setVertexFillPaintTransformer(Transformers.vertexFillPaintTransformer);
 		vis.getRenderContext().setVertexDrawPaintTransformer(Transformers.vertexDrawPaintTransformer);
 		vis.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
-		
+
 		// modify edges
 		vis.getRenderContext().setEdgeShapeTransformer(Transformers.edgeShapeTransformer);
 		vis.getRenderContext().setEdgeDrawPaintTransformer(Transformers.edgeDrawPaintTransformer);

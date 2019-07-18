@@ -15,35 +15,36 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 
-import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 import inBloom.graph.Vertex.Type;
 import inBloom.graph.isomorphism.FunctionalUnit;
 import inBloom.graph.visitor.PlotGraphVisitor;
 import inBloom.graph.visitor.RemovedEdge;
 
+import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
+
 /**
  * Storyplot-aware graph implementation, that does not consider edges of type {@code Edge.Type.CROSSCHARACTER} as
  * linking a vertex to its successor.
- * 
+ *
  * @author Leonid Berov
  */
 @SuppressWarnings("serial")
 public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Edge> implements Cloneable {
-  
+
     static Logger logger = Logger.getLogger(PlotDirectedSparseGraph.class.getName());
     public static final String AXIS_LABEL = "plot step";
-	
+
 	private ArrayList<Vertex> roots = Lists.newArrayList();
 	private HashMap<String, Vertex> lastVertexMap = new HashMap<>();			// maps: agentName --> vertex
 	private Table<String, String, Vertex> senderMap = HashBasedTable.create();	// maps: agentName, message --> vertex
 	public HashMap<Integer, Vertex> yAxis = new HashMap<>();					// maps: time step --> vertex
-	
+
 	/**
 	 * The name of this graph.
 	 * Used as a string representation
 	 */
 	private String name;
-	
+
 	/**
 	 * An array containing all vertices of this graph.
 	 * Used to identify vertices by id in inBloom.graph.isomorphism.State
@@ -51,13 +52,13 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 * the method getVertex or getVertexId is called.
 	 */
 	private Vertex[] vertexArray;
-	
+
 	/**
 	 * A flag which is set to true whenever the graph changed.
 	 * Used to identify whether or not vertexArray needs to be generated.
 	 */
 	private boolean isDirty = true;
-	
+
 	/**
 	 * Map used for quick access to the agent name of the subgraph a
 	 * vertex is in. This map is cloned to a clone of this graph.
@@ -66,104 +67,104 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 
 
 	private Map<FunctionalUnit, Set<Vertex>> unitVertexGroups = new HashMap<>(); // stores all vertices belonging to a functional unit
-	
+
     /**
      * Returns a list of nodes that represent the roots of each character subgraph.
      * @return
      */
     public ArrayList<Vertex> getRoots() {
-		if (roots.size() > 0) {
-			return roots;
+		if (this.roots.size() > 0) {
+			return this.roots;
 		}
 		throw new IllegalStateException("Graph was not initialised with root nodes") ;
 	}
-		
+
     public Collection<Vertex> getAxisVertices() {
-    	return yAxis.values();
+    	return this.yAxis.values();
     }
-    
+
 	/**
 	 * Creates a new vertex that will be used to represent time-step labels
 	 */
 	private void addToAxis(int step, String label) {
 		Vertex labelV = new Vertex(label, Type.AXIS_LABEL, step, this);
-		yAxis.put(step, labelV);
+		this.yAxis.put(step, labelV);
 		this.addVertex(labelV);
 	}
 
 	public Vertex addRoot(String agName) {
 		Vertex root = new Vertex(agName, Type.ROOT, 0, this);
-		
+
     	boolean result = this.addVertex(root);
     	if (result) {
     		this.roots.add(root);
     		this.lastVertexMap.put(root.getLabel(), root);
-    		
+
     		// add appropriate label to yAxis
-    		if (!yAxis.containsKey(root.getStep())) {
+    		if (!this.yAxis.containsKey(root.getStep())) {
     			this.addToAxis(root.getStep(), AXIS_LABEL);
     	}
-    	
+
     		return root;
     	}
-    	
+
     	this.vertexAgentMap.put(root, root.getLabel());
-    	
+
     	return null;
     }
-	
+
 	public synchronized Vertex addEvent(String root, String event, int step, Vertex.Type eventType, Edge.Type linkType) {
 		Vertex newVertex = new Vertex(event, eventType, step, this);
-		Vertex parent = lastVertexMap.get(root);
-		
+		Vertex parent = this.lastVertexMap.get(root);
+
 		if (parent.getType() == Vertex.Type.ROOT) {
 			linkType = Edge.Type.ROOT;
 		}
-		
+
 		this.addEdge(new Edge(linkType), parent, newVertex);
-		lastVertexMap.put(root, newVertex);
-		
+		this.lastVertexMap.put(root, newVertex);
+
 		this.vertexAgentMap.put(newVertex, root);
-		
+
 		// add appropriate label to yAxis
-		if (!yAxis.containsKey(step)) {
+		if (!this.yAxis.containsKey(step)) {
 			this.addToAxis(step, String.valueOf(step));
 		}
-		
-		
+
+
 		return newVertex;
 	}
-	
+
 	public Vertex addMsgSend(String sender, String message, int step) {
 		Vertex sendV;
 		// if same message was already send before, use old vertex
 		// helps reusing vertex when multiple recipients
-		if(senderMap.contains(sender, message)) {
-			sendV = senderMap.get(sender, message);
+		if(this.senderMap.contains(sender, message)) {
+			sendV = this.senderMap.get(sender, message);
 		} else {
-			sendV = addEvent(sender, message, step, Vertex.Type.SPEECHACT, Edge.Type.TEMPORAL);
-			senderMap.put(sender, message, sendV);
+			sendV = this.addEvent(sender, message, step, Vertex.Type.SPEECHACT, Edge.Type.TEMPORAL);
+			this.senderMap.put(sender, message, sendV);
 		}
-		
+
 		return sendV;
 	}
-	
+
 	public Vertex addMsgReceive(String receiver, String message, Vertex sendV, int step) {
-		Vertex recV = addEvent(receiver, message, step, Vertex.Type.LISTEN,  Edge.Type.TEMPORAL);
+		Vertex recV = this.addEvent(receiver, message, step, Vertex.Type.LISTEN,  Edge.Type.TEMPORAL);
 		this.addEdge(new Edge(Edge.Type.CROSSCHARACTER), sendV, recV);
 		this.vertexAgentMap.put(recV, receiver);
 		return recV;
 	}
-	
+
 	/**
 	 * Overriden method call to addEdge, in order to set isDirty flag.
 	 */
 	@Override
 	public boolean addEdge(Edge edge, Vertex from, Vertex to) {
-		isDirty = true;
+		this.isDirty = true;
 		return super.addEdge(edge, from, to);
 	}
-	
+
 	/**
 	 * Returns the name of the agent the given
 	 * vertex is in the subgraph of.
@@ -171,12 +172,12 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 * @return name of agent
 	 */
 	public String getAgent(Vertex vertex) {
-		if(!vertexAgentMap.containsKey(vertex)) {
+		if(!this.vertexAgentMap.containsKey(vertex)) {
 			return "none";
 		}
-		return vertexAgentMap.get(vertex);
+		return this.vertexAgentMap.get(vertex);
 	}
-	
+
 	/**
 	 * Returns the vertex identified by the
 	 * given id.
@@ -185,17 +186,17 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 * @return Vertex
 	 */
 	public Vertex getVertex(int vertexId) {
-		if(isDirty) {
-			vertexArray = new Vertex[this.getVertexCount()];
-			vertices.keySet().toArray(vertexArray);
-			isDirty = false;
+		if(this.isDirty) {
+			this.vertexArray = new Vertex[this.getVertexCount()];
+			this.vertices.keySet().toArray(this.vertexArray);
+			this.isDirty = false;
 		}
-		if(vertexId < 0 || vertexId >= vertexArray.length) {
+		if(vertexId < 0 || vertexId >= this.vertexArray.length) {
 			return null;
 		}
-		return vertexArray[vertexId];
+		return this.vertexArray[vertexId];
 	}
-	
+
 	/**
 	 * Finds the id of a given vertex.
 	 * Generates vertexArray if needed.
@@ -203,19 +204,19 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 * @return int vertexId
 	 */
 	public int getVertexId(Vertex vertex) {
-		if(isDirty) {
-			vertexArray = new Vertex[this.getVertexCount()];
-			vertices.keySet().toArray(vertexArray);
-			isDirty = false;
+		if(this.isDirty) {
+			this.vertexArray = new Vertex[this.getVertexCount()];
+			this.vertices.keySet().toArray(this.vertexArray);
+			this.isDirty = false;
 		}
-		for(int i = 0; i < vertexArray.length; i++) {
-			if(vertexArray[i] == vertex) {
+		for(int i = 0; i < this.vertexArray.length; i++) {
+			if(this.vertexArray[i] == vertex) {
 				return i;
 			}
 		}
 		return -1;
 	}
-	
+
 	/**
 	 * Returns vertex, that is a successor in a plot sense, i.e. vertices that pertain to the same character column.
 	 * This excludes vertices connected by communication edges.
@@ -223,17 +224,19 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 * @return successor vertex if present, or null
 	 */
 	public Vertex getCharSuccessor(Vertex vertex) {
-        if (!containsVertex(vertex))
-            return null;
-        
-        for (Edge edge : getOutgoing_internal(vertex))
-        	if(edge.getType() == Edge.Type.TEMPORAL || edge.getType() == Edge.Type.ROOT) {
+        if (!this.containsVertex(vertex)) {
+			return null;
+		}
+
+        for (Edge edge : this.getOutgoing_internal(vertex)) {
+			if(edge.getType() == Edge.Type.TEMPORAL || edge.getType() == Edge.Type.ROOT) {
         		return this.getDest(edge);
         	}
-        
+		}
+
         return null;
     }
-	
+
 	/**
 	 * Returns vertex, that is a predecessor in a plot sense, i.e. vertices that pertain to the same character column.
 	 * This excludes vertices connected by communication edges.
@@ -241,17 +244,18 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 * @return successor vertex if present, or null
 	 */
 	public Vertex getCharPredecessor(Vertex vertex) {
-		if(!containsVertex(vertex))
+		if(!this.containsVertex(vertex)) {
 			return null;
-		
-		for(Edge edge : getIncoming_internal(vertex)) {
+		}
+
+		for(Edge edge : this.getIncoming_internal(vertex)) {
 			if(edge.getType() == Edge.Type.TEMPORAL || edge.getType() == Edge.Type.ROOT) {
 				return this.getSource(edge);
 			}
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Returns the position of this vertex inside the step.
 	 * 0 means this vertex is the first of its step, 1 is the second,
@@ -261,15 +265,15 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 */
 	public int getInnerStep(Vertex vertex) {
 		int step = vertex.getStep();
-		Vertex pred = getCharPredecessor(vertex);
+		Vertex pred = this.getCharPredecessor(vertex);
 		int c = 0;
 		while(pred != null && pred.getStep() == step) {
 			c++;
-			pred = getCharPredecessor(pred);
+			pred = this.getCharPredecessor(pred);
 		}
 		return c;
 	}
-	
+
 	/**
 	 * Returns all vertices which are a real predecessor of the given vertex.
 	 * This means, that all vertices this method returns happened at the same
@@ -283,11 +287,12 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 * @return all real predecessors of the vertex, or an empty collection if none were found
 	 */
 	public Collection<Vertex> getRealPredecessors(Vertex vertex) {
-		if(!containsVertex(vertex))
+		if(!this.containsVertex(vertex)) {
 			return null;
-		
-		Set<Vertex> vertices = new HashSet<Vertex>();
-		for(Edge edge : getIncoming_internal(vertex)) {
+		}
+
+		Set<Vertex> vertices = new HashSet<>();
+		for(Edge edge : this.getIncoming_internal(vertex)) {
 			if(edge.getType() != Edge.Type.EQUIVALENCE
 			&& edge.getType() != Edge.Type.TERMINATION
 			&& edge.getType() != Edge.Type.ROOT) {
@@ -296,29 +301,29 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		}
 		return vertices;
 	}
-	
+
 	/**
 	 * Returns the subgraph of a character, i.e. all vertices connected to a certain root node.
 	 * @param root
 	 * @return
 	 */
 	public List<Vertex> getCharSubgraph(Vertex root) {
-		List<Vertex> succs = new LinkedList<Vertex>();
+		List<Vertex> succs = new LinkedList<>();
 
-		if (!containsVertex(root)) {
+		if (!this.containsVertex(root)) {
 //			System.out.println("Subgraph for character " + root.getLabel() + " not found. Vertex: "  + root.toString());
             return succs;
 		}
-        
+
         Vertex succ = this.getCharSuccessor(root);
         while(!(succ == null)) {
         	succs.add(succ);
         	succ = this.getCharSuccessor(succ);
         }
-        
+
         return succs;
     }
-	
+
 	/**
 	 * Adds a given vertex to the set of vertices belonging to the
 	 * provided functional unit.
@@ -326,28 +331,28 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 * @param unit Functional unit the vertex belongs to
 	 */
 	public void markVertexAsUnit(Vertex v, FunctionalUnit unit) {
-		if(!unitVertexGroups.containsKey(unit)) {
-			unitVertexGroups.put(unit, new HashSet<Vertex>());
+		if(!this.unitVertexGroups.containsKey(unit)) {
+			this.unitVertexGroups.put(unit, new HashSet<Vertex>());
 		}
-		
-		unitVertexGroups.get(unit).add(v);
+
+		this.unitVertexGroups.get(unit).add(v);
 	}
-	
+
 	/**
 	 * Returns all vertices belonging to the provided unit.
 	 * @param unit to retrieve the vertices of
 	 * @return Set of vertices
 	 */
 	public Set<Vertex> getUnitVertices(FunctionalUnit unit) {
-		if(!unitVertexGroups.containsKey(unit)) {
-			unitVertexGroups.put(unit, new HashSet<Vertex>());
+		if(!this.unitVertexGroups.containsKey(unit)) {
+			this.unitVertexGroups.put(unit, new HashSet<Vertex>());
 		}
-		return unitVertexGroups.get(unit);
+		return this.unitVertexGroups.get(unit);
 	}
-	
+
 	@Override
 	public PlotDirectedSparseGraph clone() {
-		return cloneInto(new PlotDirectedSparseGraph());
+		return this.cloneInto(new PlotDirectedSparseGraph());
 	}
 
 	/**
@@ -356,25 +361,25 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 * @return the provided graph with vertices and edges of this one added.
 	 */
 	public PlotDirectedSparseGraph cloneInto(PlotDirectedSparseGraph dest) {
-		// BEWARE: lastVertexMap is not cloned, the returned graph is not useable for continuing plotting 
+		// BEWARE: lastVertexMap is not cloned, the returned graph is not useable for continuing plotting
 		// clone vertices and add them to cloned graph
 		HashMap<Vertex,Vertex> cloneMap = new HashMap<>();		// maps old vertex -> cloned vertex
 		dest.name = this.name;
-		
+
 		// clone roots in right order
-		for (Vertex root : roots) {
+		for (Vertex root : this.roots) {
 	        Vertex clone = root.clone(dest);
 	    	dest.addVertex(clone);
     		cloneMap.put(root, clone);
-    		
+
 			dest.roots.add(clone);
-			dest.vertexAgentMap.put(clone, vertexAgentMap.get(root));
+			dest.vertexAgentMap.put(clone, this.vertexAgentMap.get(root));
 		}
 		synchronized(this.vertices) {
 		    for (Vertex v : this.getVertices()) {
 		    	if (!(v.getType() == Type.ROOT)) {
 		    		Vertex clone = v.clone(dest);
-	
+
 		    		// if cloned vertex is an axis, note that in axis map
 		    		if(this.yAxis.containsValue(v)) {
 		    			if(!dest.yAxis.containsKey(v.getStep())) {
@@ -386,11 +391,11 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		    		}
 		    		dest.addVertex(clone);
 	    			cloneMap.put(v, clone);
-	    		
-	    			dest.vertexAgentMap.put(clone, vertexAgentMap.get(v));
+
+	    			dest.vertexAgentMap.put(clone, this.vertexAgentMap.get(v));
 	    		}
 		    }
-		}   
+		}
 
 	    // clone edges, make sure that incident vertices are translated into their cloned counterparts
 	    synchronized(this.edges) {
@@ -399,17 +404,17 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		        dest.addEdge(e.clone(), vClones);
 		    }
 	    }
-	    
-	    for(Map.Entry<FunctionalUnit, Set<Vertex>> entry : unitVertexGroups.entrySet()) {
+
+	    for(Map.Entry<FunctionalUnit, Set<Vertex>> entry : this.unitVertexGroups.entrySet()) {
 	    	FunctionalUnit fu = entry.getKey();
 	    	for(Vertex v : entry.getValue()) {
 	    		dest.markVertexAsUnit(cloneMap.get(v), fu);
 	    	}
 	    }
-	    
+
 	    return dest;
 	}
-	
+
 	/**
 	 * Removes a vertex from this graph and connects its successor with the provided predecessor. This is necessary,
 	 * in case several predecessors of {@code toRemove} are to be removed as well.
@@ -426,11 +431,11 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		if(nextV != null) {
 			this.addEdge(new Edge(type), lastV, nextV);
 		}
-		
+
 		// remove perception
 		this.removeVertex(toRemove);
 	}
-	
+
 	/**
 	 * Removes a vertex from this graph and automatically finds the predecessor of the
 	 * removed node and connects it to the removed node's successor.
@@ -445,10 +450,10 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 			lastV = currentV;
 			currentV = this.getCharSuccessor(v);
 		}
-		
+
 		this.removeVertexAndPatchGraph(toRemove, lastV);
 	}
-	
+
 	/**
 	 * Runs a PlotGraphVisitor over this graph.
 	 * @param visitor to run
@@ -457,7 +462,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		// Queue which contains the objects to be visited.
 		// Objects may only be of type Vertex, Edge or RemovedEdge.
 		// For safety, one may consider adding a marker interface (e.g. GraphElement).
-		LinkedList<Object> visitQueue = new LinkedList<Object>();
+		LinkedList<Object> visitQueue = new LinkedList<>();
 
 		for(Vertex root : this.roots) {
 			visitQueue.clear();
@@ -469,7 +474,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 				}
 				if(o instanceof Vertex) {
 					Collection<Edge> edges = this.getOutEdges((Vertex)o);
-					List<RemovedEdge> remEdges = new LinkedList<RemovedEdge>();
+					List<RemovedEdge> remEdges = new LinkedList<>();
 					for(Edge e : edges) {
 						remEdges.add(new RemovedEdge(e, this.getDest(e)));
 					}
@@ -485,7 +490,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 					}
 				} else
 				if(o instanceof Edge) {
-					
+
 					switch(visitor.visitEdge((Edge)o)) {
 						case CONTINUE:
 							visitQueue.addLast(this.getDest((Edge)o));
@@ -515,9 +520,9 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 				}
 			}
 		}
-	
+
 	}
-	
+
 	private void acceptVertex(Vertex vertex, PlotGraphVisitor visitor) {
 		switch(vertex.getType()) {
 		case ROOT: 		visitor.visitRoot(vertex); 		break;
@@ -533,13 +538,13 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		default:
 			throw new RuntimeException("Unknown vertex type. Aborting visit!");
 		}
-		
+
 	}
-	
+
 	public void setName(String newName) {
 		this.name = newName;
 	}
-	
+
 	@Override
 	public String toString() {
 		return this.name;

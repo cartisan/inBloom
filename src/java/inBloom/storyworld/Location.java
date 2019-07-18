@@ -235,11 +235,11 @@ public class Location {
 		this.characters = characters;
 	}
 
-	public List<Item> getExistents() {
+	public List<Item> getItems() {
 		return items;
 	}
 
-	protected void setExistents(List<Item> existents) {
-		this.items = existents;
+	protected void setItems(List<Item> items) {
+		this.items = items;
 	}
 }
