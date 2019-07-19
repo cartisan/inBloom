@@ -91,18 +91,12 @@ wish(relax).
 +rejected_request(help_with(Helpee,Req))[source(Name)] <-
 	.appraise_emotion(anger, Name, "rejected_request(help_with(Helpee,Req))", true);
 	.abolish(rejected_request(help_with(Helpee,Req)));
-	-asking(help_with(Req), Name);
-	if(not asking(help_with(Req), _)) {
-		.resume(Req);
-	}.
+	-asking(help_with(Req), Name).
 	
-+accepted_request(help_with(Req))[source(Name)] <-
++accepted_request(help_with(Helpee,Req))[source(Name)] <-
 	.appraise_emotion(gratitude, Name, "accepted_request(help_with(Req))[source(Name)]", true);
 	.abolish(accepted_request(help_with(Helpee,Req)));
-	-asking(help_with(Req), Name);
-	if(not asking(help_with(Req), _)) {
-		.resume(Req);
-	}.
+	-asking(help_with(Req), Name).
 
 @reject_request[atomic]
 +!reject(Helpee, Plan) <-
@@ -141,19 +135,20 @@ wish(relax).
 // Ask for help if extraverted, unless one feels powerless
 @general_help_acquisition_plan[affect(and(personality(extraversion,positive),not(mood(dominance,low))))]
 +!X[_] : is_work(X) & not complex_plan(X) & not already_asked(X) <-
+	.my_name(Me);
 	?present(Animals);
 	+already_asked(X);
 	for (.member(Animal, Animals)) {
 		.print("Asking ", Animal, " to help with ", X)
-		.my_name(Me);
 		.send(Animal, tell, request(help_with(Me,X)));
 		+asking(help_with(X), Animal);
 	}
-	.suspend(X);
-	!X.
+	.wait(not asking(help_with(X), _), 1000);
+	!X;
+	-already_asked(X).
 
 @create_bread_1[affect(personality(conscientiousness,high))]
-+!create(bread) : has(wheat[state(seed)])<-
++!create(bread) : has(wheat[state(seed)]) <-
 	!plant(wheat).
 
 @create_bread_2[affect(personality(conscientiousness,high))]
@@ -165,11 +160,11 @@ wish(relax).
 	!harvest(wheat).
 
 @create_bread_4[affect(personality(conscientiousness,high))]
-+!create(bread) : has(wheat[state(harvested)])<-
++!create(bread) : has(wheat[state(harvested)]) <-
 	!grind(wheat).
 
 @create_bread_5[affect(personality(conscientiousness,high))]
-+!create(bread) : has(wheat[state(flour)])<-
++!create(bread) : has(wheat[state(flour)]) <-
 	!bake(bread);
 	.resume(obligation(farm_work));
 	.resume(wish(relax));

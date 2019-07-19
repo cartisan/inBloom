@@ -24,11 +24,11 @@ already_asked(farm_work).
 /*****     inference rules ****************************************************/
 /******************************************************************************/
 
-is_work(help_with(Name, X)) :- is_work(X).
+is_work(help_with(Name, Plan)) :- is_work(Plan).
 
-is_useful(A) :- is_pleasant(eat(A)) & hungry.
+is_useful(Item) :- is_pleasant(eat(Item)) & hungry.
 
 agent(Ag) :- agents(List) & .member(Ag, List).
-location(X) :- locations(Locations) & .member(X, Locations).
+location(Loc) :- locations(Locations) & .member(Loc, Locations).
 
 present(List) :- .findall(Agent, (at(Agent,Loc) & at(Loc)), List).
