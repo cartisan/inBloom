@@ -26,7 +26,7 @@ import inBloom.jason.PlotAwareAg;
  * modify a character's state.
  * @author Leonid Berov
  */
-public class Character {
+public class Character extends Existent {
     static Logger logger = Logger.getLogger(Character.class.getName());
 
     private PlotAwareAg plotAgentPendant;
@@ -269,17 +269,6 @@ public class Character {
 	public String toString() {
 		return this.name;
 	}
-
-
-	/**
-	 * Returns an AgentSpeak {@link jason.asSyntax.Literal literal} denoting this character and potentially its
-	 * current state using annotations.
-	 * @return A literal denoting this character and its current state
-	 * @see inBloom.stories.little_red_hen.FarmModel.Wheat
-	 */
-	public Literal literal() {
-			return new Pred(this.toString());
-	};
 
 	public void setModel(PlotModel<?> model) {
 		this.model = model;

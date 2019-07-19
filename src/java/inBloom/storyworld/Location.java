@@ -5,33 +5,33 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import inBloom.PlotModel;
-import inBloom.helper.PerceptAnnotation;
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
-import jason.asSyntax.Pred;
 
-public class Location {
+import inBloom.PlotModel;
+import inBloom.helper.PerceptAnnotation;
+
+public class Location extends Existent {
 	static protected Logger logger = Logger.getLogger(Location.class.getName());
 
 	@ModelState
-	private List<Character> characters = null; 
+	private List<Character> characters = null;
 	@ModelState
 	private List<Item> items = null;
-	
+
 	protected PlotModel<?> model = null;
 	public String name = null;
-	
+
 	public Location(String name) {
 		this.name = name;
 		this.characters = new LinkedList<>();
 		this.items = new LinkedList<>();
 	}
-	
+
 	public void initialize(PlotModel<?> model) {
 		this.model = model;
 	}
-	
+
 	/**
 	 * Adds character to this location, and makes sure it leaves its old one to ensure consistency. Returns true if
 	 * transportation was successful.
@@ -52,21 +52,21 @@ public class Location {
 			return false;
 		}
 	}
-	
+
 	protected void characterLocationUpdate(Character character) {
 		this.characters.add(character);
 		character.location = this;
-		
+
 		// update agent's position perception for self
 		this.model.environment.removePerceptsByUnif(character.name, Literal.parseLiteral("at(X)"));
 		this.model.environment.addPercept(character.name, this.createLocationPercept(character, false));
-		
+
 		// character perceives free items at this location
 		for (Item item : this.items) {
 			this.model.environment.addPercept(character.name, ASSyntax.createLiteral("at", item.literal(), this.literal()));
-			model.environment.addEventPercept(character.getName(), "see(" + item.getItemName() + ")");
+			this.model.environment.addEventPercept(character.getName(), "see(" + item.getItemName() + ")");
 		}
-		
+
 		for (Character observer : this.characters) {
 			List<Character> otherChars = this.characters.stream().filter(c -> !c.equals(observer))
 					   											.collect(Collectors.toList());
@@ -76,31 +76,31 @@ public class Location {
 					// newly entered char notes location of other chars
 					this.model.environment.removePercept(character.name, ASSyntax.createLiteral("at", ASSyntax.createAtom(character.name), ASSyntax.createVar()));
 					this.model.environment.addPercept(observer.name, this.createLocationPercept(otherChara, true));
-					
+
 					// newly entered char perceives all present agents' inventory
 					for (Item item : otherChara.inventory) {
-						model.environment.addEventPercept(observer.getName(),
+						this.model.environment.addEventPercept(observer.getName(),
 															 "see(" + item.getItemName() + ")",
 															 new PerceptAnnotation().addAnnotation("owner", otherChara.name));
 					}
 				}
-			} 
+			}
 			// present agents perceive newly entered agent
 			else {
 				// present agents note location of other chars
 				this.model.environment.addPercept(observer.name, this.createLocationPercept(character, true));
-				
+
 				for (Item item : character.inventory) {
-					
+
 					// present agents perceive newly entered agents' inventory
-					model.environment.addEventPercept(observer.getName(),
+					this.model.environment.addEventPercept(observer.getName(),
 														 "see(" + item.getItemName() + ")",
 														 new PerceptAnnotation().addAnnotation("owner", character.name));
 				}
 			}
 		}
 	}
-	
+
 	/**
 	 * Removes character from this location, and updates character's representation of its own location. Returns true
 	 * if removal was successful.
@@ -111,58 +111,58 @@ public class Location {
 		if (this.characters.contains(character)) {
 			this.characters.remove(character);
 			character.location = null;
-			
+
 			// update all agents perception of present agents
 			for (Character chara : this.characters) {
 				// present agents take note of character leaving
 				this.model.environment.removePercept(chara.name, this.createLocationPercept(character, true));
 			}
-			
+
 			return true;
 		} else {
 			logger.severe("Location " + this.name + "can't remove agent " + character.name + ". Not present.");
 			return false;
 		}
 	}
-	
+
 	public boolean present(Character character) {
 		return this.characters.contains(character);
 	}
-	
+
 	public Boolean isGroundLevel(Character character) {
 		return true;
 	}
-	
+
 	public Boolean isSkyLevel(Character character) {
 		return false;
 	}
-	
+
 	public void place(Item item) {
 		this.items.add(item);
-		
+
 		// item perception is created for everyone present
 		for (Character character : this.characters) {
 			this.model.environment.addPercept(character.name, ASSyntax.createLiteral("at", item.literal(), this.literal()));
-			model.environment.addEventPercept(character.getName(), "see(" + item.getItemName() + ")");
+			this.model.environment.addEventPercept(character.getName(), "see(" + item.getItemName() + ")");
 		}
 	}
-	
+
 	public Item remove(Item item) {
 		if (this.items.contains(item)) {
 			this.items.remove(item);
-			
+
 			// item perception is removed for everyone present
-			for (Character character : this.characters) {		
+			for (Character character : this.characters) {
 				this.model.environment.removePercept(character.name, ASSyntax.createLiteral("at", item.literal(), this.literal()));
 			}
-			
+
 			return item;
 		} else {
 			logger.warning("Location " + this.name + "can't remove item " + item.getItemName() + ". Not present.");
 			return null;
 		}
 	}
-	
+
 	public Item remove(String itemName) {
 		for (Item item: this.items) {
 			if (item.getItemName().equals(itemName)) {
@@ -170,16 +170,16 @@ public class Location {
 				return item;
 			}
 		}
-		
+
 		logger.severe("Location " + this.name + " can't remove item " + itemName + ". Not present.");
 		return null;
 	}
-	
+
 	public boolean contains(Item item) {
 		return this.items.contains(item);
 	}
-	
-	
+
+
 	public boolean contains(String itemName) {
 		for (Item item : this.items) {
 			if (item.getItemName().equals(itemName)) {
@@ -188,12 +188,12 @@ public class Location {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public String toString() {
 		return this.name;
 	}
-	
+
 	/**
 	 * Returns an AgentSpeak literal denoting the character's position at the present location.
 	 * @param character the character for whom the location percept is to be created
@@ -207,28 +207,17 @@ public class Location {
 			}
 			return ASSyntax.createLiteral("at", this.literal());
 		}
-		
+
 		logger.severe("Character "+ character.name +" not present at location " + this.name);
 		return null;
 	}
-	
-	/**
-	 * Returns an AgentSpeak {@link jason.asSyntax.Literal literal} denoting this location and potentially its
-	 * current state using annotations.
-	 * @return A literal denoting this item and its current state
-	 * @see inBloom.stories.little_red_hen.FarmModel.Wheat
-	 */
-	public Literal literal() {
-			return new Pred(this.toString());
-	};
-	
 
 	/**
 	 * Returns a list of characters present at this location.
 	 * @return
 	 */
 	public List<Character> getCharacters() {
-		return characters;
+		return this.characters;
 	}
 
 	protected void setCharacters(List<Character> characters) {
@@ -236,7 +225,7 @@ public class Location {
 	}
 
 	public List<Item> getItems() {
-		return items;
+		return this.items;
 	}
 
 	protected void setItems(List<Item> items) {
