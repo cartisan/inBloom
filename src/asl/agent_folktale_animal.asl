@@ -157,11 +157,11 @@ wish(relax).
 	!plant(wheat).
 
 @create_bread_2[affect(personality(conscientiousness,high))]
-+!create(bread) : existant(wheat[state(growing)])<-
++!create(bread) : at(wheat[state(growing)], farm) <-
 	!tend(wheat).
 
 @create_bread_3[affect(personality(conscientiousness,high))]
-+!create(bread) : existant(wheat[state(ripe)])<-
++!create(bread) : at(wheat[state(ripe)], farm) <-
 	!harvest(wheat).
 
 @create_bread_4[affect(personality(conscientiousness,high))]
