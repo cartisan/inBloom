@@ -89,7 +89,7 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         pig.location = model.farm.name;
 
 		// Execute MAS
-		runner.initialize(args, model, agents, "agent");
+		runner.initialize(args, model, agents, "agent_folktale_animal");
 		runner.run();
 
 	}
