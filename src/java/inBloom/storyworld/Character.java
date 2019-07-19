@@ -4,11 +4,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import jason.asSemantics.AffectiveDimensionChecks;
 import jason.asSemantics.Mood;
 import jason.asSemantics.Personality;
 import jason.asSyntax.ASSyntax;
 import jason.asSyntax.Literal;
-import jason.asSyntax.Pred;
 
 import inBloom.ActionReport;
 import inBloom.LauncherAgent;
@@ -184,6 +184,9 @@ public class Character extends Existent {
 	}
 
 	public ActionReport relax() {
+		if( AffectiveDimensionChecks.BOUNDARIES.get(AffectiveDimensionChecks.HIG).apply(this.getMood().getA())) {
+			return new ActionReport(false);
+		}
 		return new ActionReport(true);
 	}
 
