@@ -25,14 +25,14 @@ To implement your own story and explore it using inBloom you need to extend seve
 1. Subclass `PlotModel<EnvType extends PlotEnvironment>` to create a custom representation of the story world
    1. Implement a method for each ASL action that your agents use
 1. Subclass `PlotEnvironment<ModType extends PlotModel>` to create a custom environment responsible for managing the communication between agents and model
-   1. Override `public boolean doExecuteAction(String agentName, Structure action)` to implement which ASL actions are handled by which model method. For example:
+   1. Override `public ActionReport doExecuteAction(String agentName, Structure action)` to implement which ASL actions are handled by which model method. For example:
 	
     ```java
     public class YourEnvironment extends PlotEnvironment<YourModel> {
         @Override
-    	protected boolean doExecuteAction(String agentName, Structure action) {
-		  boolean result = false;
-		  Character agent = getModel().getCharacter(agentName);
+    	protected ActionReport doExecuteAction(String agentName, Structure action) {
+		ActionReport result = null;
+		Character agent = getModel().getCharacter(agentName);
 
           if (action.getFunctor().equals("farm_work")) {
             result = getModel().farmWork(agent);
@@ -53,8 +53,9 @@ To implement your own story and explore it using inBloom you need to extend seve
 	```java
 	public static void main(String[] args) throws JasonException {
     	ENV_CLASS = YourEnvironment.class;
-    	runner = new YourLauncher();
+    	PlotControlsLauncher.runner = new YourLauncher();
 
+		// Initialize agents
 		ImmutableList<LauncherAgent> agents = ImmutableList.of(
       		runner.new LauncherAgent("hen",
         		new Personality(0,  1, 0.7,  0.3, 0.0)		// personality
@@ -69,22 +70,25 @@ To implement your own story and explore it using inBloom you need to extend seve
         // Schedule which happenings should happen when
         ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 		FindCornHappening findCorn = new FindCornHappening(
-				// hen finds wheat after 4 farm work actions
+				// hen finds wheat after 2 farm work actions
 				(FarmModel model) -> {
-	            		if((model.actionCount > 4) & (!model.wheatFound)) {
+	            		if(model.farm.farmingProgress > 1) {
 	            			return true;
 	            		}
-	            		return false; 
+	            		return false;
 	    		},
 				"hen",
-				"actionCount");
-		hapDir.scheduleHappening(findCorn);        
+				"farmingProgress");
+		hapDir.scheduleHappening(findCorn);      
         
         // Initialize MAS
         FarmModel model = new FarmModel(agents, hapDir);
-		runner.initialize(args, model, agents, "agent");
 
+        hen.location = model.farm.name;
+        dog.location = model.farm.name;
+        
 		// Execute MAS
+		runner.initialize(args, model, agents, "agentXYZ");
 		runner.run();
 	}
     ```
