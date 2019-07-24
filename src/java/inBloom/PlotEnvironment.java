@@ -534,7 +534,84 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		this.currentEventsMap.put(agentName, eventList);
 	}
 	
+	/**
+	 * Adds a perception for all agents. Avoid using this, as normally perceptions should be contained to the location
+	 * at which the state is relevant. Agents at other locations should not perceive a state change.
+	 * Use {@link #addPercept(Location, Literal...) } instead.
+	 * @see jason.environment.Environment#addPercept(jason.asSyntax.Literal[])
+	 */
+	@Deprecated
+	@Override
+    public void addPercept(Literal... perceptions) {
+    	super.addPercept(perceptions);
+    }
     
+    /**
+     * Adds a state perception (i.e. a perception that is permanent and not removed after one reasoning cycle, see
+     * {@link #addEventPercept(String, String)}) for all agents present at loc.
+     * @param loc location where state change is perceivable
+     * @param perceptions state perceptions
+     */
+    public void addPercept(Location loc, Literal... perceptions) {
+    	loc.getCharacters().forEach(chara -> super.addPercept(chara.name, perceptions));
+    }
+
+	/**
+	 * Removes all percepts from the common perception list that unifies with <i>per</i>.
+	 * Avoid using this, as normally perceptions should be contained to the location at which the state is relevant.
+	 * Agents at other locations should not perceive a state change.
+	 * @see jason.environment.Environment#emovePerceptsByUnif(Literal per)
+	 */
+	@Deprecated
+	@Override
+    public int removePerceptsByUnif(Literal per) {
+    	return super.removePerceptsByUnif(per);
+    }
+
+    /**
+     * Removes all percepts that unify with <i>per</i> for the agents present at loc.
+     * Example: removePerceptsByUnif(locA, Literal.parseLiteral("position(_)")) will remove
+     * all percepts that unify "position(_)".
+     * @param loc location where state change is perceivable
+     * @param per percept literal to be removed
+     * @return the number of removed percepts.
+     */
+    public int removePerceptsByUnif(Location loc, Literal per) {
+    	int sum = 0;
+    	for (Character chara : loc.getCharacters()) {
+    		sum += super.removePerceptsByUnif(chara.name, per);
+		}
+
+    	return sum;
+    }
+
+    /**
+     * Removes a perception from the common perception list.
+     * Avoid using this, as normally perceptions should be contained to the location at which the state is relevant.
+	 * Agents at other locations should not perceive a state change.
+	 * @see jason.environment.Environment#emovePercept(Literal per)
+     */
+	@Deprecated
+	@Override
+    public boolean removePercept(Literal per) {
+    	return super.removePercept(per);
+    }
+
+    /**
+     * Removes a perception from the perception list of all agents present at loc.
+     * @param loc location where state change is perceivable
+     * @param per percept literal to be removed
+     * @return success of removal for all agents
+     */
+    public boolean removePercept(Location loc, Literal per) {
+    	boolean res = true;
+    	for (Character chara : loc.getCharacters()) {
+    		res = res & super.removePercept(chara.getName(), per);
+    	}
+    	return res;
+    }
+
+
     /********************** Methods for pausing and continuing the environment *****************************/
 	/* necessary, because Jason's pause mode sets the GUI waiting, which means no logging output is possible
 	 * However, we want to be logging while processing graphs in pause mode, so we reroute logging output to

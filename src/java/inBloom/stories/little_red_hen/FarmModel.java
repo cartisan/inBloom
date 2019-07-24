@@ -139,13 +139,13 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		}
 
 		public void updateProduceState(Wheat.STATES state) {
-			this.model.environment.removePerceptsByUnif(Literal.parseLiteral("at(wheat[X]," + this.literal() + ")"));
+			this.model.environment.removePerceptsByUnif(this, Literal.parseLiteral("at(wheat[X]," + this.literal() + ")"));
 
 			if (state == null) {
 				this.produce = null;
 			} else{
 				this.produce.state = state;
-				this.model.environment.addPercept(Literal.parseLiteral("at(" + this.produce.literal() + "," + this.literal() + ")"));
+				this.model.environment.addPercept(this, Literal.parseLiteral("at(" + this.produce.literal() + "," + this.literal() + ")"));
 			}
 		}
 	}
