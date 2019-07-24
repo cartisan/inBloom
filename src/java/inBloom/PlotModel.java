@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import com.google.common.collect.HashBasedTable;
@@ -11,6 +12,7 @@ import com.google.common.collect.Table;
 import com.google.common.collect.Table.Cell;
 
 import jason.asSemantics.Mood;
+import jason.util.Pair;
 
 import inBloom.helper.MoodMapper;
 import inBloom.stories.little_red_hen.RedHenLauncher;
@@ -56,10 +58,9 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	 *  <b>mapping:</b>  (field, instance of field) --> old field value */
 	private Table<Field, Object, Object> fieldValueStore;
 
-	/** Saves for each character, if one of its actions/happenings resulted in a change of the storyworld --> allows causality detection. <br>
-	 *  <b>mapping:</b> (characterName, fieldName) --> action/happening */
-	//TODO: There seems to be no reason to preserve characterName here?!
-	private Table<String, String, String> causalityTable;
+	/** Saves for each model-state, if a character's action / a happening resulted in it's change --> allows causality detection. <br>
+	 *  <b>mapping:</b> fieldName --> (charName, action/happening) */
+	private Map<String, Pair<String, String>> causalityMap;
 
 	public PlotModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		this.moodMapper = new MoodMapper();
@@ -67,7 +68,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		this.locations = new HashMap<>();
 
 		//set up a map that tracks the values of all subclass fields, in order to detect change
-		this.causalityTable = HashBasedTable.create();
+		this.causalityMap = new HashMap<>();
 		this.fieldValueStore = HashBasedTable.create();
 
 		this.setUpFieldTracking(this);
@@ -195,7 +196,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		List<Happening<?>> happenings = this.happeningDirector.getTriggeredHappenings(step);
 
 		for (Happening h : happenings) {
-			h.identifyCause(this.causalityTable);
+			h.identifyCause(this.causalityMap);
 			h.execute(this);
 			this.environment.addEventPercept(h.getPatient(), h.getEventPercept());
 
@@ -248,7 +249,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 
 	        	if(currentV != null && !currentV.equals(oldV)) {
 	        		// take note that the value of field f changed because of agentName's action
-	        		this.causalityTable.put(causer, cell.getRowKey().getName(), action);
+	        		this.causalityMap.put(cell.getRowKey().getName(), new Pair<>(causer, action));
 
 	        		// update new field value in our dict
 	        		// TODO: Does this change the set we iterate over?!
@@ -275,7 +276,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	        	Object currentV = cell.getRowKey().get(cell.getColumnKey());
 	        	if(currentV != null && !currentV.equals(oldV)) {
 	        		// take note that the value of field f changed because of this happening (as perceived by its patient)
-	        		this.causalityTable.put(hap.patient, cell.getRowKey().getName(), hap.percept);
+	        		this.causalityMap.put(cell.getRowKey().getName(), new Pair<>(hap.patient, hap.percept));
 
 	        		// update new field value in our dict
 	        		this.fieldValueStore.put(cell.getRowKey(), cell.getColumnKey(), currentV);

@@ -1,10 +1,11 @@
 package inBloom.storyworld;
 
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
-import com.google.common.collect.Table;
+import jason.util.Pair;
 
 import inBloom.PlotModel;
 
@@ -106,13 +107,19 @@ public class Happening<T extends PlotModel<?>> extends Event {
 	/**
 	 * Determines which agent-action was responsible for triggering the execution of this happening (if any), and updates
 	 * the state of this happening accordingly, including updating annotations.
-	 * @param causalityTable Table that maps (agentName, fieldProperty) to last agentAction/happening that changed field
+	 * @param causalityMap Maps fieldProperty to last (agentName, agentAction/happening) that changed field
 	 * value in model.
 	 */
-	public void identifyCause(Table<String, String, String> causalityTable) {
-		String cause = causalityTable.get(this.getPatient(), this.getCausalProperty());
-		if(cause != null) {
+	public void identifyCause(Map<String, Pair<String, String>> causalityMap) {
+		Pair<String, String> causeTup = causalityMap.get(this.getCausalProperty());
+		String cause = causeTup.getSecond();
+		if( cause != null && !cause.equals("") ) {
 			this.annotation.setCause(cause);
+
+			// if no patient was predefined, assume that happening occurs to the agent whose actions caused the happening
+			if (this.patient == null) {
+				this.setPatient(causeTup.getFirst());
+			}
 		}
 	}
 }

@@ -77,7 +77,7 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 	            		}
 	            		return false;
 	    		},
-				"hen",
+				null,		// patient can be inferred from agent responsible for a change in farmingProgress
 				"farmingProgress");
 		hapDir.scheduleHappening(findCorn);
 
