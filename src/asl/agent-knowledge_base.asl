@@ -31,4 +31,4 @@ is_useful(Item) :- is_pleasant(eat(Item)) & hungry.
 agent(Ag) :- agents(List) & .member(Ag, List).
 location(Loc) :- locations(Locations) & .member(Loc, Locations).
 
-present(List) :- .findall(Agent, (at(Agent,Loc) & at(Loc)), List).
+present(List) :- .findall(Agent, (at(Agent,Loc) & at(Loc) & agent(Agent)), List).
