@@ -216,41 +216,42 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
      */
 
     protected void createCounterfactButton() {
-    	logger.info("creating counterfactuality button");
-    	JButton btCounterfact = new JButton("Counterfactuality!");
-    	btCounterfact.addActionListener(new ActionListener() {
-			//boolean for first time -> calculating
-    		private boolean firstClick = true;
-   			//distinguishing: counterfactual click or original click?
-    		private boolean counterfact = true;
-    		public void actionPerformed(ActionEvent click) {
+    	if (this.counterfactButton == null) {
+	    	JButton btCounterfact = new JButton("Create counterfactual");
+	    	btCounterfact.addActionListener(new ActionListener() {
+				//boolean for first time -> calculating
+	    		private boolean firstClick = true;
+	   			//distinguishing: counterfactual click or original click?
+	    		private boolean counterfact = true;
+	    		public void actionPerformed(ActionEvent click) {
 
-    			PlotDirectedSparseGraph originalGraph = new PlotDirectedSparseGraph();
-    			if(this.firstClick) {
+	    			PlotDirectedSparseGraph originalGraph = new PlotDirectedSparseGraph();
+	    			if(this.firstClick) {
 
-    				//getting the current graph and give it to the CounterfactualityLauncher
-        			originalGraph = PlotGraphController.getPlotListener().getGraph();
-        			MoodMapper moodData = PlotControlsLauncher.runner.getUserModel().moodMapper;
+	    				//getting the current graph and give it to the CounterfactualityLauncher
+	        			originalGraph = PlotGraphController.getPlotListener().getGraph();
+	        			MoodMapper moodData = PlotControlsLauncher.runner.getUserModel().moodMapper;
 
-        			// get counterfactuality class
-        			CounterfactualityCycle counterfact;
-        			try {
-        				counterfact = (CounterfactualityCycle) PlotLauncher.getRunner().COUNTERFACT_CLASS.getConstructors()[0].newInstance(originalGraph, moodData);
-        				counterfact.run();
-        			} catch (Exception e) {
-						System.err.println("Error instantiating counterfactuality class");
-						System.exit(0);
-					}
+	        			// get counterfactuality class
+	        			CounterfactualityCycle counterfact;
+	        			try {
+	        				counterfact = (CounterfactualityCycle) PlotLauncher.getRunner().COUNTERFACT_CLASS.getConstructors()[0].newInstance(originalGraph, moodData);
+	        				counterfact.run();
+	        			} catch (Exception e) {
+							System.err.println("Error instantiating counterfactuality class");
+							System.exit(0);
+						}
 
-          			//set firstClick false
-        			this.firstClick = false;
-        			logger.info("The first click was done!");
-    			}
+	          			//set firstClick false
+	        			this.firstClick = false;
+	        			logger.info("The first click was done!");
+	    			}
 
-    			this.counterfact = !this.counterfact;
-    		}
-    	});
-    	this.counterfactButton = btCounterfact;
+	    			this.counterfact = !this.counterfact;
+	    		}
+	    	});
+	    	this.counterfactButton = btCounterfact;
+    	}
     }
 
 	/**
@@ -438,6 +439,11 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		this.addInformation("Suspense: " + this.analysisResult.suspense);
 		this.addInformation("Tellability: " + this.analysisResult.compute());
 
+		//counterfactuality Button
+		this.createCounterfactButton();
+		//add Button to infopanel
+		this.infoPanel.add(this.counterfactButton);
+
 		// Insert spacing between motivation edges
 		g = new EdgeLayoutVisitor(9).apply(g);
 
@@ -473,11 +479,6 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		// c information panel
 		this.infoPanel.setLayout(new FlowLayout(SwingConstants.LEADING, 15, 5));
 
-		//counterfactuality Button
-		this.createCounterfactButton();
-		this.counterfactButton.setText("Counterfactuality!");
-		//add Button to infopanel
-		this.infoPanel.add(this.counterfactButton);
 		// second: register a listener that redraws the plot when selection changes. Careful here: order with last command matters
 		this.graphTypeList.setActionCommand(CHANGE_VIEW_COMMAND);
 		this.graphTypeList.addActionListener(this);
