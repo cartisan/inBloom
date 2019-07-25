@@ -1,5 +1,6 @@
 package inBloom.helper;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -34,6 +35,8 @@ public class Tellability {
 	public ConnectivityGraph connectivityGraph;
 	
 	// Semantic Symmetry
+	public double symmetry;
+	
 	
 	// Semantic Opposition
 	
@@ -57,6 +60,8 @@ public class Tellability {
 		// Find Functional Units and polyvalent Vertices
 		detectPolyvalence(graph);
 
+		calculateSymmetry(graph);
+		
 		// Perform quantitative analysis of plot
 		computeSimpleStatistics(graph);
 	}
@@ -139,6 +144,39 @@ public class Tellability {
 		}
 	}
 
+	
+	private double calculateSymmetry(PlotDirectedSparseGraph graph)
+	{
+		Map<String, Integer> emotionCounter = new HashMap<>();
+		
+		for(Vertex v : graph.getVertices())
+		{
+			if (v.getEmotions().isEmpty()) continue;
+			
+			for (String emotion : v.getEmotions())
+			{
+				if(emotionCounter.containsKey(emotion))
+				{
+					emotionCounter.put(emotion, emotionCounter.get(emotion) + 1);
+				}
+				else
+				{
+					emotionCounter.put(emotion, 1);
+				}
+			}
+		}
+		
+		for (String emo : emotionCounter.keySet())
+		{
+			logger.info("Emotion: " + emo + ": " + emotionCounter.get(emo));	
+		}
+		
+		
+		return 0;
+	}
+	
+	
+	
 	/**
 	 * Computes the overall tellability score, by normalizing all features into a range of (0,1) and adding them,
 	 * which amounts to assigning each feature equal weight.
