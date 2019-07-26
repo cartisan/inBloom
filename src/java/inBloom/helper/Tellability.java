@@ -189,7 +189,6 @@ public class Tellability {
 			for (String emotion : v.getEmotions())
 			{
 				_sequence.add(emotion);
-
 			}
 		}
 		
@@ -199,8 +198,21 @@ public class Tellability {
 		}
 		return _sequence;
 	}
-	// Detects longest sequence
 	
+	// Sequence generator
+	private void sequenceGenerator(List<String> sequence, int maxSequenceLength)
+	{
+		ArrayList<ArrayList<String>> _sequences = new ArrayList<ArrayList<String>>();
+		
+		for(int i = 2; i < maxSequenceLength; i++) 
+		{
+			// check if seq. exists
+				//if not add and and search and count
+				//else 	 do nothing
+		}
+		
+		
+	}
 	
 	/**
 	 * Computes the overall tellability score, by normalizing all features into a range of (0,1) and adding them,
