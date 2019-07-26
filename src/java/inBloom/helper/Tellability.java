@@ -1,5 +1,6 @@
 package inBloom.helper;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,6 +62,7 @@ public class Tellability {
 		detectPolyvalence(graph);
 
 		calculateSymmetry(graph);
+		emotionSequence(graph);
 		
 		// Perform quantitative analysis of plot
 		computeSimpleStatistics(graph);
@@ -144,7 +146,7 @@ public class Tellability {
 		}
 	}
 
-	
+	// Counts emotion vertexes 
 	private double calculateSymmetry(PlotDirectedSparseGraph graph)
 	{
 		Map<String, Integer> emotionCounter = new HashMap<>();
@@ -175,6 +177,29 @@ public class Tellability {
 		return 0;
 	}
 	
+	// Returns emotion sequence from graph
+	private List<String> emotionSequence(PlotDirectedSparseGraph graph)
+	{
+		List<String> _sequence = new ArrayList<String>();
+		
+		for(Vertex v : graph.getVertices())
+		{
+			if (v.getEmotions().isEmpty()) continue;
+			
+			for (String emotion : v.getEmotions())
+			{
+				_sequence.add(emotion);
+
+			}
+		}
+		
+		for (String emo : _sequence)
+		{
+			logger.info("Emotion Sequence: " + emo );
+		}
+		return _sequence;
+	}
+	// Detects longest sequence
 	
 	
 	/**
