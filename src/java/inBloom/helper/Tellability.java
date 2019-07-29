@@ -19,8 +19,12 @@ import inBloom.graph.Vertex;
 import inBloom.graph.isomorphism.FunctionalUnit;
 import inBloom.graph.isomorphism.FunctionalUnits;
 import inBloom.graph.isomorphism.UnitFinder;
+import jason.util.Pair;
 
 public class Tellability {
+	
+	public PlotDirectedSparseGraph graph;
+	
 	protected static Logger logger = Logger.getLogger(Tellability.class.getName());
 	
 	// plot preconditions
@@ -57,23 +61,24 @@ public class Tellability {
 	public Tellability(PlotDirectedSparseGraph graph) {
 		counter = new CountingVisitor();
 		this.plotUnitTypes = new LinkedList<FunctionalUnit>();
-		
-		// Find Functional Units and polyvalent Vertices
-		detectPolyvalence(graph);
+		this.graph = graph; 
 
-		
-		emotionSequence(graph);
+		// Find Functional Units and polyvalent Vertices
+		detectPolyvalence();
+
+		// TODO: calculate symmetry
+		emotionSequence();
 		
 		// Perform quantitative analysis of plot
-		computeSimpleStatistics(graph);
+		computeSimpleStatistics();
 	}
 
 	/**
 	 * Computes all statistics that can be determined by counting in a single pass
 	 * @param graph a graph that has been processed by both FullGraphPPVisitor and CompactGraphPPVisitor
 	 */
-	private void computeSimpleStatistics(PlotDirectedSparseGraph graph) {
-		counter.apply(graph);
+	private void computeSimpleStatistics() {
+		counter.apply(this.graph);
 		this.productiveConflicts = counter.getProductiveConflictNumber();
 		this.suspense = counter.getSuspense();
 		this.plotLength = counter.getPlotLength();
@@ -85,7 +90,7 @@ public class Tellability {
 	 * at their overlap.
 	 * @param graph a graph that has been processed by both FullGraphPPVisitor and CompactGraphPPVisitor
 	 */
-	private void detectPolyvalence(PlotDirectedSparseGraph graph) {
+	private void detectPolyvalence() {
 		Map<Vertex, Integer> vertexUnitCount = new HashMap<>();
 		
 		UnitFinder finder = new UnitFinder();
@@ -93,10 +98,10 @@ public class Tellability {
 		int unitInstances = 0;
 		Set<Vertex> polyvalentVertexSet = new HashSet<Vertex>();
 		
-		connectivityGraph = new ConnectivityGraph(graph);
+		connectivityGraph = new ConnectivityGraph(this.graph);
 		
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
-			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(graph, unit.getGraph());
+			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(this.graph, unit.getGraph());
 			unitInstances += mappings.size();
 			this.functionalUnitCount.put(unit, mappings.size());
 			logger.log(Level.INFO, "Found '" + unit.getName() + "' " + mappings.size() + " times.");
@@ -107,13 +112,13 @@ public class Tellability {
 			}
 			
 			for(Map<Vertex, Vertex> map : mappings) {
-				FunctionalUnit.Instance instance = unit.new Instance(graph, map.keySet(), unit.getName());
+				FunctionalUnit.Instance instance = unit.new Instance(this.graph, map.keySet(), unit.getName());
 				instance.identifySubject(map);
 				connectivityGraph.addVertex(instance);
 				
 				for(Vertex v : map.keySet()) {
 					
-					graph.markVertexAsUnit(v, unit);
+					this.graph.markVertexAsUnit(v, unit);
 					if(!vertexUnitCount.containsKey(v)) {
 						vertexUnitCount.put(v, 1);
 					} else {
@@ -130,16 +135,16 @@ public class Tellability {
 		}
 		
 		for(FunctionalUnit primitiveUnit : FunctionalUnits.PRIMITIVES) {
-			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(graph, primitiveUnit.getGraph());
+			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(this.graph, primitiveUnit.getGraph());
 			for(Map<Vertex, Vertex> map : mappings) {
-				FunctionalUnit.Instance instance = primitiveUnit.new Instance(graph, map.keySet(), primitiveUnit.getName());
+				FunctionalUnit.Instance instance = primitiveUnit.new Instance(this.graph, map.keySet(), primitiveUnit.getName());
 				connectivityGraph.addVertex(instance);
 			}
 		}
 		
 		this.numFunctionalUnits = unitInstances;
 		this.numPolyvalentVertices = polyvalentVertices;
-		
+	
 		// Mark polyvalent vertices with asterisk
 		for(Vertex v : polyvalentVertexSet) {
 			v.setPolyvalent();
@@ -148,11 +153,11 @@ public class Tellability {
 
 	
 	// Returns emotion sequence from graph
-	private List<String> emotionSequence(PlotDirectedSparseGraph graph)
+	private List<String> emotionSequence()
 	{
 		List<String> _sequence = new ArrayList<String>();
 		
-		for(Vertex v : graph.getVertices())
+		for(Vertex v : this.graph.getVertices())
 		{
 			if (v.getEmotions().isEmpty()) continue;
 			
@@ -161,83 +166,42 @@ public class Tellability {
 				_sequence.add(emotion);
 			}
 		}
+		logger.info("Length" + _sequence.size());
+		sequenceCount(_sequence);
 		
-		for (String emo : _sequence)
-		{
-			logger.info("Emotion Sequence: " + emo );
-		}
 		return _sequence;
 	}
 	
 	// Sequence generator
-	private void sequenceCount(List<String> sequence, int maxSequenceLength)
+	private void sequenceCount(List<String> graphSequence)
 	{		
-		// x x x x x x
-		// - - - - - -
-		// - - - - -
-		// - - - -
-		// - - -
-		// - -
-		//   - - - - - 
-		//   - - - -
-		//   - - -
-		//   - -
-		//     - - - -
-		//     - - - 
-		//     - -
-		//       - - -
-		//       - -
+		// saves a sequences as key with corresponding values [counter, List of Start Indices]
+		Map<List<String>, Pair<Integer, Integer[]>> sequenceMap = new HashMap<>();
+
 		
-		
-		/*
-		 * Data type/ structure ?
-		 * 
-		 * A) 	java 8 look at stream().match
-		 * 
-		 * B) 	Tree
-		 * 
-		 * C) 	List<List<List<String>>>
-		 * 		SequenceLength<Sequences<Sequence<emotionString>>>
-		 * 		 
-		 * vlt erst mal die laenge der liste vergleichen => baum mit länge erstellen
-		 * 
-		 *  2			3 				4					5					
-		 *  [str,str]   [str,str,str]	[str,str,str,str] 	[str,str,str,str,str]
-		 *  [str,str]   [str,str,str]	[str,str,str,str] 	[str,str,str,str,str]
-		 *  [str,str]   				[str,str,str,str] 	[str,str,str,str,str]
-		 *  [str,str]
-		 *
-		 * 	 
-		 * 
-		 * */
-		
-		
-		
-		
-		logger.info("input sequence length: " + sequence.stream().count());
-		
-	
-		
-		
-		Map<List<String>, Integer> _emotionSequnces = new HashMap<>();
-		logger.info("Sollte Null sein: " + _emotionSequnces.size());
-		
-		
-		
-		for (int start = 0; start < _emotionSequnces.size(); start++)
+		for (int start = 0; start < graphSequence.size(); start++)
 		{
-			for(int end = _emotionSequnces.size() - 1; end > start + 1; end--)
+			logger.info("Progress: " + (start/graphSequence.size()));
+			for (int end = graphSequence.size() - 1; end > start + 1; end--)
 			{
-				// if not included
-				//	  add
-				// else
-				//    counter + 1
+				// if sequences already in list, increase the counter
+				if (sequenceMap.containsKey(graphSequence.subList(end, start)))
+				{
+					sequenceMap.put(
+							graphSequence.subList(end, start), 
+							new Pair<> (	
+									sequenceMap.get(graphSequence.subList(end, start)).getFirst()+1,
+									sequenceMap.get(graphSequence.subList(end, start)).getSecond())
+							);
+				}
+				else
+				{
+					sequenceMap.put(
+							graphSequence.subList(end, start), 
+							new Pair<>(1, new Integer[] {start}));
+				}
 			}
 		}
-		
-		
-		
-		
 	}
 	
 	
