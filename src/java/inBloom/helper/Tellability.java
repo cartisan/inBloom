@@ -61,7 +61,7 @@ public class Tellability {
 		// Find Functional Units and polyvalent Vertices
 		detectPolyvalence(graph);
 
-		calculateSymmetry(graph);
+		
 		emotionSequence(graph);
 		
 		// Perform quantitative analysis of plot
@@ -146,36 +146,6 @@ public class Tellability {
 		}
 	}
 
-	// Counts emotion vertexes 
-	private double calculateSymmetry(PlotDirectedSparseGraph graph)
-	{
-		Map<String, Integer> emotionCounter = new HashMap<>();
-		
-		for(Vertex v : graph.getVertices())
-		{
-			if (v.getEmotions().isEmpty()) continue;
-			
-			for (String emotion : v.getEmotions())
-			{
-				if(emotionCounter.containsKey(emotion))
-				{
-					emotionCounter.put(emotion, emotionCounter.get(emotion) + 1);
-				}
-				else
-				{
-					emotionCounter.put(emotion, 1);
-				}
-			}
-		}
-		
-		for (String emo : emotionCounter.keySet())
-		{
-			logger.info("Emotion: " + emo + ": " + emotionCounter.get(emo));	
-		}
-		
-		
-		return 0;
-	}
 	
 	// Returns emotion sequence from graph
 	private List<String> emotionSequence(PlotDirectedSparseGraph graph)
@@ -200,20 +170,78 @@ public class Tellability {
 	}
 	
 	// Sequence generator
-	private void sequenceGenerator(List<String> sequence, int maxSequenceLength)
-	{
-		ArrayList<ArrayList<String>> _sequences = new ArrayList<ArrayList<String>>();
+	private void sequenceCount(List<String> sequence, int maxSequenceLength)
+	{		
+		// x x x x x x
+		// - - - - - -
+		// - - - - -
+		// - - - -
+		// - - -
+		// - -
+		//   - - - - - 
+		//   - - - -
+		//   - - -
+		//   - -
+		//     - - - -
+		//     - - - 
+		//     - -
+		//       - - -
+		//       - -
 		
-		for(int i = 2; i < maxSequenceLength; i++) 
+		
+		/*
+		 * Data type/ structure ?
+		 * 
+		 * A) 	java 8 look at stream().match
+		 * 
+		 * B) 	Tree
+		 * 
+		 * C) 	List<List<List<String>>>
+		 * 		SequenceLength<Sequences<Sequence<emotionString>>>
+		 * 		 
+		 * vlt erst mal die laenge der liste vergleichen => baum mit länge erstellen
+		 * 
+		 *  2			3 				4					5					
+		 *  [str,str]   [str,str,str]	[str,str,str,str] 	[str,str,str,str,str]
+		 *  [str,str]   [str,str,str]	[str,str,str,str] 	[str,str,str,str,str]
+		 *  [str,str]   				[str,str,str,str] 	[str,str,str,str,str]
+		 *  [str,str]
+		 *
+		 * 	 
+		 * 
+		 * */
+		
+		
+		
+		
+		logger.info("input sequence length: " + sequence.stream().count());
+		
+	
+		
+		
+		Map<List<String>, Integer> _emotionSequnces = new HashMap<>();
+		logger.info("Sollte Null sein: " + _emotionSequnces.size());
+		
+		
+		
+		for (int start = 0; start < _emotionSequnces.size(); start++)
 		{
-			// check if seq. exists
-				//if not add and and search and count
-				//else 	 do nothing
+			for(int end = _emotionSequnces.size() - 1; end > start + 1; end--)
+			{
+				// if not included
+				//	  add
+				// else
+				//    counter + 1
+			}
 		}
+		
+		
 		
 		
 	}
 	
+	
+
 	/**
 	 * Computes the overall tellability score, by normalizing all features into a range of (0,1) and adding them,
 	 * which amounts to assigning each feature equal weight.
