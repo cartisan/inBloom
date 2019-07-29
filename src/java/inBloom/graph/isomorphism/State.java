@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import edu.uci.ics.jung.graph.util.Pair;
 import inBloom.graph.Edge;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.Vertex;
@@ -20,69 +19,80 @@ import inBloom.graph.Vertex;
  * @author Sven Wilke
  */
 public class State {
-	
+
 	private static final int NULL_NODE = -1;
-	
+
 	private PlotDirectedSparseGraph g1, g2;
 	private int n1, n2;
 	private int[] core1, core2, in1, in2, out1, out2;
-	
+
 	private int depth;
-	
-	private int lastAddedv1;
-	
+
+	public int candidateV1, candidateV2;
+
 	private Map<String, Integer> agentNodeCounts;
-	
+
+	private boolean isCandidate;
+
 	/**
 	 * Creates a new State for the given plot graph and functional unit graph.
 	 * @param plotGraph
 	 * @param unitGraph
 	 */
 	public State(PlotDirectedSparseGraph plotGraph, PlotDirectedSparseGraph unitGraph) {
-		g1 = plotGraph;
-		g2 = unitGraph;
-		depth = 0;
-		lastAddedv1 = NULL_NODE;
-		n1 = g1.getVertexCount();
-		n2 = g2.getVertexCount();
-		assert n1 >= n2;
-		core1 = new int[n1];
-		core2 = new int[n2];
-		in1 = new int[n1];
-		in2 = new int[n2];
-		out1 = new int[n1];
-		out2 = new int[n2];
-		
-		agentNodeCounts = new HashMap<String, Integer>();
-		
-		Arrays.fill(core1, NULL_NODE);
-		Arrays.fill(core2, NULL_NODE);
-		Arrays.fill(in1, NULL_NODE);
-		Arrays.fill(in2, NULL_NODE);
-		Arrays.fill(out1, NULL_NODE);
-		Arrays.fill(out2, NULL_NODE);
+		this.g1 = plotGraph;
+		this.g2 = unitGraph;
+		this.depth = 0;
+		this.candidateV1 = NULL_NODE;
+		this.candidateV2 = NULL_NODE;
+		this.n1 = this.g1.getVertexCount();
+		this.n2 = this.g2.getVertexCount();
+		assert this.n1 >= this.n2;
+		this.core1 = new int[this.n1];
+		this.core2 = new int[this.n2];
+		this.in1 = new int[this.n1];
+		this.in2 = new int[this.n2];
+		this.out1 = new int[this.n1];
+		this.out2 = new int[this.n2];
+
+		this.agentNodeCounts = new HashMap<>();
+
+		this.isCandidate = false;
+
+		Arrays.fill(this.core1, NULL_NODE);
+		Arrays.fill(this.core2, NULL_NODE);
+		Arrays.fill(this.in1, NULL_NODE);
+		Arrays.fill(this.in2, NULL_NODE);
+		Arrays.fill(this.out1, NULL_NODE);
+		Arrays.fill(this.out2, NULL_NODE);
 	}
-	
+
 	/**
-	 * Creates a copy of the given State.
+	 * Creates a candidate state, based on a candidate mapping and the previous state
 	 * @param other State to copy.
 	 */
-	public State(State other) {
-		g1 = other.g1;
-		g2 = other.g2;
-		depth = other.depth + 1;
-		n1 = other.n1;
-		n2 = other.n2;
-		core1 = other.core1;
-		core2 = other.core2;
-		in1 = other.in1;
-		in2 = other.in2;
-		out1 = other.out1;
-		out2 = other.out2;
-		
-		agentNodeCounts = other.agentNodeCounts;
+	public State(State other, int v1, int v2) {
+		// Save candidate mapping
+		this.candidateV1 = v1;
+		this.candidateV2 = v2;
+		this.isCandidate = true;
+
+		// take over previous state
+		this.g1 = other.g1;
+		this.g2 = other.g2;
+		this.depth = other.depth + 1;
+		this.n1 = other.n1;
+		this.n2 = other.n2;
+		this.core1 = other.core1;
+		this.core2 = other.core2;
+		this.in1 = other.in1;
+		this.in2 = other.in2;
+		this.out1 = other.out1;
+		this.out2 = other.out2;
+
+		this.agentNodeCounts = other.agentNodeCounts;
 	}
-	
+
 	/**
 	 * Checks whether this state is a goal state,
 	 * i.e. whether all vertices of the unit graph
@@ -90,45 +100,51 @@ public class State {
 	 * @return true if goal state, false otherwise
 	 */
 	public boolean isGoal() {
-		return depth == n2;
+		return this.depth == this.n2;
 	}
-	
+
+
+	/**
+	 * Adds the candidate mapping to this state, turning it from candidate into an actual SSR state.
+	 */
+	public void addCandidateMapping() {
+		this.addMapping(this.candidateV1, this.candidateV2);
+		this.isCandidate = false;
+	}
+
 	/**
 	 * Adds a mapping between two vertices.
 	 * @param v1 Index of the vertex in the plot graph
 	 * @param v2 Index of the vertex in the functional unit graph
 	 */
 	public void addMapping(int v1, int v2) {
-		assert core1[v1] == NULL_NODE;
-		assert core2[v2] == NULL_NODE;
-		
-		// Save vertex ID for backtracking
-		lastAddedv1 = v1;
-		
-		core1[v1] = v2;
-		core2[v2] = v1;
-		
-		countNodeForAgent(g1.getAgent(g1.getVertex(v1)));
-		
-		Set<Integer> in1Set = getPredecessors(g1, v1);
-		Set<Integer> out1Set = getSuccessors(g1, v1);
-		Set<Integer> in2Set = getPredecessors(g2, v2);
-		Set<Integer> out2Set = getSuccessors(g2, v2);
-		
+		assert this.core1[v1] == NULL_NODE;
+		assert this.core2[v2] == NULL_NODE;
+
+		this.core1[v1] = v2;
+		this.core2[v2] = v1;
+
+		this.countNodeForAgent(this.g1.getAgent(this.g1.getVertex(v1)));
+
+		Set<Integer> in1Set = this.getPredecessors(this.g1, v1);
+		Set<Integer> out1Set = this.getSuccessors(this.g1, v1);
+		Set<Integer> in2Set = this.getPredecessors(this.g2, v2);
+		Set<Integer> out2Set = this.getSuccessors(this.g2, v2);
+
 		for(int in1Node : in1Set) {
-			in1[in1Node] = depth;
+			this.in1[in1Node] = this.depth;
 		}
 		for(int out1Node : out1Set) {
-			out1[out1Node] = depth;
+			this.out1[out1Node] = this.depth;
 		}
 		for(int in2Node : in2Set) {
-			in2[in2Node] = depth;
+			this.in2[in2Node] = this.depth;
 		}
 		for(int out2Node : out2Set) {
-			out2[out2Node] = depth;
+			this.out2[out2Node] = this.depth;
 		}
 	}
-	
+
 	/**
 	 * Increases the number of vertices of the matching
 	 * belonging to the given agent by 1.
@@ -136,84 +152,95 @@ public class State {
 	 */
 	private void countNodeForAgent(String agent) {
 		int current = 0;
-		if(agentNodeCounts.containsKey(agent)) {
-			current = agentNodeCounts.get(agent);
+		if(this.agentNodeCounts.containsKey(agent)) {
+			current = this.agentNodeCounts.get(agent);
 		}
-		agentNodeCounts.put(agent, current + 1);
+		this.agentNodeCounts.put(agent, current + 1);
 	}
-	
+
 	/**
 	 * Decreases the number of vertices of the matching
 	 * belonging to the given agent by 1.
 	 * @param agent
 	 */
 	private void uncountNodeForAgent(String agent) {
-		agentNodeCounts.put(agent, agentNodeCounts.get(agent) - 1);
+		this.agentNodeCounts.put(agent, this.agentNodeCounts.get(agent) - 1);
 	}
-	
+
 	/**
 	 * Removes the last mapping and undoes all changes caused by the
 	 * creation of that mapping.
 	 */
 	public void backtrack() {
-		assert lastAddedv1 != NULL_NODE;
-		
-		int lastAddedv2 = core1[lastAddedv1];
-		core1[lastAddedv1] = NULL_NODE;
-		core2[lastAddedv2] = NULL_NODE;
-		
-		uncountNodeForAgent(g1.getAgent(g1.getVertex(lastAddedv1)));
-		
-		Set<Integer> in1Set = getPredecessors(g1, lastAddedv1);
-		Set<Integer> out1Set = getSuccessors(g1, lastAddedv1);
-		Set<Integer> in2Set = getPredecessors(g2, lastAddedv2);
-		Set<Integer> out2Set = getSuccessors(g2, lastAddedv2);
-		
+		assert this.candidateV1 != NULL_NODE;
+		assert this.candidateV1 != NULL_NODE;
+
+		this.core1[this.candidateV1] = NULL_NODE;
+		this.core2[this.candidateV2] = NULL_NODE;
+
+		this.uncountNodeForAgent(this.g1.getAgent(this.g1.getVertex(this.candidateV1)));
+
+		Set<Integer> in1Set = this.getPredecessors(this.g1, this.candidateV1);
+		Set<Integer> out1Set = this.getSuccessors(this.g1, this.candidateV1);
+		Set<Integer> in2Set = this.getPredecessors(this.g2, this.candidateV2);
+		Set<Integer> out2Set = this.getSuccessors(this.g2, this.candidateV2);
+
 		for(int in1Node : in1Set) {
-			in1[in1Node] = NULL_NODE;
+			this.in1[in1Node] = NULL_NODE;
 		}
 		for(int out1Node : out1Set) {
-			out1[out1Node] = NULL_NODE;
+			this.out1[out1Node] = NULL_NODE;
 		}
 		for(int in2Node : in2Set) {
-			in2[in2Node] = NULL_NODE;
+			this.in2[in2Node] = NULL_NODE;
 		}
 		for(int out2Node : out2Set) {
-			out2[out2Node] = NULL_NODE;
+			this.out2[out2Node] = NULL_NODE;
 		}
+
+		this.isCandidate = true;
 	}
-	
+
 	/**
-	 * Returns the mapping of vertices from the plot
-	 * graph to vertices of the unit graph represented
-	 * by the current state
-	 * @return HashMap containing current vertex mappings
+	 * Returns the mapping of vertices from the FU graph to the plot graph represented by the current state.
+	 * @return HashMap containing current vertex mappings (FU vertex -> plot graph vertex)
 	 */
 	public Map<Vertex, Vertex> getMapping() {
-		HashMap<Vertex, Vertex> mapping = new HashMap<Vertex, Vertex>();
-		for(int i = 0; i < n1; i++) {
-			if(core1[i] != NULL_NODE) {
-				mapping.put(g1.getVertex(i), g2.getVertex(core1[i]));
+		HashMap<Vertex, Vertex> mapping = new HashMap<>();
+		for(int i = 0; i < this.n2; i++) {
+			if(this.core2[i] != NULL_NODE) {
+				mapping.put(this.g2.getVertex(i), this.g1.getVertex(this.core2[i]));
 			}
 		}
 		return mapping;
 	}
-	
+
 	/**
 	 * Computes the set of possible mappings.
 	 */
-	public Set<Pair<Integer>> getCandidates() {
-		
+	public Set<State> getCandidates() {
+		// TODO: create candidates based on split nodes in g2
 		// TODO: Optimize by saving how many entries are in the sets
 		//		 out1, out2, in1 and in2 and abort early
 
+		// in s0 the candidates are generated by attempting to pair an initial v0 in g2 (FU-graph) with every v0 in g1 (plot graph)
+		if (this.depth == 0) {
+			HashSet<State> t0 = new HashSet<>();
+			int g2v0 = 0;  // first vertex in g2
+			for(int g1v0 = 0; g1v0 < this.n1; g1v0++) { // all possible candidates for mapping first vertex
+					t0.add(new State(this, g1v0, g2v0));
+			}
+
+			return t0;
+		}
+
 		// Consider successor pairs
-		HashSet<Pair<Integer>> tOut = new HashSet<Pair<Integer>>();
-		for(int currentOut1 = 0; currentOut1 < n1; currentOut1++) {
-			if(out1[currentOut1] != NULL_NODE && core1[currentOut1] == NULL_NODE) {
-				for(int currentOut2 = 0; currentOut2 < n2; currentOut2++) {
-					if(out2[currentOut2] != NULL_NODE && core2[currentOut2] == NULL_NODE) {
-						tOut.add(new Pair<Integer>(currentOut1, currentOut2));
+		HashSet<State> tOut = new HashSet<>();
+		for(int currentOut1 = 0; currentOut1 < this.n1; currentOut1++) {
+			if(this.out1[currentOut1] != NULL_NODE && this.core1[currentOut1] == NULL_NODE) {
+				for(int currentOut2 = 0; currentOut2 < this.n2; currentOut2++) {
+					if(this.out2[currentOut2] != NULL_NODE && this.core2[currentOut2] == NULL_NODE) {
+						tOut.add(new State(this, currentOut1, currentOut2));
 					}
 				}
 			}
@@ -221,14 +248,14 @@ public class State {
 		if(!tOut.isEmpty()) {
 			return tOut;
 		}
-		
+
 		// Consider predecessor pairs
-		HashSet<Pair<Integer>> tIn = new HashSet<Pair<Integer>>();
-		for(int currentIn1 = 0; currentIn1 < n1; currentIn1++) {
-			if(in1[currentIn1] != NULL_NODE && core1[currentIn1] == NULL_NODE) {
-				for(int currentIn2 = 0; currentIn2 < n2; currentIn2++) {
-					if(in2[currentIn2] != NULL_NODE && core2[currentIn2] == NULL_NODE) {
-						tIn.add(new Pair<Integer>(currentIn1, currentIn2));
+		HashSet<State> tIn = new HashSet<>();
+		for(int currentIn1 = 0; currentIn1 < this.n1; currentIn1++) {
+			if(this.in1[currentIn1] != NULL_NODE && this.core1[currentIn1] == NULL_NODE) {
+				for(int currentIn2 = 0; currentIn2 < this.n2; currentIn2++) {
+					if(this.in2[currentIn2] != NULL_NODE && this.core2[currentIn2] == NULL_NODE) {
+						tIn.add(new State(this, currentIn1, currentIn2));
 					}
 				}
 			}
@@ -236,94 +263,94 @@ public class State {
 		if(!tIn.isEmpty()) {
 			return tIn;
 		}
-		
-		if(depth > 0) {
+
+		if(this.depth > 0) {
 			return Collections.emptySet();
 		}
-		
-		HashSet<Pair<Integer>> tAll = new HashSet<Pair<Integer>>();
-		for(int current1 = 0; current1 < n1; current1++) {
-			if(core1[current1] == NULL_NODE) {
-				for(int current2 = 0; current2 < n2; current2++) {
-					if(core2[current2] == NULL_NODE) {
-						tAll.add(new Pair<Integer>(current1, current2));
+
+		HashSet<State> tall = new HashSet<>();
+		for(int current1 = 0; current1 < this.n1; current1++) {
+			if(this.core1[current1] == NULL_NODE) {
+				for(int current2 = 0; current2 < this.n2; current2++) {
+					if(this.core2[current2] == NULL_NODE) {
+						tall.add(new State(this, current1, current2));
 					}
 				}
 			}
 		}
-		
-		return tAll;
+
+		return tall;
 	}
-	
+
 	/**
 	 * Checks whether a matching of two vertices
 	 * is feasible both syntactically and semantically.
-	 * @param v1 Index of the vertex in the plot graph
-	 * @param v2 Index of the vertex in the functional unit graph
+	 * @param candidateV1 Index of the vertex in the plot graph
+	 * @param candidateV2 Index of the vertex in the functional unit graph
 	 * @return true if the matching is feasible.
 	 */
-	public boolean isFeasible(int v1, int v2) {
-		assert v1 < n1;
-		assert v2 < n2;
-		assert core1[v1] == NULL_NODE;
-		assert core2[v2] == NULL_NODE;
+	public boolean isFeasible() {
+		assert this.candidateV1 < this.n1;
+		assert this.candidateV2 < this.n2;
+		assert this.core1[this.candidateV1] == NULL_NODE;
+		assert this.core2[this.candidateV2] == NULL_NODE;
 
-		return isSynFeasible(v1, v2) && isSemFeasible(v1, v2);
+		return this.isSynFeasible() && this.isSemFeasible();
 	}
-	
+
 	/**
 	 * Checks if a potential matching is syntactically feasible.
-	 * @param v1 Index of the vertex in the plot graph
-	 * @param v2 Index of the vertex in the functional unit graph
+	 * @param candidateV1 Index of the vertex in the plot graph
+	 * @param candidateV2 Index of the vertex in the functional unit graph
 	 * @return true if the matching is syntactically feasible.
 	 */
-	private boolean isSynFeasible(int v1, int v2) {
-		
-		Set<Integer> pred1 = getPredecessors(g1, v1);
-		Set<Integer> pred2 = getPredecessors(g2, v2);
-		Set<Integer> succ1 = getSuccessors(g1, v1);
-		Set<Integer> succ2 = getSuccessors(g2, v2);
-		
+	private boolean isSynFeasible() {
+
+		Set<Integer> pred1 = this.getPredecessors(this.g1, this.candidateV1);
+		Set<Integer> pred2 = this.getPredecessors(this.g2, this.candidateV2);
+		Set<Integer> succ1 = this.getSuccessors(this.g1, this.candidateV1);
+		Set<Integer> succ2 = this.getSuccessors(this.g2, this.candidateV2);
+
 		// Calculate whether R_Pred and R_Succ hold.
 		boolean rPred = true;
 		boolean rSucc = true;
-		
+
 		for(int n : pred1) {
-			if(core1[n] != NULL_NODE) {
-				if(!pred2.contains(core1[n])) {
+			if(this.core1[n] != NULL_NODE) {
+				if(!pred2.contains(this.core1[n])) {
 					rPred = false;
 					break;
 				}
 			}
 		}
-		
+
 		for(int n : succ1) {
-			if(core1[n] != NULL_NODE) {
-				if(!succ2.contains(core1[n])) {
+			if(this.core1[n] != NULL_NODE) {
+				if(!succ2.contains(this.core1[n])) {
 					rSucc = false;
 					break;
 				}
 			}
 		}
-		
+
 		for(int n : pred2) {
-			if(core2[n] != NULL_NODE) {
-				if(!pred1.contains(core2[n])) {
+			if(this.core2[n] != NULL_NODE) {
+				if(!pred1.contains(this.core2[n])) {
 					rPred = false;
 					break;
 				}
 			}
 		}
-		
+
 		for(int n : succ2) {
-			if(core2[n] != NULL_NODE) {
-				if(!succ1.contains(core2[n])) {
+			if(this.core2[n] != NULL_NODE) {
+				if(!succ1.contains(this.core2[n])) {
 					rSucc = false;
 					break;
 				}
 			}
 		}
-		
+
 		if(!rPred || !rSucc) {
 			return false;
 		}
@@ -331,7 +358,7 @@ public class State {
 		// Calculate whether R_In and R_Out hold.
 		boolean rIn;
 		boolean rOut;
-		
+
 		int cardSuccIn1 = 0;
 		int cardSuccIn2 = 0;
 		int cardPredIn1 = 0;
@@ -340,9 +367,9 @@ public class State {
 		int cardSuccOut2 = 0;
 		int cardPredOut1 = 0;
 		int cardPredOut2 = 0;
-		
-		for(int n = 0; n < n1; n++) {
-			if(in1[n] != NULL_NODE) {
+
+		for(int n = 0; n < this.n1; n++) {
+			if(this.in1[n] != NULL_NODE) {
 				if(succ1.contains(n)) {
 					cardSuccIn1++;
 				}
@@ -350,7 +377,7 @@ public class State {
 					cardPredIn1++;
 				}
 			}
-			if(out1[n] != NULL_NODE) {
+			if(this.out1[n] != NULL_NODE) {
 				if(succ1.contains(n)) {
 					cardSuccOut1++;
 				}
@@ -359,8 +386,8 @@ public class State {
 				}
 			}
 		}
-		for(int n = 0; n < n2; n++) {
-			if(in2[n] != NULL_NODE) {
+		for(int n = 0; n < this.n2; n++) {
+			if(this.in2[n] != NULL_NODE) {
 				if(succ2.contains(n)) {
 					cardSuccIn2++;
 				}
@@ -368,7 +395,7 @@ public class State {
 					cardPredIn2++;
 				}
 			}
-			if(out2[n] != NULL_NODE) {
+			if(this.out2[n] != NULL_NODE) {
 				if(succ2.contains(n)) {
 					cardSuccOut2++;
 				}
@@ -377,26 +404,26 @@ public class State {
 				}
 			}
 		}
-		
+
 		rIn = cardSuccIn1 >= cardSuccIn2 && cardPredIn1 >= cardPredIn2;
 		rOut = cardSuccOut1 >= cardSuccOut2 && cardPredOut1 >= cardPredOut2;
-		
+
 		if(!(rIn && rOut)) {
 			return false;
 		}
-		
+
 		// Calculate whether R_New holds.
 		boolean rNew;
-		
+
 		int cardN1Pred = 0;
 		int cardN2Pred = 0;
 		int cardN1Succ = 0;
 		int cardN2Succ = 0;
-		
-		for(int n = 0; n < n1; n++) {
-			if(   core1[n] != NULL_NODE
-				&&  in1[n] != NULL_NODE
-				&& out1[n] != NULL_NODE) {
+
+		for(int n = 0; n < this.n1; n++) {
+			if(   this.core1[n] != NULL_NODE
+				&&  this.in1[n] != NULL_NODE
+				&& this.out1[n] != NULL_NODE) {
 				if(pred1.contains(n)) {
 					cardN1Pred++;
 				}
@@ -405,10 +432,10 @@ public class State {
 				}
 			}
 		}
-		for(int n = 0; n < n2; n++) {
-			if(   core2[n] != NULL_NODE
-				&&  in2[n] != NULL_NODE
-				&& out2[n] != NULL_NODE) {
+		for(int n = 0; n < this.n2; n++) {
+			if(   this.core2[n] != NULL_NODE
+				&&  this.in2[n] != NULL_NODE
+				&& this.out2[n] != NULL_NODE) {
 				if(pred2.contains(n)) {
 					cardN2Pred++;
 				}
@@ -417,24 +444,24 @@ public class State {
 				}
 			}
 		}
-		
+
 		rNew = cardN1Pred >= cardN2Pred && cardN1Succ >= cardN2Succ;
-		
+
 		return rNew;
 	}
-	
+
 	/**
 	 * Checks if a potential matching is semantically feasible
 	 * by checking for vertex and edge compatibility.
-	 * @param v1 Index of the vertex in the plot graph
-	 * @param v2 Index of the vertex in the functional unit graph
+	 * @param candidateV1 Index of the vertex in the plot graph
+	 * @param candidateV2 Index of the vertex in the functional unit graph
 	 * @return true if the matching is semantically feasible.
 	 */
-	private boolean isSemFeasible(int v1, int v2) {
-		return checkVertexCompatibility(v1, v2)
-			&& checkEdgeCompatibility(v1, v2);
+	private boolean isSemFeasible() {
+		return this.checkVertexCompatibility()
+			&& this.checkEdgeCompatibility();
 	}
-	
+
 	/**
 	 * Checks whether the vertices of a vertex matching
 	 * are compatible.
@@ -442,12 +469,12 @@ public class State {
 	 * @param v2 Index of the vertex in the functional unit graph
 	 * @return true if the vertices are compatible.
 	 */
-	private boolean checkVertexCompatibility(int v1, int v2) {
-		Vertex plotVertex = g1.getVertex(v1);
-		Integer currentCount = agentNodeCounts.get(g1.getAgent(plotVertex));
+	private boolean checkVertexCompatibility() {
+		Vertex plotVertex = this.g1.getVertex(this.candidateV1);
+		Integer currentCount = this.agentNodeCounts.get(this.g1.getAgent(plotVertex));
 		if(currentCount == null || currentCount == 0) {
 			int involvedAgents = 0;
-			for(int nodeCount : agentNodeCounts.values()) {
+			for(int nodeCount : this.agentNodeCounts.values()) {
 				if(nodeCount > 0) {
 					involvedAgents++;
 				}
@@ -457,7 +484,7 @@ public class State {
 			}
 		}
 		UnitVertexType t1 = UnitVertexType.typeOf(plotVertex);
-        UnitVertexType t2 = UnitVertexType.typeOf(g2.getVertex(v2));
+        UnitVertexType t2 = UnitVertexType.typeOf(this.g2.getVertex(this.candidateV2));
         if(t2 == UnitVertexType.WILDCARD) {
         	return true;
         }
@@ -469,7 +496,7 @@ public class State {
         }
         return t1 != UnitVertexType.NONE && t1 == t2;
 	}
-	
+
 	/**
 	 * Checks whether the edges of a vertex matching
 	 * are compatible.
@@ -477,35 +504,35 @@ public class State {
 	 * @param v2 Index of the vertex in the functional unit graph
 	 * @return true if the edges are compatible.
 	 */
-	private boolean checkEdgeCompatibility(int v1, int v2) {
-		for(int m = 0; m < n2; m++) {
-			if(core2[m] != NULL_NODE) {
-				Vertex vn1 = g1.getVertex(v1);
-				Vertex vn2 = g1.getVertex(core2[m]);
-				Vertex vm1 = g2.getVertex(v2);
-				Vertex vm2 = g2.getVertex(m);
-				
+	private boolean checkEdgeCompatibility() {
+		for(int m = 0; m < this.n2; m++) {
+			if(this.core2[m] != NULL_NODE) {
+				Vertex vn1 = this.g1.getVertex(this.candidateV1);
+				Vertex vn2 = this.g1.getVertex(this.core2[m]);
+				Vertex vm1 = this.g2.getVertex(this.candidateV2);
+				Vertex vm2 = this.g2.getVertex(m);
+
 				boolean isWildcard = UnitVertexType.typeOf(vm1) == UnitVertexType.WILDCARD
 								  || UnitVertexType.typeOf(vm2) == UnitVertexType.WILDCARD;
-				
-				Collection<Edge> nEdges = getEdges(g1, vn1, vn2);
-				Collection<Edge> mEdges = getEdges(g2, vm1, vm2);
-				
-				if(!checkEdgeSetCompatibility(nEdges, mEdges, isWildcard)) {
+
+				Collection<Edge> nEdges = this.getEdges(this.g1, vn1, vn2);
+				Collection<Edge> mEdges = this.getEdges(this.g2, vm1, vm2);
+
+				if(!this.checkEdgeSetCompatibility(nEdges, mEdges, isWildcard)) {
 					return false;
 				}
-				
-				nEdges = getEdges(g1, vn2, vn1);
-				mEdges = getEdges(g2, vm2, vm1);
-				
-				if(!checkEdgeSetCompatibility(nEdges, mEdges, isWildcard)) {
+
+				nEdges = this.getEdges(this.g1, vn2, vn1);
+				mEdges = this.getEdges(this.g2, vm2, vm1);
+
+				if(!this.checkEdgeSetCompatibility(nEdges, mEdges, isWildcard)) {
 					return false;
 				}
 			}
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Checks whether the edges between two vertices of the plot graph and
 	 * the edges between two vertices of the unit graph match.
@@ -531,8 +558,8 @@ public class State {
 			}
 			return crossCharacterCount == 0 && plotEdges.size() == unitEdges.size();
 		}
-		
-		LinkedList<Edge.Type> edgeTypes = new LinkedList<Edge.Type>();
+
+		LinkedList<Edge.Type> edgeTypes = new LinkedList<>();
 
 		for(Edge e : unitEdges) {
 			edgeTypes.add(e.getType());
@@ -546,7 +573,7 @@ public class State {
 		// which are not available in the plot graph: incompatible
 		return edgeTypes.isEmpty();
 	}
-	
+
 	/**
 	 * Computes the set of edges between two given vertices.
 	 * Filters the edges using the {@link #isEdgeValid(Edge) isEdgeValid} method,
@@ -558,17 +585,17 @@ public class State {
 	 */
 	private Collection<Edge> getEdges(PlotDirectedSparseGraph g, Vertex v1, Vertex v2) {
 		Collection<Edge> allEdges = g.findEdgeSet(v1, v2);
-		Collection<Edge> filteredEdges = new HashSet<Edge>();
-		
+		Collection<Edge> filteredEdges = new HashSet<>();
+
 		for(Edge e : allEdges) {
-			if(isEdgeValid(e)) {
+			if(this.isEdgeValid(e)) {
 				filteredEdges.add(e);
 			}
 		}
-		
+
 		return filteredEdges;
 	}
-	
+
 	/**
 	 * Computes a set of indices of all predecessors of a vertex corresponding
 	 * to a provided index <i>v</i>.
@@ -578,11 +605,11 @@ public class State {
 	 */
 	private Set<Integer> getPredecessors(PlotDirectedSparseGraph g, int v) {
 		Vertex vert = g.getVertex(v);
-		HashSet<Integer> predecessors = new HashSet<Integer>();
+		HashSet<Integer> predecessors = new HashSet<>();
 		for(Vertex p : g.getPredecessors(vert)) {
 			Collection<Edge> edges = g.findEdgeSet(p, vert);
 			for(Edge e : edges) {
-				if(isEdgeValid(e)) {
+				if(this.isEdgeValid(e)) {
 					predecessors.add(g.getVertexId(p));
 					break;
 				}
@@ -590,7 +617,7 @@ public class State {
 		}
 		return predecessors;
 	}
-	
+
 	/**
 	 * Computes a set of indices of all successors of a vertex corresponding
 	 * to a provided index <i>v</i>.
@@ -600,11 +627,11 @@ public class State {
 	 */
 	private HashSet<Integer> getSuccessors(PlotDirectedSparseGraph g, int v) {
 		Vertex vert = g.getVertex(v);
-		HashSet<Integer> successors = new HashSet<Integer>();
+		HashSet<Integer> successors = new HashSet<>();
 		for(Vertex p : g.getSuccessors(vert)) {
 			Collection<Edge> edges = g.findEdgeSet(vert, p);
 			for(Edge e : edges) {
-				if(isEdgeValid(e)) {
+				if(this.isEdgeValid(e)) {
 					successors.add(g.getVertexId(p));
 					break;
 				}
@@ -612,7 +639,7 @@ public class State {
 		}
 		return successors;
 	}
-	
+
 	/**
 	 * Defines whether an edge should be considered in the isomorphism.
 	 * @param e Edge
@@ -620,5 +647,107 @@ public class State {
 	 */
 	private boolean isEdgeValid(Edge e) {
 		return e.getType() != Edge.Type.TEMPORAL && e.getType() != Edge.Type.ROOT;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (this.agentNodeCounts == null ? 0 : this.agentNodeCounts.hashCode());
+		result = prime * result + Arrays.hashCode(this.core1);
+		result = prime * result + Arrays.hashCode(this.core2);
+		result = prime * result + this.depth;
+		result = prime * result + (this.g1 == null ? 0 : this.g1.hashCode());
+		result = prime * result + (this.g2 == null ? 0 : this.g2.hashCode());
+		result = prime * result + Arrays.hashCode(this.in1);
+		result = prime * result + Arrays.hashCode(this.in2);
+		result = prime * result + this.candidateV1;
+		result = prime * result + this.candidateV2;
+		result = prime * result + this.n1;
+		result = prime * result + this.n2;
+		result = prime * result + Arrays.hashCode(this.out1);
+		result = prime * result + Arrays.hashCode(this.out2);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (this.getClass() != obj.getClass()) {
+			return false;
+		}
+		State other = (State) obj;
+		if (this.agentNodeCounts == null) {
+			if (other.agentNodeCounts != null) {
+				return false;
+			}
+		} else if (!this.agentNodeCounts.equals(other.agentNodeCounts)) {
+			return false;
+		}
+		if (!Arrays.equals(this.core1, other.core1)) {
+			return false;
+		}
+		if (!Arrays.equals(this.core2, other.core2)) {
+			return false;
+		}
+		if (this.depth != other.depth) {
+			return false;
+		}
+		if (this.g1 == null) {
+			if (other.g1 != null) {
+				return false;
+			}
+		} else if (!this.g1.equals(other.g1)) {
+			return false;
+		}
+		if (this.g2 == null) {
+			if (other.g2 != null) {
+				return false;
+			}
+		} else if (!this.g2.equals(other.g2)) {
+			return false;
+		}
+		if (!Arrays.equals(this.in1, other.in1)) {
+			return false;
+		}
+		if (!Arrays.equals(this.in2, other.in2)) {
+			return false;
+		}
+		if (this.candidateV1 != other.candidateV1) {
+			return false;
+		}
+		if (this.candidateV2 != other.candidateV2) {
+			return false;
+		}
+		if (this.n1 != other.n1) {
+			return false;
+		}
+		if (this.n2 != other.n2) {
+			return false;
+		}
+		if (!Arrays.equals(this.out1, other.out1)) {
+			return false;
+		}
+		if (!Arrays.equals(this.out2, other.out2)) {
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		String repr =  this.getMapping().toString();
+
+		if (this.isCandidate) {
+			repr += " candidate: ";
+			repr += "{" + this.g2.getVertex(this.candidateV2) + " = " + this.g1.getVertex(this.candidateV1) + "}";
+		}
+
+		return repr;
 	}
 }

@@ -89,7 +89,7 @@ public class Tellability {
 		connectivityGraph = new ConnectivityGraph(graph);
 		
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
-			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(graph, unit.getGraph());
+			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(unit.getGraph(), graph);
 			unitInstances += mappings.size();
 			this.functionalUnitCount.put(unit, mappings.size());
 			logger.log(Level.INFO, "Found '" + unit.getName() + "' " + mappings.size() + " times.");
@@ -99,12 +99,13 @@ public class Tellability {
 				this.plotUnitTypes.add(unit);
 			}
 			
+			// maps from FU vertex to plot graph vertex
 			for(Map<Vertex, Vertex> map : mappings) {
-				FunctionalUnit.Instance instance = unit.new Instance(graph, map.keySet(), unit.getName());
+				FunctionalUnit.Instance instance = unit.new Instance(graph, map.values(), unit.getName());
 				instance.identifySubject(map);
 				connectivityGraph.addVertex(instance);
 				
-				for(Vertex v : map.keySet()) {
+				for(Vertex v : map.values()) {
 					
 					graph.markVertexAsUnit(v, unit);
 					if(!vertexUnitCount.containsKey(v)) {
@@ -125,8 +126,8 @@ public class Tellability {
 		for(FunctionalUnit primitiveUnit : FunctionalUnits.PRIMITIVES) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(graph, primitiveUnit.getGraph());
 			for(Map<Vertex, Vertex> map : mappings) {
-				FunctionalUnit.Instance instance = primitiveUnit.new Instance(graph, map.keySet(), primitiveUnit.getName());
-				connectivityGraph.addVertex(instance);
+				FunctionalUnit.Instance instance = primitiveUnit.new Instance(graph, map.values(), primitiveUnit.getName());
+				this.connectivityGraph.addVertex(instance);
 			}
 		}
 		
