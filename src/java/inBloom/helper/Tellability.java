@@ -176,32 +176,41 @@ public class Tellability {
 	private void sequenceCount(List<String> graphSequence)
 	{		
 		// saves a sequences as key with corresponding values [counter, List of Start Indices]
-		Map<List<String>, Pair<Integer, Integer[]>> sequenceMap = new HashMap<>();
+		Map<List<String>, Pair<Integer, List<Integer>>> sequenceMap = new HashMap<>();
 
 		
 		for (int start = 0; start < graphSequence.size(); start++)
 		{
-			logger.info("Progress: " + (start/graphSequence.size()));
 			for (int end = graphSequence.size() - 1; end > start + 1; end--)
 			{
+				List<String> currentSeq = graphSequence.subList(start, end);
+				
 				// if sequences already in list, increase the counter
-				if (sequenceMap.containsKey(graphSequence.subList(end, start)))
+				if (sequenceMap.containsKey(currentSeq))
 				{
+					List<Integer> newSeq = sequenceMap.get(currentSeq).getSecond();
+					newSeq.add(start);
+					
 					sequenceMap.put(
-							graphSequence.subList(end, start), 
+							currentSeq, 
 							new Pair<> (	
-									sequenceMap.get(graphSequence.subList(end, start)).getFirst()+1,
-									sequenceMap.get(graphSequence.subList(end, start)).getSecond())
+									sequenceMap.get(currentSeq).getFirst() + 1,
+									newSeq)
 							);
 				}
 				else
-				{
+				{					
+					List<Integer> newSeq = new ArrayList<Integer>();
+					newSeq.add(start);
+					
 					sequenceMap.put(
-							graphSequence.subList(end, start), 
-							new Pair<>(1, new Integer[] {start}));
+							currentSeq, 
+							new Pair<>(1, newSeq));
 				}
 			}
 		}
+		
+		logger.info("Map: "+ sequenceMap.toString());
 	}
 	
 	
