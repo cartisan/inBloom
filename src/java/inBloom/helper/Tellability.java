@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,7 +68,7 @@ public class Tellability {
 		detectPolyvalence();
 
 		// TODO: calculate symmetry
-		emotionSequence();
+		calculateSymmetry();
 		
 		// Perform quantitative analysis of plot
 		computeSimpleStatistics();
@@ -153,30 +154,36 @@ public class Tellability {
 
 	
 	// Returns emotion sequence from graph
-	private List<String> emotionSequence()
+	private void calculateSymmetry()
 	{
-		List<String> _sequence = new ArrayList<String>();
-		
-		for(Vertex v : this.graph.getVertices())
+		for (Vertex root : this.graph.getRoots()) 
 		{
-			if (v.getEmotions().isEmpty()) continue;
+			List<String> _sequence = new ArrayList<String>();
 			
-			for (String emotion : v.getEmotions())
+			for(Vertex v : this.graph.getCharSubgraph(root))
 			{
-				_sequence.add(emotion);
+				if (v.getEmotions().isEmpty()) continue;
+				
+				for (String emotion : v.getEmotions())
+				{
+					_sequence.add(emotion);
+				}
 			}
+			logger.info("Character: " + root.toString());
+			emotionSequenceCounter(_sequence);
 		}
-		logger.info("Length" + _sequence.size());
-		sequenceCount(_sequence);
 		
-		return _sequence;
+		this.symmetry = 0;
 	}
 	
+	
 	// Sequence generator
-	private void sequenceCount(List<String> graphSequence)
+	private void emotionSequenceCounter(List<String> graphSequence)
 	{		
+//		counting visitor -max plot steps
+		
 		// saves a sequences as key with corresponding values [counter, List of Start Indices]
-		Map<List<String>, Pair<Integer, List<Integer>>> sequenceMap = new HashMap<>();
+		Map<List<String>, List<Integer>> sequenceMap = new HashMap<>();
 
 		
 		for (int start = 0; start < graphSequence.size(); start++)
@@ -188,29 +195,32 @@ public class Tellability {
 				// if sequences already in list, increase the counter
 				if (sequenceMap.containsKey(currentSeq))
 				{
-					List<Integer> newSeq = sequenceMap.get(currentSeq).getSecond();
+					List<Integer> newSeq = sequenceMap.get(currentSeq);
 					newSeq.add(start);
 					
-					sequenceMap.put(
-							currentSeq, 
-							new Pair<> (	
-									sequenceMap.get(currentSeq).getFirst() + 1,
-									newSeq)
-							);
+					sequenceMap.put(currentSeq, newSeq);
 				}
 				else
 				{					
 					List<Integer> newSeq = new ArrayList<Integer>();
 					newSeq.add(start);
 					
-					sequenceMap.put(
-							currentSeq, 
-							new Pair<>(1, newSeq));
+					sequenceMap.put(currentSeq,newSeq);
 				}
 			}
 		}
 		
-		logger.info("Map: "+ sequenceMap.toString());
+		Map<List<String>, List<Integer>> sortedMap = new HashMap<List<String>, List<Integer>>();
+		
+		for (Map.Entry<List<String>, List<Integer>> entry : sequenceMap.entrySet()) 
+		{
+			// remove entries, that only occur once
+			if (entry.getValue().size() > 1)
+			{
+				sortedMap.put(entry.getKey(), entry.getValue());
+				logger.info("Map" + entry.toString());
+			}
+		}
 	}
 	
 	
