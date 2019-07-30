@@ -20,11 +20,11 @@ import inBloom.graph.isomorphism.UnitFinder;
 
 public class Tellability {
 	protected static Logger logger = Logger.getLogger(Tellability.class.getName());
-	
+
 	// plot preconditions
 	public CountingVisitor counter;
 	public int productiveConflicts = 0;
-	
+
 	// Functional Polyvalence
 	public List<FunctionalUnit> plotUnitTypes;
 	public int numFunctionalUnits;
@@ -32,33 +32,33 @@ public class Tellability {
 	public int numAllVertices;
 	public Map<FunctionalUnit, Integer> functionalUnitCount = new HashMap<>();
 	public ConnectivityGraph connectivityGraph;
-	
+
 	// Semantic Symmetry
-	
+
 	// Semantic Opposition
-	
+
 	// Suspense
 	public int suspense;
 	public int plotLength;
 
-	
+
 	// Dynamic Points
-	
-	
-	
+
+
+
 	/**
 	 * Takes an analyzed graph and computes all necessary statistics of the plot to compute tellability.
 	 * @param graph a graph that has been processed by both FullGraphPPVisitor and CompactGraphPPVisitor
 	 */
 	public Tellability(PlotDirectedSparseGraph graph) {
-		counter = new CountingVisitor();
-		this.plotUnitTypes = new LinkedList<FunctionalUnit>();
-		
+		this.counter = new CountingVisitor();
+		this.plotUnitTypes = new LinkedList<>();
+
 		// Find Functional Units and polyvalent Vertices
-		detectPolyvalence(graph);
+		this.detectPolyvalence(graph);
 
 		// Perform quantitative analysis of plot
-		computeSimpleStatistics(graph);
+		this.computeSimpleStatistics(graph);
 	}
 
 	/**
@@ -66,11 +66,11 @@ public class Tellability {
 	 * @param graph a graph that has been processed by both FullGraphPPVisitor and CompactGraphPPVisitor
 	 */
 	private void computeSimpleStatistics(PlotDirectedSparseGraph graph) {
-		counter.apply(graph);
-		this.productiveConflicts = counter.getProductiveConflictNumber();
-		this.suspense = counter.getSuspense();
-		this.plotLength = counter.getPlotLength();
-		this.numAllVertices = counter.getVertexNum();
+		this.counter.apply(graph);
+		this.productiveConflicts = this.counter.getProductiveConflictNumber();
+		this.suspense = this.counter.getSuspense();
+		this.plotLength = this.counter.getPlotLength();
+		this.numAllVertices = this.counter.getVertexNum();
 	}
 
 	/**
@@ -80,33 +80,33 @@ public class Tellability {
 	 */
 	private void detectPolyvalence(PlotDirectedSparseGraph graph) {
 		Map<Vertex, Integer> vertexUnitCount = new HashMap<>();
-		
+
 		UnitFinder finder = new UnitFinder();
 		int polyvalentVertices = 0;
 		int unitInstances = 0;
-		Set<Vertex> polyvalentVertexSet = new HashSet<Vertex>();
-		
-		connectivityGraph = new ConnectivityGraph(graph);
-		
+		Set<Vertex> polyvalentVertexSet = new HashSet<>();
+
+		this.connectivityGraph = new ConnectivityGraph(graph);
+
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(unit.getGraph(), graph);
 			unitInstances += mappings.size();
 			this.functionalUnitCount.put(unit, mappings.size());
 			logger.log(Level.INFO, "Found '" + unit.getName() + "' " + mappings.size() + " times.");
-			
+
 			if (mappings.size() > 0 ) {
 				PlotGraphController.getPlotListener().addDetectedPlotUnitType(unit);
 				this.plotUnitTypes.add(unit);
 			}
-			
+
 			// maps from FU vertex to plot graph vertex
 			for(Map<Vertex, Vertex> map : mappings) {
 				FunctionalUnit.Instance instance = unit.new Instance(graph, map.values(), unit.getName());
 				instance.identifySubject(map);
-				connectivityGraph.addVertex(instance);
-				
+				this.connectivityGraph.addVertex(instance);
+
 				for(Vertex v : map.values()) {
-					
+
 					graph.markVertexAsUnit(v, unit);
 					if(!vertexUnitCount.containsKey(v)) {
 						vertexUnitCount.put(v, 1);
@@ -122,7 +122,7 @@ public class Tellability {
 				}
 			}
 		}
-		
+
 		for(FunctionalUnit primitiveUnit : FunctionalUnits.PRIMITIVES) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(graph, primitiveUnit.getGraph());
 			for(Map<Vertex, Vertex> map : mappings) {
@@ -130,10 +130,10 @@ public class Tellability {
 				this.connectivityGraph.addVertex(instance);
 			}
 		}
-		
+
 		this.numFunctionalUnits = unitInstances;
 		this.numPolyvalentVertices = polyvalentVertices;
-		
+
 		// Mark polyvalent vertices with asterisk
 		for(Vertex v : polyvalentVertexSet) {
 			v.setPolyvalent();
@@ -146,14 +146,14 @@ public class Tellability {
 	 * @return
 	 */
 	public double compute() {
-		if (productiveConflicts < 1) {
+		if (this.productiveConflicts < 1) {
 			// need at least one conflict and one attempt at resolution, for this to be a plot
 			return 0;
 		}
-		
-		double tellability = (double) this.numPolyvalentVertices / this.numAllVertices + 
+
+		double tellability = (double) this.numPolyvalentVertices / this.numAllVertices +
 							 (double) this.suspense / this.plotLength;
-		
+
 		logger.info("Overall tellability: " + tellability);
 		return tellability;
 	}

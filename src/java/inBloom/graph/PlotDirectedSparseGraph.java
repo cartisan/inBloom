@@ -2,6 +2,7 @@ package inBloom.graph;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -46,12 +47,12 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	private String name;
 
 	/**
-	 * An array containing all vertices of this graph.
+	 * An array containing all vertices of this graph sorted by step in a reproducible way.
 	 * Used to identify vertices by id in inBloom.graph.isomorphism.State
 	 * This is generated whenever a change to the vertices was made and
 	 * the method getVertex or getVertexId is called.
 	 */
-	private Vertex[] vertexArray;
+	private List<Vertex> vertexArray;
 
 	/**
 	 * A flag which is set to true whenever the graph changed.
@@ -157,12 +158,21 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	}
 
 	/**
-	 * Overriden method call to addEdge, in order to set isDirty flag.
+	 * Overrides method call to addEdge, in order to set isDirty flag.
 	 */
 	@Override
 	public boolean addEdge(Edge edge, Vertex from, Vertex to) {
 		this.isDirty = true;
 		return super.addEdge(edge, from, to);
+	}
+
+	/**
+	 * Overrides method call to removeEdge, in order to set isDirty flag.
+	 */
+	@Override
+	public boolean removeEdge(Edge edge) {
+		this.isDirty = true;
+		return super.removeEdge(edge);
 	}
 
 	/**
@@ -179,42 +189,38 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	}
 
 	/**
-	 * Returns the vertex identified by the
-	 * given id.
-	 * Generates vertexArray if needed.
+	 * Returns the vertex identified by the given id. Generates vertexArray if needed.
 	 * @param vertexId
 	 * @return Vertex
 	 */
 	public Vertex getVertex(int vertexId) {
 		if(this.isDirty) {
-			this.vertexArray = new Vertex[this.getVertexCount()];
-			this.vertices.keySet().toArray(this.vertexArray);
-			this.isDirty = false;
+			this.generateVertexArray();
 		}
-		if(vertexId < 0 || vertexId >= this.vertexArray.length) {
+		if(vertexId < 0 || vertexId >= this.vertexArray.size()) {
 			return null;
 		}
-		return this.vertexArray[vertexId];
+		return this.vertexArray.get(vertexId);
 	}
 
 	/**
-	 * Finds the id of a given vertex.
-	 * Generates vertexArray if needed.
+	 * Finds the id of a given vertex. Generates vertexArray if needed.
 	 * @param vertex
 	 * @return int vertexId
 	 */
 	public int getVertexId(Vertex vertex) {
 		if(this.isDirty) {
-			this.vertexArray = new Vertex[this.getVertexCount()];
-			this.vertices.keySet().toArray(this.vertexArray);
-			this.isDirty = false;
-		}
-		for(int i = 0; i < this.vertexArray.length; i++) {
-			if(this.vertexArray[i] == vertex) {
-				return i;
+			this.generateVertexArray();
 			}
+
+		return this.vertexArray.indexOf(vertex);
 		}
-		return -1;
+
+	private void generateVertexArray() {
+		this.vertexArray = this.vertices.keySet().stream()
+												 .sorted(Comparator.comparingInt(Vertex::getStep))
+												 .collect(Collectors.toList());
+		this.isDirty = false;
 	}
 
 	/**
