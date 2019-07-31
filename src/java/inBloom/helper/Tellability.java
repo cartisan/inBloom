@@ -1,7 +1,9 @@
 package inBloom.helper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -11,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.DoubleStream;
 
 import inBloom.framing.ConnectivityGraph;
 import inBloom.graph.CountingVisitor;
@@ -169,16 +172,17 @@ public class Tellability {
 					_sequence.add(emotion);
 				}
 			}
-			logger.info("Character: " + root.toString());
-			emotionSequenceCounter(_sequence);
+			double sym = emotionSequenceCounter(_sequence);
+			logger.info(root.toString() + " symmetry: " + (sym / _sequence.size()));
 		}
+		
 		
 		this.symmetry = 0;
 	}
 	
 	
 	// Sequence generator
-	private void emotionSequenceCounter(List<String> graphSequence)
+	private double emotionSequenceCounter(List<String> graphSequence)
 	{		
 //		counting visitor -max plot steps
 		
@@ -210,17 +214,20 @@ public class Tellability {
 			}
 		}
 		
-		Map<List<String>, List<Integer>> sortedMap = new HashMap<List<String>, List<Integer>>();
-		
+		//Map<List<String>, List<Integer>> sortedMap = new HashMap<List<String>, List<Integer>>();
+		List<Double> multiplications = new ArrayList<Double>();
 		for (Map.Entry<List<String>, List<Integer>> entry : sequenceMap.entrySet()) 
 		{
 			// remove entries, that only occur once
 			if (entry.getValue().size() > 1)
 			{
-				sortedMap.put(entry.getKey(), entry.getValue());
-				logger.info("Map" + entry.toString());
+				//sortedMap.put(entry.getKey(), entry.getValue());
+				//logger.info("Map" + entry.toString());
+				multiplications.add((double)entry.getKey().size() * entry.getValue().size());
 			}
 		}
+		
+		return Collections.max(multiplications); // multiplications.size();
 	}
 	
 	
