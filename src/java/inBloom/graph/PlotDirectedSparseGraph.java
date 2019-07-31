@@ -47,16 +47,16 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	private String name;
 
 	/**
-	 * An array containing all vertices of this graph sorted by step in a reproducible way.
-	 * Used to identify vertices by id in inBloom.graph.isomorphism.State
-	 * This is generated whenever a change to the vertices was made and
-	 * the method getVertex or getVertexId is called.
+	 * An array containing all vertices of this graph sorted by step in a reproducible way (if multiple vertices
+	 * per step are present, order inside step is not guaranteed). 	 * Used to identify vertices by id in
+	 * {@link inBloom.graph.isomorphism.State}.
+	 * This is generated whenever a change to the vertices was made and the list was accessed.
 	 */
-	private List<Vertex> vertexArray;
+	private List<Vertex> orderedVertexList;
 
 	/**
-	 * A flag which is set to true whenever the graph changed.
-	 * Used to identify whether or not vertexArray needs to be generated.
+	 * A flag which is set to true whenever the graph changed. Used to identify whether or not orderedVertexList needs
+	 * to be regenerated.
 	 */
 	private boolean isDirty = true;
 
@@ -189,43 +189,53 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	}
 
 	/**
-	 * Returns the vertex identified by the given id. Generates vertexArray if needed.
+	 * Returns orderedVertexList, regenerates it if dirty flag was set.
+	 * @return
+	 */
+	public List<Vertex> getOrderedVertexList() {
+		if(this.isDirty) {
+			this.generateOrderedVertexList();
+		}
+		return this.orderedVertexList;
+	}
+	/**
+	 * Returns the vertex at position id in orderedVertexList. Generates orderedVertexList if needed.
 	 * @param vertexId
 	 * @return Vertex
 	 */
 	public Vertex getVertex(int vertexId) {
 		if(this.isDirty) {
-			this.generateVertexArray();
+			this.generateOrderedVertexList();
 		}
-		if(vertexId < 0 || vertexId >= this.vertexArray.size()) {
+		if(vertexId < 0 || vertexId >= this.orderedVertexList.size()) {
 			return null;
 		}
-		return this.vertexArray.get(vertexId);
+		return this.orderedVertexList.get(vertexId);
 	}
 
 	/**
-	 * Finds the id of a given vertex. Generates vertexArray if needed.
+	 * Finds the id of a given vertex. Generates orderedVertexList if needed.
 	 * @param vertex
 	 * @return int vertexId
 	 */
 	public int getVertexId(Vertex vertex) {
 		if(this.isDirty) {
-			this.generateVertexArray();
-			}
-
-		return this.vertexArray.indexOf(vertex);
+			this.generateOrderedVertexList();
 		}
 
-	private void generateVertexArray() {
-		this.vertexArray = this.vertices.keySet().stream()
-												 .sorted(Comparator.comparingInt(Vertex::getStep))
-												 .collect(Collectors.toList());
+		return this.orderedVertexList.indexOf(vertex);
+	}
+
+	private void generateOrderedVertexList() {
+		this.orderedVertexList = this.vertices.keySet().stream()
+												 	   .sorted(Comparator.comparingInt(Vertex::getStep))
+												 	   .collect(Collectors.toList());
 		this.isDirty = false;
 	}
 
 	/**
-	 * Returns vertex, that is a successor in a plot sense, i.e. vertices that pertain to the same character column.
-	 * This excludes vertices connected by communication edges.
+	 * Returns vertex, that is a successor in a temporal sense, i.e. vertices that pertain to the same character column
+	 * and is connected via temporal edge. This excludes vertices connected by communication edges.
 	 * @param vertex for which char-successor is sought
 	 * @return successor vertex if present, or null
 	 */
@@ -242,6 +252,31 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 
         return null;
     }
+
+	/**
+	 * Returns vertex, that is a successor in a plot sense, i.e. vertices that pertain to the same character column
+	 * and has a causal relation. This excludes vertices connected by communication edges.
+	 * @param vertex for which plot-successor is sought
+	 * @return successor vertex if present, or null
+	 */
+	public Vertex getPlotSuccessor(Vertex vertex) {
+		if (!this.containsVertex(vertex)) {
+			return null;
+		}
+
+		if (this.getOutgoing_internal(vertex).size() > 1) {
+			throw new RuntimeException("Vertex" + vertex.toString() + "has multiple plot successors");
+		}
+
+		for (Edge edge : this.getOutgoing_internal(vertex)) {
+			if(edge.getType() == Edge.Type.MOTIVATION || edge.getType() == Edge.Type.ACTUALIZATION
+					|| edge.getType() == Edge.Type.CAUSALITY || edge.getType() == Edge.Type.EQUIVALENCE) {
+				return this.getDest(edge);
+			}
+		}
+
+		return null;
+	}
 
 	/**
 	 * Returns vertex, that is a predecessor in a plot sense, i.e. vertices that pertain to the same character column.

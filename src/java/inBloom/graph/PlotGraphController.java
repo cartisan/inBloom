@@ -36,6 +36,7 @@ import inBloom.graph.visitor.EdgeLayoutVisitor;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
 
+import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
@@ -106,6 +107,21 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	public static PlotGraphController fromGraph(PlotDirectedSparseGraph graph) {
 		PlotGraphController.plotListener = new PlotGraphController(graph);
 		return PlotGraphController.plotListener;
+	}
+
+	/**
+	 * Opens a window visualizing graph, creates roots and steps if necessary. For debugging purposes.
+	 * @param graph graph to be displayed
+	 * @param plotLayout whether the inBloom plot layout should be used, or a jung default-layout
+	 */
+	public static void visualize(PlotDirectedSparseGraph graph, boolean plotLayout) {
+		FunctionalUnit display = new FunctionalUnit("test", graph);
+		PlotGraphController vis =  PlotGraphController.fromGraph(display.getDisplayGraph());
+		if (plotLayout) {
+			vis.visualizeGraph();
+		} else {
+			vis.visualizeGraph(new CircleLayout<>(graph));
+		}
 	}
 
 	/**
@@ -319,6 +335,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 
 		this.getContentPane().remove(this.scrollPane);
     	this.dispose();
+    	this.visViewer = null;
 
     	PlotControlsLauncher gui = PlotLauncher.getRunner();
     	gui.graphClosed(this);
@@ -458,12 +475,19 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	}
 
 	/**
-	 * Plots and displays the graph that is selected by {@code this.graphTypeList}.
+	 * Displays the graph that is selected by {@code this.graphTypeList} using the inBloom PlotGraphLayout.
 	 * @return the displayed JFrame
 	 */
 	public PlotGraphController visualizeGraph() {
-		Layout<Vertex, Edge> layout = new PlotGraphLayout((PlotDirectedSparseGraph)this.graphTypeList.getSelectedItem());
+		return this.visualizeGraph(new PlotGraphLayout((PlotDirectedSparseGraph)this.graphTypeList.getSelectedItem()));
+	}
 
+	/**
+	 * Displaying method that for debugging purposes can use another layout to represent the graph that is selected by
+	 * {@link this.graphTypeList}.
+	 * @return the displayed JFrame
+	 */
+	private PlotGraphController visualizeGraph(Layout<Vertex, Edge> layout) {
 		// Create a viewing server
 		this.visViewer = new VisualizationViewer<>(layout);
 		this.setUpAppearance(this.visViewer);
@@ -496,7 +520,6 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 
 		return this;
 	}
-
 
 	/**
 	 * Sets up an VisualizationServer instance with all the details and renders defining the graphs appearance.

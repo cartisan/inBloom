@@ -103,6 +103,10 @@ public class Vertex implements Cloneable {
 		return this.step;
 	}
 
+	public void setStep(int step) {
+		this.step = step;
+	}
+
 	/**
 	 * Returns the functor part of the vertex' label.
 	 * Example: <br />

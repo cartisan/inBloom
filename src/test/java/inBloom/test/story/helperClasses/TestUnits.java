@@ -7,7 +7,6 @@ import inBloom.graph.Vertex.Type;
 import inBloom.graph.isomorphism.FunctionalUnit;
 import inBloom.graph.isomorphism.FunctionalUnits;
 
-@SuppressWarnings("unused")
 public class TestUnits {
 
 	public static FunctionalUnit[] ALL;
@@ -70,6 +69,10 @@ public class TestUnits {
 
 	public static Vertex makeIntention(int step, PlotDirectedSparseGraph graph) {
 		return new Vertex("!intention", Vertex.Type.INTENTION, step, graph);
+	}
+
+	public static Vertex makeAction(int step, PlotDirectedSparseGraph graph) {
+		return new Vertex("action", Vertex.Type.ACTION, step, graph);
 	}
 
 	public static Vertex makePositive(int step, PlotDirectedSparseGraph graph) {
