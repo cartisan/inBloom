@@ -20,6 +20,7 @@ import inBloom.graph.CountingVisitor;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
 import inBloom.graph.Vertex;
+import inBloom.graph.Vertex.Type;
 import inBloom.graph.isomorphism.FunctionalUnit;
 import inBloom.graph.isomorphism.FunctionalUnits;
 import inBloom.graph.isomorphism.UnitFinder;
@@ -55,7 +56,7 @@ public class Tellability {
 
 	
 	// Dynamic Points
-	
+
 	
 	
 	/**
@@ -140,7 +141,8 @@ public class Tellability {
 		
 		for(FunctionalUnit primitiveUnit : FunctionalUnits.PRIMITIVES) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(this.graph, primitiveUnit.getGraph());
-			for(Map<Vertex, Vertex> map : mappings) {
+			for(Map<Vertex, Vertex> map : mappings) 
+			{
 				FunctionalUnit.Instance instance = primitiveUnit.new Instance(this.graph, map.keySet(), primitiveUnit.getName());
 				connectivityGraph.addVertex(instance);
 			}
@@ -159,30 +161,71 @@ public class Tellability {
 	// Returns emotion sequence from graph
 	private void calculateSymmetry()
 	{
+		double[] characterSymmetries = new double[this.graph.getRoots().size()];
+		double symmetries = 0;
 		for (Vertex root : this.graph.getRoots()) 
 		{
-			List<String> _sequence = new ArrayList<String>();
+			List<String> emotionSequences = new ArrayList<String>();
+			List<String> intentionSequences = new ArrayList<String>();
+			List<String> beliefSequences = new ArrayList<String>();
+			List<String> actionSequences = new ArrayList<String>();
 			
+			int charCounter = 0;
 			for(Vertex v : this.graph.getCharSubgraph(root))
 			{
-				if (v.getEmotions().isEmpty()) continue;
-				
-				for (String emotion : v.getEmotions())
+				// get the emotions of the character
+				if (!v.getEmotions().isEmpty())
 				{
-					_sequence.add(emotion);
+					for (String emotion : v.getEmotions())
+					{
+						emotionSequences.add(emotion);
+					}
+				}
+				
+				// get the intentions of character
+				if (!v.getIntention().isEmpty())
+				{
+					intentionSequences.add(v.getIntention());
+				}
+				
+				// get the intentions of character
+				if (v.getType() == Type.PERCEPT)
+				{
+					beliefSequences.add(v.getFunctor());
+				}
+				
+				if(v.getType() == Type.ACTION)
+				{
+					actionSequences.add(v.getFunctor());
 				}
 			}
-			double sym = emotionSequenceCounter(_sequence);
-			logger.info(root.toString() + " symmetry: " + (sym / _sequence.size()));
+			logger.info("Emotions:");
+			double emotionSym = sequenceAnalyser(emotionSequences);
+			logger.info("Intentions:");
+			double intentionSym = sequenceAnalyser(intentionSequences);
+			logger.info("Beliefs:");
+			double beliefSym = sequenceAnalyser(beliefSequences);
+			logger.info("Actions:");
+			double actionSym = sequenceAnalyser(actionSequences);
+			
+			characterSymmetries[charCounter] = (emotionSym + intentionSym + beliefSym + actionSym) / 4;
+			symmetries += characterSymmetries[charCounter];
+			
+			logger.info("\n"+root.toString() + " Average Symmetry: "+ characterSymmetries[charCounter] +
+					"\nWith:\n" + emotionSym + "(Emotions),\n" + 
+					intentionSym + "(Intentions),\n" + 
+					beliefSym + "(Beliefs),\n" + 
+					actionSym + "(Actions)");
+			charCounter++;
 		}
 		
-		
-		this.symmetry = 0;
+		this.symmetry = (symmetries / this.graph.getRoots().size());
+		logger.info("Overall symmetry: " + this.symmetry);
 	}
 	
 	
 	// Sequence generator
-	private double emotionSequenceCounter(List<String> graphSequence)
+	private double sequenceAnalyser(List<String> graphSequence)
 	{		
 //		counting visitor -max plot steps
 		
@@ -209,11 +252,11 @@ public class Tellability {
 					List<Integer> newSeq = new ArrayList<Integer>();
 					newSeq.add(start);
 					
-					sequenceMap.put(currentSeq,newSeq);
+					sequenceMap.put(currentSeq, newSeq);
 				}
 			}
 		}
-		
+
 		//Map<List<String>, List<Integer>> sortedMap = new HashMap<List<String>, List<Integer>>();
 		List<Double> multiplications = new ArrayList<Double>();
 		for (Map.Entry<List<String>, List<Integer>> entry : sequenceMap.entrySet()) 
@@ -222,15 +265,13 @@ public class Tellability {
 			if (entry.getValue().size() > 1)
 			{
 				//sortedMap.put(entry.getKey(), entry.getValue());
-				//logger.info("Map" + entry.toString());
+				logger.info("Map" + entry.toString());
 				multiplications.add((double)entry.getKey().size() * entry.getValue().size());
 			}
 		}
 		
 		return Collections.max(multiplications); // multiplications.size();
-	}
-	
-	
+	}	
 
 	/**
 	 * Computes the overall tellability score, by normalizing all features into a range of (0,1) and adding them,
