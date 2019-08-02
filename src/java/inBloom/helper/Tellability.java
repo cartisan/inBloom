@@ -57,7 +57,9 @@ public class Tellability {
 	
 	// Dynamic Points
 
-	
+	public Tellability() {
+		calculateSymmetry();
+	}
 	
 	/**
 	 * Takes an analyzed graph and computes all necessary statistics of the plot to compute tellability.
@@ -69,13 +71,13 @@ public class Tellability {
 		this.graph = graph; 
 
 		// Find Functional Units and polyvalent Vertices
-		detectPolyvalence();
+		//detectPolyvalence();
 
 		// TODO: calculate symmetry
 		calculateSymmetry();
 		
 		// Perform quantitative analysis of plot
-		computeSimpleStatistics();
+		//computeSimpleStatistics();
 	}
 
 	/**
@@ -156,6 +158,11 @@ public class Tellability {
 			v.setPolyvalent();
 		}
 	}
+	
+	public static void main(String[] args)
+	{
+		Tellability t = new Tellability();
+	}
 
 	
 	/**
@@ -164,59 +171,57 @@ public class Tellability {
 	private void calculateSymmetry()
 	{
 		// get the actions, emotions, intentions and beliefs of a character
-		double[] characterSymmetries = new double[this.graph.getRoots().size()];
-		
-		// for each character in the story
-		for (Vertex root : this.graph.getRoots()) 
-		{
-			List<String> emotionSequences = new ArrayList<String>();
-			List<String> intentionSequences = new ArrayList<String>();
-			List<String> beliefSequences = new ArrayList<String>();
-			List<String> actionSequences = new ArrayList<String>();
+//		double[] characterSymmetries = new double[this.graph.getRoots().size()];
+//		
+//		// for each character in the story
+//		for (Vertex root : this.graph.getRoots()) 
+//		{
+//			List<String> emotionSequences = new ArrayList<String>();
+//			List<String> intentionSequences = new ArrayList<String>();
+//			List<String> beliefSequences = new ArrayList<String>();
+//			List<String> actionSequences = new ArrayList<String>();
+//			
+//			int charCounter = 0;
+//			// get its story graph
+//			for(Vertex v : this.graph.getCharSubgraph(root))
+//			{
+//				// get the emotions of the character
+//				if (!v.getEmotions().isEmpty())
+//				{
+//					for (String emotion : v.getEmotions())
+//					{
+//						emotionSequences.add(emotion);
+//					}
+//				}
+//				
+//				// get the intentions of character
+//				if (!v.getIntention().isEmpty())
+//				{
+//					intentionSequences.add(v.getIntention());
+//				}
+//				
+//				// get the intentions of character
+//				if (v.getType() == Type.PERCEPT)
+//				{
+//					beliefSequences.add(v.getFunctor());
+//				}
+//				
+//				// get the actions of the character
+//				if(v.getType() == Type.ACTION)
+//				{
+//					actionSequences.add(v.getFunctor());
+//				}
+//			}
+//			logger.info("\n\nCharacter: " + root.toString() + ": ");
+//			logger.info("Emotions:");
+//			double emotionSym = sequenceAnalyser(emotionSequences);
+//			logger.info("Intentions:");
+//			double intentionSym = sequenceAnalyser(intentionSequences);
+//			logger.info("Beliefs:");
+//			double beliefSym = sequenceAnalyser(beliefSequences);
+//			logger.info("Actions:");
+//			double actionSym = sequenceAnalyser(actionSequences);
 			
-			int charCounter = 0;
-			// get its story graph
-			for(Vertex v : this.graph.getCharSubgraph(root))
-			{
-				// get the emotions of the character
-				if (!v.getEmotions().isEmpty())
-				{
-					for (String emotion : v.getEmotions())
-					{
-						emotionSequences.add(emotion);
-					}
-				}
-				
-				// get the intentions of character
-				if (!v.getIntention().isEmpty())
-				{
-					intentionSequences.add(v.getIntention());
-				}
-				
-				// get the intentions of character
-				if (v.getType() == Type.PERCEPT)
-				{
-					beliefSequences.add(v.getFunctor());
-				}
-				
-				// get the actions of the character
-				if(v.getType() == Type.ACTION)
-				{
-					actionSequences.add(v.getFunctor());
-				}
-			}
-			
-			
-			logger.info("Emotions:");
-			double emotionSym = sequenceAnalyser(emotionSequences);
-			logger.info("Intentions:");
-			double intentionSym = sequenceAnalyser(intentionSequences);
-			logger.info("Beliefs:");
-			double beliefSym = sequenceAnalyser(beliefSequences);
-			logger.info("Actions:");
-			double actionSym = sequenceAnalyser(actionSequences);
-			
-			logger.info("Character: " + root.toString());
 			
 //			characterSymmetries[charCounter] = (emotionSym + intentionSym + beliefSym + actionSym) / 4;
 			
@@ -226,11 +231,78 @@ public class Tellability {
 //					beliefSym + "(Beliefs),\n" + 
 //					actionSym + "(Actions)");
 //			charCounter++;
-		}
+//		}
 		
+		// add dummy character with dummy emotions for testing
+		List<String> emos = new ArrayList<String>();
+		emos.add("A");
+		emos.add("B");
+		emos.add("C");
+		emos.add("A");
+		emos.add("B");
+		emos.add("C");
+
+		List<String> emos1 = new ArrayList<String>();
+		emos1.add("A");
+		emos1.add("A");
+		emos1.add("A");
+		emos1.add("B");
+		emos1.add("B");
+		emos1.add("B");
 		
-		this.symmetry = ( Arrays.stream(characterSymmetries).sum() / this.graph.getRoots().size());
-		logger.info("Overall symmetry: " + this.symmetry);
+		List<String> emos2 = new ArrayList<String>();
+		emos2.add("B");
+		emos2.add("A");
+		emos2.add("B");
+		emos2.add("A");
+		emos2.add("B");
+		emos2.add("A");
+		
+		List<String> emos3 = new ArrayList<String>();
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		
+		List<String> emos4 = new ArrayList<String>();
+		emos4.add("A");
+		emos4.add("B");
+		emos4.add("C");
+		emos4.add("D");
+		emos4.add("E");
+		emos4.add("F");
+		
+		List<String> emos5 = new ArrayList<String>();
+		emos5.add("A");
+		emos5.add("A");
+		emos5.add("A");
+		emos5.add("B");
+		emos5.add("B");
+		emos5.add("B");
+		
+		List<String> emos6 = new ArrayList<String>();
+		emos6.add("A");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("A");
+		
+		logger.info(emos.toString() + ": " + sequenceAnalyser(emos) + "\n\n");
+		logger.info(emos1.toString() + ": " + sequenceAnalyser(emos1)+ "\n\n");
+		logger.info(emos2.toString() + ": " + sequenceAnalyser(emos2)+ "\n\n");
+		logger.info(emos3.toString() + ": " + sequenceAnalyser(emos3)+ "\n\n");
+		logger.info(emos4.toString() + ": " + sequenceAnalyser(emos4)+ "\n\n");
+		logger.info(emos5.toString() + ": " + sequenceAnalyser(emos5)+ "\n\n");
+		logger.info(emos6.toString() + ": " + sequenceAnalyser(emos6)+ "\n\n");
+//
+//		
+//		
+//		
+//		this.symmetry = ( Arrays.stream(characterSymmetries).sum() / this.graph.getRoots().size());
+//		logger.info("Overall symmetry: " + this.symmetry);
 	}
 	
 	/**
@@ -246,7 +318,7 @@ public class Tellability {
 		// loop over the graph and create (sub)sequences
 		for (int start = 0; start < graphSequence.size(); start++)
 		{
-			for (int end = graphSequence.size() - 1; end > start + 1; end--)
+			for (int end = graphSequence.size(); end > start + 1; end--)
 			{
 				List<String> currentSeq = graphSequence.subList(start, end);
 				
@@ -289,14 +361,14 @@ public class Tellability {
 				{
 					// get distance between prev and current occurrence of sequence
 					sumDNeg += entry.getValue().get(i) - (entry.getValue().get(i-1) + entry.getKey().size());
-					sumElena += entry.getValue().get(i) - (entry.getValue().get(i-1) + entry.getKey().size()) < 0 ? 1 : -1; 
+					sumElena += entry.getValue().get(i) - (entry.getValue().get(i-1) + entry.getKey().size()) >= 0 ? 1 : -1; 
 					sumDNormal += entry.getValue().get(i) - entry.getValue().get(i-1);
 				}
 				
-				mNeg += sumDNeg * entry.getValue().size();
-				mElena += sumElena * entry.getValue().size();
-				mNormal += sumDNormal * entry.getValue().size();
-//				logger.info("Map" + entry.toString());
+				mNeg += sumDNeg * entry.getKey().size();
+				mElena += sumElena * entry.getKey().size();
+				mNormal += sumDNormal * entry.getKey().size();
+				logger.info("Map" + entry.toString());
 //				multiplications.add((double)entry.getKey().size() * entry.getValue().size());
 			}
 		}
