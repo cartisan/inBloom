@@ -158,11 +158,15 @@ public class Tellability {
 	}
 
 	
-	// Returns emotion sequence from graph
+	/**
+	 * Calculates the story's overall symmetry based on the characters' beliefs, intentions, actions and emotions
+	 */
 	private void calculateSymmetry()
 	{
+		// get the actions, emotions, intentions and beliefs of a character
 		double[] characterSymmetries = new double[this.graph.getRoots().size()];
-		double symmetries = 0;
+		
+		// for each character in the story
 		for (Vertex root : this.graph.getRoots()) 
 		{
 			List<String> emotionSequences = new ArrayList<String>();
@@ -171,6 +175,7 @@ public class Tellability {
 			List<String> actionSequences = new ArrayList<String>();
 			
 			int charCounter = 0;
+			// get its story graph
 			for(Vertex v : this.graph.getCharSubgraph(root))
 			{
 				// get the emotions of the character
@@ -194,11 +199,14 @@ public class Tellability {
 					beliefSequences.add(v.getFunctor());
 				}
 				
+				// get the actions of the character
 				if(v.getType() == Type.ACTION)
 				{
 					actionSequences.add(v.getFunctor());
 				}
 			}
+			
+			
 			logger.info("Emotions:");
 			double emotionSym = sequenceAnalyser(emotionSequences);
 			logger.info("Intentions:");
@@ -208,31 +216,34 @@ public class Tellability {
 			logger.info("Actions:");
 			double actionSym = sequenceAnalyser(actionSequences);
 			
-			characterSymmetries[charCounter] = (emotionSym + intentionSym + beliefSym + actionSym) / 4;
-			symmetries += characterSymmetries[charCounter];
+			logger.info("Character: " + root.toString());
 			
-			logger.info("\n"+root.toString() + " Average Symmetry: "+ characterSymmetries[charCounter] +
-					"\nWith:\n" + emotionSym + "(Emotions),\n" + 
-					intentionSym + "(Intentions),\n" + 
-					beliefSym + "(Beliefs),\n" + 
-					actionSym + "(Actions)");
-			charCounter++;
+//			characterSymmetries[charCounter] = (emotionSym + intentionSym + beliefSym + actionSym) / 4;
+			
+//			logger.info("\n"+root.toString() + " Average Symmetry: "+ characterSymmetries[charCounter] +
+//					"\nWith:\n" + emotionSym + "(Emotions),\n" + 
+//					intentionSym + "(Intentions),\n" + 
+//					beliefSym + "(Beliefs),\n" + 
+//					actionSym + "(Actions)");
+//			charCounter++;
 		}
 		
-		this.symmetry = (symmetries / this.graph.getRoots().size());
+		
+		this.symmetry = ( Arrays.stream(characterSymmetries).sum() / this.graph.getRoots().size());
 		logger.info("Overall symmetry: " + this.symmetry);
 	}
 	
-	
-	// Sequence generator
+	/**
+	 * Calculates the story's overall symmetry based on the characters' beliefs, intentions, actions and emotions
+	 * @param a graph containing the respective character's events (beliefs, intentions, actions, emotions) as a list of strings
+	 * @return symmetry for the input graph 
+	 */
 	private double sequenceAnalyser(List<String> graphSequence)
 	{		
-//		counting visitor -max plot steps
-		
 		// saves a sequences as key with corresponding values [counter, List of Start Indices]
 		Map<List<String>, List<Integer>> sequenceMap = new HashMap<>();
 
-		
+		// loop over the graph and create (sub)sequences
 		for (int start = 0; start < graphSequence.size(); start++)
 		{
 			for (int end = graphSequence.size() - 1; end > start + 1; end--)
@@ -257,20 +268,43 @@ public class Tellability {
 			}
 		}
 
-		//Map<List<String>, List<Integer>> sortedMap = new HashMap<List<String>, List<Integer>>();
-		List<Double> multiplications = new ArrayList<Double>();
+		// sort out the sequences that only appear once -> symmetry increases with repetition
+//		List<Double> multiplications = new ArrayList<Double>();
+		
+		int mNeg = 0;
+		int mElena = 0;
+		int mNormal = 0;
+		
 		for (Map.Entry<List<String>, List<Integer>> entry : sequenceMap.entrySet()) 
 		{
-			// remove entries, that only occur once
+			// if a sequence appears more than once, weight them by their 
+			// number of appearance and save the values in a new list
 			if (entry.getValue().size() > 1)
 			{
-				//sortedMap.put(entry.getKey(), entry.getValue());
-				logger.info("Map" + entry.toString());
-				multiplications.add((double)entry.getKey().size() * entry.getValue().size());
+//				Integer[] startValues = entry.getValue().toArray(new Integer[0]);
+				int sumDNeg = 0;
+				int sumElena = 0;
+				int sumDNormal = 0;
+				for (int i = 1; i < entry.getValue().size(); i++)
+				{
+					// get distance between prev and current occurrence of sequence
+					sumDNeg += entry.getValue().get(i) - (entry.getValue().get(i-1) + entry.getKey().size());
+					sumElena += entry.getValue().get(i) - (entry.getValue().get(i-1) + entry.getKey().size()) < 0 ? 1 : -1; 
+					sumDNormal += entry.getValue().get(i) - entry.getValue().get(i-1);
+				}
+				
+				mNeg += sumDNeg * entry.getValue().size();
+				mElena += sumElena * entry.getValue().size();
+				mNormal += sumDNormal * entry.getValue().size();
+//				logger.info("Map" + entry.toString());
+//				multiplications.add((double)entry.getKey().size() * entry.getValue().size());
 			}
 		}
 		
-		return Collections.max(multiplications); // multiplications.size();
+		logger.info("Negative Ds: " + mNeg + ". Elenas Ds: " + mElena + ". Normal Ds: " + mNormal);
+		
+		// return the maximum of these weighted sequences as an indicator of the symmetry of the character's state
+		return 0;
 	}	
 
 	/**
