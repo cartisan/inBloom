@@ -2,74 +2,122 @@ package inBloom.graph.isomorphism;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
+import java.util.logging.Logger;
+
+import com.google.common.collect.HashBasedTable;
 
 import inBloom.graph.Edge;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
 import inBloom.graph.Vertex;
-import inBloom.test.story.helperClasses.TestUnits;
 
 public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSparseGraph, PlotDirectedSparseGraph>, Predicate<Vertex> {
+	protected static Logger logger = Logger.getLogger(FUTransformationRule.class.getName());
+
+	/**  For each original FU this table caches the FU's that were created by applying all transformations to it's vertex i
+	 * (FU-graph, i) -> {Set of transformed FUs} */
+	private static HashBasedTable<PlotDirectedSparseGraph, Integer, Collection<PlotDirectedSparseGraph>> transformationCache = HashBasedTable.create();
 
 	/**  All valid transformation rules */
 	public static List<FUTransformationRule> TRANSFORMATIONS;
 	static {
 		PlotDirectedSparseGraph replacement;
 		Vertex v1, v2;
-
-		replacement = new PlotDirectedSparseGraph();
-		v1 = TestUnits.makeIntention(0, replacement);
-		v1.setLabel("REPL Int");
-		v2 = TestUnits.makePositive(1, replacement);
-		v2.setLabel("REPL Pos");
-		replacement.addEdge(TestUnits.makeActualization(), v1, v2);
 		Predicate<Vertex> posEmoTrigger = new Predicate<Vertex>() {
 			public boolean test(Vertex v) {
 				return UnitVertexType.typeOf(v).equals(UnitVertexType.POSITIVE);
 			}
 		};
+		Predicate<Vertex> negEmoTrigger = new Predicate<Vertex>() {
+			public boolean test(Vertex v) {
+				return UnitVertexType.typeOf(v).equals(UnitVertexType.NEGATIVE);
+			}
+		};
+		Predicate<Vertex> intTrigger = new Predicate<Vertex>() {
+			public boolean test(Vertex v) {
+				return UnitVertexType.typeOf(v).equals(UnitVertexType.INTENTION);
+			}
+		};
 
+		// transformation rules for positive vertices
+		replacement = new PlotDirectedSparseGraph();
+		v1 = FunctionalUnits.makeIntention(0, replacement);
+		v2 = FunctionalUnits.makePositive(1, replacement);
+		replacement.addEdge(FunctionalUnits.makeActualization(), v1, v2);
 		FUTransformationRule POS1 = new FUTransformationRule(replacement, posEmoTrigger);
 
+		replacement = new PlotDirectedSparseGraph();
+		v1 = FunctionalUnits.makeAction(0, replacement);
+		v2 = FunctionalUnits.makePositive(1, replacement);
+		replacement.addEdge(FunctionalUnits.makeCausality(), v1, v2);
+		FUTransformationRule POS2 = new FUTransformationRule(replacement, posEmoTrigger);
+
+		// transformation rules for negative vertices
+		replacement = new PlotDirectedSparseGraph();
+		v1 = FunctionalUnits.makeIntention(0, replacement);
+		v2 = FunctionalUnits.makeNegative(1, replacement);
+		replacement.addEdge(FunctionalUnits.makeActualization(), v1, v2);
+		FUTransformationRule NEG1 = new FUTransformationRule(replacement, negEmoTrigger);
 
 		replacement = new PlotDirectedSparseGraph();
-		v1 = TestUnits.makeAction(1, replacement);
-		v2 = TestUnits.makePositive(2, replacement);
-		replacement.addEdge(TestUnits.makeCausality(), v1, v2);
-		FUTransformationRule POS2 = new FUTransformationRule(replacement, posEmoTrigger);
+		v1 = FunctionalUnits.makeAction(0, replacement);
+		v2 = FunctionalUnits.makeNegative(1, replacement);
+		replacement.addEdge(FunctionalUnits.makeCausality(), v1, v2);
+		FUTransformationRule NEG2 = new FUTransformationRule(replacement, negEmoTrigger);
+
+		// transformation rules for intention vertices
+		replacement = new PlotDirectedSparseGraph();
+		v1 = FunctionalUnits.makeIntention(0, replacement);
+		v2 = FunctionalUnits.makeIntention(1, replacement);
+		replacement.addEdge(FunctionalUnits.makeEquivalence(), v1, v2);
+		FUTransformationRule INT1 = new FUTransformationRule(replacement, intTrigger);
+
+		replacement = new PlotDirectedSparseGraph();
+		v1 = FunctionalUnits.makeIntention(0, replacement);
+		v2 = FunctionalUnits.makeIntention(1, replacement);
+		replacement.addEdge(FunctionalUnits.makeMotivation(), v1, v2);
+		FUTransformationRule INT2 = new FUTransformationRule(replacement, intTrigger);
 
 		TRANSFORMATIONS = new ArrayList<>();
 		TRANSFORMATIONS.add(POS1);
 		TRANSFORMATIONS.add(POS2);
+		TRANSFORMATIONS.add(NEG1);
+		TRANSFORMATIONS.add(NEG2);
+		TRANSFORMATIONS.add(INT1);
+		TRANSFORMATIONS.add(INT2);
 
 		Class cls = PlotGraphController.class;
 	}
 
 	/**
-	 * Returns all graphs that can be created from fuGraph by valid transformations.
-	 * @param fuGraph
-	 * @return
-	 */
-	public static Collection<PlotDirectedSparseGraph> getAllTransformations(PlotDirectedSparseGraph fuGraph) {
-		Collection<PlotDirectedSparseGraph> all = new ArrayList<>();
-		for (int i = 0; i < fuGraph.getVertices().size(); ++i) {
-			all.addAll(getAllTransformations(i, fuGraph));
-		}
-
-		return all;
-	}
-
-	/**
 	 * Returns all graphs that can be created from fuGraph by valid transformations of vertex at position pos.
+	 * This method gets called once for each vertex in plot graph for each FU, so to avoid regenerating modified
+	 * FU Graph each time it caches its results.
 	 * @param pos
 	 * @param fuGraph
 	 * @return
 	 */
-	public static List<PlotDirectedSparseGraph> getAllTransformations(int pos, PlotDirectedSparseGraph fuGraph) {
-		List<PlotDirectedSparseGraph> all = new ArrayList<>();
+	public static Collection<PlotDirectedSparseGraph> getAllTransformations(int pos, PlotDirectedSparseGraph fuGraph) {
+		if(transformationCache.contains(fuGraph, pos)) {
+			return transformationCache.get(fuGraph, pos);
+		}
+
+		// If different transformations result in same modified FU, no need to add both. Check sameness using string representation of ordered vertex list
+		TreeSet<PlotDirectedSparseGraph> all = new TreeSet<>(
+			new Comparator<PlotDirectedSparseGraph>() {
+				@Override
+				public int compare(PlotDirectedSparseGraph o1, PlotDirectedSparseGraph o2) {
+					if (o1.getOrderedVertexList().toString().equals(o2.getOrderedVertexList().toString())) {
+						return 0;
+					}
+					return -1;
+				}});
+
 		for (FUTransformationRule rule: TRANSFORMATIONS) {
 			PlotDirectedSparseGraph fuNew = fuGraph.clone();	//clone FU such that changes in vertices won't affect original FU
 			Vertex v = fuNew.getVertex(pos);
@@ -78,6 +126,7 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 			}
 		}
 
+		transformationCache.put(fuGraph, pos, all);
 		return all;
 	}
 
@@ -118,12 +167,12 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 
 		// create new edges from set of 'incoming' vertices to start of replacement graph
 		for (Edge edge : fuGraph.getInEdges(toReplace)) {
-			target.addEdge(edge, fuGraph.getSource(edge), replacementRoot);
+			target.addEdge(new Edge(Edge.Type.WILDCARD), fuGraph.getSource(edge), replacementRoot);
 		}
 
 		// create new edges from end of replacement graph to set of 'outgoing' vertices
 		for (Edge edge : fuGraph.getOutEdges(toReplace)) {
-			target.addEdge(edge, replacementLeave, fuGraph.getDest(edge));
+			target.addEdge(new Edge(Edge.Type.WILDCARD), replacementLeave, fuGraph.getDest(edge));
 		}
 
 		// carry over edges from both this and replacement, if both, the edge's source and destination, were previously imported into target
@@ -163,9 +212,6 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 	 */
 	@Override
 	public boolean test(Vertex v) {
-		// TODO: Prevent inserting a node when it doesn't fit the in/out edges of vertex? Or use wildcard edges for connections?
-		// e.g. rule: [+] -> [I]-m-[+], input: [-]-m-[I]-a-[+]
-		// result: [-]-m-[I]-a-[I]-a-[+]    and [I]-a-[I] being illegal
 		return this.trigger.test(v);
 	}
 }

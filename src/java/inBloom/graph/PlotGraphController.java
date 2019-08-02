@@ -7,6 +7,8 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.logging.Logger;
 
@@ -115,7 +117,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	 * @param plotLayout whether the inBloom plot layout should be used, or a jung default-layout
 	 */
 	public static void visualize(PlotDirectedSparseGraph graph, boolean plotLayout) {
-		FunctionalUnit display = new FunctionalUnit("test", graph);
+		FunctionalUnit display = new FunctionalUnit(graph.getName(), graph);
 		PlotGraphController vis =  PlotGraphController.fromGraph(display.getDisplayGraph());
 		if (plotLayout) {
 			vis.visualizeGraph();
@@ -436,6 +438,8 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	 * @return
 	 */
 	public Tellability analyze(PlotDirectedSparseGraph analyzedGraphContainer) {
+		Instant start = Instant.now();
+
 		if(this.analysisResult != null) {
 			return this.analysisResult;
 		}
@@ -471,6 +475,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 			g.cloneInto(analyzedGraphContainer);
 		}
 
+		logger.info( "Analyze time in ms:" + Duration.between(start, Instant.now()).toMillis());
 		return this.analysisResult;
 	}
 

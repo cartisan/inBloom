@@ -59,12 +59,12 @@ public class FunctionalUnits {
 		Vertex v1, v2, v3;
 
 		PlotDirectedSparseGraph deniedRequest = new PlotDirectedSparseGraph();
-		v1 = makeIntention(1, deniedRequest);
+		v1 = makeSpeech(1, deniedRequest);
 		v2 = makeNegative(1, deniedRequest);
 		deniedRequest.addEdge(makeCommunication(), v1, v2);
 		v3 = makeIntention(2, deniedRequest);
 		deniedRequest.addEdge(makeMotivation(), v2, v3);
-		v2 = makeIntention(3, deniedRequest);
+		v2 = makeSpeech(3, deniedRequest);
 		deniedRequest.addEdge(makeMotivation(), v3, v2);
 		v3 = makeNegative(4, deniedRequest);
 		deniedRequest.addEdge(makeCommunication(), v2, v3);
@@ -343,55 +343,63 @@ public class FunctionalUnits {
 		}
 	}
 
-	private static Vertex makeIntention(int step, PlotDirectedSparseGraph graph) {
-		return new Vertex("!intention", Vertex.Type.INTENTION, step, graph);
+	public static Vertex makeIntention(int step, PlotDirectedSparseGraph graph) {
+		return new Vertex("FU I", Vertex.Type.INTENTION, step, graph);
 	}
 
-	private static Vertex makePositive(int step, PlotDirectedSparseGraph graph) {
-		Vertex vertex = new Vertex("+", Type.PERCEPT, step, graph);
+	public static Vertex makeAction(int step, PlotDirectedSparseGraph graph) {
+		return new Vertex("FU action", Vertex.Type.ACTION, step, graph);
+	}
+
+	public static Vertex makeSpeech(int step, PlotDirectedSparseGraph graph) {
+		return new Vertex("FU speech", Vertex.Type.SPEECHACT, step, graph);
+	}
+
+	public static Vertex makePositive(int step, PlotDirectedSparseGraph graph) {
+		Vertex vertex = new Vertex("FU +", Type.PERCEPT, step, graph);
 		vertex.addEmotion("love");
 		return vertex;
 	}
 
-	private static Vertex makeNegative(int step, PlotDirectedSparseGraph graph) {
-		Vertex vertex = new Vertex("-", Type.PERCEPT, step, graph);
+	public static Vertex makeNegative(int step, PlotDirectedSparseGraph graph) {
+		Vertex vertex = new Vertex("FU -", Type.PERCEPT, step, graph);
 		vertex.addEmotion("hate");
 		return vertex;
 	}
 
-	private static Vertex makePolyemotional(int step, PlotDirectedSparseGraph graph) {
-		Vertex vertex = new Vertex("*", Type.PERCEPT, step, graph);
+	public static Vertex makePolyemotional(int step, PlotDirectedSparseGraph graph) {
+		Vertex vertex = new Vertex("FU *", Type.PERCEPT, step, graph);
 		vertex.addEmotion("love");
 		vertex.addEmotion("hate");
 		return vertex;
 	}
 
-	private static Vertex makeWildcard(int step, PlotDirectedSparseGraph graph) {
-		Vertex vertex = new Vertex("?", Vertex.Type.WILDCARD, step, graph);
+	public static Vertex makeWildcard(int step, PlotDirectedSparseGraph graph) {
+		Vertex vertex = new Vertex("FU ?", Vertex.Type.WILDCARD, step, graph);
 		return vertex;
 	}
 
-	private static Edge makeCommunication() {
+	public static Edge makeCommunication() {
 		return new Edge(Edge.Type.CROSSCHARACTER);
 	}
 
-	private static Edge makeMotivation() {
+	public static Edge makeMotivation() {
 		return new Edge(Edge.Type.MOTIVATION);
 	}
 
-	private static Edge makeActualization() {
+	public static Edge makeActualization() {
 		return new Edge(Edge.Type.ACTUALIZATION);
 	}
 
-	private static Edge makeTermination() {
+	public static Edge makeTermination() {
 		return new Edge(Edge.Type.TERMINATION);
 	}
 
-	private static Edge makeEquivalence() {
+	public static Edge makeEquivalence() {
 		return new Edge(Edge.Type.EQUIVALENCE);
 	}
 
-	private static Edge makeCausality() {
+	public static Edge makeCausality() {
 		return new Edge(Edge.Type.CAUSALITY);
 	}
 }

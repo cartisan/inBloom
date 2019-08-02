@@ -20,7 +20,8 @@ public enum UnitVertexType {
 		if(v.getType() == Vertex.Type.WILDCARD) {
 			return UnitVertexType.WILDCARD;
 		}
-		if(!v.getIntention().isEmpty()) {
+
+		if(v.getType() == Vertex.Type.INTENTION) {
 			return UnitVertexType.INTENTION;
 		}
 

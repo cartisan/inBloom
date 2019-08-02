@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 
-import java.util.Collection;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -78,11 +76,5 @@ public class FUTransformationRuleTest {
 		assertNotSame(this.v3, newGraph.getVertex(2));
 		assertSame(Vertex.Type.INTENTION, newGraph.getVertex(2).getType());
 		assertSame(UnitVertexType.POSITIVE, UnitVertexType.typeOf(newGraph.getVertex(3)));
-	}
-
-	@Test
-	public void testTrigger() {
-		Collection<PlotDirectedSparseGraph> all = FUTransformationRule.getAllTransformations(this.fuGraph);
-		assertEquals(2, all.size());
 	}
 }

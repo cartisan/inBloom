@@ -1,6 +1,7 @@
 package inBloom.graph;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -48,11 +49,11 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 
 	/**
 	 * An array containing all vertices of this graph sorted by step in a reproducible way (if multiple vertices
-	 * per step are present, order inside step is not guaranteed). 	 * Used to identify vertices by id in
+	 * per step are present, order inside step is not guaranteed). Used to identify vertices by id in
 	 * {@link inBloom.graph.isomorphism.State}.
 	 * This is generated whenever a change to the vertices was made and the list was accessed.
 	 */
-	private List<Vertex> orderedVertexList;
+	private Vertex[] vertexArray;
 
 	/**
 	 * A flag which is set to true whenever the graph changed. Used to identify whether or not orderedVertexList needs
@@ -189,28 +190,18 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	}
 
 	/**
-	 * Returns orderedVertexList, regenerates it if dirty flag was set.
-	 * @return
-	 */
-	public List<Vertex> getOrderedVertexList() {
-		if(this.isDirty) {
-			this.generateOrderedVertexList();
-		}
-		return this.orderedVertexList;
-	}
-	/**
 	 * Returns the vertex at position id in orderedVertexList. Generates orderedVertexList if needed.
 	 * @param vertexId
 	 * @return Vertex
 	 */
 	public Vertex getVertex(int vertexId) {
 		if(this.isDirty) {
-			this.generateOrderedVertexList();
+			this.regenerateVertexArray();
 		}
-		if(vertexId < 0 || vertexId >= this.orderedVertexList.size()) {
+		if(vertexId < 0 || vertexId >= this.vertexArray.length) {
 			return null;
 		}
-		return this.orderedVertexList.get(vertexId);
+		return this.vertexArray[vertexId];
 	}
 
 	/**
@@ -220,17 +211,44 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	 */
 	public int getVertexId(Vertex vertex) {
 		if(this.isDirty) {
-			this.generateOrderedVertexList();
+			this.regenerateVertexArray();
 		}
-
-		return this.orderedVertexList.indexOf(vertex);
+		for(int i = 0; i < this.vertexArray.length; i++) {
+			if(this.vertexArray[i] == vertex) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
-	private void generateOrderedVertexList() {
-		this.orderedVertexList = this.vertices.keySet().stream()
-												 	   .sorted(Comparator.comparingInt(Vertex::getStep))
-												 	   .collect(Collectors.toList());
+	/**
+	 * Returns orderedVertexList, regenerates it if dirty flag was set.
+	 * @return
+	 */
+	public List<Vertex> getOrderedVertexList() {
+		if(this.isDirty) {
+			this.regenerateVertexArray();
+		}
+		return Arrays.asList(this.vertexArray);
+	}
+
+	private void regenerateVertexArray() {
+		this.vertexArray = new Vertex[this.getPlotVertexCount()];
+		this.vertices.keySet().stream()
+		   .filter(v -> !this.roots.contains(v) & !this.yAxis.values().contains(v))
+	 	   .sorted(Comparator.comparingInt(Vertex::getStep))
+	 	   .collect(Collectors.toList()).toArray(this.vertexArray);
 		this.isDirty = false;
+	}
+
+	/**
+	 * Returns the number of vertices related directly to plot, that is, excluding roots and axis.
+	 * @return
+	 */
+	public int getPlotVertexCount() {
+		return (int) this.vertices.keySet().stream()
+										   .filter(v -> !this.roots.contains(v) & !this.yAxis.values().contains(v))
+										   .count();
 	}
 
 	/**
@@ -352,7 +370,6 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		List<Vertex> succs = new LinkedList<>();
 
 		if (!this.containsVertex(root)) {
-//			System.out.println("Subgraph for character " + root.getLabel() + " not found. Vertex: "  + root.toString());
             return succs;
 		}
 
@@ -586,8 +603,15 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		this.name = newName;
 	}
 
+	public String getName() {
+		return this.name;
+	}
+
 	@Override
 	public String toString() {
-		return this.name;
+		if (this.name != null) {
+			return this.name;
+		}
+		return this.getOrderedVertexList().toString();
 	}
 }
