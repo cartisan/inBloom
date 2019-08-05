@@ -1,0 +1,201 @@
+********************************************************
+Length = 6
+********************************************************
+
+INFORMATION: [A, B, C, A, B, C]:
+
+INFORMATION: Map[A, B, C]=[0, 3]
+INFORMATION: Map[A, B]=[0, 3]
+INFORMATION: Map[B, C]=[1, 4]
+INFORMATION: Negative Ds: 4. Elenas Ds: 7. Normal Ds: 21
+
+
+INFORMATION: [A, A, A, B, B, B]:
+
+INFORMATION: Map[A, A]=[0, 1]
+INFORMATION: Map[B, B]=[3, 4]
+INFORMATION: Negative Ds: -4. Elenas Ds: -4. Normal Ds: 4
+
+
+INFORMATION: [B, A, B, A, B, A]: 
+
+INFORMATION: Map[B, A]=[0, 2, 4]
+INFORMATION: Map[B, A, B, A]=[0, 2]
+INFORMATION: Map[A, B]=[1, 3]
+INFORMATION: Map[B, A, B]=[0, 2]
+INFORMATION: Map[A, B, A]=[1, 3]
+INFORMATION: Negative Ds: -14. Elenas Ds: -4. Normal Ds: 32
+
+
+INFORMATION: [A, A, A, A, A, A]:
+
+INFORMATION: Map[A, A, A]=[0, 1, 2, 3]
+INFORMATION: Map[A, A]=[0, 1, 2, 3, 4]
+INFORMATION: Map[A, A, A, A, A]=[0, 1]
+INFORMATION: Map[A, A, A, A]=[0, 1, 2]
+INFORMATION: Negative Ds: -70. Elenas Ds: -30. Normal Ds: 30
+
+
+INFORMATION: [A, B, C, D, E, F]: 
+
+INFORMATION: Negative Ds: 0. Elenas Ds: 0. Normal Ds: 0
+
+
+INFORMATION: [A, A, A, B, B, B]:
+
+INFORMATION: Map[A, A]=[0, 1]
+INFORMATION: Map[B, B]=[3, 4]
+INFORMATION: Negative Ds: -4. Elenas Ds: -4. Normal Ds: 4
+
+
+INFORMATION: [A, B, B, B, B, A]: 
+
+INFORMATION: Map[B, B, B]=[1, 2]
+INFORMATION: Map[B, B]=[1, 2, 3]
+INFORMATION: Negative Ds: -10. Elenas Ds: -7. Normal Ds: 7
+
+
+********************************************************
+Length = 18
+********************************************************
+
+INFO: Map[A, B, C, A, B, C, A, B, C, A]=[0, 3, 6]
+INFO: Map[B, C, A, B, C, A, B, C]=[1, 4, 7, 10]
+INFO: Map[B, C]=[1, 4, 7, 10, 13, 16]
+INFO: Map[C, A, B, C, A, B, C, A, B]=[2, 5, 8]
+INFO: Map[C, A, B]=[2, 5, 8, 11, 14]
+INFO: Map[A, B, C, A, B, C, A, B, C, A, B, C, A, B, C]=[0, 3]
+INFO: Map[A, B, C, A, B, C, A, B, C]=[0, 3, 6, 9]
+INFO: Map[A, B, C, A, B, C, A, B, C, A, B, C, A]=[0, 3]
+INFO: Map[B, C, A, B, C, A, B, C, A, B, C, A]=[1, 4]
+INFO: Map[A, B, C, A, B, C, A, B, C, A, B, C, A, B]=[0, 3]
+INFO: Map[C, A, B, C, A, B, C, A, B, C, A]=[2, 5]
+INFO: Map[C, A, B, C, A, B, C, A]=[2, 5, 8]
+INFO: Map[C, A, B, C]=[2, 5, 8, 11, 14]
+INFO: Map[B, C, A, B]=[1, 4, 7, 10, 13]
+INFO: Map[A, B, C, A, B, C]=[0, 3, 6, 9, 12]
+INFO: Map[B, C, A, B, C, A]=[1, 4, 7, 10]
+INFO: Map[C, A, B, C, A, B, C, A, B, C]=[2, 5, 8]
+INFO: Map[C, A]=[2, 5, 8, 11, 14]
+INFO: Map[A, B, C]=[0, 3, 6, 9, 12, 15]
+INFO: Map[A, B]=[0, 3, 6, 9, 12, 15]
+INFO: Map[C, A, B, C, A]=[2, 5, 8, 11]
+INFO: Map[A, B, C, A, B, C, A]=[0, 3, 6, 9]
+INFO: Map[A, B, C, A, B]=[0, 3, 6, 9, 12]
+INFO: Map[B, C, A, B, C, A, B]=[1, 4, 7, 10]
+INFO: Map[A, B, C, A, B, C, A, B, C, A, B]=[0, 3, 6]
+INFO: Map[A, B, C, A, B, C, A, B, C, A, B, C]=[0, 3, 6]
+INFO: Map[A, B, C, A]=[0, 3, 6, 9, 12]
+INFO: Map[C, A, B, C, A, B]=[2, 5, 8, 11]
+INFO: Map[C, A, B, C, A, B, C]=[2, 5, 8, 11]
+INFO: Map[B, C, A, B, C, A, B, C, A, B]=[1, 4, 7]
+INFO: Map[C, A, B, C, A, B, C, A, B, C, A, B, C]=[2, 5]
+INFO: Map[A, B, C, A, B, C, A, B]=[0, 3, 6, 9]
+INFO: Map[B, C, A, B, C]=[1, 4, 7, 10, 13]
+INFO: Map[B, C, A, B, C, A, B, C, A, B, C, A, B, C]=[1, 4]
+INFO: Map[C, A, B, C, A, B, C, A, B, C, A, B]=[2, 5]
+INFO: Map[B, C, A, B, C, A, B, C, A, B, C]=[1, 4, 7]
+INFO: Map[B, C, A, B, C, A, B, C, A, B, C, A, B]=[1, 4]
+INFO: Map[B, C, A]=[1, 4, 7, 10, 13]
+INFO: Map[B, C, A, B, C, A, B, C, A]=[1, 4, 7]
+INFO: Negative Ds: -3430. Elenas Ds: -531. Normal Ds: 1995
+INFO: [A, B, C, A, B, C, A, B, C, A, B, C, A, B, C, A, B, C]: 0.0
+
+
+INFO: Map[B, B]=[9, 10, 11, 12, 13, 14, 15, 16]
+INFO: Map[A, A, A, A, A, A, A, A]=[0, 1]
+INFO: Map[B, B, B, B, B, B, B, B]=[9, 10]
+INFO: Map[B, B, B, B, B]=[9, 10, 11, 12, 13]
+INFO: Map[A, A, A, A, A, A]=[0, 1, 2, 3]
+INFO: Map[B, B, B, B]=[9, 10, 11, 12, 13, 14]
+INFO: Map[A, A, A, A, A, A, A]=[0, 1, 2]
+INFO: Map[B, B, B, B, B, B]=[9, 10, 11, 12]
+INFO: Map[B, B, B]=[9, 10, 11, 12, 13, 14, 15]
+INFO: Map[A, A, A]=[0, 1, 2, 3, 4, 5, 6]
+INFO: Map[A, A, A, A, A]=[0, 1, 2, 3, 4]
+INFO: Map[A, A]=[0, 1, 2, 3, 4, 5, 6, 7]
+INFO: Map[A, A, A, A]=[0, 1, 2, 3, 4, 5]
+INFO: Map[B, B, B, B, B, B, B]=[9, 10, 11]
+INFO: Negative Ds: -840. Elenas Ds: -224. Normal Ds: 224
+INFO: [A, A, A, A, A, A, A, A, A, B, B, B, B, B, B, B, B, B]: 0.0
+
+
+INFO: Map[B, A]=[0, 2, 4, 6, 8, 10, 12, 14, 16]
+INFO: Map[B, A, B, A, B, A, B, A, B, A, B, A, B, A, B]=[0, 2]
+INFO: Map[B, A, B]=[0, 2, 4, 6, 8, 10, 12, 14]
+INFO: Map[B, A, B, A, B, A, B, A, B]=[0, 2, 4, 6, 8]
+INFO: Map[A, B, A, B, A, B, A, B, A, B]=[1, 3, 5, 7]
+INFO: Map[B, A, B, A, B, A]=[0, 2, 4, 6, 8, 10, 12]
+INFO: Map[B, A, B, A, B, A, B, A, B, A, B, A, B, A, B, A]=[0, 2]
+INFO: Map[B, A, B, A]=[0, 2, 4, 6, 8, 10, 12, 14]
+INFO: Map[B, A, B, A, B, A, B, A, B, A, B, A, B]=[0, 2, 4]
+INFO: Map[B, A, B, A, B]=[0, 2, 4, 6, 8, 10, 12]
+INFO: Map[A, B, A, B, A, B, A, B, A, B, A, B]=[1, 3, 5]
+INFO: Map[A, B, A]=[1, 3, 5, 7, 9, 11, 13, 15]
+INFO: Map[A, B]=[1, 3, 5, 7, 9, 11, 13, 15]
+INFO: Map[B, A, B, A, B, A, B, A, B, A, B]=[0, 2, 4, 6]
+INFO: Map[A, B, A, B, A, B, A, B, A]=[1, 3, 5, 7, 9]
+INFO: Map[B, A, B, A, B, A, B, A]=[0, 2, 4, 6, 8, 10]
+INFO: Map[A, B, A, B, A, B, A, B, A, B, A, B, A, B, A]=[1, 3]
+INFO: Map[A, B, A, B, A, B, A, B, A, B, A, B, A, B]=[1, 3]
+INFO: Map[B, A, B, A, B, A, B, A, B, A, B, A, B, A]=[0, 2, 4]
+INFO: Map[B, A, B, A, B, A, B]=[0, 2, 4, 6, 8, 10]
+INFO: Map[A, B, A, B]=[1, 3, 5, 7, 9, 11, 13]
+INFO: Map[A, B, A, B, A, B, A, B]=[1, 3, 5, 7, 9]
+INFO: Map[A, B, A, B, A, B, A]=[1, 3, 5, 7, 9, 11]
+INFO: Map[B, A, B, A, B, A, B, A, B, A]=[0, 2, 4, 6, 8]
+INFO: Map[A, B, A, B, A, B]=[1, 3, 5, 7, 9, 11]
+INFO: Map[A, B, A, B, A]=[1, 3, 5, 7, 9, 11, 13]
+INFO: Map[A, B, A, B, A, B, A, B, A, B, A]=[1, 3, 5, 7]
+INFO: Map[B, A, B, A, B, A, B, A, B, A, B, A]=[0, 2, 4, 6]
+INFO: Map[A, B, A, B, A, B, A, B, A, B, A, B, A]=[1, 3, 5]
+INFO: Negative Ds: -5320. Elenas Ds: -740. Normal Ds: 1600
+INFO: [B, A, B, A, B, A, B, A, B, A, B, A, B, A, B, A, B, A]: 0.0
+
+
+INFO: Map[A, A, A, A, A, A, A, A, A, A, A, A, A, A]=[0, 1, 2, 3, 4]
+INFO: Map[A, A, A]=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+INFO: Map[A, A]=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+INFO: Map[A, A, A, A, A, A, A, A]=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+INFO: Map[A, A, A, A, A, A]=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+INFO: Map[A, A, A, A, A, A, A, A, A, A, A]=[0, 1, 2, 3, 4, 5, 6, 7]
+INFO: Map[A, A, A, A, A]=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+INFO: Map[A, A, A, A, A, A, A, A, A, A]=[0, 1, 2, 3, 4, 5, 6, 7, 8]
+INFO: Map[A, A, A, A, A, A, A, A, A]=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+INFO: Map[A, A, A, A, A, A, A, A, A, A, A, A, A, A, A]=[0, 1, 2, 3]
+INFO: Map[A, A, A, A]=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+INFO: Map[A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A]=[0, 1, 2]
+INFO: Map[A, A, A, A, A, A, A, A, A, A, A, A, A]=[0, 1, 2, 3, 4, 5]
+INFO: Map[A, A, A, A, A, A, A]=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+INFO: Map[A, A, A, A, A, A, A, A, A, A, A, A]=[0, 1, 2, 3, 4, 5, 6]
+INFO: Map[A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A]=[0, 1]
+INFO: Negative Ds: -7752. Elenas Ds: -952. Normal Ds: 952
+INFO: [A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A]: 0.0
+
+
+INFO: Negative Ds: 0. Elenas Ds: 0. Normal Ds: 0
+INFO: [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S]: 0.0
+
+INFO: Map[A, A]=[0, 1]
+INFO: Map[B, B]=[3, 4]
+INFO: Negative Ds: -4. Elenas Ds: -4. Normal Ds: 4
+INFO: [A, A, A, B, B, B]: 0.0
+
+
+INFO: Map[B, B]=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+INFO: Map[B, B, B, B, B, B, B, B]=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+INFO: Map[B, B, B, B, B]=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+INFO: Map[B, B, B, B, B, B, B, B, B, B, B, B]=[1, 2, 3, 4, 5, 6]
+INFO: Map[B, B, B, B, B, B, B, B, B, B, B, B, B]=[1, 2, 3, 4, 5]
+INFO: Map[B, B, B, B]=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+INFO: Map[B, B, B, B, B, B, B, B, B, B]=[1, 2, 3, 4, 5, 6, 7, 8]
+INFO: Map[B, B, B, B, B, B]=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+INFO: Map[B, B, B, B, B, B, B, B, B]=[1, 2, 3, 4, 5, 6, 7, 8, 9]
+INFO: Map[B, B, B, B, B, B, B, B, B, B, B, B, B, B, B]=[1, 2, 3]
+INFO: Map[B, B, B]=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+INFO: Map[B, B, B, B, B, B, B, B, B, B, B]=[1, 2, 3, 4, 5, 6, 7]
+INFO: Map[B, B, B, B, B, B, B, B, B, B, B, B, B, B, B, B]=[1, 2]
+INFO: Map[B, B, B, B, B, B, B, B, B, B, B, B, B, B]=[1, 2, 3, 4]
+INFO: Map[B, B, B, B, B, B, B]=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+INFO: Negative Ds: -6120. Elenas Ds: -800. Normal Ds: 800
+INFO: [A, B, B, B, B, B, B, B, B, B, B, B, B, B, B, B, B, B, A]: 0.0

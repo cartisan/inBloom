@@ -233,31 +233,7 @@ public class Tellability {
 //			charCounter++;
 //		}
 		
-		// add dummy character with dummy emotions for testing
-		List<String> emos = new ArrayList<String>();
-		emos.add("A");
-		emos.add("B");
-		emos.add("C");
-		emos.add("A");
-		emos.add("B");
-		emos.add("C");
-
-		List<String> emos1 = new ArrayList<String>();
-		emos1.add("A");
-		emos1.add("A");
-		emos1.add("A");
-		emos1.add("B");
-		emos1.add("B");
-		emos1.add("B");
-		
-		List<String> emos2 = new ArrayList<String>();
-		emos2.add("B");
-		emos2.add("A");
-		emos2.add("B");
-		emos2.add("A");
-		emos2.add("B");
-		emos2.add("A");
-		
+		// add dummy character with dummy emotions for testing (Length = 18)
 		List<String> emos3 = new ArrayList<String>();
 		emos3.add("A");
 		emos3.add("A");
@@ -265,7 +241,117 @@ public class Tellability {
 		emos3.add("A");
 		emos3.add("A");
 		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
+		emos3.add("A");
 		
+		List<String> emos2 = new ArrayList<String>();
+		emos2.add("B");
+		emos2.add("A");
+		
+		emos2.add("B");
+		emos2.add("A");
+		
+		emos2.add("B");
+		emos2.add("A");
+		
+		emos2.add("B");
+		emos2.add("A");
+		
+		emos2.add("B");
+		emos2.add("A");
+		
+		emos2.add("B");
+		emos2.add("A");
+		
+		emos2.add("B");
+		emos2.add("A");
+		
+		emos2.add("B");
+		emos2.add("A");
+		
+		emos2.add("B");
+		emos2.add("A");
+
+
+		
+		List<String> emos = new ArrayList<String>();
+		emos.add("A");
+		emos.add("B");
+		emos.add("C");
+		
+		emos.add("A");
+		emos.add("B");
+		emos.add("C");
+		
+		emos.add("A");
+		emos.add("B");
+		emos.add("C");
+		
+		emos.add("A");
+		emos.add("B");
+		emos.add("C");
+
+		emos.add("A");
+		emos.add("B");
+		emos.add("C");
+		
+		emos.add("A");
+		emos.add("B");
+		emos.add("C");
+		
+		List<String> emos1 = new ArrayList<String>();
+		emos1.add("A");
+		emos1.add("A");
+		emos1.add("A");
+		emos1.add("A");
+		emos1.add("A");
+		emos1.add("A");
+		emos1.add("A");
+		emos1.add("A");
+		emos1.add("A");
+
+		emos1.add("B");
+		emos1.add("B");
+		emos1.add("B");
+		emos1.add("B");
+		emos1.add("B");
+		emos1.add("B");
+		emos1.add("B");
+		emos1.add("B");
+		emos1.add("B");
+		
+		List<String> emos6 = new ArrayList<String>();
+		emos6.add("A");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");
+		emos6.add("B");		
+		emos6.add("B");		
+		emos6.add("A");
+		
+
 		List<String> emos4 = new ArrayList<String>();
 		emos4.add("A");
 		emos4.add("B");
@@ -273,6 +359,22 @@ public class Tellability {
 		emos4.add("D");
 		emos4.add("E");
 		emos4.add("F");
+		emos4.add("G");
+		emos4.add("H");
+		emos4.add("I");
+		emos4.add("J");
+		emos4.add("K");
+		emos4.add("L");
+		emos4.add("M");
+		emos4.add("N");
+		emos4.add("O");
+		emos4.add("P");
+		emos4.add("Q");
+		emos4.add("R");
+		emos4.add("S");
+		
+		
+
 		
 		List<String> emos5 = new ArrayList<String>();
 		emos5.add("A");
@@ -282,13 +384,6 @@ public class Tellability {
 		emos5.add("B");
 		emos5.add("B");
 		
-		List<String> emos6 = new ArrayList<String>();
-		emos6.add("A");
-		emos6.add("B");
-		emos6.add("B");
-		emos6.add("B");
-		emos6.add("B");
-		emos6.add("A");
 		
 		logger.info(emos.toString() + ": " + sequenceAnalyser(emos) + "\n\n");
 		logger.info(emos1.toString() + ": " + sequenceAnalyser(emos1)+ "\n\n");
@@ -343,6 +438,7 @@ public class Tellability {
 		// sort out the sequences that only appear once -> symmetry increases with repetition
 //		List<Double> multiplications = new ArrayList<Double>();
 		
+		// sum over all sequences
 		int mNeg = 0;
 		int mElena = 0;
 		int mNormal = 0;
@@ -353,18 +449,26 @@ public class Tellability {
 			// number of appearance and save the values in a new list
 			if (entry.getValue().size() > 1)
 			{
-//				Integer[] startValues = entry.getValue().toArray(new Integer[0]);
+				// sum of each sequence
 				int sumDNeg = 0;
 				int sumElena = 0;
 				int sumDNormal = 0;
-				for (int i = 1; i < entry.getValue().size(); i++)
+
+				// von vorne nach hinten bei jedem startwert anfangen...
+				for( int firstIndex = 0; firstIndex < entry.getValue().size()-1; firstIndex ++ ) 
 				{
-					// get distance between prev and current occurrence of sequence
-					sumDNeg += entry.getValue().get(i) - (entry.getValue().get(i-1) + entry.getKey().size());
-					sumElena += entry.getValue().get(i) - (entry.getValue().get(i-1) + entry.getKey().size()) >= 0 ? 1 : -1; 
-					sumDNormal += entry.getValue().get(i) - entry.getValue().get(i-1);
+					// ... ihn mit jedem folgendem zu vergleichen / einzubringen
+					for (int secondIndex = firstIndex; secondIndex < entry.getValue().size()-1; secondIndex ++ ) 
+					{
+						// sum it 
+						sumDNormal += entry.getValue().get(secondIndex) - entry.getValue().get(firstIndex);
+						sumDNeg += entry.getValue().get(secondIndex) - (entry.getValue().get(firstIndex) + entry.getKey().size());
+						sumElena += entry.getValue().get(secondIndex) - (entry.getValue().get(firstIndex) + entry.getKey().size()) >= 0 ? 1 : -1; 
+						
+					}
 				}
 				
+					
 				mNeg += sumDNeg * entry.getKey().size();
 				mElena += sumElena * entry.getKey().size();
 				mNormal += sumDNormal * entry.getKey().size();
