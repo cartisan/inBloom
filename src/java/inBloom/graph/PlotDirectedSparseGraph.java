@@ -3,7 +3,6 @@ package inBloom.graph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -21,6 +20,7 @@ import inBloom.graph.Vertex.Type;
 import inBloom.graph.isomorphism.FunctionalUnit;
 import inBloom.graph.visitor.PlotGraphVisitor;
 import inBloom.graph.visitor.RemovedEdge;
+import inBloom.helper.VertexOrderComparator;
 
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
 
@@ -234,9 +234,10 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 
 	private void regenerateVertexArray() {
 		this.vertexArray = new Vertex[this.getPlotVertexCount()];
+
 		this.vertices.keySet().stream()
-		   .filter(v -> !this.roots.contains(v) & !this.yAxis.values().contains(v))
-	 	   .sorted(Comparator.comparingInt(Vertex::getStep))
+		   .filter(v -> !this.roots.contains(v) & !this.yAxis.values().contains(v))		// remove roots and axis labels
+	 	   .sorted(new VertexOrderComparator(this))
 	 	   .collect(Collectors.toList()).toArray(this.vertexArray);
 		this.isDirty = false;
 	}

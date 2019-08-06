@@ -28,7 +28,7 @@ public class State {
 	private static final int NULL_NODE = -1;
 	private static final int MAX_FU_SIZE = 10;
 
-	private PlotDirectedSparseGraph g1, g2;
+	public PlotDirectedSparseGraph g1, g2;
 	private int n1, n2;
 	private int[] core1, core2, in1, in2, out1, out2;
 
@@ -73,6 +73,8 @@ public class State {
 		Arrays.fill(this.out2, NULL_NODE);
 
 		Class cls = PlotGraphController.class;
+
+		logger.warning("State: " + this.toString() + " FU Graph: " + this.g2.getOrderedVertexList().toString());
 	}
 
 	/**
@@ -131,11 +133,11 @@ public class State {
 		Arrays.fill(this.out2, NULL_NODE);
 
 		for(int i = 0; i < this.n2; i++) {
-			if (i < v1) {
+			if (i < v2) {
 				this.core2[i] = coreOld[i];
 				this.in2[i] = inOld[i];
 				this.out2[i] = outOld[i];
-			} else if (i < v1 + lengthDiff + 1) {
+			} else if (i < v2 + lengthDiff + 1) {
 				this.core2[i] = NULL_NODE;
 				this.in2[i] = NULL_NODE;
 				this.out2[i] = NULL_NODE;
@@ -335,7 +337,7 @@ public class State {
 						Collection<PlotDirectedSparseGraph> transformedG2s = FUTransformationRule.getAllTransformations(currentIn2, this.g2);
 						for (PlotDirectedSparseGraph g2n : transformedG2s) {
 							try {
-								tOut.add(new State(this, currentIn1, currentIn2, g2n));
+								tIn.add(new State(this, currentIn1, currentIn2, g2n));
 							} catch (RuntimeException e) {
 								// if g2n, resulting from transformation, is bigger then plot graph, try next transformation
 								continue;
@@ -348,11 +350,11 @@ public class State {
 		if(!tIn.isEmpty()) {
 			return tIn;
 		}
-
-		if(this.depth > 0) {
-			return Collections.emptySet();
-		}
-
+//
+//		if(this.depth > 0) {
+//			return Collections.emptySet();
+//		}
+		
 		HashSet<State> tall = new HashSet<>();
 		for(int current1 = 0; current1 < this.n1; current1++) {
 			if(this.core1[current1] == NULL_NODE) {

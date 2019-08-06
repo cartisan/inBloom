@@ -46,4 +46,13 @@ public enum UnitVertexType {
 		}
 		return UnitVertexType.NONE;
 	}
+
+	public boolean matches(UnitVertexType other) {
+		switch(this) {
+			case WILDCARD: 		return true;
+			case POLYEMOTIONAL: return other.equals(POSITIVE) || other.equals(NEGATIVE) || other.equals(POLYEMOTIONAL);
+			case NONE: 			return false;
+			default: 			return this.equals(other);
+		}
+	}
 }

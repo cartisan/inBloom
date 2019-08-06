@@ -30,17 +30,17 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 		Vertex v1, v2;
 		Predicate<Vertex> posEmoTrigger = new Predicate<Vertex>() {
 			public boolean test(Vertex v) {
-				return UnitVertexType.typeOf(v).equals(UnitVertexType.POSITIVE);
+				return UnitVertexType.typeOf(v).matches(UnitVertexType.POSITIVE);
 			}
 		};
 		Predicate<Vertex> negEmoTrigger = new Predicate<Vertex>() {
 			public boolean test(Vertex v) {
-				return UnitVertexType.typeOf(v).equals(UnitVertexType.NEGATIVE);
+				return UnitVertexType.typeOf(v).matches(UnitVertexType.NEGATIVE);
 			}
 		};
 		Predicate<Vertex> intTrigger = new Predicate<Vertex>() {
 			public boolean test(Vertex v) {
-				return UnitVertexType.typeOf(v).equals(UnitVertexType.INTENTION);
+				return UnitVertexType.typeOf(v).matches(UnitVertexType.INTENTION);
 			}
 		};
 
@@ -121,6 +121,7 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 		for (FUTransformationRule rule: TRANSFORMATIONS) {
 			PlotDirectedSparseGraph fuNew = fuGraph.clone();	//clone FU such that changes in vertices won't affect original FU
 			Vertex v = fuNew.getVertex(pos);
+			assert v.getLabel() == fuGraph.getVertex(pos).getLabel();
 			if (rule.test(v)) {
 				all.add(rule.apply(v, fuNew));
 			}
@@ -165,14 +166,24 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 			target.addVertex(v);
 		}
 
-		// create new edges from set of 'incoming' vertices to start of replacement graph
+		// carry over edges from set of 'incoming' vertices to start of replacement graph -- usually wildcard edges cause we dont know vertex types
+		// in case of cross character edges use them instead, to maintain inter-char character of edge
 		for (Edge edge : fuGraph.getInEdges(toReplace)) {
-			target.addEdge(new Edge(Edge.Type.WILDCARD), fuGraph.getSource(edge), replacementRoot);
+			if (edge.getType() == Edge.Type.CROSSCHARACTER) {
+				target.addEdge(edge, fuGraph.getSource(edge), replacementRoot);
+			} else {
+				target.addEdge(new Edge(Edge.Type.WILDCARD), fuGraph.getSource(edge), replacementRoot);
+			}
 		}
 
-		// create new edges from end of replacement graph to set of 'outgoing' vertices
+		// carry over edges from set of 'outgoing' vertices to start of replacement graph -- usually wildcard edges cause we dont know vertex types
+		// in case of cross character edges use them instead, to maintain inter-char character of edge
 		for (Edge edge : fuGraph.getOutEdges(toReplace)) {
-			target.addEdge(new Edge(Edge.Type.WILDCARD), replacementLeave, fuGraph.getDest(edge));
+			if (edge.getType() == Edge.Type.CROSSCHARACTER) {
+				target.addEdge(edge, replacementLeave, fuGraph.getDest(edge));
+			} else {
+				target.addEdge(new Edge(Edge.Type.WILDCARD), replacementLeave, fuGraph.getDest(edge));
+			}
 		}
 
 		// carry over edges from both this and replacement, if both, the edge's source and destination, were previously imported into target
@@ -198,7 +209,7 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 		// update steps in fuGraph following toReplace
 		int stepDelta = replacementLeave.getStep() - replacementRoot.getStep();
 		for (Vertex v: fuGraph.getOrderedVertexList()) {
-			if (v.getStep() > toReplace.getStep()) {
+			if (v.getStep() > toReplace.getStep() & v != toReplace) {
 				v.setStep(v.getStep() + stepDelta);
 			}
 		}
