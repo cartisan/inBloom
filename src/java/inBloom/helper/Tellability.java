@@ -89,7 +89,7 @@ public class Tellability {
 		this.connectivityGraph = new ConnectivityGraph(graph);
 
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
-			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(unit.getGraph(), graph);
+			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(unit.getGraph(), graph, 1);
 			unitInstances += mappings.size();
 			this.functionalUnitCount.put(unit, mappings.size());
 			logger.log(Level.INFO, "Found '" + unit.getName() + "' " + mappings.size() + " times.");

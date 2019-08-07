@@ -38,7 +38,7 @@ public class ComplexUnitTest  {
 		plotGraph.addEdge(FunctionalUnits.makeActualization(), v2, v3);
 		plotGraph.addEdge(FunctionalUnits.makeTermination(), v3, v1);
 
-		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(FunctionalUnits.INTENTIONAL_PROBLEM_RESOLUTION.getGraph(), plotGraph);
+		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(FunctionalUnits.INTENTIONAL_PROBLEM_RESOLUTION.getGraph(), plotGraph, 1);
 
 		assertEquals(1, mappings.size());
 	}
@@ -67,7 +67,7 @@ public class ComplexUnitTest  {
 		plotGraph.addEdge(FunctionalUnits.makeTermination(), v3, v1);
 		plotGraph.addEdge(FunctionalUnits.makeMotivation(), v3, v4);
 
-		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(FunctionalUnits.INTENTIONAL_PROBLEM_RESOLUTION.getGraph(), plotGraph);
+		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(FunctionalUnits.INTENTIONAL_PROBLEM_RESOLUTION.getGraph(), plotGraph, 1);
 
 		assertEquals(1, mappings.size());
 	}
@@ -97,13 +97,13 @@ public class ComplexUnitTest  {
 		plotGraph.addEdge(FunctionalUnits.makeActualization(), v3, v4);
 		plotGraph.addEdge(FunctionalUnits.makeTermination(), v4, v1);
 
-		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(FunctionalUnits.INTENTIONAL_PROBLEM_RESOLUTION.getGraph(), plotGraph);
+		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(FunctionalUnits.INTENTIONAL_PROBLEM_RESOLUTION.getGraph(), plotGraph, 1);
 
 		assertEquals(1, mappings.size());
 	}
 
 	@Test
-	public void testCrossCharFU() {
+	public void testRetaliationExpand() {
 		UnitFinder finder = new UnitFinder();
 		Class cls = PlotGraphController.class;
 
@@ -120,7 +120,7 @@ public class ComplexUnitTest  {
 		v2 = FunctionalUnits.makeNegative(4, plotGraph);
 		plotGraph.addEdge(FunctionalUnits.makeActualization(), v1, v2);
 
-		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(FunctionalUnits.RETALIATION.getGraph(), plotGraph);
+		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(FunctionalUnits.RETALIATION.getGraph(), plotGraph, 1);
 
 		assertEquals(1, mappings.size());
 	}
