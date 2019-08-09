@@ -5,13 +5,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.DoubleStream;
 
 import inBloom.framing.ConnectivityGraph;
 import inBloom.graph.CountingVisitor;
@@ -44,7 +42,6 @@ public class Tellability {
 	// Semantic Symmetry
 	public double symmetry;
 	
-	
 	// Semantic Opposition
 	
 	// Suspense
@@ -53,6 +50,11 @@ public class Tellability {
 
 	
 	// Dynamic Points
+	
+	
+	// for testing purposes
+	public Tellability() {}
+	
 	
 	/**
 	 * Takes an analyzed graph and computes all necessary statistics of the plot to compute tellability.
@@ -91,7 +93,8 @@ public class Tellability {
 	 * at their overlap.
 	 * @param graph a graph that has been processed by both FullGraphPPVisitor and CompactGraphPPVisitor
 	 */
-	private void detectPolyvalence() {
+	private void detectPolyvalence() 
+	{
 		Map<Vertex, Integer> vertexUnitCount = new HashMap<>();
 		
 		UnitFinder finder = new UnitFinder();
@@ -161,7 +164,8 @@ public class Tellability {
 	{
 		// get the actions, emotions, intentions and beliefs of a character
 		double[] characterSymmetries = new double[this.graph.getRoots().size()];
-		
+		double minNormal = 0;
+
 		// for each character in the story
 		for (Vertex root : this.graph.getRoots()) 
 		{
@@ -171,7 +175,8 @@ public class Tellability {
 			List<String> actionSequences = new ArrayList<String>();
 			
 			int charCounter = 0;
-			// get its story graph
+			
+			// get the character's story graph
 			for(Vertex v : this.graph.getCharSubgraph(root))
 			{
 				// get the emotions of the character
@@ -203,33 +208,73 @@ public class Tellability {
 			}
 			
 			logger.info("\n\nCharacter: " + root.toString() + ": ");
-			logger.info("Emotions:");
+			
+			logger.info("Intentions:\n" + intentionSequences.toString());
+			
+			// run the analysis on the different states
 			double emotionSym = sequenceAnalyser(emotionSequences);
-			logger.info("Intentions:");
 			double intentionSym = sequenceAnalyser(intentionSequences);
-			logger.info("Beliefs:");
 			double beliefSym = sequenceAnalyser(beliefSequences);
-			logger.info("Actions:");
 			double actionSym = sequenceAnalyser(actionSequences);
-			characterSymmetries[charCounter] = (emotionSym + intentionSym + beliefSym + actionSym) / 4;
+			
+			
+			// NORMALISATION
+			// for normalisaton: create maximal possible sequence and get its symmetry value
+			List<String> maxSeqEmotion = new ArrayList<>();
+			List<String> maxSeqIntention = new ArrayList<>();
+			List<String> maxSeqBelief = new ArrayList<>();
+			List<String> maxSeqAction = new ArrayList<>();
+			
+			for (int i = 0 ; i < emotionSequences.size(); i++) 
+			{
+				maxSeqEmotion.add("a");
+			}
+			
+			for (int i = 0 ; i < intentionSequences.size(); i++) 
+			{
+				maxSeqIntention.add("a");
+			}
+			
+			for (int i = 0 ; i < beliefSequences.size(); i++) 
+			{
+				maxSeqBelief.add("a");
+			}
+			
+			for (int i = 0 ; i < actionSequences.size(); i++) 
+			{
+				maxSeqAction.add("a");
+			}			
+			
+			
+			// z-normalisation: (x - min) / (max - min)
+			double normSymEmotion = (emotionSym - minNormal) / (sequenceAnalyser(maxSeqEmotion) - minNormal);
+			double normSymIntention = (intentionSym - minNormal) / (sequenceAnalyser(maxSeqIntention) - minNormal);
+			double normSymBelief = (beliefSym - minNormal) / (sequenceAnalyser(maxSeqBelief) - minNormal);
+			double normSymAction = (actionSym - minNormal) / (sequenceAnalyser(maxSeqAction) - minNormal);
+			
+			
+			// take overall mean over the different states of the character
+			characterSymmetries[charCounter] = (normSymEmotion + normSymIntention + normSymBelief + normSymAction) / 4;
+			
 			logger.info("\n"+root.toString() + " Average Symmetry: "+ characterSymmetries[charCounter] +
-					"\nWith:\n" + emotionSym + "(Emotions),\n" + 
-					intentionSym + "(Intentions),\n" + 
-					beliefSym + "(Beliefs),\n" + 
-					actionSym + "(Actions)");
+					"\nWith:\n" + normSymEmotion + "(Emotions),\n" + 
+					normSymIntention + "(Intentions),\n" + 
+					normSymBelief + "(Beliefs),\n" + 
+					normSymAction + "(Actions)");
 			charCounter++;
 		}
 		
-		this.symmetry = ( Arrays.stream(characterSymmetries).sum() / this.graph.getRoots().size());
-		logger.info("Overall symmetry: " + this.symmetry);
+		// overall symmetry (normalisation to number of characters happens in the compute method)
+		this.symmetry = Arrays.stream(characterSymmetries).sum();
 	}
 	
 	/**
 	 * Calculates the story's overall symmetry based on the characters' beliefs, intentions, actions and emotions
+	 * It uses the normal distance measurement. For testing all three: run TestSymmetry.java
 	 * @param a graph containing the respective character's events (beliefs, intentions, actions, emotions) as a list of strings
 	 * @return symmetry for the input graph 
 	 */
-	private double sequenceAnalyser(List<String> graphSequence)
+	public double sequenceAnalyser(List<String> graphSequence)
 	{		
 		// saves a sequences as key with corresponding values [counter, List of Start Indices]
 		Map<List<String>, List<Integer>> sequenceMap = new HashMap<>();
@@ -244,7 +289,7 @@ public class Tellability {
 				// if the sequence already in the list, only increase the counter
 				if (sequenceMap.containsKey(currentSeq))
 				{
-					List<Integer> newSeq = sequenceMap.get(currentSeq);
+					List<Integer> newSeq = new ArrayList<>(sequenceMap.get(currentSeq));
 					newSeq.add(start);
 					
 					sequenceMap.put(currentSeq, newSeq);
@@ -259,88 +304,31 @@ public class Tellability {
 			}
 		}
 
-		//TODO: decide for one measure
-		/*
-		* calculate symmetry values for all of the sequences
-		* in the best case, punish overlapping sequences to avoid duplications:
-		* ABCABCABC
-		* ABC 
-		* are two different entries but in theory the first contains the second 
-		* three possible formulas for calculation:
-		* 1) Neg: currentSequenceStart - length of prevSequence
-		* 2) Dir: similar to (1), but only adds 1 if they do not overlap; else -1
-		* 3) Normal: currentSequenceStart - prevSequenceStart
-		*/
-		
-		List<Double> weightedNegs = new ArrayList<Double>();
-		List<Double> weightedDirs = new ArrayList<Double>();
-		List<Double> weightedNormals = new ArrayList<Double>();
-		
+		double sumWeightedNormals = 0;
+		int sequenceValueNormal = 0;
+
 		for (Map.Entry<List<String>, List<Integer>> entry : sequenceMap.entrySet()) 
 		{
 			// if a sequence appears more than once, weight them by their 
 			// number of appearances and save the values in a new list
 			if (entry.getValue().size() > 1)
 			{
-				// sum of each sequence
-				int sumNeg = 0;
-				int sumDir = 0;
-				int sumNormal = 0;
-
-				// sum the differences between the start indices of the sequences via the three formulas
-				for (int prevIdx = 0; prevIdx < entry.getValue().size()-1; prevIdx ++) 
+				// reset sequence value
+				sequenceValueNormal = 0;
+				// sum the distances between the start indices within a sequence
+				for (int prevIdx = 0; prevIdx < entry.getValue().size(); prevIdx ++) 
 				{
-					for (int currentIdx = prevIdx+1; currentIdx < entry.getValue().size()-1; currentIdx ++) 
+					for (int currentIdx = prevIdx+1; currentIdx < entry.getValue().size(); currentIdx ++) 
 					{
-						sumNeg += entry.getValue().get(currentIdx) - (entry.getValue().get(prevIdx) + entry.getKey().size());
-						sumDir += entry.getValue().get(currentIdx) - 
-								(entry.getValue().get(prevIdx) + entry.getKey().size()) >= 0 ? 1 : -1; 
-						sumNormal += entry.getValue().get(currentIdx) - entry.getValue().get(prevIdx);
+						// sum distances between start indices 
+						sequenceValueNormal += entry.getValue().get(currentIdx) - entry.getValue().get(prevIdx);
 					}
 				}
-				
-				weightedNegs.add((double)(sumNeg * entry.getKey().size()));
-				weightedDirs.add((double)(sumDir * entry.getKey().size()));
-				weightedNormals.add((double)(sumNormal * entry.getKey().size()));
+				// weight the distances by their length
+				sumWeightedNormals += (double)(sequenceValueNormal * entry.getKey().size());
 			}
 		}
-		
-		// convert to intstream to make normalisation easier
-		DoubleStream NegStream = weightedNegs.stream().mapToDouble(Double::doubleValue);
-		DoubleStream DirStream = weightedDirs.stream().mapToDouble(Double::doubleValue);
-		DoubleStream NormalStream = weightedNormals.stream().mapToDouble(Double::doubleValue);
-
-		// streams are not re-usbale (can't call max() after already called min()): get the stats 
-		DoubleSummaryStatistics statsNeg = NegStream.summaryStatistics();
-		DoubleSummaryStatistics statsDir = DirStream.summaryStatistics();
-		DoubleSummaryStatistics statsNormal = NormalStream.summaryStatistics();
-		
-		double minNeg = statsNeg.getMin();
-		double maxNeg = statsNeg.getMax();
-		double minDir = statsDir.getMin();
-		double maxDir = statsDir.getMax();
-		double minNormal = statsNormal.getMin(); // should be 0
-		double maxNormal = statsNormal.getMax();;
-			
-		// TODO: do this for the other formulas
-		// z-normalise each value
-		for (int i = 0; i < weightedNormals.size(); i++)
-		{
-			double x = weightedNormals.get(i); 
-			double normalised_x = x = ((x-minNeg)/(maxNeg-minNeg));
-			weightedNormals.set(i, normalised_x);
-		}
-		
-		double sumNormals = 0;
-		for (int i = 0; i < weightedNormals.size(); i++)
-		{
-			sumNormals += weightedNormals.get(i);
-		}
-
-		// return the mean symmetry for the character's state (emotion/action/etc)
-		//TODO: replace normalStream with Neg or DirStream if deciding against using this as
-		// the final measure
-		return (sumNormals/weightedNormals.size());
+		return sumWeightedNormals; 
 	}	
 
 	/**
@@ -354,10 +342,12 @@ public class Tellability {
 			return 0;
 		}
 		
+		// divide symmetry by the number of agents in the story
 		double tellability = (double) this.numPolyvalentVertices / this.numAllVertices + 
-							 (double) this.suspense / this.plotLength;
-							 //(double) this.symmetry;
-		
+							 (double) this.suspense / this.plotLength +
+							 (double) this.symmetry / this.graph.getRoots().size();
+;
+
 		logger.info("Overall tellability: " + tellability);
 		return tellability;
 	}
