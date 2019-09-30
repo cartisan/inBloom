@@ -27,6 +27,7 @@ public class Vertex implements Cloneable {
 					   LISTEN,			// target of a communication edge
 					   INTENTION,		// commitment to bring about a desired state
 					   WILDCARD,		// vertex of arbitrary but fixed type, used to define schemata in FuntionalUnits
+					   ACTIVE,			// vertex of type action or speech, used to define schemata in FuntionalUnits
 					   ROOT,			// root node of plot graph, contains character name but is semantically empty
 					   AXIS_LABEL,		// represents environment-steps on the vertical time axis
 					 }

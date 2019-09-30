@@ -587,6 +587,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		case ROOT: 		visitor.visitRoot(vertex); 		break;
 		case EVENT: 	visitor.visitEvent(vertex); 	break;
 		case WILDCARD:	visitor.visitEvent(vertex);		break;
+		case ACTIVE:	visitor.visitEvent(vertex);		break;
 		case ACTION: 	visitor.visitAction(vertex); 	break;
 		case EMOTION: 	visitor.visitEmotion(vertex); 	break;
 		case PERCEPT: 	visitor.visitPercept(vertex); 	break;

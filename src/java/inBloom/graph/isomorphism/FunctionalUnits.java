@@ -81,12 +81,12 @@ public class FunctionalUnits {
 		NESTED_GOAL.setSubject(new Pair<>(v1, "(.*)"));
 
 		PlotDirectedSparseGraph retaliation = new PlotDirectedSparseGraph();
-		v1 = makeWildcard(1, retaliation);
+		v1 = makeActive(1, retaliation);
 		v2 = makeNegative(1, retaliation);
 		retaliation.addEdge(makeCommunication(), v1, v2);
 		v3 = makeIntention(2, retaliation);
 		retaliation.addEdge(makeMotivation(), v2, v3);
-		v2 = makeWildcard(3, retaliation);
+		v2 = makeActive(3, retaliation);
 		retaliation.addEdge(makeMotivation(), v3, v2);
 		v1 = makeIntention(3, retaliation);
 		retaliation.addEdge(makeCommunication(), v2, v1);
@@ -170,8 +170,8 @@ public class FunctionalUnits {
 		HONORED_REQUEST.setSubject(new Pair<>(v1, "request\\((.*)\\)"));
 
 		ALL[0] = DENIED_REQUEST;
-		ALL[1] = NESTED_GOAL;
-		ALL[2] = RETALIATION;
+		ALL[1] = RETALIATION;
+		ALL[2] = NESTED_GOAL;
 		ALL[3] = INTENTIONAL_PROBLEM_RESOLUTION;
 		ALL[4] = FORTUITOUS_PROBLEM_RESOLUTION;
 		ALL[5] = SUCCESS_BORN_OF_ADVERSITY;
@@ -376,6 +376,11 @@ public class FunctionalUnits {
 
 	public static Vertex makeWildcard(int step, PlotDirectedSparseGraph graph) {
 		Vertex vertex = new Vertex("FU ?", Vertex.Type.WILDCARD, step, graph);
+		return vertex;
+	}
+	
+	public static Vertex makeActive(int step, PlotDirectedSparseGraph graph) {
+		Vertex vertex = new Vertex("FU ?", Vertex.Type.ACTIVE, step, graph);
 		return vertex;
 	}
 

@@ -477,16 +477,7 @@ public class State {
 		}
 		UnitVertexType t1 = UnitVertexType.typeOf(plotVertex);
         UnitVertexType t2 = UnitVertexType.typeOf(this.g2.getVertex(this.candidateV2));
-        if(t2 == UnitVertexType.WILDCARD) {
-        	return true;
-        }
-        if(t2 == UnitVertexType.POLYEMOTIONAL) {
-        	return t1 != UnitVertexType.INTENTION;
-        }
-        if(t1 == UnitVertexType.POLYEMOTIONAL) {
-        	return t2 != UnitVertexType.INTENTION;
-        }
-        return t1 != UnitVertexType.NONE && t1 == t2;
+        return t2.matches(t1);
 	}
 
 	/**
@@ -504,8 +495,8 @@ public class State {
 				Vertex vm1 = this.g2.getVertex(this.candidateV2);
 				Vertex vm2 = this.g2.getVertex(m);
 
-				boolean isWildcard = UnitVertexType.typeOf(vm1) == UnitVertexType.WILDCARD
-								  || UnitVertexType.typeOf(vm2) == UnitVertexType.WILDCARD;
+				boolean isWildcard = UnitVertexType.typeOf(vm1).needsWildcardEdge()
+								  || UnitVertexType.typeOf(vm2).needsWildcardEdge();
 
 				Collection<Edge> nEdges = this.getEdges(this.g1, vn1, vn2);
 				Collection<Edge> mEdges = this.getEdges(this.g2, vm1, vm2);
