@@ -61,13 +61,13 @@ public class FunctionalUnits {
 		PlotDirectedSparseGraph deniedRequest = new PlotDirectedSparseGraph();
 		v1 = makeSpeech(1, deniedRequest);
 		v2 = makeNegative(1, deniedRequest);
-		deniedRequest.addEdge(makeCommunication(), v1, v2);
+		deniedRequest.addEdge(makeCrosschar(), v1, v2);
 		v3 = makeIntention(2, deniedRequest);
 		deniedRequest.addEdge(makeMotivation(), v2, v3);
 		v2 = makeSpeech(3, deniedRequest);
 		deniedRequest.addEdge(makeMotivation(), v3, v2);
 		v3 = makeNegative(4, deniedRequest);
-		deniedRequest.addEdge(makeCommunication(), v2, v3);
+		deniedRequest.addEdge(makeCrosschar(), v2, v3);
 		DENIED_REQUEST = new FunctionalUnit("Denied Request", deniedRequest);
 		DENIED_REQUEST.setSubject(new Pair<>(v1, "request\\((.*)\\)"));
 
@@ -83,13 +83,13 @@ public class FunctionalUnits {
 		PlotDirectedSparseGraph retaliation = new PlotDirectedSparseGraph();
 		v1 = makeActive(1, retaliation);
 		v2 = makeNegative(1, retaliation);
-		retaliation.addEdge(makeCommunication(), v1, v2);
+		retaliation.addEdge(makeCrosschar(), v1, v2);
 		v3 = makeIntention(2, retaliation);
 		retaliation.addEdge(makeMotivation(), v2, v3);
 		v2 = makeActive(3, retaliation);
 		retaliation.addEdge(makeMotivation(), v3, v2);
 		v1 = makeIntention(3, retaliation);
-		retaliation.addEdge(makeCommunication(), v2, v1);
+		retaliation.addEdge(makeCrosschar(), v2, v1);
 		v2 = makeNegative(4, retaliation);
 		retaliation.addEdge(makeActualization(), v1, v2);
 		RETALIATION = new FunctionalUnit("Retaliation", retaliation);
@@ -159,13 +159,13 @@ public class FunctionalUnits {
 		PlotDirectedSparseGraph honoredRequest = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1, honoredRequest);
 		v2 = makePositive(1, honoredRequest);
-		honoredRequest.addEdge(makeCommunication(), v1, v2);
+		honoredRequest.addEdge(makeCrosschar(), v1, v2);
 		v3 = makeIntention(2, honoredRequest);
 		honoredRequest.addEdge(makeMotivation(), v2, v3);
 		v2 = makeIntention(3, honoredRequest);
 		honoredRequest.addEdge(makeMotivation(), v3, v2);
 		v3 = makePositive(4, honoredRequest);
-		honoredRequest.addEdge(makeCommunication(), v2, v3);
+		honoredRequest.addEdge(makeCrosschar(), v2, v3);
 		HONORED_REQUEST = new FunctionalUnit("Honored Request", honoredRequest);
 		HONORED_REQUEST.setSubject(new Pair<>(v1, "request\\((.*)\\)"));
 
@@ -287,55 +287,55 @@ public class FunctionalUnits {
 		g = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1, g);
 		v2 = makeIntention(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[15] = new FunctionalUnit("Request", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makePositive(1, g);
 		v2 = makeIntention(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[16] = new FunctionalUnit("CC Enablement", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makeNegative(1, g);
 		v2 = makeIntention(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[17] = new FunctionalUnit("CC Motivation", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1, g);
 		v2 = makeNegative(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[18] = new FunctionalUnit("CC Threat", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1, g);
 		v2 = makePositive(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[19] = new FunctionalUnit("CC Promise", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makePositive(1, g);
 		v2 = makePositive(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[20] = new FunctionalUnit("Shared Positive Event", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makeNegative(1, g);
 		v2 = makeNegative(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[21] = new FunctionalUnit("Shared Negative Event", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makePositive(1, g);
 		v2 = makeNegative(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[22] = new FunctionalUnit("CC Mixed Blessing", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makeNegative(1, g);
 		v2 = makePositive(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[23] = new FunctionalUnit("CC Hidden Blessing", g);
 
 		for(FunctionalUnit unit : PRIMITIVES) {
@@ -380,11 +380,11 @@ public class FunctionalUnits {
 	}
 	
 	public static Vertex makeActive(int step, PlotDirectedSparseGraph graph) {
-		Vertex vertex = new Vertex("FU ?", Vertex.Type.ACTIVE, step, graph);
+		Vertex vertex = new Vertex("FU act/speech", Vertex.Type.ACTIVE, step, graph);
 		return vertex;
 	}
 
-	public static Edge makeCommunication() {
+	public static Edge makeCrosschar() {
 		return new Edge(Edge.Type.CROSSCHARACTER);
 	}
 

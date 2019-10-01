@@ -110,13 +110,13 @@ public class ComplexUnitTest  {
 		PlotDirectedSparseGraph plotGraph = new PlotDirectedSparseGraph();
 		Vertex v1 = FunctionalUnits.makeSpeech(1, plotGraph);
 		Vertex v2 = FunctionalUnits.makeNegative(1, plotGraph);
-		plotGraph.addEdge(FunctionalUnits.makeCommunication(), v1, v2);
+		plotGraph.addEdge(FunctionalUnits.makeCrosschar(), v1, v2);
 		Vertex v3 = FunctionalUnits.makeIntention(2, plotGraph);
 		plotGraph.addEdge(FunctionalUnits.makeMotivation(), v2, v3);
 		v2 = FunctionalUnits.makeSpeech(3, plotGraph);
 		plotGraph.addEdge(FunctionalUnits.makeMotivation(), v3, v2);
 		v1 = FunctionalUnits.makeIntention(3, plotGraph);
-		plotGraph.addEdge(FunctionalUnits.makeCommunication(), v2, v1);
+		plotGraph.addEdge(FunctionalUnits.makeCrosschar(), v2, v1);
 		v2 = FunctionalUnits.makeNegative(4, plotGraph);
 		plotGraph.addEdge(FunctionalUnits.makeActualization(), v1, v2);
 

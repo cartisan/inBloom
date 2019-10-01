@@ -14,10 +14,11 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jason.util.Pair;
+
 import inBloom.graph.Edge;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.Vertex;
-import jason.util.Pair;
 
 /**
  * Class which wraps around a PlotDirectedSparseGraph to be used as a functional unit.
@@ -25,29 +26,29 @@ import jason.util.Pair;
  * @author Sven Wilke
  */
 public class FunctionalUnit {
-	
+
 	static Logger logger = Logger.getLogger(FunctionalUnit.class.getName());
-	
+
 	private String name;
 	private PlotDirectedSparseGraph unitGraph;
 	private PlotDirectedSparseGraph displayGraph;
-	
+
 	private boolean isPrimitive = false;
-	
+
 	private Pair<Vertex, String> subject;
-	
+
 	public FunctionalUnit(String name, PlotDirectedSparseGraph graph) {
 		this.name = name;
 		this.unitGraph = graph;
 	}
-	
+
 	/**
 	 * Marks this functional unit as a primitive unit.
 	 */
 	public void setPrimitive() {
 		this.isPrimitive = true;
 	}
-	
+
 	/**
 	 * Checks whether this unit is primitive or complex
 	 * @return true if this is a primitive unit, false otherwise.
@@ -55,7 +56,7 @@ public class FunctionalUnit {
 	public boolean isPrimitive() {
 		return this.isPrimitive;
 	}
-	
+
 	/**
 	 * Sets the subject of the vertex.
 	 * @param subject 	Pair of vertex to be used as a subject and
@@ -68,7 +69,7 @@ public class FunctionalUnit {
 		}
 		this.subject = subject;
 	}
-	
+
 	/**
 	 * Returns the name of this functional unit.
 	 * @return String name
@@ -76,7 +77,7 @@ public class FunctionalUnit {
 	public String getName() {
 		return this.name;
 	}
-	
+
 	/**
 	 * Retrieves the pure functional unit graph
 	 * for use in subgraph isomorphism analysis.
@@ -85,7 +86,7 @@ public class FunctionalUnit {
 	public PlotDirectedSparseGraph getGraph() {
 		return this.unitGraph;
 	}
-	
+
 	/**
 	 * Retrieves a version of this functional unit which
 	 * is plottable using the default PlotGraphLayout,
@@ -96,30 +97,30 @@ public class FunctionalUnit {
 	 * @return PlotDirectedSparseGraph displayable functional unit graph
 	 */
 	public PlotDirectedSparseGraph getDisplayGraph() {
-		if(displayGraph == null) {
+		if(this.displayGraph == null) {
 			this.createDisplayGraph();
 		}
 		return this.displayGraph;
 	}
-	
+
 	private void createDisplayGraph() {
-		displayGraph = unitGraph.clone();
+		this.displayGraph = this.unitGraph.clone();
 		Vertex root2 = null;
 		Vertex[] roots = new Vertex[] {
-			displayGraph.addRoot(this.name + " Agent 1"),
-			root2 = displayGraph.addRoot(this.name + " Agent 2")
+			this.displayGraph.addRoot(this.name + " Agent 1"),
+			root2 = this.displayGraph.addRoot(this.name + " Agent 2")
 		};
 
-		connect(roots);
+		this.connect(roots);
 
-		if(displayGraph.getIncidentEdges(root2).isEmpty()) {
-			displayGraph.removeVertex(root2);
-			displayGraph.getRoots().remove(root2);
+		if(this.displayGraph.getIncidentEdges(root2).isEmpty()) {
+			this.displayGraph.removeVertex(root2);
+			this.displayGraph.getRoots().remove(root2);
 		}
-		
-		displayGraph.setName(this.getName());
+
+		this.displayGraph.setName(this.getName());
 	}
-	
+
 	/**
 	 * Connects the display graph temporally using the steps
 	 * of the vertices. Assumes that for each character,
@@ -127,8 +128,9 @@ public class FunctionalUnit {
 	 * @param roots
 	 */
 	private void connect(Vertex[] roots) {
+		// TODO: Refactor so that multiple chars are possible even if first double vertex step is not 1
 		Vertex[] starts = {null, null};
-		for(Vertex v : displayGraph.getVertices()) {
+		for(Vertex v : this.displayGraph.getVertices()) {
 			if(v.getType() != Vertex.Type.AXIS_LABEL && v.getStep() == 1) {
 				if(starts[0] == null) {
 					starts[0] = v;
@@ -138,12 +140,12 @@ public class FunctionalUnit {
 				}
 			}
 		}
-		List<Vertex> vertexDump0 = new ArrayList<Vertex>();
-		List<Vertex> vertexDump1 = new ArrayList<Vertex>();
+		List<Vertex> vertexDump0 = new ArrayList<>();
+		List<Vertex> vertexDump1 = new ArrayList<>();
 		vertexDump0.add(starts[0]);
 		vertexDump1.add(starts[1]);
-		Set<Vertex> vertices0 = new HashSet<Vertex>();
-		Set<Vertex> vertices1 = new HashSet<Vertex>();
+		Set<Vertex> vertices0 = new HashSet<>();
+		Set<Vertex> vertices1 = new HashSet<>();
 		boolean allIn0, allIn1;
 		do {
 			allIn0 = true;
@@ -151,65 +153,68 @@ public class FunctionalUnit {
 			for(Vertex v : vertexDump0) {
 				if(!vertices0.contains(v)) {
 					allIn0 = false;
-					collectSubVertices(v, vertices0, vertexDump1);
+					this.collectSubVertices(v, vertices0, vertexDump1);
 				}
 			}
 			if(starts[1] != null) {
 				for(Vertex v : vertexDump1) {
 					if(!vertices1.contains(v)) {
 						allIn1 = false;
-						collectSubVertices(v, vertices1, vertexDump0);
+						this.collectSubVertices(v, vertices1, vertexDump0);
 					}
 				}
 			}
 		} while(!(allIn0 && allIn1));
-		
+
 		Comparator<Vertex> stepComparator = new Comparator<Vertex>() {
 			@Override
 			public int compare(Vertex o1, Vertex o2) {
 				return o1.getStep() - o2.getStep();
 			}
 		};
-		
+
 		Vertex[] sortVertices0 = new Vertex[vertices0.size()];
 		Vertex[] sortVertices1 = new Vertex[vertices1.size()];
 		vertices0.toArray(sortVertices0);
-		if(starts[1] != null)
+		if(starts[1] != null) {
 			vertices1.toArray(sortVertices1);
+		}
 		Arrays.sort(sortVertices0, stepComparator);
-		if(starts[1] != null)
+		if(starts[1] != null) {
 			Arrays.sort(sortVertices1, stepComparator);
-		
+		}
+
 		for(int i = 0; i < sortVertices0.length; i++) {
 			if(i == 0) {
-				displayGraph.addEdge(new Edge(Edge.Type.ROOT), roots[0], sortVertices0[0]);
+				this.displayGraph.addEdge(new Edge(Edge.Type.ROOT), roots[0], sortVertices0[0]);
 			} else {
-				displayGraph.addEdge(new Edge(Edge.Type.TEMPORAL), sortVertices0[i - 1], sortVertices0[i]);
+				this.displayGraph.addEdge(new Edge(Edge.Type.TEMPORAL), sortVertices0[i - 1], sortVertices0[i]);
 			}
 		}
-		
-		if(starts[1] != null)
+
+		if(starts[1] != null) {
 			for(int i = 0; i < sortVertices1.length; i++) {
 				if(i == 0) {
-					displayGraph.addEdge(new Edge(Edge.Type.ROOT), roots[1], sortVertices1[0]);
+					this.displayGraph.addEdge(new Edge(Edge.Type.ROOT), roots[1], sortVertices1[0]);
 				} else {
-					displayGraph.addEdge(new Edge(Edge.Type.TEMPORAL), sortVertices1[i - 1], sortVertices1[i]);
+					this.displayGraph.addEdge(new Edge(Edge.Type.TEMPORAL), sortVertices1[i - 1], sortVertices1[i]);
 				}
 			}
+		}
 	}
-	
+
 	private void collectSubVertices(Vertex start, Set<Vertex> vertices, List<Vertex> dump) {
-		Queue<Vertex> queue = new LinkedList<Vertex>();
+		Queue<Vertex> queue = new LinkedList<>();
 		queue.add(start);
 		while(!queue.isEmpty()) {
 			Vertex vert = queue.remove();
 			if(!vertices.contains(vert)) {
 				vertices.add(vert);
-				for(Edge e : displayGraph.getIncidentEdges(vert)) {
-					
-					Vertex toAdd = displayGraph.getSource(e);
+				for(Edge e : this.displayGraph.getIncidentEdges(vert)) {
+
+					Vertex toAdd = this.displayGraph.getSource(e);
 					if(toAdd == vert) {
-						toAdd = displayGraph.getDest(e);
+						toAdd = this.displayGraph.getDest(e);
 					}
 					if(e.getType() == Edge.Type.CROSSCHARACTER) {
 						dump.add(toAdd);
@@ -220,12 +225,12 @@ public class FunctionalUnit {
 			}
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		return this.name;
 	}
-	
+
 	/**
 	 * Represents an instance of a functional unit.
 	 * Holds the partaking agents as well as the subject,
@@ -234,19 +239,19 @@ public class FunctionalUnit {
 	 * @author Sven
 	 */
 	public class Instance implements Comparable<FunctionalUnit.Instance>{
-		
+
 		private PlotDirectedSparseGraph graph;
 		private Collection<Vertex> vertices;
 		private int start = Integer.MAX_VALUE;
 		private int end = Integer.MIN_VALUE;
 		private String type;
-		
+
 		private String firstAgent;
 		private String secondAgent;
 		private String subject;
 		private boolean firstPlural = false;
 		private boolean secondPlural = false;
-		
+
 		/**
 		 * Creates an instance of a functional unit, given a graph and a collection
 		 * of vertices contained in the plot graph that are part of this instance.
@@ -257,15 +262,15 @@ public class FunctionalUnit {
 			this.graph = graph;
 			this.vertices = vertices;
 			this.type = type;
-			
+
 			for(Vertex v : vertices) {
-				start = Math.min(start, v.getStep());
-				end = Math.max(end, v.getStep());
+				this.start = Math.min(this.start, v.getStep());
+				this.end = Math.max(this.end, v.getStep());
 				if(graph != null) {
-					if(firstAgent != null && !graph.getAgent(v).equals(firstAgent)) {
-						secondAgent = graph.getAgent(v);
+					if(this.firstAgent != null && !graph.getAgent(v).equals(this.firstAgent)) {
+						this.secondAgent = graph.getAgent(v);
 					} else
-					if(firstAgent == null) {
+					if(this.firstAgent == null) {
 						boolean containsAnyPredecessors = false;
 						for(Vertex p : graph.getRealPredecessors(v)) {
 							if(vertices.contains(p)) {
@@ -274,49 +279,49 @@ public class FunctionalUnit {
 							}
 						}
 						if(!containsAnyPredecessors) {
-							firstAgent = graph.getAgent(v);
+							this.firstAgent = graph.getAgent(v);
 						}
 					}
 				}
 			}
-			if(graph != null && secondAgent == null) {
+			if(graph != null && this.secondAgent == null) {
 				for(Vertex v : vertices) {
-					if(!graph.getAgent(v).equals(firstAgent)) {
-						secondAgent = graph.getAgent(v);
+					if(!graph.getAgent(v).equals(this.firstAgent)) {
+						this.secondAgent = graph.getAgent(v);
 						break;
 					}
 				}
 			}
-			if(firstAgent != null) {
-				firstAgent = "the " + firstAgent;
+			if(this.firstAgent != null) {
+				this.firstAgent = "the " + this.firstAgent;
 			}
-			if(secondAgent != null) {
-				secondAgent = "the " + secondAgent;
+			if(this.secondAgent != null) {
+				this.secondAgent = "the " + this.secondAgent;
 			}
 		}
-		
+
 		/**
 		 * Given a mapping of functional unit vertices to plot vertices,
 		 * this computes the subject of the instance and stores it.
 		 * @param unitMapping Mapping as created by UnitFinder
 		 */
 		public void identifySubject(Map<Vertex, Vertex> unitMapping) {
-			if(getUnit().subject == null) {
+			if(this.getUnit().subject == null) {
 				return;
 			}
 			for(Map.Entry<Vertex, Vertex> kvp : unitMapping.entrySet()) {
-				if(kvp.getValue() == getUnit().subject.getFirst()) {
-					Pattern p = Pattern.compile(getUnit().subject.getSecond());
+				if(kvp.getValue() == this.getUnit().subject.getFirst()) {
+					Pattern p = Pattern.compile(this.getUnit().subject.getSecond());
 					Matcher m = p.matcher(kvp.getKey().getLabel());
 					if (m.find()) {
 						this.subject = m.group(1);
 					} else {
-						logger.severe("Couldn't identify subject of FU " + this.type + " using pattern:" + getUnit().subject.getSecond());
+						logger.severe("Couldn't identify subject of FU " + this.type + " using pattern:" + this.getUnit().subject.getSecond());
 					}
 				}
 			}
 		}
-		
+
 		/**
 		 * Returns the subject. Note that this is null if either identifySubject has
 		 * not been called before, or the subject of the FunctionalUnit was not set.
@@ -325,7 +330,7 @@ public class FunctionalUnit {
 		public String getSubject() {
 			return this.subject;
 		}
-		
+
 		/**
 		 * Allows manual setting of the subject
 		 * (to allow instance merging from outside).
@@ -338,7 +343,7 @@ public class FunctionalUnit {
 			}
 			this.subject = subject;
 		}
-		
+
 		/**
 		 * Checks whether a given vertex is part of this
 		 * functional unit instance.
@@ -346,9 +351,9 @@ public class FunctionalUnit {
 		 * @return true if v is contained in this unit, false otherwise.
 		 */
 		public boolean contains(Vertex v) {
-			return vertices.contains(v);
+			return this.vertices.contains(v);
 		}
-		
+
 		/**
 		 * Retrieves the collection of vertices that are
 		 * part of this functional unit instance.
@@ -359,7 +364,7 @@ public class FunctionalUnit {
 		public Collection<Vertex> getVertices() {
 			return this.vertices;
 		}
-		
+
 		/**
 		 * Gets the functional unit this is an instance of.
 		 * @return FunctionalUnit type of this instance.
@@ -367,41 +372,41 @@ public class FunctionalUnit {
 		public FunctionalUnit getUnit() {
 			return FunctionalUnit.this;
 		}
-		
+
 		/**
 		 * Returns an abbreviated version of this instance's unit's name.
 		 * (All capital letters if the name is several words, or first
 		 * three letters if the name is a single word)
 		 */
 		public String toString() {
-			return FunctionalUnit.shortenName(getUnit().getName());
+			return FunctionalUnit.shortenName(this.getUnit().getName());
 		}
-		
+
 		public String getFirstAgent() {
-			return firstAgent;
+			return this.firstAgent;
 		}
 
 		public boolean isFirstPlural() {
-			return firstPlural;
+			return this.firstPlural;
 		}
-		
+
 		public void setFirstPlural() {
-			firstPlural = true;
+			this.firstPlural = true;
 		}
-		
-		
+
+
 		public String getSecondAgent() {
-			return secondAgent;
+			return this.secondAgent;
 		}
-		
+
 		public boolean isSecondPlural() {
-			return secondPlural;
+			return this.secondPlural;
 		}
-		
+
 		public void setSecondPlural() {
-			secondPlural = true;
+			this.secondPlural = true;
 		}
-		
+
 		/**
 		 * Allows manual setting of the first agent.
 		 * (to allow instance merging from outside).
@@ -414,7 +419,7 @@ public class FunctionalUnit {
 			}
 			this.firstAgent = firstAgent;
 		}
-		
+
 		/**
 		 * Allows manual setting of the second agent.
 		 * (to allow instance merging from outside).
@@ -427,7 +432,7 @@ public class FunctionalUnit {
 			}
 			this.secondAgent = secondAgent;
 		}
-		
+
 		/**
 		 * Computes the temporal length of this functional unit.
 		 * This is the time step of the last vertex - the time step
@@ -435,15 +440,15 @@ public class FunctionalUnit {
 		 * @return
 		 */
 		public int getSpan() {
-			return end - start;
+			return this.end - this.start;
 		}
-		
+
 		/**
 		 * Retrieves the time step of the first vertex of this unit.
 		 * @return
 		 */
 		public int getStart() {
-			return start;
+			return this.start;
 		}
 
 		/**
@@ -459,12 +464,12 @@ public class FunctionalUnit {
 				throw new IllegalArgumentException("Can not compare two FunctionalUnit$Instance objects which belong to"
 						+ " two different PlotDirectedSparseGraph!");
 			}
-			
+
 			int stepComparison = this.getStart() - arg0.getStart();
 			int minThis = Integer.MAX_VALUE;
 			int minOther = Integer.MAX_VALUE;
 			if(stepComparison == 0) {
-				for(Vertex v : vertices) {
+				for(Vertex v : this.vertices) {
 					if(v.getStep() == this.getStart()) {
 						minThis = Math.min(minThis, this.graph.getInnerStep(v));
 					}
@@ -479,7 +484,7 @@ public class FunctionalUnit {
 			return stepComparison;
 		}
 	}
-	
+
 	static private String shortenName(String name) {
 		String result = "";
 		if(name.contains(" ")) {

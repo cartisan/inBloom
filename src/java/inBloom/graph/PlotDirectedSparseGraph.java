@@ -237,7 +237,8 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 
 		this.vertices.keySet().stream()
 		   .filter(v -> !this.roots.contains(v) & !this.yAxis.values().contains(v))		// remove roots and axis labels
-	 	   .sorted(new VertexOrderComparator(this))
+		   .sorted(new VertexOrderComparator(this))
+//		   .sorted(Comparator.comparingInt(Vertex::getStep))		// TODO: Is this much faster?
 	 	   .collect(Collectors.toList()).toArray(this.vertexArray);
 		this.isDirty = false;
 	}
