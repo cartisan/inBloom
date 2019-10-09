@@ -173,31 +173,34 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 			if(target.getWithoutAnnotation().substring(1).equals(vertex.getWithoutAnnotation().substring(1))) {
 				// If the one is an addition while the other is a substraction of a percept
 				if(!target.getWithoutAnnotation().substring(0, 1).equals(vertex.getWithoutAnnotation().substring(0, 1))) {
-					boolean isPositive = false;
-					boolean isNegative = false;
-					for(String em : vertex.getEmotions()) {
-						isPositive |= Emotion.getEmotion(em).getP() > 0;
-						isNegative |= Emotion.getEmotion(em).getP() < 0;
-					}
-					// This is either loss or resolution (second vertex has both valences!)
-					if(isPositive && isNegative) {
-						this.createTermination(vertex, target);
-						//toRemove = target;
-						break;
-					// If there is only one valence check the first vertex:
-					} else {
-						for(String em : target.getEmotions()) {
-							// This is a loss!
-							if(!isPositive && Emotion.getEmotion(em).getP() > 0) {
-								this.createTermination(vertex, target);
-								//toRemove = target;
-								break;
-							} else
-							// This is a resolution!
-							if(!isNegative && Emotion.getEmotion(em).getP() < 0) {
-								this.createTermination(vertex, target);
-								//toRemove = target;
-								break;
+					// If both vertices belong to same character
+					if(target.getRoot().equals(vertex.getRoot())) {
+						boolean isPositive = false;
+						boolean isNegative = false;
+						for(String em : vertex.getEmotions()) {
+							isPositive |= Emotion.getEmotion(em).getP() > 0;
+							isNegative |= Emotion.getEmotion(em).getP() < 0;
+						}
+						// This is either loss or resolution (second vertex has both valences!)
+						if(isPositive && isNegative) {
+							this.createTermination(vertex, target);
+							//toRemove = target;
+							break;
+						// If there is only one valence check the first vertex:
+						} else {
+							for(String em : target.getEmotions()) {
+								// This is a loss!
+								if(!isPositive && Emotion.getEmotion(em).getP() > 0) {
+									this.createTermination(vertex, target);
+									//toRemove = target;
+									break;
+								} else
+								// This is a resolution!
+								if(!isNegative && Emotion.getEmotion(em).getP() < 0) {
+									this.createTermination(vertex, target);
+									//toRemove = target;
+									break;
+								}
 							}
 						}
 					}
@@ -206,6 +209,7 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 		}
 		this.stateList.addFirst(vertex);
 	}
+
 	private void createTermination(Vertex from, Vertex to) {
 		this.graph.addEdge(new Edge(Edge.Type.TERMINATION), from, to);
 	}
