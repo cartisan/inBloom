@@ -107,8 +107,8 @@ public class FunctionalUnit {
 		this.displayGraph = this.unitGraph.clone();
 		Vertex root2 = null;
 		Vertex[] roots = new Vertex[] {
-			this.displayGraph.addRoot(this.name + " Agent 1"),
-			root2 = this.displayGraph.addRoot(this.name + " Agent 2")
+			this.displayGraph.addRoot(this.name + " Ag 1"),
+			root2 = this.displayGraph.addRoot(this.name + " Ag 2")
 		};
 
 		this.connect(roots);

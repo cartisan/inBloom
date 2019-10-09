@@ -34,9 +34,11 @@ public class Transformers {
 
 	static public Function<Vertex, Integer> vertexSizeTransformer = new Function<Vertex,Integer>(){
         public Integer apply(Vertex v){
+        	Font currentFont = vertexFontTransformer.apply(v);
+
         	// arcane hack to get width of our string given our font
-        	int width = (int) FONT.getStringBounds(v.toString(),
-        					new FontRenderContext(FONT.getTransform(), false, false)).getBounds().getWidth();
+        	int width = (int) currentFont.getStringBounds(v.toString(),
+        					new FontRenderContext(currentFont.getTransform(), false, false)).getBounds().getWidth();
 
         	return Math.max(width, v.minWidth * 2) + 10;
         }
