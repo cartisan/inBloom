@@ -123,6 +123,13 @@ public class Tellability {
 			}
 		}
 
+
+		String foundUnits = this.functionalUnitCount.entrySet().stream().filter(entry -> entry.getValue() > 0)
+													.map(entry -> entry.getKey().getName() + ": " + entry.getValue())
+													.reduce( (a,b) -> a = a + ", " + b)
+													.orElse("<none>");
+		logger.info("-> Found units: " + foundUnits);
+
 		for(FunctionalUnit primitiveUnit : FunctionalUnits.PRIMITIVES) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(graph, primitiveUnit.getGraph());
 			for(Map<Vertex, Vertex> map : mappings) {
