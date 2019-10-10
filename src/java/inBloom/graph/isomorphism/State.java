@@ -54,7 +54,11 @@ public class State {
 		this.candidateV2 = NULL_NODE;
 		this.n1 = this.g1.getPlotVertexCount();
 		this.n2 = this.g2.getPlotVertexCount();
-		assert this.n1 >= this.n2;
+
+		if(this.n1 < this.n2) {
+			throw new RuntimeException("Plot graph has less vertices than unit graph, namely only  " + this.n1);
+		}
+
 		this.core1 = new int[this.n1];
 		this.core2 = new int[this.n2];
 		this.in1 = new int[this.n1];

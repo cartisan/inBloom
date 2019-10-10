@@ -121,7 +121,13 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 		for (FUTransformationRule rule: TRANSFORMATIONS) {
 			PlotDirectedSparseGraph fuNew = fuGraph.clone();	//clone FU such that changes in vertices won't affect original FU
 			Vertex v = fuNew.getVertex(pos);
-			assert v.getLabel() == fuGraph.getVertex(pos).getLabel();
+
+			if (!v.getLabel().equals(fuGraph.getVertex(pos).getLabel())) {
+				throw new RuntimeException("Vertex at pos " + pos + " changed from " +
+							fuGraph.getVertex(pos).getLabel() + " to " + v.getLabel() +
+							" while cloning FU for transformation during inexact macthing");
+			};
+
 			if (rule.test(v)) {
 				all.add(rule.apply(v, fuNew));
 			}
@@ -176,7 +182,7 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 			}
 		}
 
-		// carry over edges from set of 'outgoing' vertices to start of replacement graph -- usually wildcard edges cause we dont know vertex types
+		// carry over edges from set of 'outgoing' vertices to end of replacement graph -- usually wildcard edges cause we dont know vertex types
 		// in case of cross character edges use them instead, to maintain inter-char character of edge
 		for (Edge edge : fuGraph.getOutEdges(toReplace)) {
 			if (edge.getType() == Edge.Type.CROSSCHARACTER) {

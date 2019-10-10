@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -30,16 +31,39 @@ public class FunctionalUnit {
 	static Logger logger = Logger.getLogger(FunctionalUnit.class.getName());
 
 	private String name;
-	private PlotDirectedSparseGraph unitGraph;
-	private PlotDirectedSparseGraph displayGraph;
+	private PlotDirectedSparseGraph unitGraph;			  // graph of the functional unit
+	private PlotDirectedSparseGraph displayGraph;		  // lazyly created graph that can be used to display this FU, containing roots and such
+	private List<Integer> startSteps = new ArrayList<>(); // contains the step number of the vertices that are the first in each subgraph, can have 0..2 elements
 
 	private boolean isPrimitive = false;
 
 	private Pair<Vertex, String> subject;
 
-	public FunctionalUnit(String name, PlotDirectedSparseGraph graph) {
+	/**
+	 * Creates a functional unit based on graph. The graph should contain vertices with plot edges, but no root or temporal edges.
+	 * Each vertex should have a unique step so that a reproducible total order is ensured even when cloning. <br>
+	 * To be able to display the FU properly, the first vertices in each char subgraph need to be indicated, by providing
+	 * their respective step number. These vertices will be connected with root nodes on display.<br>
+	 * If no startStep is provided, the start step is assumed to be 1.
+	 *
+	 * @param name name of the FU
+	 * @param graph the graph of the FU
+	 * @param startSteps the step numbers of the vertices that are to be used as first vertex in each char subgraph, i.e. to be connected with the roots.
+	 */
+	public FunctionalUnit(String name, PlotDirectedSparseGraph graph, Integer... startSteps) {
 		this.name = name;
 		this.unitGraph = graph;
+
+		if(startSteps.length > 2) {
+			throw new RuntimeException("Only 2 start vertices allowed in FU");
+		}
+
+		this.startSteps = new ArrayList<>(Arrays.asList(startSteps));
+
+		// if no start steps were given, assume graph starts at step 1
+		if (this.startSteps.size() == 0) {
+			this.startSteps.add(1);
+		}
 	}
 
 	/**
@@ -105,6 +129,7 @@ public class FunctionalUnit {
 
 	private void createDisplayGraph() {
 		this.displayGraph = this.unitGraph.clone();
+
 		Vertex root2 = null;
 		Vertex[] roots = new Vertex[] {
 			this.displayGraph.addRoot(this.name + " Ag 1"),
@@ -128,18 +153,25 @@ public class FunctionalUnit {
 	 * @param roots
 	 */
 	private void connect(Vertex[] roots) {
-		// TODO: Refactor so that multiple chars are possible even if first double vertex step is not 1
 		Vertex[] starts = {null, null};
-		for(Vertex v : this.displayGraph.getVertices()) {
-			if(v.getType() != Vertex.Type.AXIS_LABEL && v.getStep() == 1) {
-				if(starts[0] == null) {
-					starts[0] = v;
-				} else {
-					starts[1] = v;
+		int pos = 0;
+		ArrayList<Vertex> allV = new ArrayList<>(this.displayGraph.getVertices());
+		for(Integer startStep : this.startSteps) {
+			Iterator<Vertex> i = allV.iterator();
+			while(i.hasNext()) {
+				Vertex v = i.next();
+				if(v.getStep() == startStep) {
+					starts[pos] = v;
+					i.remove();			// remove v from allV, so that it won't be returned again in cases when the startSteps are the same
 					break;
 				}
 			}
+
+			if(starts[pos] == null) {throw new RuntimeException("Couldn't find vertex with step: " + startStep + " in FU " + this.name);}
+
+			pos += 1;
 		}
+
 		List<Vertex> vertexDump0 = new ArrayList<>();
 		List<Vertex> vertexDump1 = new ArrayList<>();
 		vertexDump0.add(starts[0]);

@@ -115,9 +115,10 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	 * Opens a window visualizing graph, creates roots and steps if necessary. For debugging purposes.
 	 * @param graph graph to be displayed
 	 * @param plotLayout whether the inBloom plot layout should be used, or a jung default-layout
+	 * @param the step numbers of the vertices that are to be used as first vertex in each char subgraph, i.e. to be connected with the roots
 	 */
-	public static void visualize(PlotDirectedSparseGraph graph, boolean plotLayout) {
-		FunctionalUnit display = new FunctionalUnit(graph.getName(), graph);
+	public static void visualize(PlotDirectedSparseGraph graph, boolean plotLayout, Integer... startSteps) {
+		FunctionalUnit display = new FunctionalUnit(graph.getName(), graph, startSteps);
 		PlotGraphController vis =  PlotGraphController.fromGraph(display.getDisplayGraph());
 		if (plotLayout) {
 			vis.visualizeGraph();
