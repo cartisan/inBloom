@@ -131,7 +131,7 @@ public class Tellability {
 		logger.info("-> Found units: " + foundUnits);
 
 		for(FunctionalUnit primitiveUnit : FunctionalUnits.PRIMITIVES) {
-			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(graph, primitiveUnit.getGraph());
+			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(primitiveUnit.getGraph(), graph);
 			for(Map<Vertex, Vertex> map : mappings) {
 				FunctionalUnit.Instance instance = primitiveUnit.new Instance(graph, map.values(), primitiveUnit.getName());
 				this.connectivityGraph.addVertex(instance);
