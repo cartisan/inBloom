@@ -111,6 +111,10 @@ public class Happening<T extends PlotModel<?>> extends Event {
 	 * value in model.
 	 */
 	public void identifyCause(Map<String, Pair<String, String>> causalityMap) {
+		if(this.getCausalProperty() == null || this.getCausalProperty().equals("")) {
+			return;
+		}
+
 		Pair<String, String> causeTup = causalityMap.get(this.getCausalProperty());
 		String cause = causeTup.getSecond();
 		if( cause != null && !cause.equals("") ) {
