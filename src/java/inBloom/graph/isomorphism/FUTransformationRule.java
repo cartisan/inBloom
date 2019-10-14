@@ -102,7 +102,7 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 	 * @param fuGraph
 	 * @return
 	 */
-	public static Collection<PlotDirectedSparseGraph> getAllTransformations(int pos, PlotDirectedSparseGraph fuGraph) {
+	public static Collection<PlotDirectedSparseGraph> applyAllTransformations(int pos, PlotDirectedSparseGraph fuGraph) {
 		if(transformationCache.contains(fuGraph, pos)) {
 			return transformationCache.get(fuGraph, pos);
 		}

@@ -288,7 +288,7 @@ public class State {
 			for(int g1v0 = 0; g1v0 < this.n1; g1v0++) {
 					t0.add(new State(this, g1v0, g2v0));
 					if(tolerance > this.transformationNum) {
-						t0.addAll(this.createStatesByTransformation(g1v0, g2v0));
+						t0.addAll(this.createStatesByTransformation(g1v0, g2v0, true));
 					}
 			}
 			return t0;
@@ -302,7 +302,7 @@ public class State {
 					if(this.out2[currentOut2] != NULL_NODE && this.core2[currentOut2] == NULL_NODE) {
 						tOut.add(new State(this, currentOut1, currentOut2));
 						if(tolerance > this.transformationNum) {
-							tOut.addAll(this.createStatesByTransformation(currentOut1, currentOut2));
+							tOut.addAll(this.createStatesByTransformation(currentOut1, currentOut2, true));
 						}
 					}
 				}
@@ -320,7 +320,7 @@ public class State {
 					if(this.in2[currentIn2] != NULL_NODE && this.core2[currentIn2] == NULL_NODE) {
 						tIn.add(new State(this, currentIn1, currentIn2));
 						if(tolerance > this.transformationNum) {
-							tIn.addAll(this.createStatesByTransformation(currentIn1, currentIn2));
+							tIn.addAll(this.createStatesByTransformation(currentIn1, currentIn2, false));
 						}
 					}
 				}
@@ -337,7 +337,8 @@ public class State {
 					if(this.core2[current2] == NULL_NODE) {
 						tall.add(new State(this, current1, current2));
 						if(tolerance > this.transformationNum) {
-							tall.addAll(this.createStatesByTransformation(current1, current2));
+							tall.addAll(this.createStatesByTransformation(current1, current2, true));
+							tall.addAll(this.createStatesByTransformation(current1, current2, false));
 						}
 					}
 				}
@@ -354,13 +355,20 @@ public class State {
 	 * @param candidateV1
 	 * @param candidateV2
 	 */
-	private HashSet<State> createStatesByTransformation(int candidateV1, int candidateV2) {
+	private HashSet<State> createStatesByTransformation(int candidateV1, int candidateV2, boolean followingSucc) {
 		HashSet<State> stateCollection = new HashSet<>();
 
-		Collection<PlotDirectedSparseGraph> transformedG2s = FUTransformationRule.getAllTransformations(candidateV2, this.g2);
+		// when we follow successor edges, FU candidate was beginning of insertion so candidateV2 index correctly shows on newly inserted vertex
+		// when we follow predecessor edges, FU candidate was end of insertion so candidateV2 index needs to be updated to +1
+		int pointerUpdate = 0;
+		if (!followingSucc) {
+			pointerUpdate = 1;
+		}
+
+		Collection<PlotDirectedSparseGraph> transformedG2s = FUTransformationRule.applyAllTransformations(candidateV2, this.g2);
 		for (PlotDirectedSparseGraph g2n : transformedG2s) {
 			try {
-				stateCollection.add(new State(this, candidateV1, candidateV2, g2n));
+				stateCollection.add(new State(this, candidateV1, candidateV2 + pointerUpdate, g2n));
 			} catch (RuntimeException e) {
 				// if g2n, resulting from transformation, is bigger then plot graph, try next transformation
 				continue;
@@ -734,6 +742,9 @@ public class State {
 		return true;
 	}
 
+	/**
+	 * Represents the matching in this state, format: FU V_ID = Plot V_ID
+	 */
 	@Override
 	public String toString() {
 		// Too slow on real graphs!

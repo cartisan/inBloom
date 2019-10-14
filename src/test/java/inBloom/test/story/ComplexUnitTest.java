@@ -124,4 +124,31 @@ public class ComplexUnitTest  {
 
 		assertEquals(1, mappings.size());
 	}
+
+	/**
+	 * Testing: Inadvertant Aggravation with inserted [A]-c->[-]
+	 *    [+]<-|
+	 *         |
+	 *    [I]  |t
+	 *     |a  |
+	 *    [A]  |
+ 	 *     |c  |
+	 *    [-]--|
+	 */
+	@Test
+	public void testFollowPredecessorsWithExpand() {
+		UnitFinder finder = new UnitFinder();
+
+		PlotDirectedSparseGraph plotGraph = new PlotDirectedSparseGraph();
+		Vertex v1 = FunctionalUnits.makePositive(1, plotGraph);
+		Vertex v2 = FunctionalUnits.makeIntention(2, plotGraph);
+		Vertex v3 = FunctionalUnits.makeAction(3, plotGraph);
+		Vertex v4 = FunctionalUnits.makeNegative(4, plotGraph);
+		plotGraph.addEdge(FunctionalUnits.makeTermination(), v4, v1);
+		plotGraph.addEdge(FunctionalUnits.makeCausality(), v3, v4);
+		plotGraph.addEdge(FunctionalUnits.makeActualization(), v2, v3);
+
+		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(FunctionalUnits.INADVERTENT_AGGRAVATION.getGraph(), plotGraph, 1);
+		assertEquals(1, mappings.size());
+	}
 }
