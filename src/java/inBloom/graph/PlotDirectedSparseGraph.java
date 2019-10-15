@@ -284,14 +284,18 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 			return null;
 		}
 
-		if (this.getOutgoing_internal(vertex).size() > 1) {
+		long succCount = this.getOutgoing_internal(vertex).size() +
+						 this.getIncoming_internal(vertex).stream().filter(e -> e.getType() == Edge.Type.EQUIVALENCE).count();
+		if (succCount > 1) {
 			throw new RuntimeException("Vertex" + vertex.toString() + "has multiple plot successors");
 		}
 
 		for (Edge edge : this.getOutgoing_internal(vertex)) {
-			if(edge.getType() == Edge.Type.MOTIVATION || edge.getType() == Edge.Type.ACTUALIZATION
-					|| edge.getType() == Edge.Type.CAUSALITY || edge.getType() == Edge.Type.EQUIVALENCE) {
+			if(edge.getType() == Edge.Type.MOTIVATION || edge.getType() == Edge.Type.ACTUALIZATION || edge.getType() == Edge.Type.CAUSALITY) {
 				return this.getDest(edge);
+			}
+			if(edge.getType() == Edge.Type.EQUIVALENCE) {
+				return this.getSource(edge);
 			}
 		}
 
@@ -354,9 +358,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 
 		Set<Vertex> vertices = new HashSet<>();
 		for(Edge edge : this.getIncoming_internal(vertex)) {
-			if(edge.getType() != Edge.Type.EQUIVALENCE
-			&& edge.getType() != Edge.Type.TERMINATION
-			&& edge.getType() != Edge.Type.ROOT) {
+			if(edge.getType() != Edge.Type.EQUIVALENCE && edge.getType() != Edge.Type.TERMINATION && edge.getType() != Edge.Type.ROOT) {
 				vertices.add(this.getSource(edge));
 			}
 		}

@@ -193,7 +193,7 @@ public class Transformers {
 		public boolean apply(Context<Graph<Vertex, Edge>, Edge> input) {
 			switch (input.element.getType()) {
         	case EQUIVALENCE:
-        		return false;										// Equivalence edges have no arrows
+        		return true;										// Equivalence edges have no arrows
     		default:
     			return true;
 			}

@@ -44,6 +44,10 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 			}
 		};
 
+		// IMPORTANT NOTE FOR FUTURE TRANSOFRMATION RULES:
+		//    end vertex of replacement graph has to always be same type as replaced vertex
+		//    --> intuition: we expand existing vertex, by adding something else at its start
+
 		// transformation rules for positive vertices
 		replacement = new PlotDirectedSparseGraph();
 		v1 = FunctionalUnits.makeIntention(0, replacement);
@@ -74,7 +78,7 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 		replacement = new PlotDirectedSparseGraph();
 		v1 = FunctionalUnits.makeIntention(0, replacement);
 		v2 = FunctionalUnits.makeIntention(1, replacement);
-		replacement.addEdge(FunctionalUnits.makeEquivalence(), v1, v2);
+		replacement.addEdge(FunctionalUnits.makeEquivalence(), v2, v1);		// e edges run upwards
 		FUTransformationRule INT1 = new FUTransformationRule(replacement, intTrigger);
 
 		replacement = new PlotDirectedSparseGraph();
@@ -182,14 +186,10 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 			}
 		}
 
-		// carry over edges from set of 'outgoing' vertices to end of replacement graph -- usually wildcard edges cause we dont know vertex types
-		// in case of cross character edges use them instead, to maintain inter-char character of edge
+		// carry over edges from set of 'outgoing' vertices to end of replacement graph
+		// out edge can be copied from fuGraph, since we know that end vertex of replacement graph has same type as replaced vertex
 		for (Edge edge : fuGraph.getOutEdges(toReplace)) {
-			if (edge.getType() == Edge.Type.CROSSCHARACTER) {
 				target.addEdge(edge, replacementLeave, fuGraph.getDest(edge));
-			} else {
-				target.addEdge(new Edge(Edge.Type.WILDCARD), replacementLeave, fuGraph.getDest(edge));
-			}
 		}
 
 		// carry over edges from both this and replacement, if both, the edge's source and destination, were previously imported into target

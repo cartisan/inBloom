@@ -151,4 +151,32 @@ public class ComplexUnitTest  {
 		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(FunctionalUnits.INADVERTENT_AGGRAVATION.getGraph(), plotGraph, 1);
 		assertEquals(1, mappings.size());
 	}
+
+	/**
+	 * Testing: Nested Subgoal should not match this!
+	 *    [I]<-|
+	 *     |a  |
+	 *    [A]  |e
+	 *         |
+	 *    [I]--|
+ 	 *     |e
+	 *    [I]
+	 */
+	@Test
+	public void testRegressionTransformOutEdgeKeepType() {
+		// ...they used to switch to wildcard, which resulted in many Nested Golas being detected where they should have not
+		UnitFinder finder = new UnitFinder();
+
+		PlotDirectedSparseGraph plotGraph = new PlotDirectedSparseGraph();
+		Vertex v1 = FunctionalUnits.makeIntention(1, plotGraph);
+		Vertex v2 = FunctionalUnits.makeAction(2, plotGraph);
+		Vertex v3 = FunctionalUnits.makeIntention(3, plotGraph);
+		Vertex v4 = FunctionalUnits.makeIntention(4, plotGraph);
+		plotGraph.addEdge(FunctionalUnits.makeActualization(), v1, v2);
+		plotGraph.addEdge(FunctionalUnits.makeEquivalence(), v3, v1);
+		plotGraph.addEdge(FunctionalUnits.makeEquivalence(), v4, v3);
+
+		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(FunctionalUnits.NESTED_GOAL.getGraph(), plotGraph, 1);
+		assertEquals(0, mappings.size());
+	}
 }
