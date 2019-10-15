@@ -27,6 +27,7 @@ public class PrimitiveUnitTest extends AbstractPlotTest {
 	public static void setUp() throws Exception {
 		VISUALIZE = false;
 		DEBUG = false;
+		Tellability.GRAPH_MATCHING_TOLERANCE = 0;
 
 		// initialize agents
         ImmutableList<LauncherAgent> agents = ImmutableList.of(

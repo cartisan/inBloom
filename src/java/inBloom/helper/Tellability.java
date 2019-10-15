@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import inBloom.framing.ConnectivityGraph;
@@ -19,6 +18,8 @@ import inBloom.graph.isomorphism.FunctionalUnits;
 import inBloom.graph.isomorphism.UnitFinder;
 
 public class Tellability {
+	public static int GRAPH_MATCHING_TOLERANCE = 1;
+
 	protected static Logger logger = Logger.getLogger(Tellability.class.getName());
 
 	// plot preconditions
@@ -89,10 +90,10 @@ public class Tellability {
 		this.connectivityGraph = new ConnectivityGraph(graph);
 
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
-			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(unit.getGraph(), graph, 1);
+			logger.info("Finding units of type: '" + unit.getName() + "'...");
+			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(unit.getGraph(), graph, GRAPH_MATCHING_TOLERANCE);
 			unitInstances += mappings.size();
 			this.functionalUnitCount.put(unit, mappings.size());
-			logger.log(Level.INFO, "Found '" + unit.getName() + "' " + mappings.size() + " times.");
 
 			if (mappings.size() > 0 ) {
 				PlotGraphController.getPlotListener().addDetectedPlotUnitType(unit);

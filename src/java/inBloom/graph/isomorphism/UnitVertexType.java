@@ -11,12 +11,16 @@ import inBloom.graph.Vertex;
 public enum UnitVertexType {
 	NONE, INTENTION, POSITIVE, NEGATIVE, POLYEMOTIONAL, WILDCARD, ACTIVE, ACTION, SPEECH;
 
+	public boolean hasPosEmotion = false;
+	public boolean hasNegEmotion = false;
+
 	/**
 	 * Returns the FU vertex type of a given graph vertex.
 	 * @param v Vertex to return the type of.
 	 * @return The UnitVertexType of <i>v</i>.
 	 */
 	public static UnitVertexType typeOf(Vertex v) {
+
 		if(v.getType() == Vertex.Type.WILDCARD) {
 			return UnitVertexType.WILDCARD;
 		}
@@ -25,36 +29,62 @@ public enum UnitVertexType {
 			return UnitVertexType.INTENTION;
 		}
 
-		if(v.getType() == Vertex.Type.SPEECHACT) {
-			return UnitVertexType.SPEECH;
-		}
-
-		if(v.getType() == Vertex.Type.ACTIVE) {
-			return UnitVertexType.ACTIVE;
-		}
-
 		boolean hasPositive = false;
 		boolean hasNegative = false;
 		for(String em : v.getEmotions()) {
-				hasPositive |= Emotion.getEmotion(em).getP() > 0;
-				hasNegative |= Emotion.getEmotion(em).getP() < 0;
+			hasPositive |= Emotion.getEmotion(em).getP() > 0;
+			hasNegative |= Emotion.getEmotion(em).getP() < 0;
 		}
+
+		if(v.getType() == Vertex.Type.ACTIVE) {
+			UnitVertexType t = UnitVertexType.ACTIVE;
+			setAffect(t, hasPositive, hasNegative);
+			return t;
+		}
+
+		if(v.getType() == Vertex.Type.SPEECHACT) {
+			UnitVertexType t = UnitVertexType.SPEECH;
+			setAffect(t, hasPositive, hasNegative);
+			return t;
+		}
+
+		if(v.getType() == Vertex.Type.ACTION) {
+			UnitVertexType t = UnitVertexType.ACTION;
+			setAffect(t, hasPositive, hasNegative);
+			return t;
+		}
+
 		if(hasPositive && hasNegative) {
-			return UnitVertexType.POLYEMOTIONAL;
+			UnitVertexType t = UnitVertexType.POLYEMOTIONAL;
+			setAffect(t, hasPositive, hasNegative);
+			return t;
 		}
 		if(hasPositive) {
-			return UnitVertexType.POSITIVE;
+			UnitVertexType t = UnitVertexType.POSITIVE;
+			setAffect(t, hasPositive, hasNegative);
+			return t;
 		}
 		if(hasNegative) {
-			return UnitVertexType.NEGATIVE;
+			UnitVertexType t = UnitVertexType.NEGATIVE;
+			setAffect(t, hasPositive, hasNegative);
+			return t;
 		}
 
 		return UnitVertexType.NONE;
 	}
 
+	private static void setAffect(UnitVertexType vertexType, boolean hasPositive, boolean hasNegative) {
+		if (hasPositive) {
+			vertexType.hasPosEmotion = true;
+		}
+		if (hasNegative) {
+			vertexType.hasNegEmotion = true;
+		}
+	}
+
 	/**
-	 * Tests whether this UnitVertexType matches other, that is, whether 'other' (type of a graph vertex) is an 
-	 * instance or specialization of this type (in an FU). 
+	 * Tests whether this UnitVertexType matches other, that is, whether 'other' (type of a graph vertex) is an
+	 * instance or specialization of this type (in an FU).
 	 * @param other
 	 * @return
 	 */
@@ -62,8 +92,10 @@ public enum UnitVertexType {
 		switch(this) {
 			case NONE: 			return false;
 			case WILDCARD: 		return true;
-			case POLYEMOTIONAL: return other.equals(POSITIVE) || other.equals(NEGATIVE) || other.equals(POLYEMOTIONAL);
 			case ACTIVE:		return other.equals(ACTION) || other.equals(SPEECH) || other.equals(ACTIVE);
+			case POLYEMOTIONAL: return other.hasPosEmotion || other.hasNegEmotion;
+			case POSITIVE:		return other.hasPosEmotion;
+			case NEGATIVE:		return other.hasNegEmotion;
 			default: 			return this.equals(other);
 		}
 	}
@@ -81,5 +113,16 @@ public enum UnitVertexType {
 			case ACTIVE:	return true;
 			default:		return false;
 		}
+	}
+
+	public String toString() {
+		String postfix = "";
+		if(this.hasPosEmotion) {
+			postfix += "+";
+		}
+		if(this.hasNegEmotion) {
+			postfix += "-";
+		}
+		return this.name() + postfix;
 	}
 }
