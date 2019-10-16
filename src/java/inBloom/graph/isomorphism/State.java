@@ -6,10 +6,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import com.google.common.primitives.Ints;
 
 import inBloom.graph.Edge;
 import inBloom.graph.PlotDirectedSparseGraph;
@@ -96,12 +99,12 @@ public class State {
 		this.depth = other.depth + 1;
 		this.n1 = other.n1;
 		this.n2 = other.n2;
-		this.core1 = other.core1;
-		this.core2 = other.core2;
-		this.in1 = other.in1;
-		this.in2 = other.in2;
-		this.out1 = other.out1;
-		this.out2 = other.out2;
+		this.core1 = other.core1.clone();
+		this.core2 = other.core2.clone();
+		this.in1 = other.in1.clone();
+		this.in2 = other.in2.clone();
+		this.out1 = other.out1.clone();
+		this.out2 = other.out2.clone();
 
 		this.agentNodeCounts = other.agentNodeCounts;
 	}
@@ -226,40 +229,6 @@ public class State {
 	 */
 	private void uncountNodeForAgent(String agent) {
 		this.agentNodeCounts.put(agent, this.agentNodeCounts.get(agent) - 1);
-	}
-
-	/**
-	 * Removes the last mapping and undoes all changes caused by the
-	 * creation of that mapping.
-	 */
-	public void backtrack() {
-		assert this.candidateV1 != NULL_NODE;
-		assert this.candidateV1 != NULL_NODE;
-
-		this.core1[this.candidateV1] = NULL_NODE;
-		this.core2[this.candidateV2] = NULL_NODE;
-
-		this.uncountNodeForAgent(this.g1.getAgent(this.g1.getVertex(this.candidateV1)));
-
-		Set<Integer> in1Set = this.getPredecessors(this.g1, this.candidateV1);
-		Set<Integer> out1Set = this.getSuccessors(this.g1, this.candidateV1);
-		Set<Integer> in2Set = this.getPredecessors(this.g2, this.candidateV2);
-		Set<Integer> out2Set = this.getSuccessors(this.g2, this.candidateV2);
-
-		for(int in1Node : in1Set) {
-			this.in1[in1Node] = NULL_NODE;
-		}
-		for(int out1Node : out1Set) {
-			this.out1[out1Node] = NULL_NODE;
-		}
-		for(int in2Node : in2Set) {
-			this.in2[in2Node] = NULL_NODE;
-		}
-		for(int out2Node : out2Set) {
-			this.out2[out2Node] = NULL_NODE;
-		}
-
-		this.isCandidate = true;
 	}
 
 	/**
@@ -768,5 +737,13 @@ public class State {
 			repr += "{" + this.candidateV2 + " = " + this.candidateV1 + "}";
 	}
 		return repr;
+	}
+
+	public List<Integer> getCore1() {
+		return Ints.asList(this.core1);
+	}
+
+	public List<Integer> getCore2() {
+		return Ints.asList(this.core2);
 	}
 }

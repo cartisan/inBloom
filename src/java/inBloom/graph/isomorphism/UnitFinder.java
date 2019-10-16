@@ -1,9 +1,13 @@
 package inBloom.graph.isomorphism;
 
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import com.google.common.base.Stopwatch;
 
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
@@ -27,11 +31,26 @@ public class UnitFinder {
 	 * 		   The map maps from vertices of the unitGraph to vertices of the plotGraph.
 	 */
 	public Set<Map<Vertex, Vertex>> findUnits(PlotDirectedSparseGraph unitGraph, PlotDirectedSparseGraph plotGraph, int tolerance) {
-		HashSet<Map<Vertex, Vertex>> allMappings = new HashSet<>();
+		TreeSet<State> allMappings = new TreeSet<>(
+				// two states are the same, iff they map the same positions in g1 and g2
+				// their s#getMapping() might not be the same, though, because vertices at these positions might
+				// differ--new once might be created in FU by cloning during FUTransformation
+				new Comparator<State>() {
+					@Override
+					public int compare(State s1, State s2) {
+						if (s1.getCore1().equals(s2.getCore1()) && s1.getCore2().equals(s2.getCore2())) {
+							return 0;
+						}
+						return -1;
+					}});;
+
+		Stopwatch timer = Stopwatch.createStarted();
 		this.match(new State(plotGraph, unitGraph), allMappings, tolerance);
+		logger.fine("     time taken: " + timer.stop());
+
 		Class cls = PlotGraphController.class;
 
-		return allMappings;
+		return allMappings.stream().map(s -> s.getMapping()).collect(Collectors.toSet());
 	}
 
 	/**
@@ -45,10 +64,9 @@ public class UnitFinder {
 		return this.findUnits(unitGraph, plotGraph, 0);
 	}
 
-	private boolean match(State s, Set<Map<Vertex, Vertex>> unitList, int tolerance) {
-
+	private boolean match(State s, Set<State> unitList, int tolerance) {
 		if(s.isGoal()) {
-			unitList.add(s.getMapping());
+			unitList.add(s);
 			return true;
 		}
 
@@ -65,7 +83,6 @@ public class UnitFinder {
 					if(found) {
 						foundAny = true;
 					}
-					nextState.backtrack();
 				}
 			}
 		}
