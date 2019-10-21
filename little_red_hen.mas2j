@@ -8,6 +8,8 @@ MAS little_red_hen {
 	environment: little_red_hen.FarmEnvironment
 
 	agents:
+		sample_agent;
+		liz;
 		hen test_agent;
 //		hen general_animal[beliefs="is_communal(self)", goals="make_great_again(farm)"];
 //		dog general_animal[beliefs="is_lazy(self)", goals="cazzegiare"];
