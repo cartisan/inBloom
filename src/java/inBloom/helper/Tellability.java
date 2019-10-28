@@ -105,10 +105,9 @@ public class Tellability {
 				FunctionalUnit.Instance instance = unit.new Instance(graph, map.values(), unit.getName());
 				instance.identifySubject(map);
 				this.connectivityGraph.addVertex(instance);
+				graph.addFUInstance(unit, instance);
 
 				for(Vertex v : map.values()) {
-
-					graph.markVertexAsUnit(v, unit);
 					if(!vertexUnitCount.containsKey(v)) {
 						vertexUnitCount.put(v, 1);
 					} else {

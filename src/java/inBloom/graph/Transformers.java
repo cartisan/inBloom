@@ -8,6 +8,7 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Line2D;
+import java.util.HashSet;
 import java.util.Set;
 
 import com.google.common.base.Function;
@@ -30,7 +31,6 @@ public class Transformers {
 	static private Font FONT_LABEL = new Font("Arial Black", Font.BOLD, 15);
 	static private int HEIGHT = 20;
 
-	static public Set<Vertex> HIGHLIGHT;
 
 	static public Function<Vertex, Integer> vertexSizeTransformer = new Function<Vertex,Integer>(){
         public Integer apply(Vertex v){
@@ -103,11 +103,9 @@ public class Transformers {
 
     static public Function<Vertex, Paint> vertexDrawPaintTransformer = new Function<Vertex,Paint>(){
         public Paint apply(Vertex v){
-        	if(HIGHLIGHT != null) {
-        		if(HIGHLIGHT.contains(v)) {
-        			return Color.GREEN;
-        		}
-        	}
+    		if(PlotGraphController.HIGHLIGHTED_VERTICES.containsKey(v)) {
+    			return Color.GREEN;
+    		}
         	switch (v.getType()) {
 	        	case ROOT:
 	        	case AXIS_LABEL:
@@ -127,11 +125,20 @@ public class Transformers {
 		public Stroke apply(Vertex v) {
         	switch (v.getType()) {
 	        	case PERCEPT: {
-	        		if (v.getLabel().contains("wish") | v.getLabel().contains("obligation") | v.getLabel().contains("mood")) {
-						return new BasicStroke(0f);
-					}
+		        		if (v.getLabel().contains("wish") | v.getLabel().contains("obligation") | v.getLabel().contains("mood")) {
+							return new BasicStroke(0f);
+						}
 	        		}
 	    		default:
+	    			// if user picked a vertex that belongs to a FU which is currently highlighted, mark all vertices
+	    			// belonging to the same instances as the picked one
+                	if(PlotGraphController.HIGHLIGHTED_VERTICES.containsKey(v) & SelectingTranslatingGraphMousePlugin.PICKED_INSTANCES != null) {
+            			Set<Integer> partOfInstances = new HashSet<>(PlotGraphController.HIGHLIGHTED_VERTICES.get(v));
+            			partOfInstances.retainAll(SelectingTranslatingGraphMousePlugin.PICKED_INSTANCES);	// intersection
+            			if(!partOfInstances.isEmpty()) {
+            				return new BasicStroke(2.5f);
+            			}
+                	}
 	    			return new BasicStroke(1f);
         	}
 		}

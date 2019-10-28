@@ -18,6 +18,7 @@ import com.google.common.collect.Table;
 
 import inBloom.graph.Vertex.Type;
 import inBloom.graph.isomorphism.FunctionalUnit;
+import inBloom.graph.isomorphism.FunctionalUnit.Instance;
 import inBloom.graph.visitor.PlotGraphVisitor;
 import inBloom.graph.visitor.RemovedEdge;
 import inBloom.helper.VertexOrderComparator;
@@ -68,7 +69,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	private HashMap<Vertex, String> vertexAgentMap = new HashMap<>();			// maps: vertex --> agentName
 
 
-	private Map<FunctionalUnit, Set<Vertex>> unitVertexGroups = new HashMap<>(); // stores all vertices belonging to a functional unit
+	private Map<FunctionalUnit, Set<Instance>> unitInstances = new HashMap<>(); // stores all instances belonging to a functional unit
 
     /**
      * Returns a list of nodes that represent the roots of each character subgraph.
@@ -387,29 +388,29 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
     }
 
 	/**
-	 * Adds a given vertex to the set of vertices belonging to the
+	 * Adds a given instance to the set of instances belonging to the
 	 * provided functional unit.
-	 * @param v Vertex to add
-	 * @param unit Functional unit the vertex belongs to
+	 * @param unit Functional unit the instance belongs to
+	 * @param instance the instance to be added
 	 */
-	public void markVertexAsUnit(Vertex v, FunctionalUnit unit) {
-		if(!this.unitVertexGroups.containsKey(unit)) {
-			this.unitVertexGroups.put(unit, new HashSet<Vertex>());
+	public void addFUInstance(FunctionalUnit unit, Instance instance) {
+		if(!this.unitInstances.containsKey(unit)) {
+			this.unitInstances.put(unit, new HashSet<Instance>());
 		}
 
-		this.unitVertexGroups.get(unit).add(v);
+		this.unitInstances.get(unit).add(instance);
 	}
 
 	/**
-	 * Returns all vertices belonging to the provided unit.
+	 * Returns all instances belonging to the provided unit.
 	 * @param unit to retrieve the vertices of
-	 * @return Set of vertices
+	 * @return Set of instances
 	 */
-	public Set<Vertex> getUnitVertices(FunctionalUnit unit) {
-		if(!this.unitVertexGroups.containsKey(unit)) {
-			this.unitVertexGroups.put(unit, new HashSet<Vertex>());
+	public Set<Instance> getFUInstances(FunctionalUnit unit) {
+		if(!this.unitInstances.containsKey(unit)) {
+			this.unitInstances.put(unit, new HashSet<Instance>());
 		}
-		return this.unitVertexGroups.get(unit);
+		return this.unitInstances.get(unit);
 	}
 
 	@Override
@@ -467,10 +468,12 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		    }
 	    }
 
-	    for(Map.Entry<FunctionalUnit, Set<Vertex>> entry : this.unitVertexGroups.entrySet()) {
+    	for(Map.Entry<FunctionalUnit, Set<Instance>> entry : this.unitInstances.entrySet()) {
 	    	FunctionalUnit fu = entry.getKey();
-	    	for(Vertex v : entry.getValue()) {
-	    		dest.markVertexAsUnit(cloneMap.get(v), fu);
+	    	for(Instance i : entry.getValue()) {
+	    		List<Vertex> mappedVertices = i.getVertices().stream().map(v -> cloneMap.get(v)).collect(Collectors.toList());
+	    		Instance iClone = fu.new Instance(dest, mappedVertices, i.getType());
+	    		dest.addFUInstance(fu, iClone);
 	    	}
 	    }
 

@@ -26,6 +26,8 @@ import javax.swing.SwingConstants;
 import org.freehep.graphicsbase.util.export.ExportDialog;
 import org.jfree.ui.RefineryUtilities;
 
+import com.google.common.collect.HashMultimap;
+
 import jason.asSemantics.Message;
 
 import inBloom.LauncherAgent;
@@ -33,6 +35,7 @@ import inBloom.PlotControlsLauncher;
 import inBloom.PlotLauncher;
 import inBloom.ERcycle.CounterfactualityCycle;
 import inBloom.graph.isomorphism.FunctionalUnit;
+import inBloom.graph.isomorphism.FunctionalUnit.Instance;
 import inBloom.graph.isomorphism.FunctionalUnits;
 import inBloom.graph.visitor.EdgeLayoutVisitor;
 import inBloom.helper.MoodMapper;
@@ -60,15 +63,19 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 
 	protected static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
 
+	/** Save action command. */
+	public static final String SAVE_COMMAND = "SAVE";
+	/** Change plot view action command. */
+	public static final String CHANGE_VIEW_COMMAND = "CHANGE_VIEW";
+
 	/** Singleton instance used to collect the plot */
 	private static PlotGraphController plotListener = null;
 
 	public static Color BGCOLOR = Color.WHITE;
 
-	/** Save action command. */
-	public static final String SAVE_COMMAND = "SAVE";
-	/** Change plot view action command. */
-    public static final String CHANGE_VIEW_COMMAND = "CHANGE_VIEW";
+	/** Saves which vertices are to be highlighted, because they belong to the same FU type
+	 * maps from vertex to set of FU Instances of which this vertex is part of */
+	static public HashMultimap<Vertex, Integer> HIGHLIGHTED_VERTICES = HashMultimap.create();
 
 	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
 	private JComboBox<PlotDirectedSparseGraph> graphTypeList = new JComboBox<>();	// ComboBox that is displayed on the graph to change display type
@@ -199,11 +206,16 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 			public void actionPerformed(ActionEvent event) {
 				@SuppressWarnings("unchecked")
 				JComboBox<FunctionalUnit> combo = (JComboBox<FunctionalUnit>) event.getSource();
+				PlotGraphController.HIGHLIGHTED_VERTICES.clear();
+				SelectingTranslatingGraphMousePlugin.PICKED_INSTANCES = null;
+
 				FunctionalUnit selectedUnit = (FunctionalUnit) combo.getSelectedItem();
-				if(selectedUnit == null) {
-					Transformers.HIGHLIGHT = null;
-				} else {
-					Transformers.HIGHLIGHT = ((PlotDirectedSparseGraph) PlotGraphController.this.graphTypeList.getSelectedItem()).getUnitVertices(selectedUnit);
+				int instanceNum = 0;
+				for (Instance i : ((PlotDirectedSparseGraph) PlotGraphController.this.graphTypeList.getSelectedItem()).getFUInstances(selectedUnit)) {
+					++instanceNum;
+					for (Vertex v : i.getVertices()) {
+						PlotGraphController.HIGHLIGHTED_VERTICES.put(v, instanceNum);
+					}
 				}
 				PlotGraphController.getPlotListener().visViewer.repaint();
 			}

@@ -363,6 +363,10 @@ public class FunctionalUnit {
 			return this.subject;
 		}
 
+		public String getType() {
+			return this.type;
+		}
+
 		/**
 		 * Allows manual setting of the subject
 		 * (to allow instance merging from outside).
