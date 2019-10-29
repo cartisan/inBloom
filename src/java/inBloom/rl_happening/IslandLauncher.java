@@ -9,6 +9,7 @@ import inBloom.LauncherAgent;
 import inBloom.PlotControlsLauncher;
 import inBloom.PlotLauncher;
 import inBloom.storyworld.ScheduledHappeningDirector;
+import jason.JasonException;
 import jason.asSemantics.Personality;
 import jason.infra.centralised.BaseCentralisedMAS;
 
@@ -25,26 +26,26 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		BaseCentralisedMAS.runner = this;
 	}
 	
-	public static void main(String[] args) {		
+	public static void main(String[] args) throws JasonException {		
 		logger.info("Starting up from Launcher");
 		
 		PlotControlsLauncher.runner = new IslandLauncher();
 		
-		ImmutableList<LauncherAgent> agents = ImmutableList.of(
-				new LauncherAgent("robinson",
-						new Personality(0, 0, 0, 0, 0))
-				);
+		LauncherAgent robinson = new LauncherAgent("robinson",
+				new Personality(0, 0, 0, 0, 0));
+		
+		ImmutableList<LauncherAgent> agents = ImmutableList.of(robinson);
 		
 		// Initialise MAS with a scheduled happening director
 		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 		
 		IslandModel model = new IslandModel(agents, hapDir);
 		
-		ribonson.location = model.island.name;
+		robinson.location = model.island.name;
 		
 		// Execute MAS
 		// HERE IS THE LINK TO THE AGENT.ASL FILE!!!
-		runner.initialize(args, model, agents, islandAgent);
+		runner.initialize(args, model, agents, "islandAgent");
 		runner.run();
 	}
 }
