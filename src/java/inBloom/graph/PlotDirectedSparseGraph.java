@@ -160,6 +160,25 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	}
 
 	/**
+	 * Overrides method call to addVertex, in order to set isDirty flag.
+	 */
+	@Override
+	public boolean addVertex(Vertex vertex) {
+		this.isDirty = true;
+		vertex.setGraph(this);
+		return super.addVertex(vertex);
+	}
+
+	/**
+	 * Overrides method call to removeVertex, in order to set isDirty flag.
+	 */
+	@Override
+	public boolean removeVertex(Vertex vertex) {
+		this.isDirty = true;
+		return super.removeVertex(vertex);
+	}
+
+	/**
 	 * Overrides method call to addEdge, in order to set isDirty flag.
 	 */
 	@Override
@@ -621,5 +640,35 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 			return this.name;
 		}
 		return this.getOrderedVertexList().toString();
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (this.getClass() != obj.getClass()) {
+			return false;
+		}
+
+		PlotDirectedSparseGraph other = (PlotDirectedSparseGraph) obj;
+
+		if(! this.getOrderedVertexList().toString().equals(other.getOrderedVertexList().toString())) {
+			return false;
+		}
+
+		if(this.getEdgeCount() != other.getEdgeCount()) {
+			return false;
+		}
+
+		Map<Object, Long> thisEdges = this.getEdges().stream()
+												     .collect(Collectors.groupingBy(e -> e.getType(), Collectors.counting()));
+		Map<Object, Long> otherEdges = other.getEdges().stream()
+				   							   		   .collect(Collectors.groupingBy(e -> e.getType(), Collectors.counting()));
+		return thisEdges.equals(otherEdges);
 	}
 }

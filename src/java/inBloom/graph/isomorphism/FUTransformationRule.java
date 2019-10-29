@@ -116,7 +116,7 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 			new Comparator<PlotDirectedSparseGraph>() {
 				@Override
 				public int compare(PlotDirectedSparseGraph o1, PlotDirectedSparseGraph o2) {
-					if (o1.getOrderedVertexList().toString().equals(o2.getOrderedVertexList().toString())) {
+					if (o1.equals(o2)) {
 						return 0;
 					}
 					return -1;
@@ -189,7 +189,7 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 		// carry over edges from set of 'outgoing' vertices to end of replacement graph
 		// out edge can be copied from fuGraph, since we know that end vertex of replacement graph has same type as replaced vertex
 		for (Edge edge : fuGraph.getOutEdges(toReplace)) {
-				target.addEdge(edge, replacementLeave, fuGraph.getDest(edge));
+			target.addEdge(new Edge(edge.getType()), replacementLeave, fuGraph.getDest(edge));
 		}
 
 		// carry over edges from both this and replacement, if both, the edge's source and destination, were previously imported into target
