@@ -206,7 +206,7 @@ public class Character extends Existent {
 				String perceptString = "is_dropped(" + item.getItemName() + ")";
 				PerceptAnnotation annots = PerceptAnnotation.fromCause("sing");
 				annots.addAnnotation("owner", this.name);
-				annots.addCrossCharAnnotation(perceptString, PlotEnvironment.getPlotTimeNow());
+				annots.addCrossCharAnnotation(perceptString, System.nanoTime());
 
 				for (Character observer : this.location.getCharacters()) {
 					this.model.environment.addEventPercept(observer.getName(),
