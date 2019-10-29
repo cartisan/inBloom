@@ -16,7 +16,6 @@ import com.google.common.primitives.Ints;
 
 import inBloom.graph.Edge;
 import inBloom.graph.PlotDirectedSparseGraph;
-import inBloom.graph.PlotGraphController;
 import inBloom.graph.Vertex;
 
 /**
@@ -40,7 +39,7 @@ public class State {
 
 	private int transformationNum;
 
-	private Map<String, Integer> agentNodeCounts;
+	private HashMap<String, Integer> agentNodeCounts;
 
 	private boolean isCandidate;
 
@@ -80,14 +79,13 @@ public class State {
 		Arrays.fill(this.in2, NULL_NODE);
 		Arrays.fill(this.out1, NULL_NODE);
 		Arrays.fill(this.out2, NULL_NODE);
-
-		Class cls = PlotGraphController.class;
 	}
 
 	/**
 	 * Creates a candidate state, based on a candidate mapping and the previous state
 	 * @param other State to copy.
 	 */
+	@SuppressWarnings("unchecked")
 	public State(State other, int v1, int v2) {
 		// Save candidate mapping
 		this.candidateV1 = v1;
@@ -108,7 +106,7 @@ public class State {
 		this.out1 = other.out1.clone();
 		this.out2 = other.out2.clone();
 
-		this.agentNodeCounts = other.agentNodeCounts;
+		this.agentNodeCounts = (HashMap<String,Integer>) other.agentNodeCounts.clone();
 	}
 
 	/**
@@ -222,15 +220,6 @@ public class State {
 			current = this.agentNodeCounts.get(agent);
 		}
 		this.agentNodeCounts.put(agent, current + 1);
-	}
-
-	/**
-	 * Decreases the number of vertices of the matching
-	 * belonging to the given agent by 1.
-	 * @param agent
-	 */
-	private void uncountNodeForAgent(String agent) {
-		this.agentNodeCounts.put(agent, this.agentNodeCounts.get(agent) - 1);
 	}
 
 	/**
@@ -747,5 +736,13 @@ public class State {
 
 	public List<Integer> getCore2() {
 		return Ints.asList(this.core2);
+	}
+
+	public Vertex getCandidateV1Vertex() {
+		return this.g1.getVertex(this.candidateV1);
+	}
+
+	public Vertex getCandidateV2Vertex() {
+		return this.g2.getVertex(this.candidateV2);
 	}
 }
