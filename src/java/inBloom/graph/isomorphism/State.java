@@ -703,6 +703,29 @@ public class State {
 	}
 
 	/**
+	 * Returns true if the mapping in this state subsumes the mapping in other. Does not return true if this mapping
+	 * is the same as other. Examples:<br>
+	 * <code><pre>
+	 *  {0=81, 1=229, 2=230, 3=231}.subsumes({0=229, 1=230, 2=231}) --> true
+	 *  {0=81, 1=83, 2=230, 3=231}.subsumes({0=229, 1=230, 2=231})  --> false
+	 *  {0=229, 1=230, 2=231}.subsumes({0=229, 1=230, 2=231})       --> false
+	 * </pre></code>
+	 * @param other State that might be subsumed
+	 * @return
+	 */
+	public boolean subsumes(State other) {
+		if (this.n2 <= other.n2) {
+			return false;
+		}
+
+		if(this.getCore2().containsAll(other.getCore2())) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Represents the matching in this state, format: FU V_ID = Plot V_ID
 	 */
 	@Override
@@ -745,4 +768,5 @@ public class State {
 	public Vertex getCandidateV2Vertex() {
 		return this.g2.getVertex(this.candidateV2);
 	}
+
 }

@@ -1,6 +1,7 @@
 package inBloom.graph.isomorphism;
 
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -10,7 +11,6 @@ import java.util.stream.Collectors;
 import com.google.common.base.Stopwatch;
 
 import inBloom.graph.PlotDirectedSparseGraph;
-import inBloom.graph.PlotGraphController;
 import inBloom.graph.Vertex;
 
 /**
@@ -42,14 +42,26 @@ public class UnitFinder {
 							return 0;
 						}
 						return -1;
-					}});;
+					}
+				}
+			);
 
 		Stopwatch timer = Stopwatch.createStarted();
 		this.match(new State(plotGraph, unitGraph), allMappings, tolerance);
+
+		// remove those states in allMappings, that basically are a smaller state we found + an additional vertex from transformation
+		Iterator<State> it = allMappings.iterator();
+		while(it.hasNext()) {
+			State state = it.next();
+			for(State other : allMappings) {
+				if(state.subsumes(other)) {
+					it.remove();
+					break;
+				}
+			}
+		}
+
 		logger.fine("     time taken: " + timer.stop());
-
-		Class cls = PlotGraphController.class;
-
 		return allMappings.stream().map(s -> s.getMapping()).collect(Collectors.toSet());
 	}
 
