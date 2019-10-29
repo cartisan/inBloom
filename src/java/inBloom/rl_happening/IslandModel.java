@@ -9,7 +9,9 @@ import inBloom.ActionReport;
 import inBloom.LauncherAgent;
 import inBloom.PlotModel;
 import inBloom.helper.PerceptAnnotation;
+import inBloom.juwistest.Island;
 import inBloom.storyworld.HappeningDirector;
+import inBloom.storyworld.Location;
 import inBloom.storyworld.Character;
 
 /**
@@ -26,12 +28,21 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	
 	
 	/**
+	 * LOCATIONS
+	 */
+	public Island island = new Island();
+	
+	
+	/**
 	 * CONSTRUCTOR
 	 */
 	
 	public IslandModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		super(agentList, hapDir);
 		// here we could define our variables
+		
+		// add locations
+		this.addLocation(this.island);
 	}
 	
 	
@@ -47,7 +58,24 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		
 		result.addPerception(agent.name, new PerceptAnnotation("hope"));
 		result.success = true;
+		
 		return result;
+	}
+	
+	
+	
+	
+	/**
+	 * INNER LOCATION CLASSES
+	 */
+	
+	public static class Island extends Location {
+
+		public Island() {
+			super("island");
+			// TODO Auto-generated constructor stub
+		}
+		
 	}
 
 }
