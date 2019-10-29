@@ -236,6 +236,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	for (Character currentChar : presentChars) {
     		// Add annotation to this action perception that allow plot graph post processing to insert cross-character edges
     		actionReport.getAnnotation(currentChar.name).addCrossCharAnnotation(action.toString(), actionReport.eventTime);
+    		// Add annotation about success/failure of this actions
+    		actionReport.getAnnotation(currentChar.name).addAnnotation("success", actionReport.success.toString());
 
     		if(currentChar.getName().equals(agentName)) {
     			// reporting results for acting agent
