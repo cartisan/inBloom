@@ -21,7 +21,8 @@ public class HogwartsModel extends PlotModel<HogwartsEnvironment> {
 	 */
 	public boolean burning;
 	public boolean world_was_saved;	// requires that the world was previously endangered
-
+	
+	
 
 	/**
 	 * CONSTRUCTOR
