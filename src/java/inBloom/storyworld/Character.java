@@ -185,6 +185,7 @@ public class Character extends Existent {
 
 	public ActionReport relax() {
 		if( AffectiveDimensionChecks.BOUNDARIES.get(AffectiveDimensionChecks.HIG).apply(this.getMood().getA())) {
+			logger.info(this.name + " is to aroused to be able to relax.");
 			return new ActionReport(false);
 		}
 		return new ActionReport(true);
@@ -230,7 +231,7 @@ public class Character extends Existent {
 		return res;
 	}
 
-	public ActionReport handOver(Character receiver, String itemName) {
+	public ActionReport handOver(String itemName, Character receiver) {
 		ActionReport res = new ActionReport();
 
 		if (this.has(itemName) & this.location.present(receiver)){
@@ -246,7 +247,7 @@ public class Character extends Existent {
 		return res;
 	}
 
-	public ActionReport refuseHandOver(Character receiver, String itemName) {
+	public ActionReport refuseHandOver(String itemName, Character receiver) {
 		ActionReport res = new ActionReport();
 
 		if (this.has(itemName) & this.location.present(receiver)){

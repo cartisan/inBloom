@@ -56,29 +56,29 @@ wish(relax).
 	.appraise_emotion(remorse, Person, "is_dropped(Thing)").
 
 @is_dropped[atomic]
-+is_dropped(Thing)[owner(Person)] : wish(has(Thing)) <-		//crowfox
-	.appraise_emotion(gloating, Person, "is_dropped(Thing)");
++is_dropped(Thing)[owner(Agent)] : wish(has(Thing)) <-		//crowfox
+	.appraise_emotion(gloating, Agent, "is_dropped(Thing)");
 	!collect(Thing);
 	-wish(has(X));
 	.resume(wish(relax)).
 
 @compliment[atomic]
-+complimented : .my_name(Person)  <-  		//crowfox
-	.appraise_emotion(pride, Person, "complimented");
++complimented : .my_name(Agent)  <-  		//crowfox
+	.appraise_emotion(pride, Agent, "complimented");
 	!sing.
 
 +threatened(Item)[source(Other)] <- 				 //crowfox
 	.print("Oh no, don't hurt me!");
 	.appraise_emotion(fear, _, "threatened(Item)");
-	!handOver(Other, Item).
+	!handOver(Item, Other).
 	
 @threat_2[affect(personality(conscientiousness,low))]
 +threatened(Item)[source(Other)]  : .my_name(Me) <- 				 //crowfox
 	.print("No, I will not give you anything!");
 	.appraise_emotion(reproach, Other, "threatened(Item)");
-	!refuseHandOver(Other,Item).
+	!refuseHandOver(Item, Other).
 
-+refuseHandOver(Person, Thing) <-
++refuseHandOver(Thing, Agent) <-
 	// TODO: continue story by an attack mechanism?
 	.resume(wish(relax)).
 		
@@ -170,11 +170,11 @@ wish(relax).
 	.resume(wish(relax));
 	-obligation(create(bread)).
 
-+!has(Thing) : has(Person, Thing) & at(Person, Loc1) & at(Loc2) & not Loc1==Loc2 <- 	//crowfox
-	!approach(Person).
++!has(Thing) : has(Agent, Thing) & at(Agent, Loc1) & at(Loc2) & not Loc1==Loc2 <- 	//crowfox
+	!approach(Agent).
 
-+!has(Thing) : has(Person, Thing) & at(Person, Loc1) & at(Loc2)  & Loc1==Loc2 <- 	//crowfox
-	!get(Thing, Person).
++!has(Thing) : has(Agent, Thing) & at(Agent, Loc1) & at(Loc2)  & Loc1==Loc2 <- 	//crowfox
+	!get(Thing, Agent).
 
 @punish_1[atomic]	
 +!punish : mood(hostile) & has(X) & is_pleasant(eat(X)) & hungry <-
@@ -227,29 +227,29 @@ wish(relax).
 +!eat(X) : not has(X)<- 
 	.appraise_emotion(disappointment, _, "eat(X)").
 
-+!approach(Person) : agent(Person) & at(Person, Loc) <-  	//crowfox
++!approach(Agent) : agent(Agent) & at(Agent, Loc) <-  	//crowfox
 	goTo(Loc).
 
 +!approach(Loc) : location(Loc) <-  	//crowfox
 	goTo(Loc).
 
 @get_threaten[affect(personality(agreeableness,low))]
-+!get(Thing, Person) :	at(Loc)[level(L)] & at(Person,Loc)[level(L)] <-			//crowfox
++!get(Thing, Agent) :	at(Loc)[level(L)] & at(Agent,Loc)[level(L)] <-			//crowfox
 	.print("Give ", Thing, " to me or I will take it from you!");
-	.send(Person, tell, threatened(Thing));
-	.wait(has(Thing) | refuseHandOver(Person, Thing)).
+	.send(Agent, tell, threatened(Thing));
+	.wait(has(Thing) | refuseHandOver(Thing, Agent)).
 
 @get_flatter[affect(personality(agreeableness,low))]
-+!get(Thing, Person) : at(Loc) & at(Person,Loc) <-			//crowfox
++!get(Thing, Agent) : at(Loc) & at(Agent,Loc) <-			//crowfox
 	.print("So lovely your feathers, so shiny thy beak!");
-	.send(Person, tell, complimented);
+	.send(Agent, tell, complimented);
 	.wait({+is_dropped(Thing)}).
 	
-+!get(Thing, Person) : at(Loc) & at(Person,Loc)  <-
++!get(Thing, Agent) : at(Loc) & at(Agent,Loc)  <-
 	.print("I am so hungry, would you share your ", Thing," with me please?");
 	.my_name(Me);
-	.send(Person, achieve, share_food(Thing, Me));
-	.wait(has(Thing)  | refuseHandOver(Person, Thing)).	
+	.send(Agent, achieve, share_food(Thing, Me));
+	.wait(has(Thing)  | refuseHandOver(Thing, Agent)).	
 
 +!collect(Thing) <-
 	collect(Thing).
@@ -258,17 +258,17 @@ wish(relax).
 	sing.
 
 @share1[affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
-+!share(Item, Anim) <-
-	.print("Sharing: ", Item, " with", Anim);
-	share(Item, Anim).
++!share(Item, Agent) <-
+	.print("Sharing: ", Item, " with", Agent);
+	share(Item, Agent).
 
 @share2[affect(personality(agreeableness,low))]
-+!share(Item, Anim) <- 
++!share(Item, Agent) <- 
 	.print("I'm not sharing with anyone!");
-	!refuseHandOver(Anim,Item).
+	!refuseHandOver(Item, Agent).
 
-+!handOver(Agent, Item) <-
-	handOver(Agent, Item).
++!handOver(Item, Agent) <-
+	handOver(Item, Agent).
 
-+!refuseHandOver(Agent, Item) <-
-	refuseHandOver(Agent, Item).
++!refuseHandOver(Item, Agent) <-
+	refuseHandOver(Item, Agent).
