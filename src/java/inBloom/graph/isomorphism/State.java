@@ -38,7 +38,7 @@ public class State {
 
 	public int candidateV1, candidateV2;
 
-	private int transformationNum = 0;
+	private int transformationNum;
 
 	private Map<String, Integer> agentNodeCounts;
 
@@ -53,6 +53,7 @@ public class State {
 		this.g1 = plotGraph;
 		this.g2 = unitGraph;
 		this.depth = 0;
+		this.transformationNum = 0;
 		this.candidateV1 = NULL_NODE;
 		this.candidateV2 = NULL_NODE;
 		this.n1 = this.g1.getPlotVertexCount();
@@ -97,6 +98,7 @@ public class State {
 		this.g1 = other.g1;
 		this.g2 = other.g2;
 		this.depth = other.depth + 1;
+		this.transformationNum = other.transformationNum;
 		this.n1 = other.n1;
 		this.n2 = other.n2;
 		this.core1 = other.core1.clone();
@@ -123,7 +125,7 @@ public class State {
 			throw new RuntimeException("Split FU Graph larger than plot graph or allowed maxm size");
 		}
 
-		this.transformationNum += 1;
+		this.transformationNum = other.transformationNum + 1;
 
 		// update representation to represent new FU graph
 		this.g2 = g2New;

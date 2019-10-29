@@ -108,6 +108,10 @@ public class Vertex implements Cloneable {
 		this.step = step;
 	}
 
+	public void setGraph(PlotDirectedSparseGraph graph) {
+		this.graph = graph;
+	}
+
 	/**
 	 * Returns the functor part of the vertex' label.
 	 * Example: <br />
