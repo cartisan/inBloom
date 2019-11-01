@@ -459,6 +459,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 
 		// Create analysed graph with semantically interpretable edges and collapsed vertices
 		PlotDirectedSparseGraph g = new FullGraphPPVisitor().apply(this.graph);
+		g = new AnnotationPPVisitor().apply(g);
 		g = new CompactGraphPPVisitor().apply(g);
 		g.setName("Analyzed Plot Graph");
 

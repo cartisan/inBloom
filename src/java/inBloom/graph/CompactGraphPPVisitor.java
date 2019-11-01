@@ -11,7 +11,6 @@ import jason.asSemantics.Mood;
 import inBloom.graph.Edge.Type;
 import inBloom.graph.visitor.EdgeVisitResult;
 import inBloom.graph.visitor.PlotGraphVisitor;
-import inBloom.helper.TermParser;
 
 /**
  * This post-process visitor is supposed to operate on the compact graph
@@ -65,8 +64,6 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitPercept(Vertex vertex) {
-//		this.handleTradeoff(vertex);
-
 		if(vertex.hasEmotion()) {
 			this.handleLossAndResolution(vertex);
 		}
@@ -112,48 +109,6 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 		return false;
 	}
 
-	/**
-	 * Checks if this perception of vertex is the removal of a belief, caused by processing another belief:
-	 * {@code -has(bread)[source(is_dropped(bread))]}.
-	 * If so, creates a termination edge between the source and the vertex representing the addition of this belief.
-	 * @param vertex
-	 * @return whether tradeoff was found
-	 */
-	private boolean handleTradeoff(Vertex vertex) {
-		String source = vertex.getSource();
-		if(source.isEmpty() || vertex.getLabel().startsWith("+")) {
-			return false;
-		}
-
-		source = TermParser.removeAnnots(source);
-
-		Vertex src = null;
-		// Look for source
-		for(Vertex target : this.stateList) {
-			if(TermParser.removeAnnots(target.getLabel()).equals(source) |
-			TermParser.removeAnnots(target.getLabel()).equals(source.substring(1)) & target.getType().equals(Vertex.Type.ACTION)) {
-				// Source found! We take every source!
-				src = target;
-				break;
-			}
-		}
-
-		if(src != null) {
-			// Let's find the corresponding addition of this mental note.
-			for(Vertex target : this.stateList) {
-				if(target.getWithoutAnnotation().substring(1).equals(vertex.getWithoutAnnotation().substring(1))) {
-					if(target.getWithoutAnnotation().substring(0, 1).equals("+")) {
-						// Great, found the addition!
-						this.graph.addEdge(new Edge(Edge.Type.TERMINATION), src, target);
-						return true;
-					}
-				}
-			}
-		}
-
-		return false;
-	}
-	
 	private void handleLossAndResolution(Vertex vertex) {
 		for(Vertex target : this.stateList) {
 			// If both vertices are the same event (i.e. -has(bread) and +has(bread))

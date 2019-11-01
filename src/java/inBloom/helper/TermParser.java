@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solution;
@@ -105,6 +107,26 @@ public class TermParser {
 	}
 
 	/**
+	 * Merges the annotation from sourceLiteral into the annotations of targetLiteral. Returns not only annotation, but 
+	 * whole literal.
+	 * @param targetLiteral String representation of the label of targetLiteral
+	 * @param sourceLiteral String representation of the label of targetLiteral
+	 * @return String representation of the label of targetLiteral after merging, contains functor, terms and annotations
+	 */
+	public static String mergeAnnotations(String targetLiteral, String sourceLiteral) {
+		// TODO: What if source and target contain same annotation (w/ different value?) --> replace!
+		String newAnnots = Stream.of(TermParser.getAnnots(targetLiteral, true), TermParser.getAnnots(sourceLiteral, true))
+								 .filter(s -> s != null && !s.isEmpty())
+								 .collect(Collectors.joining(","));
+
+		if (newAnnots.length() > 0) {
+			newAnnots = "[" + newAnnots + "]";
+		}
+		return TermParser.removeAnnots(targetLiteral) + newAnnots;
+	}
+
+
+	/**
 	 * Returns the annotations of a ASL term, ignoring any embedded annotations. Convenience
 	 * function that keeps outer brackets on extracted annotations.
 	 * E.g. "at(loc(tree)[level(top)])[source(self)]" -> "[source(self)]"
@@ -131,6 +153,8 @@ public class TermParser {
 		}
 		return annots;
 	}
+
+
 
 	/**
 	 * Quick and dirty heuristic to extract personality preconditios from a plan annotation. Matches all instances of
