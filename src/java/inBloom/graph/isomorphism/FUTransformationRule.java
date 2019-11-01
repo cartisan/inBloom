@@ -13,7 +13,6 @@ import com.google.common.collect.HashBasedTable;
 
 import inBloom.graph.Edge;
 import inBloom.graph.PlotDirectedSparseGraph;
-import inBloom.graph.PlotGraphController;
 import inBloom.graph.Vertex;
 
 public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSparseGraph, PlotDirectedSparseGraph>, Predicate<Vertex> {
@@ -94,8 +93,6 @@ public class FUTransformationRule implements BiFunction<Vertex, PlotDirectedSpar
 		TRANSFORMATIONS.add(NEG2);
 		TRANSFORMATIONS.add(INT1);
 		TRANSFORMATIONS.add(INT2);
-
-		Class cls = PlotGraphController.class;
 	}
 
 	/**
