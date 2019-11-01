@@ -144,7 +144,8 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 		Vertex src = null;
 		// Look for source
 		for(Vertex target : this.stateList) {
-			if(TermParser.removeAnnots(target.getLabel()).substring(1).equals(source)) {
+			if(TermParser.removeAnnots(target.getLabel()).equals(source) |
+			TermParser.removeAnnots(target.getLabel()).equals(source.substring(1)) & target.getType().equals(Vertex.Type.ACTION)) {
 				// Source found! We take every source!
 				src = target;
 				break;

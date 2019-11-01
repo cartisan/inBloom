@@ -44,11 +44,13 @@ public class PlotCircumstanceListener implements CircumstanceListener {
 			if(e.getTrigger().toString().endsWith("[source(self)]") && e.getIntention() != null) {
 				toAdd = e.getTrigger().toString().split("\\[source\\(self\\)\\]")[0];
 				source = String.format("[source(%s)]",
-						TermParser.removeAnnots(e.getIntention().peek().getTrigger().getLiteral().toString()));
+						e.getIntention().peek().getTrigger().getOperator().toString() +							// + or - for belief addition or removal
+						TermParser.removeAnnots(e.getIntention().peek().getTrigger().getLiteral().toString()));	// causing event without annotation
 				toAdd += source;
 			} else {
 				toAdd = e.getTrigger().toString();
 			}
+
 			PlotGraphController.getPlotListener().addEvent(this.name, toAdd, Vertex.Type.PERCEPT, PlotLauncher.getRunner().getUserEnvironment().getStep());
 		}
 	}
