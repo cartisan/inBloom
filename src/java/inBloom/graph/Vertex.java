@@ -42,7 +42,7 @@ public class Vertex implements Cloneable {
 
 	/**
 	 * Stores emotions that have been attached to this Vertex. Only PERCEPT-type vertices can contain emotions, and
-	 * these emotions are collapsed into the percept during graph analysis by {@linkplain FullGraphPPVisitor}, which
+	 * these emotions are collapsed into the percept during graph analysis by {@linkplain VertexMergingPPVisitor}, which
 	 * means the emotions a vertex has are not usually known during vertex creation.
 	 */
 	private LinkedList<String> emotions = new LinkedList<>();

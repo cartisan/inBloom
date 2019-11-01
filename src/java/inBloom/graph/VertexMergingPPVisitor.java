@@ -10,14 +10,12 @@ import inBloom.graph.visitor.PlotGraphVisitor;
 import inBloom.helper.TermParser;
 
 /**
- * This post-process visitor is intended to be used on the
- * full ('raw') plot graph as the first post-process visitor.
- * It will collapse emotions, percepts and action into a single
- * vertex and create edges based on information stored in annotations.
+ * This post-process visitor is intended to be used on the full ('raw') plot graph as the first post-process visitor.
+ * It will collapse emotions, percepts and action into a single vertex.
  * @author Sven Wilke
  */
-public class FullGraphPPVisitor implements PlotGraphVisitor {
-	protected static Logger logger = Logger.getLogger(FullGraphPPVisitor.class.getName());
+public class VertexMergingPPVisitor implements PlotGraphVisitor {
+	protected static Logger logger = Logger.getLogger(VertexMergingPPVisitor.class.getName());
 
 	private PlotDirectedSparseGraph graph;
 	private LinkedList<Vertex> eventList;

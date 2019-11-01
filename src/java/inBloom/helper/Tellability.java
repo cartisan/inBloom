@@ -49,7 +49,7 @@ public class Tellability {
 
 	/**
 	 * Takes an analyzed graph and computes all necessary statistics of the plot to compute tellability.
-	 * @param graph a graph that has been processed by both FullGraphPPVisitor and CompactGraphPPVisitor
+	 * @param graph a graph that has been processed by both VertexMergingPPVisitor and VisualizationFilterPPVisitor
 	 */
 	public Tellability(PlotDirectedSparseGraph graph) {
 		this.counter = new CountingVisitor();
@@ -64,7 +64,7 @@ public class Tellability {
 
 	/**
 	 * Computes all statistics that can be determined by counting in a single pass
-	 * @param graph a graph that has been processed by both FullGraphPPVisitor and CompactGraphPPVisitor
+	 * @param graph a graph that has been processed by both VertexMergingPPVisitor and VisualizationFilterPPVisitor
 	 */
 	private void computeSimpleStatistics(PlotDirectedSparseGraph graph) {
 		this.counter.apply(graph);
@@ -77,7 +77,7 @@ public class Tellability {
 	/**
 	 * Identifies all instances of functional units in the plot graph and detects polyvalent vertices
 	 * at their overlap.
-	 * @param graph a graph that has been processed by both FullGraphPPVisitor and CompactGraphPPVisitor
+	 * @param graph a graph that has been processed by both VertexMergingPPVisitor and VisualizationFilterPPVisitor
 	 */
 	private void detectPolyvalence(PlotDirectedSparseGraph graph) {
 		Map<Vertex, Integer> vertexUnitCount = new HashMap<>();

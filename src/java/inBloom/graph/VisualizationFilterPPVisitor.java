@@ -11,25 +11,21 @@ import inBloom.graph.visitor.EdgeVisitResult;
 import inBloom.graph.visitor.PlotGraphVisitor;
 
 /**
- * This post-process visitor is supposed to operate on the compact graph
- * representation which was created by FullGraphPPVisitor.
- * The graph should have vertices of emotions and perceptions collapsed
- * into the corresponding action, as well as added edges of the types
- * motivation, actualization, causation and x-character.
- *
- * Used to perform and insert further analysis into the graph, based on
- * primitive FUs.
- *
+ * This post-process visitor is supposed to operate one the fully analysed plot graph created by
+ * {@linkplain EdgeGenerationPPVisitor}.
+ * The graph should have vertices of emotions and perceptions collapsed into the corresponding action, as well as
+ * added semantic edges of the types motivation, actualization, equality, causation and x-character.
+ * Used to filter irrelevant vertices from the final version of the graph.
  * @author Sven Wilke
  */
-public class CompactGraphPPVisitor implements PlotGraphVisitor {
-	protected static Logger logger = Logger.getLogger(FullGraphPPVisitor.class.getName());
+public class VisualizationFilterPPVisitor implements PlotGraphVisitor {
+	protected static Logger logger = Logger.getLogger(VisualizationFilterPPVisitor.class.getName());
 
 	private PlotDirectedSparseGraph graph;
 	private Vertex currentRoot;
 
 	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
-		this.graph = graph;
+		this.graph = graph.clone();
 
 		this.graph.accept(this);
 		this.postProcessing();
