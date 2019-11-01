@@ -36,7 +36,7 @@ public class TermParser {
 
 	private static final Pattern EMOTION_PATTERN = Pattern.compile("(?<emotion>\\w*)\\["+ Edge.Type.CAUSALITY.toString() +"\\((?<cause>.*)\\)\\]\\(.\\)");
 	public static final Pattern CROSSCHAR_PATTERN = Pattern.compile(Edge.Type.CROSSCHARACTER + "\\((<?id>.+)\\)");
-	public static final Pattern ANNOT_PATTERN = Pattern.compile(".+\\(.*\\)\\[(?<annot>.+?)\\]$");
+	public static final Pattern ANNOT_PATTERN = Pattern.compile(".+(\\(.*\\))?\\[(?<annot>.+?)\\]$");
 	public static final String PERSO_PATTERN = "personality\\((?<trait>.+?),(?<scope>.+?)\\)";
 	public static final String AFFECT_PATTERN = "affect\\((?<trait>.+?),(?<scope>.+?)\\)";
 	public static final String FUNCTOR_PATTERN = "\\((?<content>(?:(?!\\)\\,).)+)\\)"; // crazy regex to deal with cases like: cause(+is_dropped(bread)),emotion(hope),source(percept)
@@ -69,20 +69,6 @@ public class TermParser {
 	 * @return content of the annotation if available, empty string otherwise
 	 */
 	public static String getAnnotation(String term, String annot) {
-// Doesn't work when annots contain +/- in beginning, to switch back on: remove operator addition in PlotCircumstanceListener#eventAdded
-//		Literal l;
-//		try {
-//			if(term.startsWith("!") || term.startsWith("+") || term.startsWith("-")) {
-//				term = term.substring(1);
-//			}
-//			l = ASSyntax.parseLiteral(term);
-//			if((l = l.getAnnot(annot)) != null) {
-//				return l.toString().substring((annot + "(").length(), l.toString().length() - 1);
-//			}
-//		} catch (ParseException e) {
-//		}
-//		return "";
-
 		Matcher m1 = ANNOT_PATTERN.matcher(term);
 		if(m1.find()) {
 			// get content of annotation without square brackets
@@ -140,7 +126,7 @@ public class TermParser {
 		String termNoAnnots = TermParser.removeAnnots(s);
 		String annots =  s.substring(termNoAnnots.length());
 
-		if(removeOuterBrackets) {
+		if(removeOuterBrackets & annots.length() > 0) {
 			return annots.substring(1, annots.length() - 1);
 		}
 		return annots;
