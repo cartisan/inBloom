@@ -1,11 +1,9 @@
 package inBloom.graph;
 
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import jason.asSemantics.Emotion;
 import jason.asSemantics.Mood;
 
 import inBloom.graph.Edge.Type;
@@ -29,13 +27,9 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 
 	private PlotDirectedSparseGraph graph;
 	private Vertex currentRoot;
-	private LinkedList<Vertex> intentionList;
-	private LinkedList<Vertex> stateList;
 
 	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
 		this.graph = graph;
-		this.stateList = new LinkedList<>();
-		this.intentionList = new LinkedList<>();
 
 		this.graph.accept(this);
 		this.postProcessing();
@@ -46,8 +40,6 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 	@Override
 	public void visitRoot(Vertex vertex) {
 		this.currentRoot = vertex;
-		this.stateList.clear();
-		this.intentionList.clear();
 	}
 
 	@Override
@@ -64,10 +56,6 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitPercept(Vertex vertex) {
-		if(vertex.hasEmotion()) {
-			this.handleLossAndResolution(vertex);
-		}
-
 		/* remove percept if it is not
 		 *  - a wish or obligation that is being added or removed 					[for pwt visualization]
 		 *  - the start of a mood, or the end of a mood that triggers something		[for visual clarity]
@@ -109,50 +97,6 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 		return false;
 	}
 
-	private void handleLossAndResolution(Vertex vertex) {
-		for(Vertex target : this.stateList) {
-			// If both vertices are the same event (i.e. -has(bread) and +has(bread))
-			if(target.getWithoutAnnotation().substring(1).equals(vertex.getWithoutAnnotation().substring(1))) {
-				// If the one is an addition while the other is a substraction of a percept
-				if(!target.getWithoutAnnotation().substring(0, 1).equals(vertex.getWithoutAnnotation().substring(0, 1))) {
-					// If both vertices belong to same character
-					if(target.getRoot().equals(vertex.getRoot())) {
-						boolean isPositive = false;
-						boolean isNegative = false;
-						for(String em : vertex.getEmotions()) {
-							isPositive |= Emotion.getEmotion(em).getP() > 0;
-							isNegative |= Emotion.getEmotion(em).getP() < 0;
-						}
-						// This is either loss or resolution (second vertex has both valences!)
-						if(isPositive && isNegative) {
-							this.createTermination(vertex, target);
-							break;
-						// If there is only one valence check the first vertex:
-						} else {
-							for(String em : target.getEmotions()) {
-								// This is a loss!
-								if(!isPositive && Emotion.getEmotion(em).getP() > 0) {
-									this.createTermination(vertex, target);
-									break;
-								} else
-								// This is a resolution!
-								if(!isNegative && Emotion.getEmotion(em).getP() < 0) {
-									this.createTermination(vertex, target);
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		this.stateList.addFirst(vertex);
-	}
-
-	private void createTermination(Vertex from, Vertex to) {
-		this.graph.addEdge(new Edge(Edge.Type.TERMINATION), from, to);
-	}
-
 	@Override
 	public void visitSpeech(Vertex vertex) {
 
@@ -160,17 +104,6 @@ public class CompactGraphPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitIntention(Vertex vertex) {
-		this.lookForPerseverance(vertex);
-		this.intentionList.addFirst(vertex);
-	}
-
-	private void lookForPerseverance(Vertex vertex) {
-		for(Vertex target : this.intentionList) {
-			if(target.getIntention().equals(vertex.getIntention()) & target.getRoot().equals(vertex.getRoot())  ) {
-				this.graph.addEdge(new Edge(Edge.Type.EQUIVALENCE), vertex, target);	//equivalence edges point up
-				return;
-			}
-		}
 	}
 
 	@Override

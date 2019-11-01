@@ -13,6 +13,8 @@ import java.util.regex.Pattern;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Sets;
 
+import jason.asSemantics.Emotion;
+
 import inBloom.graph.visitor.EdgeVisitResult;
 import inBloom.graph.visitor.PlotGraphVisitor;
 import inBloom.helper.TermParser;
@@ -97,6 +99,9 @@ public class AnnotationPPVisitor implements PlotGraphVisitor {
 
 		this.handleTradeoff(vertex);
 		this.processCrossCharAnnotation(vertex);
+		if(vertex.hasEmotion()) {
+			this.handleLossAndResolution(vertex);
+		}
 		this.eventList.addFirst(vertex);
 	}
 
@@ -115,6 +120,7 @@ public class AnnotationPPVisitor implements PlotGraphVisitor {
 			return;
 		}
 
+		this.lookForPerseverance(vertex);
 		this.attachMotivation(vertex);
 		this.eventList.addFirst(vertex);
 	}
@@ -127,6 +133,16 @@ public class AnnotationPPVisitor implements PlotGraphVisitor {
 				return EdgeVisitResult.CONTINUE;
 			default:
 				return EdgeVisitResult.TERMINATE;
+		}
+	}
+
+
+	private void lookForPerseverance(Vertex vertex) {
+		for(Vertex target : this.eventList) {
+			if(target.getIntention().equals(vertex.getIntention()) & target.getRoot().equals(vertex.getRoot())  ) {
+				this.graph.addEdge(new Edge(Edge.Type.EQUIVALENCE), vertex, target);	//equivalence edges point up
+				return;
+			}
 		}
 	}
 
@@ -170,7 +186,7 @@ public class AnnotationPPVisitor implements PlotGraphVisitor {
 		}
 
 		if(cause != null) {
-			this.graph.addEdge(new Edge(Edge.Type.TERMINATION), cause, droppedIntention);
+			this.createTermination(cause, droppedIntention);
 			this.removeVertex(vertex);
 		} else {
 			if(causeString.startsWith("!")) {
@@ -179,11 +195,49 @@ public class AnnotationPPVisitor implements PlotGraphVisitor {
 				vertex.setType(Vertex.Type.PERCEPT);
 			}
 			vertex.setLabel(causeString);
-			this.graph.addEdge(new Edge(Edge.Type.TERMINATION), vertex, droppedIntention);
+			this.createTermination(vertex, droppedIntention);
 			this.eventList.addFirst(vertex);
 		}
 	}
 
+	private void handleLossAndResolution(Vertex vertex) {
+		for(Vertex target : this.eventList) {
+			// If both vertices are the same event (i.e. -has(bread) and +has(bread))
+			if(target.getWithoutAnnotation().substring(1).equals(vertex.getWithoutAnnotation().substring(1))) {
+				// If the one is an addition while the other is a substraction of a percept
+				if(!target.getWithoutAnnotation().substring(0, 1).equals(vertex.getWithoutAnnotation().substring(0, 1))) {
+					// If both vertices belong to same character
+					if(target.getRoot().equals(vertex.getRoot())) {
+						boolean isPositive = false;
+						boolean isNegative = false;
+						for(String em : vertex.getEmotions()) {
+							isPositive |= Emotion.getEmotion(em).getP() > 0;
+							isNegative |= Emotion.getEmotion(em).getP() < 0;
+						}
+						// This is either loss or resolution (second vertex has both valences!)
+						if(isPositive && isNegative) {
+							this.createTermination(vertex, target);
+							break;
+						// If there is only one valence check the first vertex:
+						} else {
+							for(String em : target.getEmotions()) {
+								// This is a loss!
+								if(!isPositive && Emotion.getEmotion(em).getP() > 0) {
+									this.createTermination(vertex, target);
+									break;
+								} else
+								// This is a resolution!
+								if(!isNegative && Emotion.getEmotion(em).getP() < 0) {
+									this.createTermination(vertex, target);
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
 	/**
 	 * Add entry to xCharIDMap if cross-character annotation present, so that #postProcessing can create edges between
@@ -268,7 +322,7 @@ public class AnnotationPPVisitor implements PlotGraphVisitor {
 				if(target.getWithoutAnnotation().substring(1).equals(vertex.getWithoutAnnotation().substring(1))) {
 					if(target.getWithoutAnnotation().substring(0, 1).equals("+")) {
 						// Great, found the addition!
-						this.graph.addEdge(new Edge(Edge.Type.TERMINATION), src, target);
+						this.createTermination(src, target);
 						return true;
 					}
 				}
@@ -318,5 +372,9 @@ public class AnnotationPPVisitor implements PlotGraphVisitor {
 
 	private void removeVertex(Vertex vertex) {
 		this.graph.removeVertexAndPatchGraphAuto(this.currentRoot, vertex);
+	}
+
+	private void createTermination(Vertex from, Vertex to) {
+		this.graph.addEdge(new Edge(Edge.Type.TERMINATION), from, to);
 	}
 }
