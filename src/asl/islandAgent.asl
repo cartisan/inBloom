@@ -32,8 +32,12 @@
 
 /* Initial goals */
 
-!seeTheWorld.
+!start.
 
 /* Plans */
 
-+!seeTheWorld : true <- goOnCruise.
+@go_on_cruise[affect(personality(openness,high))]
++!start <- goOnCruise.
+
+@go_on_cruise_default
++!start <- doNothing.

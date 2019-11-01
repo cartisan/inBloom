@@ -1,5 +1,8 @@
 package inBloom.juwistest;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+
 import com.google.common.collect.ImmutableList;
 
 import jason.JasonException;
@@ -27,29 +30,39 @@ public class HogwartsLauncher extends PlotLauncher<HogwartsEnvironment, Hogwarts
 
 		PlotControlsLauncher.runner = new HogwartsLauncher();
 
-		ImmutableList<LauncherAgent> agents = ImmutableList.of(
-						new LauncherAgent("harry",
-								new Personality(0, -0.5, 0, 1, 0)
-						),
-
-						new LauncherAgent("ron",
-								new Personality(-0.5, -1, 1, 0, 1)
-						),
-
-						new LauncherAgent("hermione",
-								new Personality(1, 1, 0.5, -1, -1)
-						)
-
-				);
+		
+		LauncherAgent harry = new LauncherAgent("harry",
+				Arrays.asList("hungry", "self(farm_animal)"),
+		    	new LinkedList<String>(),
+				new Personality(0, -0.5, 0, 1, 0)
+		);
+		
+		LauncherAgent ron = new LauncherAgent("ron",
+				Arrays.asList("hungry", "self(farm_animal)"),
+		    	new LinkedList<String>(),
+				new Personality(-0.5, -1, 1, 0, 1)
+		);
+		
+		LauncherAgent hermione = new LauncherAgent("hermione",
+				Arrays.asList("hungry", "self(farm_animal)"),
+		    	new LinkedList<String>(),
+				new Personality(1, 1, 0.5, -1, -1)
+		);
+		
+		ImmutableList<LauncherAgent> agents = ImmutableList.of(harry, ron, hermione);
 
 		// Initialise MAS with a scheduled happening director
 		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 
 		HogwartsModel model = new HogwartsModel(agents, hapDir);
-
+		
+		/**harry.location = model.hogwarts.name;
+		ron.location = model.hogwarts.name;
+		hermione.location = model.hogwarts.name;*/
+		
 		// Execute MAS
 		// HERE IS THE LINK TO THE AGENT.ASL FILE!!!
-		runner.initialize(args, model, agents, "agentJulia");
+		runner.initialize(args, model, agents, "hogwartsAgent");
 		runner.run();
 	}
 

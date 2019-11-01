@@ -4,11 +4,13 @@
 package inBloom.juwistest;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Logger;
 
 import jason.asSyntax.Literal;
 import jason.asSyntax.Structure;
 import inBloom.ActionReport;
+import inBloom.LauncherAgent;
 import inBloom.PlotEnvironment;
 import inBloom.helper.PerceptAnnotation;
 import inBloom.storyworld.Character;
@@ -21,10 +23,18 @@ public class HogwartsEnvironment extends PlotEnvironment<HogwartsModel>{
 
 	static Logger logger = Logger.getLogger(HogwartsEnvironment.class.getName());
 
+	@Override
+    public void initialize(List<LauncherAgent> agents) {
+		super.initialize(agents);
+
+		// Add special initialization of agent percepts for custom environment here.
+		// Left blank intentionally.
+	}
+	
 	/**protected void updateStatePercepts(String agentName) {
 		super.updateStatePercepts(agentName);
 
-		// Here general perecepts (for all agents) can be updated that are
+		// Here general percepts (for all agents) can be updated that are
 		// based on the model?
 		if(getModel().burning) {
 			// if it burning: add that to the belief base

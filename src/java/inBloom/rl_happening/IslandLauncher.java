@@ -32,7 +32,7 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		PlotControlsLauncher.runner = new IslandLauncher();
 		
 		LauncherAgent robinson = new LauncherAgent("robinson",
-				new Personality(0, 0, 0, 0, 0));
+				new Personality(1, 0, 0.5, -0.5, 0));
 		
 		ImmutableList<LauncherAgent> agents = ImmutableList.of(robinson);
 		

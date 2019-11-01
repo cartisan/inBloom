@@ -33,6 +33,10 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 			result = getModel().goOnCruise(agent);
 		}
 		
+		else if(action.getFunctor().equals("doNothing")) {
+			result = getModel().doNothing(agent);
+		}
+		
 		return result;
 	}
 }

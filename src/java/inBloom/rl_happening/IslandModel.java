@@ -61,6 +61,17 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		return result;
 	}
 	
+	public ActionReport doNothing(Character agent) {
+		ActionReport result = new ActionReport();
+	
+		logger.info(agent.name + " did nothing.");
+		
+		// result.addPerception(agent.name, new PerceptAnnotation("hope"));
+		result.success = true;
+		
+		return result;
+	}
+	
 	
 	
 	

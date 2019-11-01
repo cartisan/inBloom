@@ -8,6 +8,8 @@ import inBloom.LauncherAgent;
 import inBloom.PlotModel;
 import inBloom.helper.PerceptAnnotation;
 import inBloom.storyworld.HappeningDirector;
+import inBloom.storyworld.Location;
+import jason.asSyntax.Literal;
 import inBloom.storyworld.Character;
 
 /**
@@ -22,6 +24,8 @@ public class HogwartsModel extends PlotModel<HogwartsEnvironment> {
 	public boolean burning;
 	public boolean world_was_saved;	// requires that the world was previously endangered
 	
+	public Hogwarts hogwarts = new Hogwarts();
+	
 	
 
 	/**
@@ -30,6 +34,8 @@ public class HogwartsModel extends PlotModel<HogwartsEnvironment> {
 
 	public HogwartsModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		super(agentList, hapDir);
+		
+		this.addLocation(this.hogwarts);
 
 		// here we could define our variables
 		this.burning = false;
@@ -50,7 +56,16 @@ public class HogwartsModel extends PlotModel<HogwartsEnvironment> {
 		//this.environment.addEventPerception(agent.name, "burn", new PerceptAnnotation("pride"));
 		// COMMENT: Durch Leonid's Änderung, jetzt keine environment.addEventPerception mehr möglich,
 		// dafür aber (vermutlich) ActionReport.addPerception -> das aber ohne "EventName"
-		result.addPerception(agent.name, new PerceptAnnotation("pride"));
+		//result.addPerception(agent.name, new PerceptAnnotation("pride"));
+		
+		this.environment.addEventPercept(agent.name, "burn", new PerceptAnnotation("pride"));
+		
+		//TODO HERE
+		this.environment.removePerceptsByUnif(this.hogwarts, Literal.parseLiteral("is_okay"));
+		//this.environment.addPercept(agentName, Literal.parseLiteral("burning"));
+		this.environment.addPercept(this.hogwarts, Literal.parseLiteral("burning"));
+		
+		
 		this.burning = true;
 		result.success = true;
 		return result;
@@ -75,9 +90,12 @@ public class HogwartsModel extends PlotModel<HogwartsEnvironment> {
 		ActionReport result = new ActionReport();
 		if(burning) {
 			logger.info(agent.name + " extinguishes the fire.");
-			//this.environment.addEventPerception(agent.name, "extinguish_fire", new PerceptAnnotation("pride"));
+			
+			
+			this.environment.addEventPercept(agent.name, "extinguish_fire", new PerceptAnnotation("pride"));
 			// COMMENT addEventPerception in ActionReport verlegt
-			result.addPerception(agent.name, new PerceptAnnotation("pride"));
+			//result.addPerception(agent.name, new PerceptAnnotation("pride"));
+			
 			this.burning = false;
 			this.world_was_saved = true;
 			result.success = true;
@@ -87,6 +105,32 @@ public class HogwartsModel extends PlotModel<HogwartsEnvironment> {
 			result.success = false;
 			return result;
 		}
+	}
+	
+	
+	public static class Hogwarts extends Location {
+		
+		public Hogwarts() {
+			super("hogwarts");
+		}
+		
+		private boolean enter(Character character, List<Character> loc) {
+			if(null == character.location) {
+				// no prev location, just set this one
+				loc.add(character);
+				this.characterLocationUpdate(character);
+				return true;
+			} else if(character.location.leave(character)) {
+				// prev location was present, character left it successfully
+				loc.add(character);
+				this.characterLocationUpdate(character);
+				return true;
+			} else {
+				// prev location was present, character couldn't leave
+				return false;
+			}
+		}
+		
 	}
 
 }
