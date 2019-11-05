@@ -21,8 +21,12 @@ public class ShipWreckedHappening extends Happening<IslandModel>{
 	
 	public void execute(IslandModel model) {
 		Character chara = model.getCharacter(this.getPatient());
-		chara.goTo(model.island);
-		model.getLogger().info(this.getPatient() + "stranded on island " + model.island.name);
+		
+		// the character is only affected by this if he was on the ship
+		if(chara.location.equals(model.ship)) {
+			chara.goTo(model.island);
+			model.getLogger().info(this.getPatient() + "stranded on island " + model.island.name);
+		}
 	}
 	
 }
