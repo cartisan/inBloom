@@ -80,7 +80,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	
 		logger.info(agent.name + " went on a cruise.");
 		
-		agent.location = this.ship;
+		agent.goTo(this.ship);
 		logger.info(agent.name + " is on ship " + this.ship.name);
 		
 		result.addPerception(agent.name, new PerceptAnnotation("hope"));
@@ -142,7 +142,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	public static class Island extends Location {
 
 		public Island() {
-			super("island");
+			super("lonely island");
 			// TODO Auto-generated constructor stub
 		}
 		
