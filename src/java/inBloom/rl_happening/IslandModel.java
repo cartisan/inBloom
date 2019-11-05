@@ -3,6 +3,8 @@
  */
 package inBloom.rl_happening;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import inBloom.ActionReport;
@@ -24,6 +26,8 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	/**
 	 * GLOBAL VARIABLES
 	 */
+	// One agent can find multiple (anonymous) friends.
+	HashMap<Character, Integer> numberOfFriends;
 	
 	
 	/**
@@ -37,10 +41,26 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	 */
 	
 	public IslandModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
-		super(agentList, hapDir);
-		// here we could define our variables
 		
-		// add locations
+		/**
+		 * SUPER CONSTRUCTOR
+		 */
+		super(agentList, hapDir);
+		
+		
+		/**
+		 * INITIALIZE VARIABLES
+		 */
+		// 1. numberOfFriends: each Character has 0 friends
+		this.numberOfFriends = new HashMap<Character, Integer>();
+		for(Character agent: this.characters.values()) {
+			this.numberOfFriends.put(agent, 0);
+		}
+		
+		
+		/**
+		 * ADD LOCATIONS
+		 */
 		this.addLocation(this.island);
 	}
 	
@@ -67,6 +87,20 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		logger.info(agent.name + " did nothing.");
 		
 		// result.addPerception(agent.name, new PerceptAnnotation("hope"));
+		result.success = true;
+		
+		return result;
+	}
+	
+	public ActionReport findFriend(Character agent) {
+		ActionReport result = new ActionReport();
+	
+		logger.info(agent.name + " found a friend.");
+		
+		// number of friends for this agent increases by one
+		this.numberOfFriends.replace(agent, this.numberOfFriends.get(agent)+1);
+		
+		result.addPerception(agent.name, new PerceptAnnotation("joy"));
 		result.success = true;
 		
 		return result;

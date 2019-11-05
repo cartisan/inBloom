@@ -37,6 +37,10 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 			result = getModel().doNothing(agent);
 		}
 		
+		else if(action.getFunctor().equals("findFriend")) {
+			result = getModel().findFriend(agent);
+		}
+		
 		return result;
 	}
 }
