@@ -33,6 +33,8 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	/**
 	 * LOCATIONS
 	 */
+	public CivilizedWorld civilizedWorld = new CivilizedWorld();
+	public Ship ship = new Ship();
 	public Island island = new Island();
 	
 	
@@ -61,6 +63,8 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		/**
 		 * ADD LOCATIONS
 		 */
+		this.addLocation(this.civilizedWorld);
+		this.addLocation(this.ship);
 		this.addLocation(this.island);
 	}
 	
@@ -71,9 +75,13 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	 */
 	
 	public ActionReport goOnCruise(Character agent) {
+		
 		ActionReport result = new ActionReport();
 	
 		logger.info(agent.name + " went on a cruise.");
+		
+		agent.location = this.ship;
+		logger.info(agent.name + " is on ship " + this.ship.name);
 		
 		result.addPerception(agent.name, new PerceptAnnotation("hope"));
 		result.success = true;
@@ -112,6 +120,24 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	/**
 	 * INNER LOCATION CLASSES
 	 */
+	
+	public static class CivilizedWorld extends Location {
+
+		public CivilizedWorld() {
+			super("civilized world");
+			// TODO Auto-generated constructor stub
+		}
+		
+	}
+	
+	public static class Ship extends Location {
+
+		public Ship() {
+			super("magnificent ship");
+			// TODO Auto-generated constructor stub
+		}
+		
+	}
 	
 	public static class Island extends Location {
 

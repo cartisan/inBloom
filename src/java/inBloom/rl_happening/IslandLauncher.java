@@ -41,7 +41,7 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		
 		IslandModel model = new IslandModel(agents, hapDir);
 		
-		robinson.location = model.island.name;
+		robinson.location = model.civilizedWorld.name;
 		
 		// Execute MAS
 		// HERE IS THE LINK TO THE AGENT.ASL FILE!!!
