@@ -3,12 +3,15 @@
  */
 package inBloom.rl_happening;
 
+import java.util.List;
+
 import com.google.common.collect.ImmutableList;
 
 import inBloom.LauncherAgent;
 import inBloom.PlotControlsLauncher;
 import inBloom.PlotLauncher;
 import inBloom.storyworld.ScheduledHappeningDirector;
+import inBloom.storyworld.Character;
 import jason.JasonException;
 import jason.asSemantics.Personality;
 import jason.infra.centralised.BaseCentralisedMAS;
@@ -38,6 +41,21 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		
 		// Initialise MAS with a scheduled happening director
 		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
+		ShipWreckedHappening shipWrecked = new ShipWreckedHappening(
+				// wenn du das Model model bekommst, mache dies damit
+				(IslandModel model) -> {
+					//List<Character> characters = model.ship.getCharacters();
+					//if(!model.ship.getCharacters().isEmpty()) {
+					if(model.isOnCruise) {
+						return true;
+					}
+					return false;
+				},
+				"robinson"
+				);	// causal property
+				
+				
+		//hapDir.scheduleHappening(shipWrecked);
 		
 		IslandModel model = new IslandModel(agents, hapDir);
 		

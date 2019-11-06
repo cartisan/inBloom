@@ -28,6 +28,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	 */
 	// One agent can find multiple (anonymous) friends.
 	HashMap<Character, Integer> numberOfFriends;
+	boolean isOnCruise = false;
 	
 	
 	/**
@@ -78,6 +79,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 	
+		this.isOnCruise = true;
 		logger.info(agent.name + " went on a cruise.");
 		
 		agent.goTo(this.ship);
