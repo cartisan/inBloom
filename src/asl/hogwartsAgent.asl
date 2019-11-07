@@ -12,7 +12,7 @@ is_okay(everything).
 /* Plans */
 
 @obligationStart_1[affect((personality(neuroticism,high)))]
-+!default_activity : is_okay(everything) <- print("I will burn!"); burn.
++!default_activity : is_okay(everything) <- .print("I will burn!"); burn.
 
 //until you find sth better, perform default activity
 @obligationStart_2
@@ -34,7 +34,7 @@ is_okay(everything).
 
 /* React to new Beliefs / Percepts (TODO: equal? -> see old code for def_act) */
 
-+burning[source(Name)] <- print("It is burning!");
++burning[source(Name)] <- .print("It is burning!");
 				.suspend(default_activity);
 				.appraise_emotion(fear, Name, "burning[source(Name)]", true);
 				!react_to_fire.

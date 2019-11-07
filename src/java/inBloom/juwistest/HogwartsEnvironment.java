@@ -90,6 +90,8 @@ public class HogwartsEnvironment extends PlotEnvironment<HogwartsModel>{
 			return false;
 		}*/
 		
+		// String functor = action.getFunctor();
+		
 		return result;
 	}
 
