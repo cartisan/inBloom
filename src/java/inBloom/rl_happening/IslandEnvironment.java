@@ -20,6 +20,7 @@ import jason.asSyntax.Structure;
 public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 	
 	static Logger logger = Logger.getLogger(IslandEnvironment.class.getName());
+	private int currentStep = 0;
 	
 	// updateStatePercepts? -> gibt es in FarmEnvironment nicht mehr
 	// stattdessen initialize?
@@ -41,10 +42,21 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 			result = getModel().findFriend(agent);
 		}
 		
+		else if(action.getFunctor().equals("getFood")) {
+			result = getModel().getFood(agent);
+		}
+		
+		else if(action.getFunctor().equals("eat")) {
+			result = getModel().eat(agent);
+		}
+		
+		// TODO: idea: implement the functors as enums to iterate over
+		// -> more control in default? -> looks nicer, though not that much less code
+		
+		// String function = action.getFunctor();
+		
 		return result;
 	}
-	
-	private int currentStep = 0;
 	
 	@Override
 	protected void stepFinished(int step, long elapsedTime, boolean byTimeout) {

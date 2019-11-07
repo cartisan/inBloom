@@ -41,3 +41,16 @@
 
 @go_on_cruise_default
 +!start <- stayHome.
+
+@food_plan
++!eat <- if(has(food)) {
+			eat;
+		} else {
+			getFood;
+		}.
+
+
+/* React to new Belifes / Percepts */
+
++hungry[source(Name)] <- .print("I am hungry!");
+						!eat.

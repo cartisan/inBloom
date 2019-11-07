@@ -12,7 +12,9 @@ import inBloom.LauncherAgent;
 import inBloom.PlotModel;
 import inBloom.helper.PerceptAnnotation;
 import inBloom.storyworld.HappeningDirector;
+import inBloom.storyworld.Item;
 import inBloom.storyworld.Location;
+import jason.asSyntax.Literal;
 import inBloom.storyworld.Character;
 
 /**
@@ -110,7 +112,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		logger.info(agent.name + " found a friend.");
 
 		// number of friends for this agent increases by one
-		changeIndividualValue(this.friends, agent, 1);
+		increaseIndividualValue(this.friends, agent, 1);
 
 		result.addPerception(agent.name, new PerceptAnnotation("joy"));
 		result.success = true;
@@ -118,12 +120,46 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		return result;
 	}
 
+	public ActionReport getFood(Character agent) {
+		ActionReport result = new ActionReport();
+		
+		logger.info(agent.name + " looked for food.");
+		
+		// TODO here a happening could intrude
+		// but for now: if he look for food, he finds food
+		// and immediately eats it
+		
+		agent.addToInventory(new Food());
+		
+		result.success = true;
+		
+		return result;
+	}
+
+	public ActionReport eat(Character agent) {
+		ActionReport result = new ActionReport();
+
+		logger.info(agent.name + " eats food.");
+
+		// agent eats food
+		agent.removeFromInventory("food");
+		logger.info(agent.name + " ate the food.");
+		// he is not hungry anymore
+		this.hunger.replace(agent, 0);
+		this.environment.removePercept(agent.name, Literal.parseLiteral("hungry"));
+		logger.info(agent.name + "'s hunger: " + this.hunger.get(agent));
+
+		result.success = true;
+
+		return result;
+	}
+	
 	public void increaseHunger(Character agent) {
 		
 		// increase hunger by 1
-		changeIndividualValue(this.hunger, agent, 1);
+		increaseIndividualValue(this.hunger, agent, 1);
 
-		logger.info("Hunger has increased. Hunger is " + this.hunger.get(agent));
+		logger.info("Hunger has increased. " + agent.name + "'s hunger is " + this.hunger.get(agent));
 
 		// check if hunger has become critical
 
@@ -132,6 +168,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 			logger.info(agent.name + " has died.");
 		} else if(this.hunger.get(agent) >= 5) {
 			// TODO percept hungry
+			this.environment.addEventPercept(agent.name, "hungry", new PerceptAnnotation("distress"));
 			logger.info(agent.name + " is hungry.");
 		}
 		
@@ -173,6 +210,24 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 
 	
 	
+	/**
+	 * INNER ITEM CLASSES
+	 */
+	
+	public static class Food extends Item {
+		static final String itemName = "food";
+		
+		public String getItemName() {
+			return Food.itemName;
+		}
+		
+		public boolean isEdible() {
+			return true;
+		}
+	}
+	
+	
+	
 	
 	/**
 	 * HELPER METHOD FOR HASHMAPS
@@ -197,8 +252,9 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	 * @param increment
 	 * 			by how much the value should be changed. Can also be negative.
 	 */
-	private void changeIndividualValue(HashMap<Character, Integer> hashMap, Character agent, int increment) {
+	private void increaseIndividualValue(HashMap<Character, Integer> hashMap, Character agent, int increment) {
 		// number of friends for this agent increases by one
 		hashMap.replace(agent, hashMap.get(agent) + increment);
 	}
+
 }
