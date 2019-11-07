@@ -40,4 +40,4 @@
 +!start <- goOnCruise.
 
 @go_on_cruise_default
-+!start <- doNothing.
++!start <- stayHome.

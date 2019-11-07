@@ -19,7 +19,7 @@ import jason.asSyntax.Structure;
  */
 public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 	
-	static Logger logger = Logger.getLogger(HogwartsEnvironment.class.getName());
+	static Logger logger = Logger.getLogger(IslandEnvironment.class.getName());
 	
 	// updateStatePercepts? -> gibt es in FarmEnvironment nicht mehr
 	// stattdessen initialize?
@@ -33,8 +33,8 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 			result = getModel().goOnCruise(agent);
 		}
 		
-		else if(action.getFunctor().equals("doNothing")) {
-			result = getModel().doNothing(agent);
+		else if(action.getFunctor().equals("stayHome")) {
+			result = getModel().stayHome(agent);
 		}
 		
 		else if(action.getFunctor().equals("findFriend")) {
@@ -43,4 +43,24 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 		
 		return result;
 	}
+	
+	private int currentStep = 0;
+	
+	@Override
+	protected void stepFinished(int step, long elapsedTime, boolean byTimeout) {
+		super.stepFinished(step, elapsedTime, byTimeout);
+		
+		// Only increase hunger if the simulation has started and a new time step has started
+		if(getModel() != null && currentStep != this.step) {
+			
+			// to make sure we don't increase mutliple times in 1 time step
+			currentStep = this.step;
+			
+			// for each agent hunger is increased
+			for(Character agent: this.getModel().getCharacters()) {
+				getModel().increaseHunger(agent);
+			}
+		}	
+	}
+	
 }

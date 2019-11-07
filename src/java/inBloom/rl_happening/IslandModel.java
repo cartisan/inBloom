@@ -27,8 +27,9 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	 * GLOBAL VARIABLES
 	 */
 	// One agent can find multiple (anonymous) friends.
-	HashMap<Character, Integer> numberOfFriends;
-	boolean isOnCruise = false;
+	public HashMap<Character, Integer> friends;
+	public HashMap<Character, Integer> hunger;
+	public boolean isOnCruise = false;
 	
 	
 	/**
@@ -55,10 +56,11 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		 * INITIALIZE VARIABLES
 		 */
 		// 1. numberOfFriends: each Character has 0 friends
-		this.numberOfFriends = new HashMap<Character, Integer>();
-		for(Character agent: this.characters.values()) {
-			this.numberOfFriends.put(agent, 0);
-		}
+		this.friends = new HashMap<Character, Integer>();
+		changeAllValues(this.friends, 0);
+		// 2. hunger: each Character isn't hungry yet
+		this.hunger = new HashMap<Character, Integer>();
+		changeAllValues(this.hunger, 0);
 		
 		
 		/**
@@ -91,33 +93,52 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		return result;
 	}
 	
-	public ActionReport doNothing(Character agent) {
+	public ActionReport stayHome(Character agent) {
 		ActionReport result = new ActionReport();
 	
-		logger.info(agent.name + " did nothing.");
+		logger.info(agent.name + " stayed home.");
 		
 		// result.addPerception(agent.name, new PerceptAnnotation("hope"));
 		result.success = true;
 		
 		return result;
 	}
-	
+
 	public ActionReport findFriend(Character agent) {
 		ActionReport result = new ActionReport();
-	
+
 		logger.info(agent.name + " found a friend.");
-		
+
 		// number of friends for this agent increases by one
-		this.numberOfFriends.replace(agent, this.numberOfFriends.get(agent)+1);
-		
+		changeIndividualValue(this.friends, agent, 1);
+
 		result.addPerception(agent.name, new PerceptAnnotation("joy"));
 		result.success = true;
-		
+
 		return result;
+	}
+
+	public void increaseHunger(Character agent) {
+		
+		// increase hunger by 1
+		changeIndividualValue(this.hunger, agent, 1);
+
+		logger.info("Hunger has increased. Hunger is " + this.hunger.get(agent));
+
+		// check if hunger has become critical
+
+		if(this.hunger.get(agent) >= 10) {
+			this.getEnvironment().killAgent("robinson");
+			logger.info(agent.name + " has died.");
+		} else if(this.hunger.get(agent) >= 5) {
+			// TODO percept hungry
+			logger.info(agent.name + " is hungry.");
+		}
+		
 	}
 	
 	
-	
+
 	
 	/**
 	 * INNER LOCATION CLASSES
@@ -150,4 +171,34 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		
 	}
 
+	
+	
+	
+	/**
+	 * HELPER METHOD FOR HASHMAPS
+	 */
+	private void changeAllValues(HashMap<Character, Integer> hashMap, int newValue) {
+		for(Character agent: this.characters.values()) {
+			// if there already has been a value, it will be replaced (see javadoc of put)
+			// if there hasn't been a value, the new one will be added there
+			hashMap.put(agent, newValue);
+		}
+	}
+
+	/**
+	 * Increases the value of the given Character in the HashMap by the given increment.
+	 * Give a negative increment to decrease the value.
+	 * This is used for changing the number of friends or the hunger value.
+	 * 
+	 * @param hashMap
+	 * 			the Mapping in which the Character's value should be changed
+	 * @param agent
+	 * 			the Character who's value should be changed
+	 * @param increment
+	 * 			by how much the value should be changed. Can also be negative.
+	 */
+	private void changeIndividualValue(HashMap<Character, Integer> hashMap, Character agent, int increment) {
+		// number of friends for this agent increases by one
+		hashMap.replace(agent, hashMap.get(agent) + increment);
+	}
 }
