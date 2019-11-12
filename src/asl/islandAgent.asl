@@ -45,12 +45,20 @@
 @food_plan
 +!eat <- if(has(food)) {
 			eat;
+			-wish(eat);
 		} else {
 			getFood;
 		}.
+		
++!heal <- sleep;
+		  -wish(heal).
 
 
 /* React to new Belifes / Percepts */
 
-+hungry[source(Name)] <- .print("I am hungry!");
-						!eat.
++hungry[source(Name)] <- +wish(eat).
+
++sick[source(Name)] <- +wish(heal).
+
+
+// ASL Debug mode -> Run Configurations, duplicate Launcher, add -debug

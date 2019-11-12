@@ -3,13 +3,12 @@
  */
 package inBloom.rl_happening;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
 
 import inBloom.LauncherAgent;
 import inBloom.PlotControlsLauncher;
 import inBloom.PlotLauncher;
+import inBloom.rl_happening.happenings.*;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import inBloom.storyworld.Character;
 import jason.JasonException;
@@ -44,18 +43,40 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		ShipWreckedHappening shipWrecked = new ShipWreckedHappening(
 				// wenn du das Model model bekommst, mache dies damit
 				(IslandModel model) -> {
-					//List<Character> characters = model.ship.getCharacters();
-					//if(!model.ship.getCharacters().isEmpty()) {
-					if(model.isOnCruise) {
+					// if anyone is on the ship
+					// -> then true, aka the happening is triggered
+					// TODO does it make more sense to trigger it anyways, bc effect is defined in happening
+					// should be able to deal with noone being on there. BUT: Will be triggered differently
+					// anyways. Don't overthink this too much.
+					if(!model.ship.getCharacters().isEmpty()) {
+					//if(model.isOnCruise) {
 						return true;
 					}
 					return false;
 				},
-				"robinson"
-				);	// causal property
+				"robinson",
+				// TODO how do I get the model in here???
+				//model.ship.getCharacters().get(0).name,
+				null
+		);	// causal property
 				
+		
+		FoodPoisoningHappening foodPoisoning = new FoodPoisoningHappening(
+				(IslandModel model) -> {
+					// triggered when robinson has food
+					// TODO not hardcoded to robinson
+					if(model.getCharacter("robinson").has("food")) {
+						return true;
+					}
+					return false;
+				},
+				"robinson",
+				null
+		);
+		
 				
-		//hapDir.scheduleHappening(shipWrecked);
+		hapDir.scheduleHappening(shipWrecked);
+		hapDir.scheduleHappening(foodPoisoning);
 		
 		IslandModel model = new IslandModel(agents, hapDir);
 		

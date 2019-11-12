@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 
 import inBloom.ActionReport;
 import inBloom.PlotEnvironment;
-import inBloom.juwistest.HogwartsEnvironment;
 import inBloom.storyworld.Character;
 import jason.asSyntax.Structure;
 
@@ -50,6 +49,10 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 			result = getModel().eat(agent);
 		}
 		
+		else if(action.getFunctor().equals("sleep")) {
+			result = getModel().sleep(agent);
+		}
+		
 		// TODO: idea: implement the functors as enums to iterate over
 		// -> more control in default? -> looks nicer, though not that much less code
 		
@@ -72,7 +75,7 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 			for(Character agent: this.getModel().getCharacters()) {
 				getModel().increaseHunger(agent);
 			}
-		}	
+		}
 	}
 	
 }

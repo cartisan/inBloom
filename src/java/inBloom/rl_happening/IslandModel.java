@@ -4,7 +4,6 @@
 package inBloom.rl_happening;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 import inBloom.ActionReport;
@@ -30,8 +29,14 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	 */
 	// One agent can find multiple (anonymous) friends.
 	public HashMap<Character, Integer> friends;
+	// Each agent has a hunger value
 	public HashMap<Character, Integer> hunger;
-	public boolean isOnCruise = false;
+	// true as soon as one agent enters the cruise
+	public boolean isOnCruise;
+	// Food can be poisoned or okay 
+	public boolean foodIsOkay;
+	// Agent can get sick
+	public boolean isSick;
 	
 	
 	/**
@@ -48,26 +53,22 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	
 	public IslandModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		
-		/**
-		 * SUPER CONSTRUCTOR
-		 */
 		super(agentList, hapDir);
 		
 		
-		/**
-		 * INITIALIZE VARIABLES
-		 */
-		// 1. numberOfFriends: each Character has 0 friends
+		// numberOfFriends: each Character has 0 friends
 		this.friends = new HashMap<Character, Integer>();
 		changeAllValues(this.friends, 0);
-		// 2. hunger: each Character isn't hungry yet
+		
+		// hunger: each Character isn't hungry yet
 		this.hunger = new HashMap<Character, Integer>();
 		changeAllValues(this.hunger, 0);
 		
+		this.isOnCruise = false;
+		this.foodIsOkay = true;
+		this.isSick = false;
 		
-		/**
-		 * ADD LOCATIONS
-		 */
+		
 		this.addLocation(this.civilizedWorld);
 		this.addLocation(this.ship);
 		this.addLocation(this.island);
@@ -130,45 +131,84 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		// and immediately eats it
 		
 		agent.addToInventory(new Food());
+		// new food isn't poisoned yet
+		this.foodIsOkay = true;
 		
 		result.success = true;
 		
 		return result;
 	}
 
+	//TODO schon in Character?
 	public ActionReport eat(Character agent) {
+		
 		ActionReport result = new ActionReport();
 
 		logger.info(agent.name + " eats food.");
 
-		// agent eats food
+		/**
+		 * // agent eats food
 		agent.removeFromInventory("food");
-		logger.info(agent.name + " ate the food.");
+		logger.info(agent.name + " ate the food.");*/
+		
 		// he is not hungry anymore
 		this.hunger.replace(agent, 0);
+		
+		agent.eat("food");
+		
 		this.environment.removePercept(agent.name, Literal.parseLiteral("hungry"));
 		logger.info(agent.name + "'s hunger: " + this.hunger.get(agent));
+		
+		
+		
+		// food may have been poisoned
+		if(!this.foodIsOkay) {
+			this.isSick = true;
+			this.environment.addPercept(agent.name, Literal.parseLiteral("sick"));
+			logger.info(agent.name + " is sick.");
+		}
 
+		// TODO maybe not succesfull when poisoned?
 		result.success = true;
 
 		return result;
 	}
+	
+	public ActionReport sleep(Character agent) {
+		
+		ActionReport result = new ActionReport();
+		
+		logger.info(agent.name + " is asleep.");
+		
+		result.addPerception(agent.name, new PerceptAnnotation("relief"));
+		
+		// if agent was sick, then now he isn't anymore
+		this.isSick = false;
+		this.environment.removePercept(agent.name, Literal.parseLiteral("sick"));
+		
+		result.success = true;
+		
+		return result;
+	}
+	
+	
 	
 	public void increaseHunger(Character agent) {
 		
 		// increase hunger by 1
 		increaseIndividualValue(this.hunger, agent, 1);
 
-		logger.info("Hunger has increased. " + agent.name + "'s hunger is " + this.hunger.get(agent));
+		// logger.info("Hunger has increased. " + agent.name + "'s hunger is " + this.hunger.get(agent));
 
 		// check if hunger has become critical
 
 		if(this.hunger.get(agent) >= 10) {
-			this.getEnvironment().killAgent("robinson");
+			// TODO funktioniert killAgent?
+			this.getEnvironment().killAgent(agent.name);
 			logger.info(agent.name + " has died.");
 		} else if(this.hunger.get(agent) >= 5) {
 			// TODO percept hungry
-			this.environment.addEventPercept(agent.name, "hungry", new PerceptAnnotation("distress"));
+			this.environment.addPercept(agent.name, Literal.parseLiteral("hungry"));
 			logger.info(agent.name + " is hungry.");
 		}
 		
@@ -184,7 +224,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	public static class CivilizedWorld extends Location {
 
 		public CivilizedWorld() {
-			super("civilized world");
+			super("plain boring world");
 			// TODO Auto-generated constructor stub
 		}
 		
