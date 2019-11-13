@@ -11,7 +11,8 @@ import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;
 
 /**
- * @author juwi
+ * @author  Julia Wippermann
+ * @version 13.11.19
  *
  */
 public class FoodPoisoningHappening extends Happening<IslandModel> {
@@ -30,6 +31,7 @@ public class FoodPoisoningHappening extends Happening<IslandModel> {
 	}
 	
 	public void execute(IslandModel model) {
+		
 		Character chara = model.getCharacter(this.getPatient());
 		
 		model.foodIsOkay = false;

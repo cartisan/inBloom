@@ -74,9 +74,38 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 				null
 		);
 		
+		FoodStolenHappening foodStolen = new FoodStolenHappening(
+				(IslandModel model) -> {
+					// triggered when robinson has food
+					// TODO not hardcoded to robinson
+					if(model.getCharacter("robinson").has("food")) {
+						return true;
+					}
+					return false;
+				},
+				"robinson",
+				null
+		);
+		
+		ShipRescueHappening shipRescue = new ShipRescueHappening(
+				(IslandModel model) -> {
+					// triggered when robinson has food
+					// TODO not hardcoded to robinson
+					//if(model.island.contains("robinson")) {
+					if(!model.island.getCharacters().isEmpty() && model.getStep() > 8) {
+						return true;
+					}
+					return false;
+				},
+				"robinson",
+				null
+		);
+		
 				
 		hapDir.scheduleHappening(shipWrecked);
-		hapDir.scheduleHappening(foodPoisoning);
+		//hapDir.scheduleHappening(foodPoisoning);
+		hapDir.scheduleHappening(foodStolen);
+		hapDir.scheduleHappening(shipRescue);
 		
 		IslandModel model = new IslandModel(agents, hapDir);
 		

@@ -60,5 +60,10 @@
 
 +sick[source(Name)] <- +wish(heal).
 
+// I could also react to percepts triggered by Happening directly:
+// +poisoned(food)[source(Name)] <- .print("MY FOOD IS FUCKING DISGUSTING").
+
++stolen(food)[source(Name)] <- +hate(monkey).
+
 
 // ASL Debug mode -> Run Configurations, duplicate Launcher, add -debug
