@@ -34,7 +34,7 @@ public class FriendIsEatenHappening extends Happening<IslandModel> {
 		Character chara = model.getCharacter(this.getPatient());
 		
 		if(model.getNumberOfFriends(chara) > 0) {
-			model.friendIsEaten(chara);
+			model.deleteFriend(chara);
 			model.getLogger().info(chara + " has lost a friend");
 		}
 		

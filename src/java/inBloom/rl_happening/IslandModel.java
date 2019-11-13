@@ -1,6 +1,3 @@
-/**
- * 
- */
 package inBloom.rl_happening;
 
 import java.util.HashMap;
@@ -18,7 +15,7 @@ import inBloom.storyworld.Character;
 
 /**
  * @author Julia Wippermann
- * @version 29.10.19
+ * @version 13.11.19
  *
  * The Model defines the effects of Actions on the Environment and Agents.
  */
@@ -143,27 +140,19 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		return result;
 	}
 
-	//TODO schon in Character?
 	public ActionReport eat(Character agent) {
 		
 		ActionReport result = new ActionReport();
 
 		logger.info(agent.name + " eats food.");
-
-		/**
-		 * // agent eats food
-		agent.removeFromInventory("food");
-		logger.info(agent.name + " ate the food.");*/
+		
+		agent.eat("food");
 		
 		// he is not hungry anymore
 		this.hunger.replace(agent, 0);
 		
-		agent.eat("food");
-		
 		this.environment.removePercept(agent.name, Literal.parseLiteral("hungry"));
 		logger.info(agent.name + "'s hunger: " + this.hunger.get(agent));
-		
-		
 		
 		// food may have been poisoned
 		if(!this.foodIsOkay) {
@@ -197,12 +186,18 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	
 	
 	
+	/**
+	 * Increases the hunger value of one agent by 1 and checks if the hunger value surpassed
+	 * the thresholds of being actively hungry (5) or dying of hunger (10) and reacts to these
+	 * changes by either making the agent hungry or die.
+	 * 
+	 * @param agent
+	 * 			The character whose hunger is to be increased
+	 */
 	public void increaseHunger(Character agent) {
 		
 		// increase hunger by 1
 		changeIndividualValue(this.hunger, agent, 1);
-
-		// logger.info("Hunger has increased. " + agent.name + "'s hunger is " + this.hunger.get(agent));
 
 		// check if hunger has become critical
 
@@ -211,14 +206,20 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 			this.getEnvironment().killAgent(agent.name);
 			logger.info(agent.name + " has died.");
 		} else if(this.hunger.get(agent) >= 5) {
-			// TODO percept hungry
 			this.environment.addPercept(agent.name, Literal.parseLiteral("hungry"));
 			logger.info(agent.name + " is hungry.");
 		}
 		
 	}
-	
-	public void friendIsEaten(Character agent) {
+
+	/**
+	 * Decreases the number of friends of the agent by 1, unless the agent has no friends to
+	 * start with, in which case nothing happens.
+	 * 
+	 * @param agent
+	 * 			The agent whose number of friends is to be decreased
+	 */
+	public void deleteFriend(Character agent) {
 		
 		if(this.friends.get(agent) > 0) {
 			this.changeIndividualValue(this.friends, agent, -1);
@@ -226,16 +227,34 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 			logger.info(agent.name + " know has " + this.friends.get(agent) + " friends.");
 		}
 		
-		// if the agent has no friends, none will be eaten.
+		// if the agent has no friends, none will be lost.
 		
 	}
 
+	/**
+	 * Returns the number of friends that an agent has.
+	 * 
+	 * @param agent
+	 * 			The character whose number of friends is asked for
+	 * @return
+	 * 			The number of friends of the agent
+	 */
 	public int getNumberOfFriends(Character agent) {
 		return this.friends.get(agent);
 	}
 	
+	/**
+	 * Returns the number of friends that an agent has.
+	 * 
+	 * @param agent
+	 * 			The character whose number of friends is asked for
+	 * @return
+	 * 			The number of friends of the agent
+	 * @see
+	 * 			IslandModel.getNumberOfFriends(Character)
+	 */
 	public int getNumberOfFriends(String agent) {
-		return this.friends.get(this.getCharacter(agent));
+		return this.getNumberOfFriends(this.getCharacter(agent));
 	}
 
 	
@@ -293,6 +312,16 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	
 	/**
 	 * HELPER METHOD FOR HASHMAPS
+	 */
+	
+	/**
+	 * Changes all values of a mapping from Character to Integers. For example used to initialize
+	 * such a mapping with a useful initial value.
+	 * 
+	 * @param hashMap
+	 * 			The mapping which values are to be changed
+	 * @param newValue
+	 * 			The value that will be mapped towards all Characters of the mapping
 	 */
 	private void changeAllValues(HashMap<Character, Integer> hashMap, int newValue) {
 		for(Character agent: this.characters.values()) {
