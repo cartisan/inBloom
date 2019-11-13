@@ -14,6 +14,7 @@ import inBloom.storyworld.Happening;
  * @author  Julia Wippermann
  * @version 13.11.19
  *
+ * A Happening in which the patientäs food is poisoned.
  */
 public class FoodPoisoningHappening extends Happening<IslandModel> {
 	

@@ -101,7 +101,7 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 				null
 		);
 		
-		FriendIsEatenHappening friendIsEaten = new FriendIsEatenHappening(
+		LooseFriendHappening friendIsEaten = new LooseFriendHappening(
 				(IslandModel model) -> {
 					// triggered when robinson has food
 					// TODO not hardcoded to robinson
