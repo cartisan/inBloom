@@ -89,10 +89,23 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		
 		ShipRescueHappening shipRescue = new ShipRescueHappening(
 				(IslandModel model) -> {
-					// triggered when robinson has food
+					// triggered when robinson / someone is on island and story has progressed enough
 					// TODO not hardcoded to robinson
 					//if(model.island.contains("robinson")) {
-					if(!model.island.getCharacters().isEmpty() && model.getStep() > 8) {
+					if(!model.island.getCharacters().isEmpty() && model.getStep() > 10) {
+						return true;
+					}
+					return false;
+				},
+				"robinson",
+				null
+		);
+		
+		FriendIsEatenHappening friendIsEaten = new FriendIsEatenHappening(
+				(IslandModel model) -> {
+					// triggered when robinson has food
+					// TODO not hardcoded to robinson
+					if(model.getNumberOfFriends("robinson") > 0 && model.getStep() > 8) {
 						return true;
 					}
 					return false;
@@ -103,8 +116,9 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		
 				
 		hapDir.scheduleHappening(shipWrecked);
-		//hapDir.scheduleHappening(foodPoisoning);
-		hapDir.scheduleHappening(foodStolen);
+		hapDir.scheduleHappening(foodPoisoning);
+		//hapDir.scheduleHappening(foodStolen);
+		hapDir.scheduleHappening(friendIsEaten);
 		hapDir.scheduleHappening(shipRescue);
 		
 		IslandModel model = new IslandModel(agents, hapDir);

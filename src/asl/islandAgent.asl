@@ -52,18 +52,25 @@
 		
 +!heal <- sleep;
 		  -wish(heal).
+		  
++!complain <- findFriend;
+		  -wish(complain).
 
 
 /* React to new Belifes / Percepts */
 
 +hungry[source(Name)] <- +wish(eat).
 
-+sick[source(Name)] <- +wish(heal).
+//+sick[source(Name)] <- +wish(heal).
++sick[source(Name)] <- +wish(complain).
 
 // I could also react to percepts triggered by Happening directly:
 // +poisoned(food)[source(Name)] <- .print("MY FOOD IS FUCKING DISGUSTING").
 
 +stolen(food)[source(Name)] <- +hate(monkey).
+
+// if f.e. friend is eaten, then agent has no friend anymore :(
++eaten(X)[source(Name)] <- -has(X).
 
 
 // ASL Debug mode -> Run Configurations, duplicate Launcher, add -debug

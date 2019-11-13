@@ -110,10 +110,14 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	public ActionReport findFriend(Character agent) {
 		ActionReport result = new ActionReport();
 
-		logger.info(agent.name + " found a friend.");
+		logger.info(agent.name + " has found a friend.");
+		logger.info(agent.name + " know has " + this.friends.get(agent) + " friends.");
 
 		// number of friends for this agent increases by one
-		increaseIndividualValue(this.friends, agent, 1);
+		changeIndividualValue(this.friends, agent, 1);
+		// TODO why doesn't this increase it??
+		
+		this.environment.addPercept(agent.name, Literal.parseLiteral("has(friend)"));
 
 		result.addPerception(agent.name, new PerceptAnnotation("joy"));
 		result.success = true;
@@ -196,7 +200,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	public void increaseHunger(Character agent) {
 		
 		// increase hunger by 1
-		increaseIndividualValue(this.hunger, agent, 1);
+		changeIndividualValue(this.hunger, agent, 1);
 
 		// logger.info("Hunger has increased. " + agent.name + "'s hunger is " + this.hunger.get(agent));
 
@@ -214,7 +218,25 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		
 	}
 	
+	public void friendIsEaten(Character agent) {
+		
+		if(this.friends.get(agent) > 0) {
+			this.changeIndividualValue(this.friends, agent, -1);
+			logger.info(agent.name + " has lost a friend.");
+			logger.info(agent.name + " know has " + this.friends.get(agent) + " friends.");
+		}
+		
+		// if the agent has no friends, none will be eaten.
+		
+	}
+
+	public int getNumberOfFriends(Character agent) {
+		return this.friends.get(agent);
+	}
 	
+	public int getNumberOfFriends(String agent) {
+		return this.friends.get(this.getCharacter(agent));
+	}
 
 	
 	/**
@@ -292,9 +314,10 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	 * @param increment
 	 * 			by how much the value should be changed. Can also be negative.
 	 */
-	private void increaseIndividualValue(HashMap<Character, Integer> hashMap, Character agent, int increment) {
+	private void changeIndividualValue(HashMap<Character, Integer> hashMap, Character agent, int increment) {
 		// number of friends for this agent increases by one
 		hashMap.replace(agent, hashMap.get(agent) + increment);
+		// TODO does this work??
 	}
 
 }
