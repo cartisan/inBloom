@@ -34,6 +34,8 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	public boolean foodIsOkay;
 	// Agent can get sick
 	public boolean isSick;
+	// Agent has built a hut
+	public boolean hasHut;
 	
 	
 	/**
@@ -64,6 +66,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		this.isOnCruise = false;
 		this.foodIsOkay = true;
 		this.isSick = false;
+		this.hasHut = false;
 		
 		
 		this.addLocation(this.civilizedWorld);
@@ -171,19 +174,41 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		logger.info(agent.name + " is asleep.");
+		// you can only sleep if you have a safe place to sleep in
+		if(hasHut) {
+
+			logger.info(agent.name + " is asleep.");
+
+			result.addPerception(agent.name, new PerceptAnnotation("relief"));
+
+			// if agent was sick, then now he isn't anymore
+			this.isSick = false;
+			this.environment.removePercept(agent.name, Literal.parseLiteral("sick"));
+
+			result.success = true;
+			
+		} else {
+			result.success = false;
+		}
 		
-		result.addPerception(agent.name, new PerceptAnnotation("relief"));
+		return result;
+	}
+	
+	public ActionReport buildHut(Character agent) {
 		
-		// if agent was sick, then now he isn't anymore
-		this.isSick = false;
-		this.environment.removePercept(agent.name, Literal.parseLiteral("sick"));
+		ActionReport result = new ActionReport();
+		
+		logger.info(agent.name + " builds a hut.");
+		
+		result.addPerception(agent.name, new PerceptAnnotation("pride"));
+		
+		this.hasHut = true;
+		this.environment.addPercept(agent.name, Literal.parseLiteral("has(hut)"));
 		
 		result.success = true;
 		
 		return result;
 	}
-	
 	
 	
 	/**

@@ -50,8 +50,22 @@
 			getFood;
 		}.
 		
-+!heal <- sleep;
-		  -wish(heal).
++!heal <- +wish(sleep).
+		  //-wish(heal).
+		  
++!sleep <- if(has(hut)) {
+				sleep;
+				// TODO - only if they wish to heal?
+				// 1. is it necessary?
+				// 2. how do I do knowledge abfrage?
+				// find out object of belief:    ?belief(X)
+				// find out existence of belief: if(belief)
+				-wish(heal);
+				-wish(sleep);
+				
+		   } else {
+		   		buildHut;
+		   }.
 		  
 +!complain <- findFriend;
 		  -wish(complain).
@@ -61,8 +75,8 @@
 
 +hungry[source(Name)] <- +wish(eat).
 
-//+sick[source(Name)] <- +wish(heal).
-+sick[source(Name)] <- +wish(complain).
++sick[source(Name)] <- +wish(heal).
+//+sick[source(Name)] <- +wish(complain).
 
 // I could also react to percepts triggered by Happening directly:
 // +poisoned(food)[source(Name)] <- .print("MY FOOD IS FUCKING DISGUSTING").
@@ -71,6 +85,8 @@
 
 // if f.e. friend is eaten, then agent has no friend anymore :(
 +eaten(X)[source(Name)] <- -has(X).
+
++has(hut)[source(Name)] <- .print("I HAVE A FREAKING HUT!!!").
 
 
 // ASL Debug mode -> Run Configurations, duplicate Launcher, add -debug
