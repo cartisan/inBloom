@@ -40,7 +40,7 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		
 		// Initialise MAS with a scheduled happening director
 		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
-		ShipWreckedHappening shipWrecked = new ShipWreckedHappening(
+		StormHappening shipWrecked = new StormHappening(
 				// wenn du das Model model bekommst, mache dies damit
 				(IslandModel model) -> {
 					// if anyone is on the ship
@@ -78,7 +78,7 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 				(IslandModel model) -> {
 					// triggered when robinson has food
 					// TODO not hardcoded to robinson
-					if(model.getCharacter("robinson").has("food")) {
+					if(model.getCharacter("robinson").has("food") && model.getStep() > 7) {
 						return true;
 					}
 					return false;
@@ -114,11 +114,23 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 				null
 		);
 		
+		StormHappening hutDestroyed = new StormHappening(
+				(IslandModel model) -> {
+					if(model.hasHut) {
+						return true;
+					}
+					return false;
+				},
+				"robinson",
+				null
+		);
+		
 				
 		hapDir.scheduleHappening(shipWrecked);
 		hapDir.scheduleHappening(foodPoisoning);
-		//hapDir.scheduleHappening(foodStolen);
+		hapDir.scheduleHappening(foodStolen);
 		hapDir.scheduleHappening(friendIsEaten);
+		hapDir.scheduleHappening(hutDestroyed);
 		hapDir.scheduleHappening(shipRescue);
 		
 		IslandModel model = new IslandModel(agents, hapDir);

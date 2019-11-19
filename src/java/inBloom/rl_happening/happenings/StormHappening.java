@@ -7,16 +7,17 @@ import inBloom.rl_happening.IslandModel;
 import inBloom.storyworld.Happening;
 import inBloom.storyworld.Character;
 
-public class ShipWreckedHappening extends Happening<IslandModel>{
+public class StormHappening extends Happening<IslandModel>{
 
-	public ShipWreckedHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
+	public StormHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
 		// setup for how this event will be perceived
-		super(trigger, causalProperty, "shipWrecked");
+		super(trigger, causalProperty, "storm");
 		this.patient = patient;
+		// TODO diese emotion evtl bedingt machen?	
 		this.annotation = PerceptAnnotation.fromEmotion("fear");
 	}
 	
-	public ShipWreckedHappening(Predicate<IslandModel> trigger, String patient) {
+	public StormHappening(Predicate<IslandModel> trigger, String patient) {
 		this(trigger, patient, "");
 	}
 	
@@ -27,6 +28,16 @@ public class ShipWreckedHappening extends Happening<IslandModel>{
 		if(chara.location.equals(model.ship)) {
 			chara.goTo(model.island);
 			model.getLogger().info(this.getPatient() + " stranded on island " + model.island.name);
+		}
+		
+		// TODO hasHut evtl. auch über Location lösen -> dann aber unter-Location
+		// if the character is on the island and there exists a hut, the hut is destroyed
+		// this, theoretically is independent of the character's location
+		if(model.hasHut) {
+			model.hasHut = false;
+			// TODO absolut patient unabhängig momentan ... kann man allgemeine Happenings machen und dann in den
+			// Happenings schauen, welche Patients es betreffen würde (anhand von Location)
+			model.getLogger().info("The hut was destroyed.");
 		}
 	}
 	
