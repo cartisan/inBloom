@@ -86,7 +86,7 @@
 +stolen(food)[source(Name)] <- +hate(monkey).
 
 // if f.e. friend is eaten, then agent has no friend anymore :(
-+eaten(X)[source(Name)] <- -has(X).
+//+eaten(X)[source(Name)] <- -has(X).
 
 //+has(hut)[source(Name)] <- .print("I HAVE A FREAKING HUT!!!").
 
