@@ -57,6 +57,10 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 			result = getModel().buildHut(agent);
 		}
 		
+		else if(action.getFunctor().equals("complain")) {
+			result = getModel().complain(agent);
+		}
+		
 		// TODO: idea: implement the functors as enums to iterate over
 		// -> more control in default? -> looks nicer, though not that much less code
 		

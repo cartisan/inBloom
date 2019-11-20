@@ -66,8 +66,12 @@
 		   		buildHut;
 		   }.
 		  
-+!complain <- findFriend;
-		  -wish(complain).
++!complain <- if(has(friend)) {
+				complain;
+				-wish(complain);
+			  } else {
+				findFriend;
+			  }.
 
 
 

@@ -218,6 +218,28 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		return result;
 	}
 	
+	public ActionReport complain(Character agent) {
+		
+		ActionReport result = new ActionReport();
+		
+		// you can only complain if you have a friend
+		if(this.friends.get(agent) > 0) {
+			
+			logger.info(agent.name + " complained.");
+			result.success = true;
+			
+		} else {
+			result.success = false;
+		}
+		
+		return result;
+		
+	}
+	
+	
+	/**
+	 * PUBLIC HELPER METHODS TO CHANGE MODEL
+	 */
 	
 	/**
 	 * Increases the hunger value of one agent by 1 and checks if the hunger value surpassed
@@ -248,17 +270,24 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 
 	/**
 	 * Decreases the number of friends of the agent by 1, unless the agent has no friends to
-	 * start with, in which case nothing happens.
+	 * start with, in which case nothing happens. If necessary, updates the agents percepts
+	 * on having a friend.
 	 * 
 	 * @param agent
 	 * 			The agent whose number of friends is to be decreased
 	 */
 	public void deleteFriend(Character agent) {
 		
+		// if the agent had at least 1 friend, delete 1 and show update in the logger
 		if(this.friends.get(agent) > 0) {
 			this.changeIndividualValue(this.friends, agent, -1);
 			logger.info(agent.name + " has lost a friend.");
 			logger.info(agent.name + " know has " + this.friends.get(agent) + " friends.");
+		}
+		
+		// if the agent has no friends at all after this, he looses his percept of having a friend
+		if(this.friends.get(agent) == 0) {
+			this.environment.removePercept(agent.name, Literal.parseLiteral("has(friend)"));
 		}
 		
 		// if the agent has no friends, none will be lost.
@@ -303,60 +332,10 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	}
 	
 	
-	/**
-	 * INNER LOCATION CLASSES
-	 */
-	
-	public static class CivilizedWorld extends Location {
-
-		public CivilizedWorld() {
-			super("plain boring world");
-			// TODO Auto-generated constructor stub
-		}
-		
-	}
-	
-	public static class Ship extends Location {
-
-		public Ship() {
-			super("magnificent ship");
-			// TODO Auto-generated constructor stub
-		}
-		
-	}
-	
-	public static class Island extends Location {
-
-		public Island() {
-			super("lonely island");
-			// TODO Auto-generated constructor stub
-		}
-		
-	}
-
 	
 	
 	/**
-	 * INNER ITEM CLASSES
-	 */
-	
-	public static class Food extends Item {
-		static final String itemName = "food";
-		
-		public String getItemName() {
-			return Food.itemName;
-		}
-		
-		public boolean isEdible() {
-			return true;
-		}
-	}
-	
-	
-	
-	
-	/**
-	 * HELPER METHOD FOR HASHMAPS
+	 * PRIVATE HELPER METHOD FOR HASHMAPS
 	 */
 	
 	/**
@@ -392,5 +371,59 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		// number of friends for this agent increases by one
 		hashMap.replace(agent, hashMap.get(agent) + increment);
 	}
+
+	
+	
+	
+	/**
+	 * INNER LOCATION CLASSES
+	 */
+	
+	public static class CivilizedWorld extends Location {
+
+		public CivilizedWorld() {
+			super("plain boring world");
+			// TODO Auto-generated constructor stub
+		}
+		
+	}
+	
+	public static class Ship extends Location {
+
+		public Ship() {
+			super("magnificent ship");
+			// TODO Auto-generated constructor stub
+		}
+		
+	}
+	
+	public static class Island extends Location {
+
+		public Island() {
+			super("lonely island");
+			// TODO Auto-generated constructor stub
+		}
+		
+	}
+
+	
+	
+	
+	/**
+	 * INNER ITEM CLASSES
+	 */
+	
+	public static class Food extends Item {
+		static final String itemName = "food";
+		
+		public String getItemName() {
+			return Food.itemName;
+		}
+		
+		public boolean isEdible() {
+			return true;
+		}
+	}
+	
 
 }
