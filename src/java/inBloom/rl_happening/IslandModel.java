@@ -66,6 +66,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		this.isOnCruise = false;
 		this.foodIsOkay = true;
 		this.isSick = false;
+		logger.info("I set change hut to false.");
 		this.hasHut = false;
 		
 		
@@ -175,7 +176,10 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		ActionReport result = new ActionReport();
 		
 		// you can only sleep if you have a safe place to sleep in
-		if(hasHut) {
+		logger.info("When asking, has hut is now: " + this.hasHut);
+		if(this.hasHut) {
+			
+			logger.info("I HAVE SLEPT LIKE A FUCKING CHAMPION MORON WHAT ABOUT YOU YOU IDJIT");
 
 			logger.info(agent.name + " is asleep.");
 
@@ -188,6 +192,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 			result.success = true;
 			
 		} else {
+			logger.info("I HAVE NEVER EVER SLEPT IN MY LFIE AND WILL NEVER EVER LIE DOWN TILL THE DAY I DIE.");
 			result.success = false;
 		}
 		
@@ -203,7 +208,10 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		result.addPerception(agent.name, new PerceptAnnotation("pride"));
 		
 		this.hasHut = true;
-		this.environment.addPercept(agent.name, Literal.parseLiteral("has(hut)"));
+		logger.info("Has hut has changed to: " + this.hasHut);
+		
+		// all agents on the island get the percept
+		this.environment.addPercept(this.island, Literal.parseLiteral("exists(hut)"));
 		
 		result.success = true;
 		
@@ -283,6 +291,17 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		return this.getNumberOfFriends(this.getCharacter(agent));
 	}
 
+	/**
+	 * Destroys the hut and removes the percept of a hut for all agents on the island
+	 */
+	public void destroyHut() {
+		if(this.hasHut) {
+			this.hasHut = false;
+			// this is agent independent -> all agents on the island loose the percept
+			this.environment.removePercept(this.island, Literal.parseLiteral("exists(hut)"));
+		}
+	}
+	
 	
 	/**
 	 * INNER LOCATION CLASSES

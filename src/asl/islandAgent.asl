@@ -50,19 +50,18 @@
 			getFood;
 		}.
 		
-+!heal <- +wish(sleep).
-		  //-wish(heal).
++!heal <- +wish(sleep);
+		  -wish(heal).
 		  
-+!sleep <- if(has(hut)) {
++!sleep <- if(exists(hut)) {
 				sleep;
+				-wish(sleep);
 				// TODO - only if they wish to heal?
 				// 1. is it necessary?
 				// 2. how do I do knowledge abfrage?
 				// find out object of belief:    ?belief(X)
 				// find out existence of belief: if(belief)
 				-wish(heal);
-				-wish(sleep);
-				
 		   } else {
 		   		buildHut;
 		   }.
@@ -76,9 +75,7 @@
 
 +hungry[source(Name)] <- +wish(eat).
 
-+sick[source(Name)] <- +wish(heal);
-					   +wish(complain).
-
++sick[source(Name)] <- +wish(heal).
 
 // I could also react to percepts triggered by Happening directly:
 // +poisoned(food)[source(Name)] <- .print("MY FOOD IS FUCKING DISGUSTING").

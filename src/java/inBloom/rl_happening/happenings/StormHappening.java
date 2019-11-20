@@ -34,7 +34,10 @@ public class StormHappening extends Happening<IslandModel>{
 		// if the character is on the island and there exists a hut, the hut is destroyed
 		// this, theoretically is independent of the character's location
 		if(model.hasHut) {
-			model.hasHut = false;
+			
+			// agent has to loose the percept that he has hut too
+			model.destroyHut();
+			
 			// TODO absolut patient unabhängig momentan ... kann man allgemeine Happenings machen und dann in den
 			// Happenings schauen, welche Patients es betreffen würde (anhand von Location)
 			model.getLogger().info("The hut was destroyed.");
