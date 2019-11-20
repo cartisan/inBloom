@@ -111,11 +111,11 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		ActionReport result = new ActionReport();
 
 		logger.info(agent.name + " has found a friend.");
-		logger.info(agent.name + " know has " + this.friends.get(agent) + " friends.");
 
 		// number of friends for this agent increases by one
 		changeIndividualValue(this.friends, agent, 1);
-		// TODO why doesn't this increase it??
+		
+		logger.info(agent.name + " know has " + this.friends.get(agent) + " friends.");
 		
 		this.environment.addPercept(agent.name, Literal.parseLiteral("has(friend)"));
 
@@ -229,6 +229,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		if(this.hunger.get(agent) >= 10) {
 			// TODO funktioniert killAgent?
 			this.getEnvironment().killAgent(agent.name);
+			// TODO stop story
 			logger.info(agent.name + " has died.");
 		} else if(this.hunger.get(agent) >= 5) {
 			this.environment.addPercept(agent.name, Literal.parseLiteral("hungry"));
@@ -371,7 +372,6 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	private void changeIndividualValue(HashMap<Character, Integer> hashMap, Character agent, int increment) {
 		// number of friends for this agent increases by one
 		hashMap.replace(agent, hashMap.get(agent) + increment);
-		// TODO does this work??
 	}
 
 }

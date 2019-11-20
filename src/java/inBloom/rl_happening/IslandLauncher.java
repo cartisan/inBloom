@@ -59,40 +59,25 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 				//model.ship.getCharacters().get(0).name,
 				null
 		);	// causal property
-				
+		
+		FoodStolenHappening foodStolen = new FoodStolenHappening(
+				(IslandModel model) -> {
+					// triggered when robinson has food
+					// TODO not hardcoded to robinson
+					if(model.getCharacter("robinson").has("food") && model.getStep() > 9) {
+						return true;
+					}
+					return false;
+				},
+				"robinson",
+				null
+		);
 		
 		FoodPoisoningHappening foodPoisoning = new FoodPoisoningHappening(
 				(IslandModel model) -> {
 					// triggered when robinson has food
 					// TODO not hardcoded to robinson
 					if(model.getCharacter("robinson").has("food")) {
-						return true;
-					}
-					return false;
-				},
-				"robinson",
-				null
-		);
-		
-		FoodStolenHappening foodStolen = new FoodStolenHappening(
-				(IslandModel model) -> {
-					// triggered when robinson has food
-					// TODO not hardcoded to robinson
-					if(model.getCharacter("robinson").has("food") && model.getStep() > 7) {
-						return true;
-					}
-					return false;
-				},
-				"robinson",
-				null
-		);
-		
-		ShipRescueHappening shipRescue = new ShipRescueHappening(
-				(IslandModel model) -> {
-					// triggered when robinson / someone is on island and story has progressed enough
-					// TODO not hardcoded to robinson
-					//if(model.island.contains("robinson")) {
-					if(!model.island.getCharacters().isEmpty() && model.getStep() > 10) {
 						return true;
 					}
 					return false;
@@ -125,12 +110,38 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 				null
 		);
 		
+		HomesickHappening homesick = new HomesickHappening(
+				(IslandModel model) -> {
+					if(model.getStep() > 18) {
+						return true;
+					}
+					return false;
+				},
+				"robinson",
+				null
+		);
+		
+		ShipRescueHappening shipRescue = new ShipRescueHappening(
+				(IslandModel model) -> {
+					// triggered when robinson / someone is on island and story has progressed enough
+					// TODO not hardcoded to robinson
+					//if(model.island.contains("robinson")) {
+					if(!model.island.getCharacters().isEmpty() && model.getStep() > 25) {
+						return true;
+					}
+					return false;
+				},
+				"robinson",
+				null
+		);
+		
 				
 		hapDir.scheduleHappening(shipWrecked);
-		hapDir.scheduleHappening(foodPoisoning);
 		hapDir.scheduleHappening(foodStolen);
+		hapDir.scheduleHappening(foodPoisoning);
 		hapDir.scheduleHappening(friendIsEaten);
 		hapDir.scheduleHappening(hutDestroyed);
+		hapDir.scheduleHappening(homesick);
 		hapDir.scheduleHappening(shipRescue);
 		
 		IslandModel model = new IslandModel(agents, hapDir);

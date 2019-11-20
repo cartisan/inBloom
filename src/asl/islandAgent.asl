@@ -71,12 +71,14 @@
 		  -wish(complain).
 
 
+
 /* React to new Belifes / Percepts */
 
 +hungry[source(Name)] <- +wish(eat).
 
-+sick[source(Name)] <- +wish(heal).
-//+sick[source(Name)] <- +wish(complain).
++sick[source(Name)] <- +wish(heal);
+					   +wish(complain).
+
 
 // I could also react to percepts triggered by Happening directly:
 // +poisoned(food)[source(Name)] <- .print("MY FOOD IS FUCKING DISGUSTING").
@@ -87,6 +89,8 @@
 +eaten(X)[source(Name)] <- -has(X).
 
 //+has(hut)[source(Name)] <- .print("I HAVE A FREAKING HUT!!!").
+
++homesick[source(Name)] <- +wish(complain).
 
 
 // ASL Debug mode -> Run Configurations, duplicate Launcher, add -debug
