@@ -7,9 +7,9 @@ import inBloom.rl_happening.IslandModel;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;
 
-public class FoodStolenHappening extends Happening<IslandModel> {
+public class FoodStolenHappening extends ConditionalHappening<IslandModel> {
 
-	public FoodStolenHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
+	/**public FoodStolenHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
 		// setup for how this event will be perceived
 		// TODO should only be PERCEIVED if has effect as well. I mean, could be like this too. But confusing :(
 		// IDEA: hasEffect method to use here AND in execute -> no duplicate code
@@ -26,9 +26,13 @@ public class FoodStolenHappening extends Happening<IslandModel> {
 	
 	public FoodStolenHappening(Predicate<IslandModel> trigger, String patient) {
 		this(trigger, patient, "");
-	}
+	}*/
 	
-	public void execute(IslandModel model) {
+	public FoodStolenHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
+		super(trigger, patient, causalProperty);
+	}
+
+	/**public void execute(IslandModel model) {
 		
 		Character chara = model.getCharacter(this.getPatient());
 		
@@ -39,11 +43,23 @@ public class FoodStolenHappening extends Happening<IslandModel> {
 		
 		// else there is no effect of this happening -> should also not have a percept annotation then! TODO
 
+	}*/
+	
+	@Override
+	protected boolean hasEffect(IslandModel model, Character chara) {
+		return chara.location.equals(model.island) && chara.has("food");
 	}
 	
-	private boolean hasEffect(IslandModel model) {
-		Character chara = model.getCharacter(this.getPatient());
-		return chara.location.equals(model.island) && chara.has("food");
+	@Override
+	protected void executeEffects(IslandModel model, Character chara) {
+		chara.removeFromInventory("food");
+		model.getLogger().info("Monkey stole " + chara.name + "'s food. Holy crap.");
+		
+	}
+
+	@Override
+	protected String getConditionalPercept() {
+		return "stolen(food)";
 	}
 	
 }

@@ -15,7 +15,7 @@ import inBloom.storyworld.Character;
 
 /**
  * @author Julia Wippermann
- * @version 13.11.19
+ * @version 20.11.19
  *
  * The Model defines the effects of Actions on the Environment and Agents.
  */

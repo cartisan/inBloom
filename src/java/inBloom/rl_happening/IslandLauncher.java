@@ -17,7 +17,7 @@ import jason.infra.centralised.BaseCentralisedMAS;
 
 /**
  * @author Julia Wippermann
- * @version 29.10.19
+ * @version 20.11.19
  *
  */
 public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel> {
