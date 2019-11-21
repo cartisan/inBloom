@@ -20,11 +20,12 @@ public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happe
 	public ConditionalHappening(Predicate<T> trigger, String patient, String causalProperty) {
 		// TODO dieser percept ergibt halt eh nicht viel Sinn für das CONDITIONAL Happening
 		super(trigger, causalProperty, "something_is_happening");
-		// ich kann spaeter noch this.setPercept("bla"); machen -> Methode die ich über Happening aus Event erbe
+		// ich kann spaeter noch this.setPercept("bla"); machen -> Methode die ich über Happening aus Event erbe;
+		// this.setAnnotation(PerceptAnnotation.fromEmotion("EMOTION"))
 		// TODO -> testen, ob das funktioniert
 		this.patient = patient;
 		// TODO delte / outsource emotion
-		this.annotation = PerceptAnnotation.fromEmotion("resentment");
+		// this.annotation = PerceptAnnotation.fromEmotion("resentment");
 	}
 	
 	public ConditionalHappening(Predicate<T> trigger, String patient) {
@@ -38,6 +39,7 @@ public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happe
 		if(hasEffect(model, chara)) {
 			this.executeEffects(model, chara);
 			this.setPercept(this.getConditionalPercept());
+			this.setAnnotation(PerceptAnnotation.fromEmotion(this.getConditionalEmotion()));
 		}	
 
 	}
@@ -47,5 +49,7 @@ public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happe
 	protected abstract void executeEffects(T model, Character chara);
 	
 	protected abstract String getConditionalPercept();
+	
+	protected abstract String getConditionalEmotion();
 	
 }

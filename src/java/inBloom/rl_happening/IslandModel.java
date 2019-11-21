@@ -176,11 +176,8 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		ActionReport result = new ActionReport();
 		
 		// you can only sleep if you have a safe place to sleep in
-		logger.info("When asking, has hut is now: " + this.hasHut);
 		if(this.hasHut) {
 			
-			logger.info("I HAVE SLEPT LIKE A FUCKING CHAMPION MORON WHAT ABOUT YOU YOU IDJIT");
-
 			logger.info(agent.name + " is asleep.");
 
 			result.addPerception(agent.name, new PerceptAnnotation("relief"));
@@ -192,7 +189,6 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 			result.success = true;
 			
 		} else {
-			logger.info("I HAVE NEVER EVER SLEPT IN MY LFIE AND WILL NEVER EVER LIE DOWN TILL THE DAY I DIE.");
 			result.success = false;
 		}
 		
@@ -204,16 +200,14 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		ActionReport result = new ActionReport();
 		
 		logger.info(agent.name + " builds a hut.");
-		
-		result.addPerception(agent.name, new PerceptAnnotation("pride"));
-		
 		this.hasHut = true;
-		logger.info("Has hut has changed to: " + this.hasHut);
+		
+		result.success = true;
 		
 		// all agents on the island get the percept
 		this.environment.addPercept(this.island, Literal.parseLiteral("exists(hut)"));
 		
-		result.success = true;
+		result.addPerception(agent.name, new PerceptAnnotation("pride"));
 		
 		return result;
 	}

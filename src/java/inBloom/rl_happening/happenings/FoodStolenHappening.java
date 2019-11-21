@@ -62,4 +62,9 @@ public class FoodStolenHappening extends ConditionalHappening<IslandModel> {
 		return "stolen(food)";
 	}
 	
+	@Override
+	protected String getConditionalEmotion() {
+		return "resentment";
+	}
+	
 }
