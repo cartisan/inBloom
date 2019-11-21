@@ -263,7 +263,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     		}
     	}
 
-		//logger.info(String.format("%s performed %s", agentName, action.toString()));
+		// logger.info(String.format("%s performed %s", agentName, action.toString()));
 
     	// allow model to see if action resulted in state change
     	this.getModel().noteStateChanges(agentName, action.toString());
