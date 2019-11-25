@@ -38,6 +38,9 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		
 		ImmutableList<LauncherAgent> agents = ImmutableList.of(robinson);
 		
+		// TODO all triggers that are actual preconditions -> f.e. homesickness can only happen after
+		// x time steps, need to be implemented in hasEffect() of the relevant Happening
+		
 		// Initialise MAS with a scheduled happening director
 		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 		StormHappening shipWrecked = new StormHappening(

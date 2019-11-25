@@ -7,8 +7,18 @@ import inBloom.rl_happening.IslandModel;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;
 
+/**
+ * A Happening in which the agent's food is stolen by a monkey
+ * 
+ * @author  Julia Wippermann
+ */
 public class FoodStolenHappening extends ConditionalHappening<IslandModel> {
 	
+	/**
+	 * Constructor with trigger, patient and causalProperty
+	 * 
+	 * @see @ConditionalHappening.ConditionalHappening
+	 */
 	public FoodStolenHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
 		super(trigger, patient, causalProperty);
 	}
@@ -19,7 +29,7 @@ public class FoodStolenHappening extends ConditionalHappening<IslandModel> {
 	}
 	
 	@Override
-	protected void executeEffects(IslandModel model, Character chara) {
+	protected void executeModelEffects(IslandModel model, Character chara) {
 		chara.removeFromInventory("food");
 		model.getLogger().info("Monkey stole " + chara.name + "'s food. Holy crap.");
 		

@@ -7,44 +7,54 @@ import inBloom.rl_happening.IslandModel;
 import inBloom.storyworld.Happening;
 import inBloom.storyworld.Character;
 
-public class StormHappening extends Happening<IslandModel>{
+/**
+ * A Happening in which a storm occurs that either leads to a ship wreck or the destruction of the hut
+ * 
+ * @author  Julia Wippermann
+ */
+public class StormHappening extends ConditionalHappening<IslandModel>{
 
+	/**
+	 * Constructor with trigger, patient and causalProperty
+	 * 
+	 * @see @ConditionalHappening.ConditionalHappening
+	 */
 	public StormHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
-		// setup for how this event will be perceived
-		super(trigger, causalProperty, "storm");
-		this.patient = patient;
-		// TODO diese emotion evtl bedingt machen?	
-		this.annotation = PerceptAnnotation.fromEmotion("fear");
+		super(trigger, patient, causalProperty);
 	}
-	
-	public StormHappening(Predicate<IslandModel> trigger, String patient) {
-		this(trigger, patient, "");
+
+	@Override
+	protected boolean hasEffect(IslandModel model, Character chara) {
+		// The Happening has (different) effects when the agent is on the ship
+		// or there exists a hut on the island.
+		return chara.location.equals(model.ship) || model.hasHut;
 	}
-	
-	public void execute(IslandModel model) {
-		Character chara = model.getCharacter(this.getPatient());
-		
-		// the character is only affected by this if he was on the ship
+
+	@Override
+	protected void executeModelEffects(IslandModel model, Character chara) {
+
+		// Shipwrecked
 		if(chara.location.equals(model.ship)) {
 			chara.goTo(model.island);
 			model.getLogger().info(this.getPatient() + " stranded on island " + model.island.name);
 		}
-		
-		// TODO hasHut evtl. auch über Location lösen -> dann aber unter-Location
-		// if the character is on the island and there exists a hut, the hut is destroyed
-		// this, theoretically is independent of the character's location
+
+		// Destroy Hut
 		if(model.hasHut) {
-			
-			// agent has to loose the percept that he has hut too
+			// TODO hasHut als Unterlocation -> gibt es ein Location exists (!=null)
 			model.destroyHut();
-			
-			// TODO absolut patient unabhängig momentan ... kann man allgemeine Happenings machen und dann in den
-			// Happenings schauen, welche Patients es betreffen würde (anhand von Location)
 			model.getLogger().info("The hut was destroyed.");
-		}
+		}		
+	}
+
+	@Override
+	protected String getConditionalPercept() {
+		return "storm";
+	}
+
+	@Override
+	protected String getConditionalEmotion() {
+		return "fear";
 	}
 	
 }
-
-// TODO dinge, die ich als causalProperty haben will, muss ich als @ModelState annotieren
-// für Locations und Characters kann ich das machen

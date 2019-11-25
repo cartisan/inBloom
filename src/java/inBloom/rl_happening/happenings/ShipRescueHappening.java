@@ -11,33 +11,39 @@ import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;
 
 /**
+ * A Happening in which the patient is rescued by a ship
+ * 
  * @author  Julia Wippermann
- * @version 13.11.19
- *
  */
-public class ShipRescueHappening extends Happening<IslandModel> {
+public class ShipRescueHappening extends ConditionalHappening<IslandModel> {
 
+	/**
+	 * Constructor with trigger, patient and causalProperty
+	 * 
+	 * @see @ConditionalHappening.ConditionalHappening
+	 */
 	public ShipRescueHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
-		// setup for how this event will be perceived
-		super(trigger, causalProperty, "stolen(food)");
-		this.patient = patient;
-		this.annotation = PerceptAnnotation.fromEmotion("gratitude");
+		super(trigger, patient, causalProperty);
 	}
-	
-	public ShipRescueHappening(Predicate<IslandModel> trigger, String patient) {
-		this(trigger, patient, "");
-	}
-	
-	public void execute(IslandModel model) {
-		
-		Character chara = model.getCharacter(this.getPatient());
-		
-		if(chara.location.equals(model.island)) {
-			chara.goTo(model.civilizedWorld);
-			model.getLogger().info(chara.name + " was rescued!");
-		}
-		
-		// If character is not on island, he is unaffected by this
 
+	@Override
+	protected boolean hasEffect(IslandModel model, Character chara) {
+		return chara.location.equals(model.island);
+	}
+
+	@Override
+	protected void executeModelEffects(IslandModel model, Character chara) {
+		chara.goTo(model.civilizedWorld);
+		model.getLogger().info(chara.name + " was rescued!");
+	}
+
+	@Override
+	protected String getConditionalPercept() {
+		return "rescued";
+	}
+
+	@Override
+	protected String getConditionalEmotion() {
+		return "gratitude";
 	}
 }

@@ -12,12 +12,16 @@ import inBloom.storyworld.Happening;
 
 /**
  * @author  Julia Wippermann
- * @version 13.11.19
  *
- * A Happening in which the patientäs food is poisoned.
+ * A Happening in which the patient's food is poisoned.
  */
 public class FoodPoisoningHappening extends ConditionalHappening<IslandModel> {
 	
+	/**
+	 * Constructor with trigger, patient and causalProperty
+	 * 
+	 * @see @ConditionalHappening.ConditionalHappening
+	 */
 	public FoodPoisoningHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
 		super(trigger, patient, causalProperty);
 	}
@@ -28,10 +32,9 @@ public class FoodPoisoningHappening extends ConditionalHappening<IslandModel> {
 	}
 
 	@Override
-	protected void executeEffects(IslandModel model, Character chara) {
+	protected void executeModelEffects(IslandModel model, Character chara) {
 		model.foodIsOkay = false;
 		model.getLogger().info(chara + "'s food was poisoned!");
-		
 	}
 
 	@Override
