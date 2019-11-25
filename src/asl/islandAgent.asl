@@ -76,22 +76,22 @@
 
 
 /* React to new Belifes / Percepts */
+// Name of source is f.e. "percept"
 
 +hungry[source(Name)] <- +wish(eat).
 
 +sick[source(Name)] <- +wish(heal).
 
-// I could also react to percepts triggered by Happening directly:
-// +poisoned(food)[source(Name)] <- .print("MY FOOD IS FUCKING DISGUSTING").
-
+// not used so far
 +stolen(food)[source(Name)] <- +hate(monkey).
 
 // if f.e. friend is eaten, then agent has no friend anymore :(
-//+eaten(X)[source(Name)] <- -has(X).
-
-//+has(hut)[source(Name)] <- .print("I HAVE A FREAKING HUT!!!").
++eaten(X)[source(Name)] <- -has(X).
 
 +homesick[source(Name)] <- +wish(complain).
+
+// TODO why does this not print anything?
++happening[source(Name)] <- .print("A HAPPENING HAPPENED.").
 
 
 // ASL Debug mode -> Run Configurations, duplicate Launcher, add -debug

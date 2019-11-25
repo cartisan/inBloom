@@ -14,24 +14,24 @@ import inBloom.storyworld.Happening;
  * @author Julia Wippermann
  * @version 21.11.19
  *
+ * DOCME
  */
 public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happening<T> {
-		
+	
+	//DOCME
 	public ConditionalHappening(Predicate<T> trigger, String patient, String causalProperty) {
-		// TODO dieser percept ergibt halt eh nicht viel Sinn für das CONDITIONAL Happening
-		super(trigger, causalProperty, "something_is_happening");
-		// ich kann spaeter noch this.setPercept("bla"); machen -> Methode die ich über Happening aus Event erbe;
-		// this.setAnnotation(PerceptAnnotation.fromEmotion("EMOTION"))
-		// TODO -> testen, ob das funktioniert
+		// TODO der percept "happening" scheint nicht bei dem Agent anzukommen, er reagiert nie darauf
+		// der percept, den wir später von hand hinzufügen, kommt jedoch an.
+		super(trigger, causalProperty, "happening");
 		this.patient = patient;
-		// TODO delte / outsource emotion
-		// this.annotation = PerceptAnnotation.fromEmotion("resentment");
 	}
 	
+	//DOCME
 	public ConditionalHappening(Predicate<T> trigger, String patient) {
 		this(trigger, patient, "");
 	}
 	
+	//DOCME
 	public void execute(T model) {
 		
 		Character chara = model.getCharacter(this.getPatient());
@@ -44,12 +44,16 @@ public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happe
 
 	}
 
+	//DOCME
 	protected abstract boolean hasEffect(T model, Character chara);
 	
+	//DOCME
 	protected abstract void executeEffects(T model, Character chara);
 	
+	//DOCME
 	protected abstract String getConditionalPercept();
 	
+	//DOCME
 	protected abstract String getConditionalEmotion();
 	
 }

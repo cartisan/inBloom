@@ -16,32 +16,32 @@ import inBloom.storyworld.Happening;
  *
  * A Happening in which the patientäs food is poisoned.
  */
-public class FoodPoisoningHappening extends Happening<IslandModel> {
+public class FoodPoisoningHappening extends ConditionalHappening<IslandModel> {
 	
 	public FoodPoisoningHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
-		// setup for how this event will be perceived
-		super(trigger, causalProperty, "poisoned(food)");
-		this.patient = patient;
-		// TODO does it make sense to add an emotion by default
-		// when an agent might not be affected
-		this.annotation = PerceptAnnotation.fromEmotion("distress");
+		super(trigger, patient, causalProperty);
 	}
-	
-	public FoodPoisoningHappening(Predicate<IslandModel> trigger, String patient) {
-		this(trigger, patient, "");
+
+	@Override
+	protected boolean hasEffect(IslandModel model, Character chara) {
+		return chara.has("food");
 	}
-	
-	public void execute(IslandModel model) {
-		
-		Character chara = model.getCharacter(this.getPatient());
-		
+
+	@Override
+	protected void executeEffects(IslandModel model, Character chara) {
 		model.foodIsOkay = false;
-		model.getLogger().info("The food was poisoned!");
+		model.getLogger().info(chara + "'s food was poisoned!");
 		
-		if(chara.has("food")) {
-			// add a percept for the character?
-			model.getLogger().info(chara + " owns poisoned food!");
-		}
+	}
+
+	@Override
+	protected String getConditionalPercept() {
+		return "poisoned(food)";
+	}
+
+	@Override
+	protected String getConditionalEmotion() {
+		return "distress";
 	}
 	
 }

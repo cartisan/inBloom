@@ -7,44 +7,33 @@ import inBloom.rl_happening.IslandModel;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;
 
-// TODO this happening can actually only happen when the agent is on the island / not home.
-// Otherwise it does not only have no effect, but can literally NOT HAPPEN
-// This I implement in the trigger conditions in the Launcher, but considering that I was
-// thinking about having prerequisites for the effects, would it make sense to have prerequisites
-// for the happening itself as well in the happening? Probably not. Would be hard to realise and
-// except for being neat, it wouldn't have that much of a great advantage.
-public class HomesickHappening extends Happening<IslandModel> {
+// DOCME
+public class HomesickHappening extends ConditionalHappening<IslandModel> {
 
 	public HomesickHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
-		// setup for how this event will be perceived
-		super(trigger, causalProperty, "homesick");
-		this.patient = patient;
-		this.annotation = PerceptAnnotation.fromEmotion("remorse");
+		super(trigger, patient, causalProperty);
 	}
 	
-	public HomesickHappening(Predicate<IslandModel> trigger, String patient) {
-		this(trigger, patient, "");
-	}
-	
-	public void execute(IslandModel model) {
-		
-		Character chara = model.getCharacter(this.getPatient());
-		
-		if(hasEffect(model)) {
-			// not many more effects, because percept and emotion already handeled in constructor
-			// and that is all, since it only has an internal effect on the agent, no external consequences
-			// on the model
-			model.getLogger().info(chara.name + " is homesick.");
-		}
-		
-	}
-	
-	private boolean hasEffect(IslandModel model) {
-		Character chara = model.getCharacter(this.getPatient());
+	@Override
+	protected boolean hasEffect(IslandModel model, Character chara) {
 		// TODO this is not ... really ...? It's a prerequisite for the Happening taking place at all
 		// so it NEEDS to be implemented in the Launcher already
-		//return chara.location.equals(model.island);
-		return true;
+		return chara.location.equals(model.island);
+	}
+
+	@Override
+	protected void executeEffects(IslandModel model, Character chara) {
+		model.getLogger().info(chara.name + " is homesick.");
+	}
+
+	@Override
+	protected String getConditionalPercept() {
+		return "homesick";
+	}
+
+	@Override
+	protected String getConditionalEmotion() {
+		return "remorse";
 	}
 	
 }
