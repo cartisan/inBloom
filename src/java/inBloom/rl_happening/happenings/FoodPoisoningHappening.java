@@ -7,13 +7,14 @@ import java.util.function.Predicate;
 
 import inBloom.helper.PerceptAnnotation;
 import inBloom.rl_happening.IslandModel;
+import inBloom.rl_happening.IslandModel.Food;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;
 
 /**
- * @author  Julia Wippermann
- *
  * A Happening in which the patient's food is poisoned.
+ * 
+ * @author  Julia Wippermann
  */
 public class FoodPoisoningHappening extends ConditionalHappening<IslandModel> {
 	
@@ -33,8 +34,17 @@ public class FoodPoisoningHappening extends ConditionalHappening<IslandModel> {
 
 	@Override
 	protected void executeModelEffects(IslandModel model, Character chara) {
-		model.foodIsOkay = false;
-		model.getLogger().info(chara + "'s food was poisoned!");
+		// TODO get rid of this varible?
+		//model.foodIsOkay = false;
+		
+		// not as a precondition, but to make sure we don't run into a NullPointerException
+		if(chara.has("food")) {
+			((Food)model.getCharacter(chara.name).get("food")).poison();
+			model.getLogger().info(chara + "'s food was poisoned!");
+		} else {
+			// Should never occur due to the precondition of this Happening
+			model.getLogger().info("ERROR: There was no food to be poisoned.");
+		}
 	}
 
 	@Override

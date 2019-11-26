@@ -28,14 +28,11 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	public HashMap<Character, Integer> friends;
 	// Each agent has a hunger value
 	public HashMap<Character, Integer> hunger;
-	// true as soon as one agent enters the cruise
 	public boolean isOnCruise;
-	// Food can be poisoned or okay 
-	public boolean foodIsOkay;
-	// Agent can get sick
+	//public boolean foodIsOkay; // TODO when changed -> change isEdible?
 	public boolean isSick;
-	// Agent has built a hut
 	public boolean hasHut;
+	public boolean isBurning;
 	
 	
 	/**
@@ -64,7 +61,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		changeAllValues(this.hunger, 0);
 		
 		this.isOnCruise = false;
-		this.foodIsOkay = true;
+		//this.foodIsOkay = true;
 		this.isSick = false;
 		logger.info("I set change hut to false.");
 		this.hasHut = false;
@@ -137,7 +134,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		
 		agent.addToInventory(new Food());
 		// new food isn't poisoned yet
-		this.foodIsOkay = true;
+		//this.foodIsOkay = true;
 		
 		result.success = true;
 		
@@ -147,24 +144,30 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	public ActionReport eat(Character agent) {
 		
 		ActionReport result = new ActionReport();
-
-		logger.info(agent.name + " eats food.");
-		
-		agent.eat("food");
-		
-		// he is not hungry anymore
-		this.hunger.replace(agent, 0);
-		
-		this.environment.removePercept(agent.name, Literal.parseLiteral("hungry"));
-		logger.info(agent.name + "'s hunger: " + this.hunger.get(agent));
 		
 		// food may have been poisoned
-		if(!this.foodIsOkay) {
-			this.isSick = true;
-			this.environment.addPercept(agent.name, Literal.parseLiteral("sick"));
-			logger.info(agent.name + " is sick.");
+		if(agent.has("food") && !agent.get("food").isEdible()) {
+			
 		}
-
+		
+		if(agent.has("food")) {
+			if(agent.get("food").isEdible()) {
+				// agent eats food and should be successful doing so (since we checked all error sources beforehand anyways)
+				result.success = agent.eat("food").success;
+				logger.info(agent.name + " eats food.");
+				// he is not hungry anymore
+				this.hunger.replace(agent, 0);
+				this.environment.removePercept(agent.name, Literal.parseLiteral("hungry"));
+				logger.info(agent.name + "'s hunger: " + this.hunger.get(agent));
+			} else {
+				// the food is not edible -> only possible when poisoned
+				// TODO es wäre natürlich schöner, das hier direkt im Agent zu modellieren
+				this.isSick = true;
+				this.environment.addPercept(agent.name, Literal.parseLiteral("sick"));
+				logger.info(agent.name + " is sick.");
+			}
+		}
+		
 		// TODO maybe not succesfull when poisoned?
 		result.success = true;
 
@@ -409,15 +412,23 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	
 	public static class Food extends Item {
 		static final String itemName = "food";
+		public boolean isEdible = true;
 		
 		public String getItemName() {
 			return Food.itemName;
 		}
 		
 		public boolean isEdible() {
-			return true;
+			return this.isEdible;
+		}
+		
+		public void poison() {
+			this.isEdible = false;
 		}
 	}
 	
 
 }
+
+// Es gibt eine Möglichkeit zu überprüfen, ob ein Agent einen bestimmten percept hat
+// this.environment.containsPercept(agentname, percept)
