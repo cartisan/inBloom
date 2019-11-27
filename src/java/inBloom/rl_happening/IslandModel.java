@@ -30,8 +30,6 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	// Each agent has a hunger value
 	public HashMap<Character, Integer> hunger;
 	public boolean isOnCruise;
-	//public boolean foodIsOkay; // TODO when changed -> change isEdible?
-	public boolean isSick;
 	public boolean hasHut;
 	public boolean isBurning;
 	
@@ -62,8 +60,6 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		changeAllValues(this.hunger, 0);
 		
 		this.isOnCruise = false;
-		//this.foodIsOkay = true;
-		this.isSick = false;
 		logger.info("I set change hut to false.");
 		this.hasHut = false;
 		
@@ -146,10 +142,8 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		// food may have been poisoned
-		if(agent.has("food") && !agent.get("food").isEdible()) {
-			
-		}
+		// TODO könnte man auch in Character fast alles auslagern -> z.B. Hunger,
+		// wobei die percepts eigentlich eher hier gesteucert werden sollten
 		
 		if(agent.has("food")) {
 			
@@ -168,7 +162,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 			// the Food may have been poisoned though
 			if(food.isPoisoned()) {
 				// TODO es wäre natürlich schöner, das hier direkt im Agent zu modellieren
-				this.isSick = true;
+				agent.getPoisoned();
 				this.environment.addPercept(agent.name, Literal.parseLiteral("sick"));
 				logger.info(agent.name + " is sick.");
 				
@@ -191,7 +185,8 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 			result.addPerception(agent.name, new PerceptAnnotation("relief"));
 
 			// if agent was sick, then now he isn't anymore
-			this.isSick = false;
+			agent.heal();
+			
 			this.environment.removePercept(agent.name, Literal.parseLiteral("sick"));
 
 			result.success = true;

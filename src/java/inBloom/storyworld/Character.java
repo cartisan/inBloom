@@ -37,6 +37,8 @@ public class Character extends Existent {
     public String name = null;
     public Location location = null;
 
+    public boolean isSick = false;
+    
 	public Character() {
 	}
 
@@ -219,6 +221,27 @@ public class Character extends Existent {
 		return res;
 	}
 
+	public ActionReport getPoisoned() {
+		
+		ActionReport result = new ActionReport();
+		
+		logger.info(this.name + " was poisoned :o");
+		this.isSick = true;
+		result.success = true;
+		
+		return result;
+	}
+
+	public ActionReport heal() {
+		ActionReport result = new ActionReport();
+		
+		logger.info(this.name + " is healed.");
+		this.isSick = false;
+		result.success = true;
+		
+		return result;
+	}
+	
 	public ActionReport collect(String thing) {
 		ActionReport res = new ActionReport();
 
@@ -259,7 +282,7 @@ public class Character extends Existent {
 
 		return res;
 	}
-
+	
 
 	public boolean canFly() {
 		// TODO: find a flexible implementation
