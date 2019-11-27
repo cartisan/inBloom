@@ -44,7 +44,7 @@ public class StormHappening extends ConditionalHappening<IslandModel>{
 			// TODO hasHut als Unterlocation -> gibt es ein Location exists (!=null)
 			model.destroyHut();
 			model.getLogger().info("The hut was destroyed.");
-		}		
+		}	
 	}
 
 	@Override

@@ -150,8 +150,8 @@ public class Tellability {
 			return 0;
 		}
 		
-		double tellability = (double) this.numPolyvalentVertices / this.numAllVertices + 
-							 (double) this.suspense / this.plotLength;
+		double tellability = ((double) this.numPolyvalentVertices / this.numAllVertices + 
+							 (double) this.suspense / this.plotLength) / 2;
 		
 		logger.info("Overall tellability: " + tellability);
 		return tellability;

@@ -99,7 +99,7 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
         Logger.getLogger("").setLevel(LOG_LEVEL);
 	}
 	
-	protected void pauseExecution() {
+	public void pauseExecution() {
 	    MASConsoleGUI.get().setPause(true);
 	    this.pauseButton.setText("Continue");
 

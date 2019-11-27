@@ -5,6 +5,7 @@ import java.util.List;
 
 import inBloom.ActionReport;
 import inBloom.LauncherAgent;
+import inBloom.PlotLauncher;
 import inBloom.PlotModel;
 import inBloom.helper.PerceptAnnotation;
 import inBloom.storyworld.HappeningDirector;
@@ -275,6 +276,10 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 			this.getEnvironment().killAgent(agent.name);
 			// TODO stop story
 			logger.info(agent.name + " has died.");
+			
+			// stop story
+			PlotLauncher.getRunner().pauseExecution();
+			
 		} else if(this.hunger.get(agent) >= 5) {
 			this.environment.addPercept(agent.name, Literal.parseLiteral("hungry"));
 			logger.info(agent.name + " is hungry.");
@@ -413,6 +418,8 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	
 	public static class Island extends Location {
 
+		// TODO isBurning
+		
 		public Island() {
 			super("lonely island");
 			// TODO Auto-generated constructor stub
