@@ -151,25 +151,29 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		}
 		
 		if(agent.has("food")) {
-			if(agent.get("food").isEdible()) {
-				// agent eats food and should be successful doing so (since we checked all error sources beforehand anyways)
-				result.success = agent.eat("food").success;
-				logger.info(agent.name + " eats food.");
-				// he is not hungry anymore
-				this.hunger.replace(agent, 0);
-				this.environment.removePercept(agent.name, Literal.parseLiteral("hungry"));
-				logger.info(agent.name + "'s hunger: " + this.hunger.get(agent));
-			} else {
-				// the food is not edible -> only possible when poisoned
+			
+			// save the food for checking it's poisoness later
+			Food food = (Food)agent.get("food");
+			
+			// In any case, the agent will eat
+			result.success = agent.eat("food").success;
+			logger.info(agent.name + " eats food.");
+			
+			// he is not hungry anymore
+			this.hunger.replace(agent, 0);
+			this.environment.removePercept(agent.name, Literal.parseLiteral("hungry"));
+			logger.info(agent.name + "'s hunger: " + this.hunger.get(agent));
+			
+			// the Food may have been poisoned though
+			if(food.isPoisoned()) {
 				// TODO es wäre natürlich schöner, das hier direkt im Agent zu modellieren
 				this.isSick = true;
 				this.environment.addPercept(agent.name, Literal.parseLiteral("sick"));
 				logger.info(agent.name + " is sick.");
+				
+				// hier könnte man result.success = false setzen, aber an sich hat er ja gegessen
 			}
-		}
-		
-		// TODO maybe not succesfull when poisoned?
-		result.success = true;
+		}		
 
 		return result;
 	}
@@ -231,6 +235,19 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		
 		return result;
 		
+	}
+	
+	public ActionReport extinguishFire(Character agent) {
+		
+		ActionReport result = new ActionReport();
+		
+		this.isBurning = false;
+		this.environment.removePercept(agent.name, Literal.parseLiteral("fire"));
+		result.addPerception(agent.name, new PerceptAnnotation("pride"));
+		logger.info(agent.name + " has extinguished the fire.");
+		
+		result.success = true;
+		return result;
 	}
 	
 	
@@ -412,18 +429,22 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	
 	public static class Food extends Item {
 		static final String itemName = "food";
-		public boolean isEdible = true;
+		private boolean poisoned = false;
 		
 		public String getItemName() {
 			return Food.itemName;
 		}
 		
 		public boolean isEdible() {
-			return this.isEdible;
+			return true;
+		}
+		
+		public boolean isPoisoned() {
+			return this.poisoned;
 		}
 		
 		public void poison() {
-			this.isEdible = false;
+			this.poisoned = true;
 		}
 	}
 	
@@ -432,3 +453,5 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 
 // Es gibt eine Möglichkeit zu überprüfen, ob ein Agent einen bestimmten percept hat
 // this.environment.containsPercept(agentname, percept)
+
+// TODO consistent use of tense in logger infos about actions

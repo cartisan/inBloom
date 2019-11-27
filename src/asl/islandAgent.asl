@@ -72,6 +72,9 @@
 			  } else {
 				findFriend;
 			  }.
+			  
++!extinguish_fire <- extinguishFire;
+					 -wish(extinguish_fire).
 
 
 
@@ -89,6 +92,8 @@
 +eaten(X)[source(Name)] <- -has(X).
 
 +homesick[source(Name)] <- +wish(complain).
+
++fire[source(Name)] <- +wish(extinguish_fire).
 
 // TODO why does this not print anything?
 +happening[source(Name)] <- .print("A HAPPENING HAPPENED.").

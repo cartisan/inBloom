@@ -124,12 +124,23 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 				null
 		);
 		
+		FireHappening fire = new FireHappening(
+				(IslandModel model) -> {
+					if(model.getStep() > 25) {
+						return true;
+					}
+					return false;
+				},
+				"robinson",
+				null
+		);
+		
 		ShipRescueHappening shipRescue = new ShipRescueHappening(
 				(IslandModel model) -> {
 					// triggered when robinson / someone is on island and story has progressed enough
 					// TODO not hardcoded to robinson
 					//if(model.island.contains("robinson")) {
-					if(!model.island.getCharacters().isEmpty() && model.getStep() > 25) {
+					if(!model.island.getCharacters().isEmpty() && model.getStep() > 29) {
 						return true;
 					}
 					return false;
@@ -145,6 +156,7 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		hapDir.scheduleHappening(friendIsEaten);
 		hapDir.scheduleHappening(hutDestroyed);
 		hapDir.scheduleHappening(homesick);
+		hapDir.scheduleHappening(fire);
 		hapDir.scheduleHappening(shipRescue);
 		
 		IslandModel model = new IslandModel(agents, hapDir);
