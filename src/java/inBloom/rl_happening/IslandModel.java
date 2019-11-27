@@ -30,8 +30,6 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	// Each agent has a hunger value
 	public HashMap<Character, Integer> hunger;
 	public boolean isOnCruise;
-	public boolean hasHut;
-	public boolean isBurning;
 	
 	
 	/**
@@ -60,9 +58,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		changeAllValues(this.hunger, 0);
 		
 		this.isOnCruise = false;
-		logger.info("I set change hut to false.");
-		this.hasHut = false;
-		
+		logger.info("I set change hut to false.");		
 		
 		this.addLocation(this.civilizedWorld);
 		this.addLocation(this.ship);
@@ -178,7 +174,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		ActionReport result = new ActionReport();
 		
 		// you can only sleep if you have a safe place to sleep in
-		if(this.hasHut) {
+		if(this.island.hasHut) {
 			
 			logger.info(agent.name + " is asleep.");
 
@@ -203,7 +199,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		ActionReport result = new ActionReport();
 		
 		logger.info(agent.name + " builds a hut.");
-		this.hasHut = true;
+		this.island.hasHut = true;
 		
 		result.success = true;
 		
@@ -237,7 +233,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		this.isBurning = false;
+		this.island.isBurning = false;
 		this.environment.removePercept(agent.name, Literal.parseLiteral("fire"));
 		result.addPerception(agent.name, new PerceptAnnotation("pride"));
 		logger.info(agent.name + " has extinguished the fire.");
@@ -267,9 +263,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		// check if hunger has become critical
 
 		if(this.hunger.get(agent) >= 10) {
-			// TODO funktioniert killAgent?
 			this.getEnvironment().killAgent(agent.name);
-			// TODO stop story
 			logger.info(agent.name + " has died.");
 			
 			// stop story
@@ -338,8 +332,8 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	 * Destroys the hut and removes the percept of a hut for all agents on the island
 	 */
 	public void destroyHut() {
-		if(this.hasHut) {
-			this.hasHut = false;
+		if(this.island.hasHut) {
+			this.island.hasHut = false;
 			// this is agent independent -> all agents on the island loose the percept
 			this.environment.removePercept(this.island, Literal.parseLiteral("exists(hut)"));
 		}
@@ -397,7 +391,6 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 
 		public CivilizedWorld() {
 			super("plain boring world");
-			// TODO Auto-generated constructor stub
 		}
 		
 	}
@@ -406,20 +399,19 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 
 		public Ship() {
 			super("magnificent ship");
-			// TODO Auto-generated constructor stub
 		}
 		
 	}
 	
 	public static class Island extends Location {
 
-		// TODO isBurning
+		public boolean hasHut;
+		public boolean isBurning;
 		
 		public Island() {
 			super("lonely island");
-			// TODO Auto-generated constructor stub
 		}
-		
+
 	}
 
 	

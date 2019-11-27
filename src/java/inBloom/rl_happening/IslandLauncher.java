@@ -104,7 +104,7 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		
 		StormHappening hutDestroyed = new StormHappening(
 				(IslandModel model) -> {
-					if(model.hasHut) {
+					if(model.island.hasHut) {
 						return true;
 					}
 					return false;
