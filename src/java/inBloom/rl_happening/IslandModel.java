@@ -1,6 +1,7 @@
 package inBloom.rl_happening;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import inBloom.ActionReport;
@@ -174,7 +175,11 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		ActionReport result = new ActionReport();
 		
 		// you can only sleep if you have a safe place to sleep in
-		if(this.island.hasHut) {
+		if(this.island.hasHut()) {
+			
+			this.island.enterSublocation(agent, island.hut.name);
+			
+			logger.info(agent.name + " is in the hood. Hut I mean. This hut: " + island.hut.name);
 			
 			logger.info(agent.name + " is asleep.");
 
@@ -185,6 +190,10 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 			
 			this.environment.removePercept(agent.name, Literal.parseLiteral("sick"));
 
+			this.island.leaveSublocation(agent, island.hut.name);
+			
+			logger.info(agent.name + " has left the hut " + island.hut.name);
+			
 			result.success = true;
 			
 		} else {
@@ -199,7 +208,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		ActionReport result = new ActionReport();
 		
 		logger.info(agent.name + " builds a hut.");
-		this.island.hasHut = true;
+		this.island.buildHut();
 		
 		result.success = true;
 		
@@ -332,8 +341,8 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	 * Destroys the hut and removes the percept of a hut for all agents on the island
 	 */
 	public void destroyHut() {
-		if(this.island.hasHut) {
-			this.island.hasHut = false;
+		if(this.island.hasHut()) {
+			this.island.destroyHut();
 			// this is agent independent -> all agents on the island loose the percept
 			this.environment.removePercept(this.island, Literal.parseLiteral("exists(hut)"));
 		}
@@ -405,11 +414,45 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	
 	public static class Island extends Location {
 
-		public boolean hasHut;
+		//public boolean hasHut;
 		public boolean isBurning;
+		private Hut hut;
 		
 		public Island() {
 			super("lonely island");
+			this.isBurning = false;
+			this.hut = null;
+		}
+		
+		/**
+		 * The sub location hut can be added dynamically during the execution
+		 */
+		public void buildHut() {
+			this.hut = new Hut();
+			this.addSublocation(hut);
+		}
+		
+		public void destroyHut() {
+			this.destroySublocation(this.hut);
+			this.hut = null;
+			// TODO das ist ja eigentlich doof mit der lokalen variable noch.
+			// Ich brauche sie eigentlich nur, weil ich sonst nicht nach der Hut suchen
+			// kann später -> aber wenn ich das über den namen machen klönnte, wäre das
+			// natürlich super
+			// Dafür die Überlegung, ob man den Hut-namen einigermaßen global speichert
+			// z.B. in Island -> oder Hut, die kann ich ja von hier aus aufrufen! Hut.getName oder so!
+		}
+		
+		public boolean hasHut() {
+			return hasSublocation(hut);
+		}
+		
+		private class Hut extends Location {
+
+			public Hut() {
+				super("cozy hut");
+			}
+			
 		}
 
 	}

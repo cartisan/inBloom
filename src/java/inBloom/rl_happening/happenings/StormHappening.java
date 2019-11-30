@@ -27,7 +27,7 @@ public class StormHappening extends ConditionalHappening<IslandModel>{
 	protected boolean hasEffect(IslandModel model, Character chara) {
 		// The Happening has (different) effects when the agent is on the ship
 		// or there exists a hut on the island.
-		return chara.location.equals(model.ship) || model.hasHut;
+		return chara.location.equals(model.ship) || model.island.hasHut();
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class StormHappening extends ConditionalHappening<IslandModel>{
 		}
 
 		// Destroy Hut
-		if(model.hasHut) {
+		if(model.island.hasHut()) {
 			// TODO hasHut als Unterlocation -> gibt es ein Location exists (!=null)
 			model.destroyHut();
 			model.getLogger().info("The hut was destroyed.");
