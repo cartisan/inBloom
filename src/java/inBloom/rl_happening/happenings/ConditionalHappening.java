@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 
 import inBloom.PlotModel;
 import inBloom.helper.PerceptAnnotation;
+import inBloom.rl_happening.Action;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;
 
@@ -15,7 +16,7 @@ import inBloom.storyworld.Happening;
  * 
  * @author Julia Wippermann
  */
-public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happening<T> {
+public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happening<T> implements Action {
 	
 	/**
 	 * Constructor with trigger, patient and causal property. Creates a percept "happening" for the patient.

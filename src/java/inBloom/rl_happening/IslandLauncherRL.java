@@ -20,9 +20,9 @@ import jason.infra.centralised.BaseCentralisedMAS;
  * @version 20.11.19
  *
  */
-public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel> {
+public class IslandLauncherRL extends PlotLauncher<IslandEnvironment, IslandModel> {
 
-	public IslandLauncher() {
+	public IslandLauncherRL() {
 		ENV_CLASS = IslandEnvironment.class;
 		PlotControlsLauncher.runner = this;
 		BaseCentralisedMAS.runner = this;
@@ -31,7 +31,7 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 	public static void main(String[] args) throws JasonException {		
 		logger.info("Starting up from Launcher");
 		
-		PlotControlsLauncher.runner = new IslandLauncher();
+		PlotControlsLauncher.runner = new IslandLauncherRL();
 		
 		LauncherAgent robinson = new LauncherAgent("robinson",
 				new Personality(1, 0, 0.5, -0.5, 0));
@@ -42,7 +42,7 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		// x time steps, need to be implemented in hasEffect() of the relevant Happening
 		
 		// Initialise MAS with a scheduled happening director
-		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
+		AutomatedHappeningDirector<IslandModel> hapDir = new AutomatedHappeningDirector<IslandModel>();
 		
 		StormHappening shipWrecked = new StormHappening(
 				// wenn du das Model model bekommst, mache dies damit
@@ -151,14 +151,14 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		);
 		
 				
-		hapDir.scheduleHappening(shipWrecked);
-		hapDir.scheduleHappening(foodStolen);
-		hapDir.scheduleHappening(foodPoisoning);
-		hapDir.scheduleHappening(friendIsEaten);
-		hapDir.scheduleHappening(hutDestroyed);
-		hapDir.scheduleHappening(homesick);
-		hapDir.scheduleHappening(fire);
-		hapDir.scheduleHappening(shipRescue);
+		hapDir.addHappening(shipWrecked);
+		hapDir.addHappening(foodStolen);
+		hapDir.addHappening(foodPoisoning);
+		hapDir.addHappening(friendIsEaten);
+		hapDir.addHappening(hutDestroyed);
+		hapDir.addHappening(homesick);
+		hapDir.addHappening(fire);
+		hapDir.addHappening(shipRescue);
 		
 		IslandModel model = new IslandModel(agents, hapDir);
 		
