@@ -53,7 +53,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	public HappeningDirector happeningDirector = null;
 	public EnvType environment = null;
 	public MoodMapper moodMapper = null;
-
+	
 	/** Stores values of model fields (including locations etc.), so that after each action we can check if storyworld changed. <br>
 	 *  <b>mapping:</b>  (field, instance of field) --> old field value */
 	private Table<Field, Object, Object> fieldValueStore;
@@ -303,5 +303,35 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 
 	public int getStep() {
 		return this.environment.getStep();
+	}
+	
+	public int getState() {
+		
+		// if I want to calculate the model state using hashValues, I right now assume that
+		// the hashValues of the same Objects, initialised in two different runs, will return
+		// the same hashValues
+		
+		// which they are not -> see CurrentModelState.createCharacter
+		
+		int hashValue = 0;
+		
+		for(Character character: characters.values()) {
+			hashValue += character.hashCode();
+			hashValue += character.location.hashCode();
+			Object[] items = character.inventory.toArray();
+			for(Object item: items) {
+				hashValue += item.hashCode();
+			}
+			Map<Long, List<Mood>> myMoods = this.moodMapper.getMoodByAgent(character.name);
+			Collection<List<Mood>> moodCollection = myMoods.values();
+			for(List<Mood> currentMood: moodCollection) {
+				for(Mood mood: currentMood) {
+					hashValue += (mood.hashCode()*currentMood.hashCode());
+				}
+			}
+
+		}
+		
+		return hashValue;
 	}
 }

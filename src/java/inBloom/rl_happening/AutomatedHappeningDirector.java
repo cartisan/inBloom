@@ -35,6 +35,8 @@ public class AutomatedHappeningDirector<T extends PlotModel<?>> implements Happe
 		this.allHappenings = new LinkedList<Happening<?>>();
 		this.allHappenings.add(null); // TODO necessary
 		
+		this.policy = new HashMap<Integer,Happening<T>>();
+		
 		//this.allActions.add(new EmptyHappening());
 	}
 	
