@@ -59,7 +59,6 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		changeAllValues(this.hunger, 0);
 		
 		this.isOnCruise = false;
-		logger.info("I set change hut to false.");		
 		
 		this.addLocation(this.civilizedWorld);
 		this.addLocation(this.ship);
@@ -78,6 +77,8 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	
 		this.isOnCruise = true;
 		logger.info(agent.name + " went on a cruise.");
+		
+		logger.info("His identification is: " + agent.toString());
 		
 		agent.goTo(this.ship);
 		logger.info(agent.name + " is on ship " + this.ship.name);
@@ -186,7 +187,9 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 			result.addPerception(agent.name, new PerceptAnnotation("relief"));
 
 			// if agent was sick, then now he isn't anymore
-			agent.heal();
+			if(agent.isSick) {
+				agent.heal();
+			}
 			
 			this.environment.removePercept(agent.name, Literal.parseLiteral("sick"));
 
