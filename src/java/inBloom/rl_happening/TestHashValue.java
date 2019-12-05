@@ -74,15 +74,21 @@ public class TestHashValue {
 	
 	private static Character createCharacter() {
 		Character nob = new Character();
+		System.out.println("Character nob toString(): " + nob);
 		System.out.println("nob: " + nob.hashCode());
 		return nob;
 	}
 	
 	private static String createString() {
 		String nob = "lolliepop";
+		String kop = "lolliepop";
 		String lob = "mockipop";
-		System.out.println("lolliepop: " + nob.hashCode());
-		System.out.println("mockipop : " + lob.hashCode());
+		System.out.println("lollienoopop: " + nob.hashCode());
+		System.out.println("lolliekeypop: " + kop.hashCode());
+		System.out.println("mockipop    : " + lob.hashCode());
+		
+		// the two Strings with same content return same hashCode despite being different Objects
+		// the two Strings with different content return different hashCode (probably)
 		return nob;
 	}
 	

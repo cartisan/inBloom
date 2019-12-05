@@ -3,6 +3,7 @@
  */
 package inBloom.rl_happening;
 
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 import inBloom.ActionReport;
@@ -20,6 +21,8 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 	
 	static Logger logger = Logger.getLogger(IslandEnvironment.class.getName());
 	private int currentStep = 0;
+	
+	private HashMap<Integer, Integer> hashCodes = new HashMap<Integer, Integer>();
 	
 	// updateStatePercepts? -> gibt es in FarmEnvironment nicht mehr
 	// stattdessen initialize?
@@ -88,6 +91,16 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 				getModel().increaseHunger(agent);
 			}
 		}
+		
+		this.hashCodes.put(this.currentStep, this.model.getState());
+		
+		if(this.currentStep==35) {
+			for(Integer i: this.hashCodes.keySet()) {
+				System.out.println("Step " + i + ": " + this.hashCodes.get(i));
+			}
+		}
+		
+		System.out.println("\n--------------------------- STEP " + this.currentStep + " ---------------------------");
 	}
 	
 }

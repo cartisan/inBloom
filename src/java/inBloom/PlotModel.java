@@ -15,6 +15,7 @@ import jason.asSemantics.Mood;
 import jason.util.Pair;
 
 import inBloom.helper.MoodMapper;
+import inBloom.rl_happening.IslandModel;
 import inBloom.stories.little_red_hen.RedHenLauncher;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;
@@ -307,20 +308,21 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	
 	public int getState() {
 		
-		// if I want to calculate the model state using hashValues, I right now assume that
-		// the hashValues of the same Objects, initialised in two different runs, will return
+		// the hashValues of the same String, initialised in two different runs, will return
 		// the same hashValues
 		
-		// which they are not -> see CurrentModelState.createCharacter
+		// the hashValues of the same Object, initialised in two different runs however, will
+		// not return the same hashValues -> see CurrentModelState.createCharacter
 		
 		int hashValue = 0;
 		
 		for(Character character: characters.values()) {
-			hashValue += character.hashCode();
-			hashValue += character.location.hashCode();
+
+			hashValue += character.toString().hashCode(); // what if multiple characters have the same name?
+			hashValue += character.location.toString().hashCode(); // -""-
 			Object[] items = character.inventory.toArray();
 			for(Object item: items) {
-				hashValue += item.hashCode();
+				hashValue += item.toString().hashCode();
 			}
 			Map<Long, List<Mood>> myMoods = this.moodMapper.getMoodByAgent(character.name);
 			Collection<List<Mood>> moodCollection = myMoods.values();
@@ -328,6 +330,21 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 				for(Mood mood: currentMood) {
 					hashValue += (mood.hashCode()*currentMood.hashCode());
 				}
+			}
+
+		}
+		
+		Field[] fields = this.getClass().getDeclaredFields();
+		for(Field field: fields) {
+
+			// yes, the hashMap's hashCodes change when the value inside (f.e. hunger) is changed
+			try {
+				// System.out.println(field.getName() + "= " + field.get(this));
+				// System.out.println("my value: " + field.get(this).toString().hashCode());
+				hashValue += field.getName().toString().hashCode();
+				hashValue += field.get(this).toString().hashCode();
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				e.printStackTrace();
 			}
 
 		}

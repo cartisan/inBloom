@@ -1,5 +1,6 @@
 package inBloom.rl_happening;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -77,9 +78,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	
 		this.isOnCruise = true;
 		logger.info(agent.name + " went on a cruise.");
-		
-		logger.info("His identification is: " + agent.toString());
-		
+				
 		agent.goTo(this.ship);
 		logger.info(agent.name + " is on ship " + this.ship.name);
 		
