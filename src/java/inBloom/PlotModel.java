@@ -305,25 +305,27 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	public int getStep() {
 		return this.environment.getStep();
 	}
-	
+
 	public int getState() {
-		
+
 		// the hashValues of the same String, initialised in two different runs, will return
 		// the same hashValues
-		
+
 		// the hashValues of the same Object, initialised in two different runs however, will
 		// not return the same hashValues -> see CurrentModelState.createCharacter
-		
+
 		int hashValue = 0;
-		
+
 		for(Character character: characters.values()) {
 
 			hashValue += character.toString().hashCode(); // what if multiple characters have the same name?
 			hashValue += character.location.toString().hashCode(); // -""-
+			
 			Object[] items = character.inventory.toArray();
 			for(Object item: items) {
 				hashValue += item.toString().hashCode();
 			}
+			
 			Map<Long, List<Mood>> myMoods = this.moodMapper.getMoodByAgent(character.name);
 			Collection<List<Mood>> moodCollection = myMoods.values();
 			for(List<Mood> currentMood: moodCollection) {
@@ -333,7 +335,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 			}
 
 		}
-		
+
 		Field[] fields = this.getClass().getDeclaredFields();
 		for(Field field: fields) {
 
@@ -348,7 +350,64 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 			}
 
 		}
-		
+
 		return hashValue;
 	}
+
+	public HashMap<String, Integer> getDetailedState() {
+		
+		long startTime = System.nanoTime();
+		
+		HashMap<String, Integer> detailedValues = new HashMap<String, Integer>();
+
+		// the hashValues of the same String, initialised in two different runs, will return
+		// the same hashValues
+
+		// the hashValues of the same Object, initialised in two different runs however, will
+		// not return the same hashValues -> see CurrentModelState.createCharacter
+
+		for(Character character: characters.values()) {
+
+			detailedValues.put("Character name", character.toString().hashCode()); // what if multiple characters have the same name?
+			detailedValues.put("Character location", character.location.toString().hashCode()); // -""-
+			
+			Object[] items = character.inventory.toArray();
+			for(Object item: items) {
+				detailedValues.put("Inventory item", item.toString().hashCode());
+			}
+			
+			Map<Long, List<Mood>> myMoods = this.moodMapper.getMoodByAgent(character.name);
+			Collection<List<Mood>> moodCollection = myMoods.values();
+			for(List<Mood> currentMood: moodCollection) {
+				for(Mood mood: currentMood) {
+					detailedValues.put("Mood", (mood.hashCode()*currentMood.hashCode()));
+				}
+			}
+
+		}
+
+		Field[] fields = this.getClass().getDeclaredFields();
+		for(Field field: fields) {
+
+			// yes, the hashMap's hashCodes change when the value inside (f.e. hunger) is changed
+			try {
+				// System.out.println(field.getName() + "= " + field.get(this));
+				// System.out.println("my value: " + field.get(this).toString().hashCode());
+				detailedValues.put("Field name", field.getName().toString().hashCode());
+				detailedValues.put("Field value", field.get(this).toString().hashCode());
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
+
+		}
+		
+		long endTime = System.nanoTime();
+		
+		float timeSpentMilliSeconds = (endTime - startTime) / 1000000;
+		
+		System.out.println("Time needed: " + timeSpentMilliSeconds);
+
+		return detailedValues;
+	}
+
 }

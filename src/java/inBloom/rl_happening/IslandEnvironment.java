@@ -23,6 +23,7 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 	private int currentStep = 0;
 	
 	private HashMap<Integer, Integer> hashCodes = new HashMap<Integer, Integer>();
+	private HashMap<Integer, HashMap<String, Integer>> detailedHashCodes = new HashMap<Integer, HashMap<String, Integer>>();
 	
 	// updateStatePercepts? -> gibt es in FarmEnvironment nicht mehr
 	// stattdessen initialize?
@@ -76,31 +77,74 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 		return result;
 	}
 	
+	protected synchronized void stepStarted(int step) {
+		super.stepStarted(step);
+		printStateValue();
+	}
+	
 	@Override
 	protected void stepFinished(int step, long elapsedTime, boolean byTimeout) {
 		super.stepFinished(step, elapsedTime, byTimeout);
 		
+		increaseHunger();
+		
+		//printStateValue();
+		
+		//printDetailedStateValue();
+		
+		System.out.println("\n--------------------------- STEP " + this.currentStep + " ---------------------------");
+	}
+	
+	private void increaseHunger() {
 		// Only increase hunger if the simulation has started and a new time step has started
 		if(getModel() != null && currentStep != this.step) {
-			
+
 			// to make sure we don't increase mutliple times in 1 time step
 			currentStep = this.step;
-			
+
 			// for each agent hunger is increased
 			for(Character agent: this.getModel().getCharacters()) {
 				getModel().increaseHunger(agent);
 			}
 		}
+	}
+
+	private void printStateValue() {
+		if(this.hashCodes == null || model == null) {
+			return;
+		}
+		
 		
 		this.hashCodes.put(this.currentStep, this.model.getState());
 		
-		if(this.currentStep==35) {
+		if(this.currentStep==34) {
 			for(Integer i: this.hashCodes.keySet()) {
 				System.out.println("Step " + i + ": " + this.hashCodes.get(i));
 			}
 		}
 		
-		System.out.println("\n--------------------------- STEP " + this.currentStep + " ---------------------------");
+	}
+	
+	private void printDetailedStateValue() {
+		if(this.detailedHashCodes == null || model == null) {
+			return;
+		}
+		
+		this.detailedHashCodes.put(this.currentStep, this.model.getDetailedState());
+
+		if(this.currentStep==35) {
+			for(Integer i: this.detailedHashCodes.keySet()) {
+
+				//System.out.println("Step " + i);
+
+				HashMap<String, Integer> currentValues = this.detailedHashCodes.get(i);
+
+				for(String feature: currentValues.keySet()) {
+					System.out.println("Step " + i + ": " + feature + ": " + this.detailedHashCodes.get(i));
+				}
+
+			}
+		}
 	}
 	
 }
