@@ -368,8 +368,8 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 
 		for(Character character: characters.values()) {
 
-			detailedValues.put("Character name", character.toString().hashCode()); // what if multiple characters have the same name?
-			detailedValues.put("Character location", character.location.toString().hashCode()); // -""-
+			detailedValues.put("Character", character.toString().hashCode()); // what if multiple characters have the same name?
+			detailedValues.put("Location", character.location.toString().hashCode()); // -""-
 			
 			Object[] items = character.inventory.toArray();
 			for(Object item: items) {
@@ -393,8 +393,8 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 			try {
 				// System.out.println(field.getName() + "= " + field.get(this));
 				// System.out.println("my value: " + field.get(this).toString().hashCode());
-				detailedValues.put("Field name", field.getName().toString().hashCode());
-				detailedValues.put("Field value", field.get(this).toString().hashCode());
+				detailedValues.put("FName", field.getName().toString().hashCode());
+				detailedValues.put("FValue", field.get(this).toString().hashCode());
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			}

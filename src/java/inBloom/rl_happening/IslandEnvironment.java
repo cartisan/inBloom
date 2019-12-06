@@ -79,7 +79,7 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 	
 	protected synchronized void stepStarted(int step) {
 		super.stepStarted(step);
-		printStateValue();
+		printDetailedStateValue();
 	}
 	
 	@Override
@@ -132,7 +132,7 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 		
 		this.detailedHashCodes.put(this.currentStep, this.model.getDetailedState());
 
-		if(this.currentStep==35) {
+		if(this.currentStep==34) {
 			for(Integer i: this.detailedHashCodes.keySet()) {
 
 				//System.out.println("Step " + i);
@@ -140,7 +140,10 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 				HashMap<String, Integer> currentValues = this.detailedHashCodes.get(i);
 
 				for(String feature: currentValues.keySet()) {
-					System.out.println("Step " + i + ": " + feature + ": " + this.detailedHashCodes.get(i));
+					// System.out.println("Step " + i + ": " + feature + ": " + this.detailedHashCodes.get(i));
+					if(feature.equals("Mood")) {
+					System.out.println("Step " + i + ": " + feature + ": " + currentValues.get(feature));
+					}
 				}
 
 			}
