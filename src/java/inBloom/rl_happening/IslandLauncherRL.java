@@ -28,7 +28,7 @@ public class IslandLauncherRL extends PlotLauncher<IslandEnvironment, IslandMode
 		BaseCentralisedMAS.runner = this;
 	}
 	
-	public static void main(String[] args) throws JasonException {		
+	public static void executeRun(String[] args) throws JasonException {		
 		logger.info("Starting up from Launcher");
 		
 		PlotControlsLauncher.runner = new IslandLauncherRL();
@@ -42,7 +42,7 @@ public class IslandLauncherRL extends PlotLauncher<IslandEnvironment, IslandMode
 		// x time steps, need to be implemented in hasEffect() of the relevant Happening
 		
 		// Initialise MAS with a scheduled happening director
-		AutomatedHappeningDirector<IslandModel> hapDir = new AutomatedHappeningDirector<IslandModel>();
+		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 		
 		StormHappening shipWrecked = new StormHappening(
 				// wenn du das Model model bekommst, mache dies damit
@@ -151,14 +151,14 @@ public class IslandLauncherRL extends PlotLauncher<IslandEnvironment, IslandMode
 		);
 		
 				
-		hapDir.addHappening(shipWrecked);
-		hapDir.addHappening(foodStolen);
-		hapDir.addHappening(foodPoisoning);
-		hapDir.addHappening(friendIsEaten);
-		hapDir.addHappening(hutDestroyed);
-		hapDir.addHappening(homesick);
-		hapDir.addHappening(fire);
-		hapDir.addHappening(shipRescue);
+		hapDir.scheduleHappening(shipWrecked);
+		hapDir.scheduleHappening(foodStolen);
+		hapDir.scheduleHappening(foodPoisoning);
+		hapDir.scheduleHappening(friendIsEaten);
+		hapDir.scheduleHappening(hutDestroyed);
+		hapDir.scheduleHappening(homesick);
+		hapDir.scheduleHappening(fire);
+		hapDir.scheduleHappening(shipRescue);
 		
 		IslandModel model = new IslandModel(agents, hapDir);
 		

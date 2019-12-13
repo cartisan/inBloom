@@ -378,7 +378,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
 	@Override
 	protected synchronized void stepStarted(int step) {
-		System.out.println("\n--------------------------- STEP " + (step-1) + " ---------------------------");
+		System.out.println("\n--------------------------- STEP " + (step) + " ---------------------------");
 		if (this.step > 0) {
 			this.step++;
 

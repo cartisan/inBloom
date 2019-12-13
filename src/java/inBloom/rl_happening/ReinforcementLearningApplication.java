@@ -15,30 +15,37 @@ import jason.JasonException;
  */
 public class ReinforcementLearningApplication {
 
-	private PlotLauncher<?,?> launcher;
-	private PlotModel<?> model;
+	/*private PlotLauncher<?,?> launcher;
+	private PlotModel<?> model;*/
+	
+	
 	//private HashMap<State, Action> policy; // TODO how to model state
 	// could the PlotModel implement a getCurrentState? That'd be nice
 	
-	public ReinforcementLearningApplication(PlotLauncher<?,?> launcher) {
+	/*public ReinforcementLearningApplication(PlotLauncher<?,?> launcher) {
 		this.launcher = launcher;
 		this.model = launcher.getUserModel();
-	}
+	}*/
 	
-	public void policy() {
+	public static void policy() {
 		
 	}
 	
-	private String getCurrentModelState(PlotModel model, int step) {
+	private static String getCurrentModelState(PlotModel model, int step) {
 		return "";
 	}
 	
-	private void tryRun(String[] args) {
-		try {
-			launcher.main(args);
-		} catch (JasonException e) {
-			e.printStackTrace();
-		}
+	public static void main(String[] args) throws JasonException {
+		IslandLauncherRL launcher = new IslandLauncherRL();
+		System.out.println("Run startun.");
+		launcher.executeRun(args);
+		System.out.println("Run dun.");
+		IslandEnvironment env = launcher.getUserEnvironment();
+		System.out.println("Environment:" + env.toString());
+		
+		//IslandLauncherRL.executeRun(args);
+		//IslandLauncherRL
+
 	}
 	
 }
