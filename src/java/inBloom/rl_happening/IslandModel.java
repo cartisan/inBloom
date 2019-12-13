@@ -1,8 +1,6 @@
 package inBloom.rl_happening;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 import inBloom.ActionReport;
@@ -13,6 +11,7 @@ import inBloom.helper.PerceptAnnotation;
 import inBloom.storyworld.HappeningDirector;
 import inBloom.storyworld.Item;
 import inBloom.storyworld.Location;
+import inBloom.storyworld.ModelState;
 import jason.asSyntax.Literal;
 import inBloom.storyworld.Character;
 
@@ -31,7 +30,10 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	public HashMap<Character, Integer> friends;
 	// Each agent has a hunger value
 	public HashMap<Character, Integer> hunger;
+	@ModelState
 	public boolean isOnCruise;
+	
+	// TODO alles als @ModelState annotieren, was relevant ist für den current State des Models
 	
 	
 	/**
@@ -84,6 +86,8 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		
 		result.addPerception(agent.name, new PerceptAnnotation("hope"));
 		result.success = true;
+		
+		this.getState();
 		
 		return result;
 	}

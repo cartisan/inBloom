@@ -88,6 +88,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 
 	public void setUpFieldTracking(Object obj) {
         try {
+        	// TODO hier sehen wir, wie wir Annotation @ModelState prüfen
 			for (Field f: obj.getClass().getDeclaredFields()) {
 				if (!f.isAnnotationPresent(ModelState.class)) {
 	        		continue;
@@ -308,106 +309,149 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 
 	public int getState() {
 
-		// the hashValues of the same String, initialised in two different runs, will return
-		// the same hashValues
+		/* STRING HASHVALUES
+		 * 
+		 * The hashValues of the same String, initialised in two different runs, will return
+		 * the same hashValues
+		 * 
+		 * The hashValues of the same Object, initialised in two different runs however, will
+		 * not return the same hashValues -> see CurrentModelState.createCharacter
+		 */
+		int stateValue = 0;
 
-		// the hashValues of the same Object, initialised in two different runs however, will
-		// not return the same hashValues -> see CurrentModelState.createCharacter
+		
+		/*
+		 * 1. MODEL SPECIFIC FIELDS
+		 */
+		Field[] fields = this.getClass().getDeclaredFields();
+		for(Field field: fields) {
 
-		int hashValue = 0;
-
-		for(Character character: characters.values()) {
-
-			hashValue += character.toString().hashCode(); // what if multiple characters have the same name?
-			hashValue += character.location.toString().hashCode(); // -""-
-			
-			Object[] items = character.inventory.toArray();
-			for(Object item: items) {
-				hashValue += item.toString().hashCode();
-			}
-			
-			Map<Long, List<Mood>> myMoods = this.moodMapper.getMoodByAgent(character.name);
-			Collection<List<Mood>> moodCollection = myMoods.values();
-			for(List<Mood> currentMood: moodCollection) {
-				for(Mood mood: currentMood) {
-					hashValue += (mood.hashCode()*currentMood.hashCode());
+			/*
+			 * The HashMap's hashCodes change when the value inside (f.e. hunger) is changed
+			 */
+			if(field.isAnnotationPresent(ModelState.class)) {
+				try {
+					int fieldCode = field.getName().toString().hashCode();
+					stateValue += fieldCode;
+					stateValue += (fieldCode * field.get(this).toString().hashCode());
+				} catch (IllegalArgumentException | IllegalAccessException e) {
+					e.printStackTrace();
 				}
 			}
 
 		}
-
-		Field[] fields = this.getClass().getDeclaredFields();
-		for(Field field: fields) {
-
-			// yes, the hashMap's hashCodes change when the value inside (f.e. hunger) is changed
-			try {
-				// System.out.println(field.getName() + "= " + field.get(this));
-				// System.out.println("my value: " + field.get(this).toString().hashCode());
-				hashValue += field.getName().toString().hashCode();
-				hashValue += field.get(this).toString().hashCode();
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				e.printStackTrace();
+		
+		
+		/*
+		 * 2. CHARACTER SPECIFIC VALUES
+		 */
+		for(Character character: characters.values()) {
+			
+			/* MULTIPLY WITH CHARACTER CODE
+			 * 
+			 * To create different, unique values for the Locations/Moods, when two characters might
+			 * be in the same Location / Mood and therefore would have the add the same values here
+			 * without multiplication
+			 */
+			int characterCode = character.toString().hashCode();
+			
+			stateValue += characterCode; 													// what if multiple characters have the same name?
+			stateValue += (characterCode * character.location.toString().hashCode());  		// -""-
+			stateValue += (characterCode * character.getMood().getFullName().hashCode());
+			
+			Object[] items = character.inventory.toArray();
+			for(Object item: items) {
+				stateValue += (characterCode * item.toString().hashCode());
 			}
 
 		}
-
-		return hashValue;
+		
+		return stateValue;
 	}
 
-	public HashMap<String, Integer> getDetailedState() {
-		
-		long startTime = System.nanoTime();
-		
-		HashMap<String, Integer> detailedValues = new HashMap<String, Integer>();
+	public HashMap<String, Object> getDetailedState() {
+				
+		HashMap<String, Object> detailedValues = new HashMap<String, Object>();
 
-		// the hashValues of the same String, initialised in two different runs, will return
-		// the same hashValues
-
-		// the hashValues of the same Object, initialised in two different runs however, will
-		// not return the same hashValues -> see CurrentModelState.createCharacter
+		/* STRING HASHVALUES
+		 * 
+		 * The hashValues of the same String, initialised in two different runs, will return
+		 * the same hashValues
+		 * 
+		 * The hashValues of the same Object, initialised in two different runs however, will
+		 * not return the same hashValues -> see CurrentModelState.createCharacter*/
 
 		for(Character character: characters.values()) {
+			
+			//TODO hierüber
+			character.getMood().getFullName().hashCode();
 
-			detailedValues.put("Character", character.toString().hashCode()); // what if multiple characters have the same name?
-			detailedValues.put("Location", character.location.toString().hashCode()); // -""-
+			//detailedValues.put("Character", character.toString().hashCode()); // what if multiple characters have the same name?
+			//detailedValues.put("Location", character.location.toString().hashCode()); // -""-
 			
 			Object[] items = character.inventory.toArray();
 			for(Object item: items) {
-				detailedValues.put("Inventory item", item.toString().hashCode());
+				//detailedValues.put("Inventory item", item.toString().hashCode());
 			}
 			
-			Map<Long, List<Mood>> myMoods = this.moodMapper.getMoodByAgent(character.name);
+			character.getMood().getFullName().hashCode();
+			
+			/**Map<Long, List<Mood>> myMoods = this.moodMapper.getMoodByAgent(character.name);
+			Collection<List<Mood>> moodCollection = myMoods.values();*/
+			
+			/**Table<String, Long, List<Mood>> allMyMoods = this.moodMapper.getTimedMoodMap();
+			Map<Long, List<Mood>> myMoods = allMyMoods.row(character.name);
 			Collection<List<Mood>> moodCollection = myMoods.values();
+			
+			// für jeden Long (TimeSomething?) gibt es eine eigene Mood
 			for(List<Mood> currentMood: moodCollection) {
+				//System.out.println("List<Mood> currentMood:     " + currentMood);
+				//System.out.println("List<Mood> currentMood hash:" + currentMood.toString().hashCode());
+				//detailedValues.put("curM Name", currentMood);
+				//detailedValues.put("curM hash", currentMood.toString().hashCode());
 				for(Mood mood: currentMood) {
-					detailedValues.put("Mood", (mood.hashCode()*currentMood.hashCode()));
+					//System.out.println("Mood mood:                   " + mood);
+					//System.out.println("Mood mood hash:              " + mood.toString().hashCode());
+					detailedValues.put("mood Name", mood.getFullName());
+					detailedValues.put("mood hash", mood.getFullName().hashCode());
+					
+					
+					// multiply with character name instead
+					detailedValues.put("Mood", (mood.getFullName().hashCode()*character.name.hashCode()));
+					
+					//detailedValues.put("Mood", (mood.hashCode()*currentMood.hashCode()));
 				}
-			}
+			}*/
 
 		}
 
 		Field[] fields = this.getClass().getDeclaredFields();
 		for(Field field: fields) {
-
+			//TODO
+			//nur mit annotation @ModelState
+			
+			// es gibt auch private field in this class fieldValueStore, wo alle Fields drin sind
+			// Character, Location und alle mit @ModelState
+			
 			// yes, the hashMap's hashCodes change when the value inside (f.e. hunger) is changed
 			try {
-				// System.out.println(field.getName() + "= " + field.get(this));
-				// System.out.println("my value: " + field.get(this).toString().hashCode());
-				detailedValues.put("FName", field.getName().toString().hashCode());
-				detailedValues.put("FValue", field.get(this).toString().hashCode());
-			} catch (IllegalArgumentException | IllegalAccessException e) {
+				//detailedValues.put("FName", field.getName().toString().hashCode());
+				//detailedValues.put("FValue", field.get(this).toString().hashCode());
+			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
 			}
 
 		}
 		
-		long endTime = System.nanoTime();
-		
-		float timeSpentMilliSeconds = (endTime - startTime) / 1000000;
-		
-		System.out.println("Time needed: " + timeSpentMilliSeconds);
-
 		return detailedValues;
 	}
 
+	public void printField(Field field) {
+		try {
+			System.out.println(field.getName() + ": " + field.get(this));
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+
+	}
 }

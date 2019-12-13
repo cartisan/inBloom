@@ -61,7 +61,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	/** number of environment steps, before system automatically pauses; -1 to switch off */
 	public static Integer MAX_STEP_NUM = -1;
 	/** time in ms that {@link TimeSteppedEnvironment} affords agents to propose an action, before each step times out */
-	static final String STEP_TIMEOUT = "700";
+	static final String STEP_TIMEOUT = "300";
 
     /** Safes the time the plot has started to compute plot time, i.e. temporal duration of the plot so far. */
     private static Long startTime = 0L;
@@ -378,6 +378,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
 	@Override
 	protected synchronized void stepStarted(int step) {
+		System.out.println("\n--------------------------- STEP " + (step-1) + " ---------------------------");
 		if (this.step > 0) {
 			this.step++;
 

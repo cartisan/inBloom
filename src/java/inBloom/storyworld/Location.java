@@ -18,7 +18,7 @@ public class Location extends Existent {
 	private List<Character> characters = null;
 	@ModelState
 	private List<Item> items = null;
-	
+	@ModelState
 	private LinkedList<Location> sublocations;
 
 	protected PlotModel<?> model = null;
@@ -163,12 +163,9 @@ public class Location extends Existent {
 	 */
 	public void addSublocation(Location sublocation) {
 		this.sublocations.add(sublocation);
-		// TODO delete
-		System.out.println(sublocation.name + " has been added to " + this.name);
 	}
 	
 	public boolean destroySublocation(Location sublocation) {
-		System.out.println(sublocation.name + " is getting destroyed from " + this.name);
 		return this.sublocations.remove(sublocation);
 	}
 

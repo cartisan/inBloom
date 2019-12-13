@@ -30,6 +30,10 @@ public class MoodMapper {
 		return timeMoodMap;
 	}
 	
+	public Table<String, Long, List<Mood>> getTimedMoodMap() {
+		return this.timedMoodMap;
+	}
+	
 	/**
 	 * Needs to be called each time the agent's pleasure value changes, in order to make this change accessible for
 	 * later analysis, as e.g. by {@link inBloom.graph.MoodGraph}. 

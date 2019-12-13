@@ -23,10 +23,7 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 	private int currentStep = 0;
 	
 	private HashMap<Integer, Integer> hashCodes = new HashMap<Integer, Integer>();
-	private HashMap<Integer, HashMap<String, Integer>> detailedHashCodes = new HashMap<Integer, HashMap<String, Integer>>();
-	
-	// updateStatePercepts? -> gibt es in FarmEnvironment nicht mehr
-	// stattdessen initialize?
+	private HashMap<Integer, HashMap<String, Object>> detailedHashCodes = new HashMap<Integer, HashMap<String, Object>>();
 
 	protected ActionReport doExecuteAction(String agentName, Structure action) {
 		
@@ -79,7 +76,8 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 	
 	protected synchronized void stepStarted(int step) {
 		super.stepStarted(step);
-		printDetailedStateValue();
+		printStateValue();
+		//printStateValue();
 	}
 	
 	@Override
@@ -91,8 +89,6 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 		//printStateValue();
 		
 		//printDetailedStateValue();
-		
-		System.out.println("\n--------------------------- STEP " + this.currentStep + " ---------------------------");
 	}
 	
 	private void increaseHunger() {
@@ -110,16 +106,37 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 	}
 
 	private void printStateValue() {
-		if(this.hashCodes == null || model == null) {
+		/*if(this.hashCodes == null || model == null) {
+			return;
+		}*/
+		
+		if(this.hashCodes == null) {
+			System.out.println("hashCodes is null");
+			return;
+		}
+		
+		if(model == null) {
+			System.out.println("model is null");
 			return;
 		}
 		
 		
 		this.hashCodes.put(this.currentStep, this.model.getState());
+		System.out.println("I have added a value");
 		
 		if(this.currentStep==34) {
+			
 			for(Integer i: this.hashCodes.keySet()) {
-				System.out.println("Step " + i + ": " + this.hashCodes.get(i));
+				System.out.println("Step " + i + ": ");
+			}
+			
+			for(Integer i: this.hashCodes.keySet()) {
+				//System.out.println("Step " + i + ": " + this.hashCodes.get(i));
+				if(this.hashCodes.get(i) == null) {
+					System.out.println("0");
+				} else {
+					System.out.println(this.hashCodes.get(i));
+				}
 			}
 		}
 		
@@ -137,13 +154,13 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 
 				//System.out.println("Step " + i);
 
-				HashMap<String, Integer> currentValues = this.detailedHashCodes.get(i);
+				HashMap<String, Object> currentValues = this.detailedHashCodes.get(i);
 
 				for(String feature: currentValues.keySet()) {
 					// System.out.println("Step " + i + ": " + feature + ": " + this.detailedHashCodes.get(i));
-					if(feature.equals("Mood")) {
+					//if(feature.equals("Mood")) {
 					System.out.println("Step " + i + ": " + feature + ": " + currentValues.get(feature));
-					}
+					//}
 				}
 
 			}
