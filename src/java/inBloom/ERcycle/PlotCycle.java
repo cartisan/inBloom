@@ -266,6 +266,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 */
 	@Override
 	public void run() {
+		log("Start running");
 		ReflectResult rr = this.createInitialReflectResult();
 		EngageResult er = null;
 		
@@ -278,7 +279,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 				stories.add(er.getAuxiliaryGraph());
 			}
 			rr = this.reflect(er);
-		} 
+		}
 		this.finish(er);
 	}
 	
@@ -287,6 +288,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 * This is called after the last simulation was run.
 	 */
 	protected void finish(EngageResult er) {
+		log("FINISHING");
 	}
 	
 	/**
