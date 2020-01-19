@@ -126,6 +126,23 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      */
     private ConcurrentHashMap<String, HashMap<Structure, Intention>> actionIntentionMap = new ConcurrentHashMap<>();
 
+    
+    
+    /**
+     * Each state's value, needed to calculate the Reinforcement Learning algorithm
+     */
+     private HashMap<Integer, Integer> stateValues = new HashMap<Integer, Integer>();
+    /**
+     * Determines if the state values should be printed at the end of the run
+     */
+     private boolean printAllStateValuesAtEnd = true;
+     private boolean includeStepsInPrinting = false;
+     /**
+      * The current Environment step
+      */
+     public int currentStep = 0;
+    
+     
     /**
      * Counts plot steps, synchronously to {@link TimeSteppedEnvironment#step} but designating the step of the
      * first plotted intention as step 1. Should be preferred as step counter for all inBloom purposes.
@@ -398,6 +415,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 				this.getModel().moodMapper.startTimes.add(getPlotTimeNow());
 			}
 		}
+		
+		this.addStateValue();
 
 	}
 
@@ -728,4 +747,68 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 			actions.clear();
     	}
     }
+    
+    
+    
+    
+    /**
+     * METHODS TO DO STATE CALCULATIONS FOR REINFORCEMENT LEARNING
+     */
+    
+    private void addStateValue() {
+		
+		if(this.stateValues == null) {
+			System.out.println("hashCodes is null");
+			return;
+		}
+		
+		if(model == null) {
+			System.out.println("model is null");
+			return;
+		}
+		
+		// Add the current state value as calculated in PlotModel.getStateValue()
+		this.stateValues.put(this.currentStep, this.model.getStateValue());
+		
+		// If we reached the end of the story, we will stop and print our state values
+		// TODO not hard code the end
+		// CHECK outsource the printing
+		// TODO outsource these things in PlotEnvironment?
+		if(this.shouldPrintAllResults() && this.printAllStateValuesAtEnd) {
+			printAllStateValuesAndSteps();
+		}
+		
+	}
+    
+    /**
+     * Should be overriden by a subclass that intends to print all results at the end
+     * by defining when the story has ended (e.g. by a fixed number of time steps or similar)
+     * 
+     * @return	true
+     * 				if the plot is finished and all results should be printed now
+     * 			false
+     * 				if the plot is not finished yet and nothing should be printed
+     */
+    public boolean shouldPrintAllResults() {
+    	return false;
+    }
+    
+    private void printAllStateValuesAndSteps() {
+    	
+    	/* Print WITH steps in front of the value */
+    		for(Integer i: this.stateValues.keySet()) {
+
+    			if(this.includeStepsInPrinting) {
+    				System.out.print("Step " + i + ": ");
+    			}
+
+    			if(this.stateValues.get(i) == null) {
+    				System.out.println("0");
+    			} else {
+    				System.out.println(this.stateValues.get(i));
+    			}
+    		}
+    	
+    }
+    
 }

@@ -20,7 +20,9 @@ import jason.asSyntax.Structure;
 public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 	
 	static Logger logger = Logger.getLogger(IslandEnvironment.class.getName());
-	private int currentStep = 0;
+	//private int currentStep = 0;
+	
+	private boolean printAllStateValuesAtEnd = true;
 	
 	private HashMap<Integer, Integer> stateValues = new HashMap<Integer, Integer>();
 	//private HashMap<Integer, HashMap<String, Object>> detailedHashCodes = new HashMap<Integer, HashMap<String, Object>>();
@@ -88,58 +90,61 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 		}
 	}
 	
-	protected synchronized void stepStarted(int step) {
+	/*protected synchronized void stepStarted(int step) {
 		super.stepStarted(step);
 		addStateValue();
-	}
+	}*/
 	
 	@Override
 	protected void stepFinished(int step, long elapsedTime, boolean byTimeout) {
 		super.stepFinished(step, elapsedTime, byTimeout);
 		
 		increaseHunger();
-		
-		//printStateValue();
-		
-		//printDetailedStateValue();
 	}
 
-	private void addStateValue() {
-		/*if(this.hashCodes == null || model == null) {
-			return;
-		}*/
-		
-		if(this.stateValues == null) {
-			System.out.println("hashCodes is null");
-			return;
-		}
-		
-		if(model == null) {
-			System.out.println("model is null");
-			return;
-		}
-		
-		
-		this.stateValues.put(this.currentStep, this.model.getState());
-		System.out.println("I have added a value");
-		
-		if(this.currentStep==34) {
-			
-			for(Integer i: this.stateValues.keySet()) {
-				System.out.println("Step " + i + ": ");
-			}
-			
-			for(Integer i: this.stateValues.keySet()) {
-				//System.out.println("Step " + i + ": " + this.hashCodes.get(i));
-				if(this.stateValues.get(i) == null) {
-					System.out.println("0");
-				} else {
-					System.out.println(this.stateValues.get(i));
-				}
-			}
-		}
-		
+//	private void addStateValue() {
+//		
+//		if(this.stateValues == null) {
+//			System.out.println("hashCodes is null");
+//			return;
+//		}
+//		
+//		if(model == null) {
+//			System.out.println("model is null");
+//			return;
+//		}
+//		
+//		// Add the current state value as calculated in PlotModel.getStateValue()
+//		this.stateValues.put(this.currentStep, this.model.getStateValue());
+//		
+//		// If we reached the end of the story, we will stop and print our state values
+//		// TODO not hard code the end
+//		// CHECK outsource the printing
+//		// TODO outsource these things in PlotEnvironment?
+//		if(this.determineIfStoryHasEnded() && this.printAllStateValuesAtEnd) {
+//			printAllStateValues();
+//		}
+//		
+//	}
+	
+	public boolean shouldPrintAllResults() {
+		return this.currentStep==34;
 	}
+	
+//	private void printAllStateValues() {
+//		for(Integer i: this.stateValues.keySet()) {
+//			System.out.println("Step " + i + ": ");
+//		}
+//		
+//		for(Integer i: this.stateValues.keySet()) {
+//			//System.out.println("Step " + i + ": " + this.hashCodes.get(i));
+//			if(this.stateValues.get(i) == null) {
+//				System.out.println("0");
+//			} else {
+//				System.out.println(this.stateValues.get(i));
+//			}
+//		}
+//	}
 	
 	/*private void printDetailedStateValue() {
 		if(this.detailedHashCodes == null || model == null) {
