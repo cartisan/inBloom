@@ -15,7 +15,7 @@ import jason.asSemantics.Mood;
 import jason.util.Pair;
 
 import inBloom.helper.MoodMapper;
-import inBloom.rl_happening.IslandModel;
+import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.stories.little_red_hen.RedHenLauncher;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;

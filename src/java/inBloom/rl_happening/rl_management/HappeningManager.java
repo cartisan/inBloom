@@ -1,7 +1,7 @@
 /**
  * 
  */
-package inBloom.rl_happening;
+package inBloom.rl_happening.rl_management;
 
 import inBloom.rl_happening.happenings.FireHappening;
 import inBloom.rl_happening.happenings.FoodPoisoningHappening;
@@ -10,6 +10,7 @@ import inBloom.rl_happening.happenings.HomesickHappening;
 import inBloom.rl_happening.happenings.LooseFriendHappening;
 import inBloom.rl_happening.happenings.ShipRescueHappening;
 import inBloom.rl_happening.happenings.StormHappening;
+import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.storyworld.ScheduledHappeningDirector;
 
 /**

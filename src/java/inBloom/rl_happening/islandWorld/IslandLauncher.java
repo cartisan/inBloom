@@ -1,7 +1,7 @@
 /**
  * 
  */
-package inBloom.rl_happening;
+package inBloom.rl_happening.islandWorld;
 
 import com.google.common.collect.ImmutableList;
 

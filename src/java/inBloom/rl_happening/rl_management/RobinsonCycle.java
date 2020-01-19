@@ -1,7 +1,7 @@
 /**
  * 
  */
-package inBloom.rl_happening;
+package inBloom.rl_happening.rl_management;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +12,8 @@ import inBloom.LauncherAgent;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
 import inBloom.ERcycle.ReflectResult;
+import inBloom.rl_happening.islandWorld.IslandLauncher;
+import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.stories.little_red_hen.FarmModel;
 import inBloom.stories.little_red_hen.RedHenHappeningCycle;
 import inBloom.stories.little_red_hen.RedHenLauncher;

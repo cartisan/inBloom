@@ -1,7 +1,7 @@
 /**
  * 
  */
-package inBloom.rl_happening;
+package inBloom.rl_happening.rl_management;
 
 import java.util.List;
 

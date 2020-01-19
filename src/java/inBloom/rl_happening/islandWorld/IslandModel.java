@@ -1,4 +1,4 @@
-package inBloom.rl_happening;
+package inBloom.rl_happening.islandWorld;
 
 import java.util.HashMap;
 import java.util.List;

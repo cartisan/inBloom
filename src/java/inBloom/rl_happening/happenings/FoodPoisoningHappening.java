@@ -6,8 +6,8 @@ package inBloom.rl_happening.happenings;
 import java.util.function.Predicate;
 
 import inBloom.helper.PerceptAnnotation;
-import inBloom.rl_happening.IslandModel;
-import inBloom.rl_happening.IslandModel.Food;
+import inBloom.rl_happening.islandWorld.IslandModel;
+import inBloom.rl_happening.islandWorld.IslandModel.Food;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;
 
