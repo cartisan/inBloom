@@ -87,7 +87,7 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		result.addPerception(agent.name, new PerceptAnnotation("hope"));
 		result.success = true;
 		
-		this.getState();
+		this.getStateValue();
 		
 		return result;
 	}

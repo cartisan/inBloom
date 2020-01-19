@@ -307,7 +307,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		return this.environment.getStep();
 	}
 
-	public int getState() {
+	public int getStateValue() {
 
 		/* STRING HASHVALUES
 		 * 
