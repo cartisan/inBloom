@@ -40,10 +40,9 @@ public class AutomatedHappeningDirector<T extends PlotModel<?>> implements Happe
 		//this.allActions.add(new EmptyHappening());
 	}
 	
-	public void addHappening(Happening<T> happening) {
-		//this.allActions.add((Action)happening);
-		this.allHappenings.add(happening);
-	}
+	/**
+	 * IMPLEMENTED METHODS FROM INTERFACE
+	 */
 	
 	@Override
 	public List<Happening<?>> getTriggeredHappenings(int step) {
@@ -77,6 +76,15 @@ public class AutomatedHappeningDirector<T extends PlotModel<?>> implements Happe
 
 		clone.reset();
 		return clone;
+	}
+	
+	/**
+	 * NEW METHODS
+	 */
+	
+	public void addHappening(Happening<T> happening) {
+		//this.allActions.add((Action)happening);
+		this.allHappenings.add(happening);
 	}
 	
 	public void reset() {
