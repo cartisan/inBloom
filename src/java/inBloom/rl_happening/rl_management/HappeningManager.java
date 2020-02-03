@@ -3,6 +3,8 @@
  */
 package inBloom.rl_happening.rl_management;
 
+import java.util.LinkedList;
+
 import inBloom.rl_happening.happenings.FireHappening;
 import inBloom.rl_happening.happenings.FoodPoisoningHappening;
 import inBloom.rl_happening.happenings.FoodStolenHappening;
@@ -11,6 +13,7 @@ import inBloom.rl_happening.happenings.LooseFriendHappening;
 import inBloom.rl_happening.happenings.ShipRescueHappening;
 import inBloom.rl_happening.happenings.StormHappening;
 import inBloom.rl_happening.islandWorld.IslandModel;
+import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
 
 /**
@@ -19,6 +22,9 @@ import inBloom.storyworld.ScheduledHappeningDirector;
  *
  */
 public class HappeningManager {
+	
+	// TODO evtl. zu ConditionalHappening ändern
+	private static LinkedList<Happening> allHappenings;
 	
 	public static ScheduledHappeningDirector createHappeningDirector() {
 		return new ScheduledHappeningDirector();
@@ -141,6 +147,23 @@ public class HappeningManager {
 		hapDir.scheduleHappening(homesick);
 		hapDir.scheduleHappening(fire);
 		hapDir.scheduleHappening(shipRescue);
+		
+		allHappenings.add(shipWrecked);
+		allHappenings.add(foodStolen);
+		allHappenings.add(foodPoisoning);
+		allHappenings.add(friendIsEaten);
+		allHappenings.add(hutDestroyed);
+		allHappenings.add(homesick);
+		allHappenings.add(fire);
+		allHappenings.add(shipRescue);
+		
+	}
+	
+	// TODO Beware that allHappenings are only declared after scheduleHappenings has been called.
+	// This should be okay since scheduleHappenings should be called at the very beginning of each
+	// run, but I am not 100% sure.
+	public static LinkedList<Happening> getAllHappenings() {
+		return allHappenings;
 	}
 
 }

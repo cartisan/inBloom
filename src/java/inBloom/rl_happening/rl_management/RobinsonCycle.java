@@ -12,6 +12,8 @@ import inBloom.LauncherAgent;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
 import inBloom.ERcycle.ReflectResult;
+import inBloom.graph.PlotDirectedSparseGraph;
+import inBloom.helper.MoodMapper;
 import inBloom.rl_happening.islandWorld.IslandLauncher;
 import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.stories.little_red_hen.FarmModel;
@@ -22,7 +24,7 @@ import jason.asSemantics.Personality;
 
 /**
  * @author Julia Wippermann
- * @version 6.1.20
+ * @version 31.1.20
  *
  */
 public class RobinsonCycle extends ReinforcementLearningCycle {
@@ -38,12 +40,12 @@ public class RobinsonCycle extends ReinforcementLearningCycle {
 	 * @param agentSrc
 	 * 			The name of the asl document where the relevant agent is saved (without the .asl postfix)
 	 */
-	public RobinsonCycle(String agentSrc) {
-		super(agentSrc, agentNames, agentPersonalities);
+	public RobinsonCycle() {
+		super("islandAgent", agentNames, agentPersonalities);
 	}
 	
 	public static void main(String[] args) {
-		RobinsonCycle cycle = new RobinsonCycle("islandAgent");
+		RobinsonCycle cycle = new RobinsonCycle();
 		cycle.run();
 	}
 	
@@ -52,6 +54,9 @@ public class RobinsonCycle extends ReinforcementLearningCycle {
 		return new IslandLauncher();
 	}
 
+	// TODO possible problem: getPlotModel is also called in reflect and getPlotModel calls
+	// gethappeningDirector, which CREATES A NEW HappeningDirector and schedules all Happenings
+	// NEWLY
 	@Override
 	public PlotModel<?> getPlotModel(List<LauncherAgent> agents) {
 		// TODO change the ScheduledHappeningDirector into my own RL one :D

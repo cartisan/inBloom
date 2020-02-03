@@ -3,6 +3,7 @@
  */
 package inBloom.rl_happening.rl_management;
 
+import java.util.HashSet;
 import java.util.List;
 
 import inBloom.LauncherAgent;
@@ -18,10 +19,16 @@ import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
 import jason.asSemantics.Personality;
 
+// CC = CounterfactualityCycle
+// RHCC = RedHenCounterfactualityCycle
+// RLC = ReinforcementLearningCycle
+// RC = RobinsonCycle
+
 /**
- * Vergleiche CounterfactualityCycle -> ebenfalls die abstrakte Implementation von PlotCycle
- * Eine (die) konkrete Implementation von CounterfactualityCycle ist RedHenHappeningCycle, den
- * "kopiere" ich sozusagen in RobinsonCycle
+ * Vergleiche CounterfactualityCycle -> ebenfalls die abstrakte Implementation von PlotCycle,
+ * dessen konkrete Implementation in RedHenCounterfactualityCycle gegeben ist. In unserem
+ * Falle ist eine (die) konkrete Implementation von ReinforcementLearningCycle in
+ * RobinsonCycle gegeben
  * 
  * @author Julia Wippermann
  * @version 6.1.20
@@ -43,6 +50,18 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	 */
 	protected PlotLauncher<?,?> lastRunner;
 	
+	// Never used in RHCC - TO DELETE
+//	private PlotDirectedSparseGraph originalGraph; // TODO why needed? -> for Tellability or GUI or something? Analysing?
+	// This is actually called somewehere at some point (EngagementResult oder so, s. andere Klassen), aber ich weiß nciht,
+	// wie ich RC mit diesem Parameter im Konstruktor aufrufen kann (wo ich den herbekomme. RHCC hat nämlich einfach keine main mehr)
+//	private MoodMapper originalMood; // TODO why needed?
+	
+	// Never used in RHCC - TO DELETE
+	/**
+//	 * The set of domain-specific Happenings that can occur in one Cycle
+//	 */
+//	public HashSet<Class<?>> availableHappenings = new HashSet<>();
+	
 	
 
 	// TODO zusätzliche Parameter bei Sven (in CounterfactualityCycle)
@@ -63,7 +82,9 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		super(agentSource, true);
 		
 		this.agentNames = agentNames;
-		this.agentPersonalities = agentPersonalities;		
+		this.agentPersonalities = agentPersonalities;	
+//		this.originalGraph = originalGraph; // TODO why needed? -> for Tellability or GUI or something? Analysing?
+//		this.originalMood = originalMood; // TODO why needed?
 	}
 
 	@Override
@@ -73,11 +94,14 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		
 		
 		// TELLABILITY
-		/*Tellability tellability = er.getTellability();
+		
+		// 1. Get and compute the Tellability after this run
+		Tellability tellability = er.getTellability();
 		double currTellability = tellability.compute();
 		this.log(" Current Tellability: " + currTellability);
+		
 		// Save tellability, graph and agent's personality if it was better than the best before
-		if(currTellability > this.bestTellability) {
+		/*if(currTellability > this.bestTellability) {
 			this.bestTellability = currTellability;
 			this.log("New best Tellability: " + this.bestTellability);
 			this.bestPersonalities = this.lastPersonalities;
