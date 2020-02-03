@@ -24,7 +24,11 @@ public class SarsaLambda {
 	
 	//private List<Integer> weights;
 	private List<Integer> eligibilityTraces;
-	private HashMap<Feature, Integer> weights;
+	private HashMap<String, Integer> weights;
+	/* Rows: States (Integer)
+	 * Columns: Actions (Happenings)
+	 * Values: Q-Values (State-Action-Utility)*/
+	private HashBasedTable<Integer, Happening, Integer> qValues;
 	
 	private LinkedList<Happening> allHappenings;
 	
@@ -35,7 +39,7 @@ public class SarsaLambda {
 		// TODO possibel problem: allhappenings are onyl initialized after HappeningManager.scheduleHappenings has been called
 		// -> may change in the future since we won't really schedule Happenings anymore?
 		this.allHappenings = HappeningManager.getAllHappenings();
-		this.eligibilityTraces = new List<Integer>();
+		this.eligibilityTraces = new LinkedList<Integer>();
 		
 		this.initializeWeights(); // arbitrarily
 		this.initiailizeEligibilityTraces(); // with 0
