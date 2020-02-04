@@ -40,7 +40,7 @@ smelly(poo).
 +!take_day_off(X) <-
 	.print("That was exhausting! I'm taking ", X, " off to relax.");
 	+is_day_off(X);
-	.appraise_emotion(joy, "self", "is_day_off(X)[source(self)]").
+	.appraise_emotion(joy, "is_day_off(X)[source(self)]", "self").
 
 +is_holiday(X) <-
 	-is_day_off(X).
@@ -51,20 +51,20 @@ smelly(poo).
 
 -has(X) <-
 	if(is_important(X)) {
-		.appraise_emotion(distress, "self", "has(X)[source(percept)]", false);
+		.appraise_emotion(distress, "has(X)[source(percept)]", "self", true);
 		+self(has_purpose);
 	};
 	+lost(X).
 
 +has(X) : not lost(X) & is_important(X) <-
-	.appraise_emotion(pride, "self", "has(X)[source(percept)]").
+	.appraise_emotion(pride, "has(X)[source(percept)]", "self").
 
 +has(X) : lost(X) <-
-	.appraise_emotion(relief, "self", "has(X)[source(percept)]");
+	.appraise_emotion(relief, "has(X)[source(percept)]", "self");
 	.succeed_goal(find(X));
 	-self(has_purpose);
 	-lost(X);												  // creates termination edge to lost
-	.appraise_emotion(joy, "self", "lost(X)[source(self)]");  // artifice to create positive trade-off of second kind (see Wilke thesis pp. 19) 
+		.appraise_emotion(joy, "missing(X)[source(self)]", "self");   // artifice to create positive trade-off of second kind (see Wilke thesis pp. 19) 
 	+is_bad(lost(X)).
 	
 	

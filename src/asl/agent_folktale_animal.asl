@@ -21,28 +21,30 @@ wish(relax).
 @share_food_plan2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +has(X) : hungry & is_pleasant(eat(X)) & has(X) <- 			// still has X when event selected
 	-wish(has(X));
-//	.appraise_emotion(joy, _, "has(X)");
+	.appraise_emotion(joy, "has(X)");
 	?present(Anims);
 	+wish(share_food(X, Anims));
 	.resume(wish(relax)).
 
 +has(X) : hungry & is_pleasant(eat(X)) & has(X)  <-			// still has X when event selected 
 	-wish(has(X));
-//	.appraise_emotion(joy, _, "has(X)");
+	.appraise_emotion(joy, "has(X)");
 	+wish(eat(X));
 	.resume(wish(relax)).
+
+
 
 +see(Thing)[location(Loc), owner(Per)] : is_useful(Thing) <-   // crowfox
 	+at(Per,Loc);
 	+has(Per,Thing);
-	.appraise_emotion(hope, _, "see(Thing)");
+	.appraise_emotion(hope, "see(Thing)");
 	.suspend(wish(relax));
 	+wish(has(Thing)).
 	
 +see(Thing)[owner(Per)] : is_useful(Thing) <-   // crowfox
 	+has(Per,Thing);
 	.my_name(Name);
-	.appraise_emotion(hope, _, "see(Thing)");
+	.appraise_emotion(hope, "see(Thing)");
 	.suspend(wish(relax));
 	+wish(has(Thing)).
 
@@ -52,30 +54,31 @@ wish(relax).
 	.suspend(wish(relax));
 	+obligation(create(Y)).
 
-+is_dropped(Thing)[owner(Person)] : .my_name(Person) <-		//crowfox
-	.appraise_emotion(remorse, Person, "is_dropped(Thing)").
++is_dropped(Thing)[owner(Agent)] : .my_name(Agent) <-		//crowfox
+	.appraise_emotion(remorse, "has(Thing)", Agent, true).
+
 
 @is_dropped[atomic]
 +is_dropped(Thing)[owner(Agent)] : wish(has(Thing)) <-		//crowfox
-	.appraise_emotion(gloating, Agent, "is_dropped(Thing)");
+	.appraise_emotion(gloating, "is_dropped(Thing)", Agent);
 	!collect(Thing);
 	-wish(has(X));
 	.resume(wish(relax)).
 
 @compliment[atomic]
 +complimented : .my_name(Agent)  <-  		//crowfox
-	.appraise_emotion(pride, Agent, "complimented");
+	.appraise_emotion(pride, "complimented", Agent);
 	!sing.
 
 +threatened(Item)[source(Other)] <- 				 //crowfox
 	.print("Oh no, don't hurt me!");
-	.appraise_emotion(fear, _, "threatened(Item)");
+	.appraise_emotion(fear, "threatened(Item)");
 	!handOver(Item, Other).
 	
 @threat_2[affect(personality(conscientiousness,low))]
 +threatened(Item)[source(Other)]  : .my_name(Me) <- 				 //crowfox
 	.print("No, I will not give you anything!");
-	.appraise_emotion(reproach, Other, "threatened(Item)");
+	.appraise_emotion(reproach, "threatened(Item)", Other);
 	!refuseHandOver(Item, Other).
 
 +refuseHandOver(Thing, Agent) <-
@@ -89,18 +92,18 @@ wish(relax).
 	+obligation(help_with(Helpee, Plan)).
 
 +rejected_request(help_with(Helpee,Req))[source(Name)] <-
-	.appraise_emotion(anger, Name, "rejected_request(help_with(Helpee,Req))", true);
+	.appraise_emotion(anger, "rejected_request(help_with(Helpee,Req))", Name, false);
 	.abolish(rejected_request(help_with(Helpee,Req)));
 	-asking(help_with(Req), Name).
 	
 +accepted_request(help_with(Helpee,Req))[source(Name)] <-
-	.appraise_emotion(gratitude, Name, "accepted_request(help_with(Req))[source(Name)]", true);
+	.appraise_emotion(gratitude, "accepted_request(help_with(Req))[source(Name)]", Name, false);
 	.abolish(accepted_request(help_with(Helpee,Req)));
 	-asking(help_with(Req), Name).
 
 @reject_request[atomic]
 +!reject(Helpee, Plan) <-
-	.appraise_emotion(reproach, Helpee, "request(Plan)");
+	.appraise_emotion(reproach, "request(Plan)", Helpee);
 	.print("can't help you! request(", Plan, ") is too much work for me!");
 	.send(Helpee, tell, rejected_request(Plan));
 	-obligation(Plan).
@@ -111,7 +114,7 @@ wish(relax).
 	.print("I'll help you with ", Plan, ", ", Helpee);
 	.send(Helpee, tell, accepted_request(Plan));
 	help(Helpee);
-	.appraise_emotion(happy_for, Helpee, "request(Plan)");
+	.appraise_emotion(happy_for, "request(Plan)", Helpee);
 	-obligation(Plan).
 
 /****** Mood  management ******************************************************/
@@ -225,7 +228,7 @@ wish(relax).
 	-wish(eat(X)).
 
 +!eat(X) : not has(X)<- 
-	.appraise_emotion(disappointment, _, "eat(X)").
+	.appraise_emotion(disappointment, "eat(X)").
 
 +!approach(Agent) : agent(Agent) & at(Agent, Loc) <-  	//crowfox
 	goTo(Loc).
