@@ -3,12 +3,14 @@
  */
 package inBloom.rl_happening.rl_management;
 
+import java.util.Collection;
 import java.util.List;
 
 import inBloom.LauncherAgent;
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
 import inBloom.storyworld.HappeningDirector;
+import inBloom.storyworld.Character;
 
 /**
  * This is special type of PlotModel that creates and manages a set of features that can describe
@@ -22,15 +24,47 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	
 	// a list of all possible domain-specific features that are relevant to the model state
 	public List<String> allPossibleFeatures;
+	// IDEA: Make has HashSet<String, boolean> -> only have one variable
 	// a list of all currently activated features, meaning all features present in the current state of the model
 	public List<String> presentFeatures;
-
+	
+	private Collection<Character> allCharacters;
+	
+	// MoodType will look like this: character name + moodType. F.e. "robinsonbored"
+	private String currentMoodType = "none";
+	// MoodType will look like this: character name + moodStrength. F.e. "robinsonslightly"
+	private String currentMoodStrength = "none";
+	
+	// TODO so far only one character can have a mood
+	private final String[] moodTypes = {"bored",
+										"disdainfaul",
+										"anxious",
+										"hostile",
+										"docile",
+										"relaxed",
+										"dependent",
+										"exuberant"};
+	private final String[] moodStrength = {"slightly",
+										   "moderately",
+										   "fully"};
+	
+	// How to get the name of a mood:
+	// character.getMood().getFullName()
+	
 	public FeaturePlotModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		
 		super(agentList, hapDir);
 		
+		// The Character HashMap has been initialized and filled with all Characters in the super Constructor
+		this.allCharacters = this.getCharacters();
+		
 		// Create a list of all possible domain-specific features
 		this.allPossibleFeatures = this.getAllPossibleFeatures();
+		// Add all domain independent features
+		for(Character character: this.allCharacters) {
+			this.createMoodFeatures(this.allCharacters, this.moodTypes);
+			this.createMoodFeatures(this.allCharacters, this.moodStrength);
+		}
 		
 		// If possible, activate all features that should be initially activated before the start of the story
 		List<String> initiallyActivatedFeatures = this.getInitiallyActivatedFeatures();
@@ -42,6 +76,22 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	}
 	
 	public abstract List<String> getAllPossibleFeatures();
+		
+	/**
+	 * Adds all Features from a given String array to the list opf all possible features, which
+	 * is everything needed to create a feature
+	 * 
+	 * @param featureNames
+	 * 			String Array of all feature names to be added as features
+	 */
+	public void createMoodFeatures(Collection<Character> characters, String[] featureNames) {
+		for(Character character: characters) {
+			for(String featureName: featureNames) {
+				String feature = this.createCharacterDependentFeature(character, featureName);
+				this.allPossibleFeatures.add(feature);
+			}
+		}
+	}
 	
 	/**
 	 * Returns a list of features that should already be activated before the story starts.
@@ -50,6 +100,11 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	 */
 	public List<String> getInitiallyActivatedFeatures() {
 		return null;
+	}
+	
+	public List<String> getPresentFeatures() {
+		this.updateMoodFeatures();
+		return this.presentFeatures;
 	}
 	
 	/**
@@ -107,4 +162,48 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 		}
 	}
 
+	public String getMoodName(Character character) {
+		return character.getMood().getType();
+	}
+	
+	public String getMoodStrength(Character character) {
+		return character.getMood().getStrength();
+	}
+	
+	// TODO when will this be called? Whenever we ask for the presentFeatures
+	public boolean updateMoodFeatures() {
+		if(!this.currentMoodType.equals("none") && !this.currentMoodType.equals("none")) {
+			deactivateAllMoodFeatures();
+		} // otherwise the mood Features haven't been initialized yet and don't need to be activated
+		
+		for(Character character: this.allCharacters) {
+			String moodType = createCharacterDependentFeature(character, this.getMoodName(character));
+			String moodStrength = createCharacterDependentFeature(character, this.getMoodStrength(character));
+
+			boolean typeSuccess = this.activateFeature(moodType);
+			boolean strengthSuccess = this.activateFeature(moodStrength);
+
+			if(!typeSuccess || !strengthSuccess) {
+				// Something went wrong in one of the assignments
+				return false;
+			}
+
+			assert(typeSuccess): "Activation of Mood type wasn't succesful. Mood type feature had already been activated.";
+			assert(strengthSuccess): "Activation of Mood strength wasn't succesful. Mood strength feature had already been activated.";
+		}
+		
+		return true;
+	}
+	
+	public void deactivateAllMoodFeatures() {
+		boolean typeSuccess = this.deactivateFeature(currentMoodType);
+		boolean strengthSuccess = this.deactivateFeature(currentMoodStrength);
+		
+		assert(typeSuccess): "Mood Type hadn't been activated yet.";
+		assert(strengthSuccess): "Mood Strength hadn't been activated yet.";
+	}
+	
+	private String createCharacterDependentFeature(Character character, String featureName) {
+		return character.name + featureName;
+	}
 }

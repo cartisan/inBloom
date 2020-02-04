@@ -1,6 +1,7 @@
 package inBloom.rl_happening.islandWorld;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import inBloom.ActionReport;
@@ -8,6 +9,7 @@ import inBloom.LauncherAgent;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
 import inBloom.helper.PerceptAnnotation;
+import inBloom.rl_happening.rl_management.FeaturePlotModel;
 import inBloom.storyworld.HappeningDirector;
 import inBloom.storyworld.Item;
 import inBloom.storyworld.Location;
@@ -21,7 +23,7 @@ import inBloom.storyworld.Character;
  *
  * The Model defines the effects of Actions on the Environment and Agents.
  */
-public class IslandModel extends PlotModel<IslandEnvironment> {
+public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	
 	/**
 	 * GLOBAL VARIABLES
@@ -32,9 +34,8 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	public HashMap<Character, Integer> hunger;
 	@ModelState
 	public boolean isOnCruise;
-	
+		
 	// TODO alles als @ModelState annotieren, was relevant ist für den current State des Models
-	
 	
 	/**
 	 * LOCATIONS
@@ -45,13 +46,24 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 	
 	
 	/**
+	 * All feature names
+	 */
+	String[] features = {"isAlive",
+						 "isOnCruise",
+						 "hasAHut",
+						 "MoodX",
+						 "MoodY",
+						 "MoodZ"};
+	
+	
+	
+	/**
 	 * CONSTRUCTOR
 	 */
 	
 	public IslandModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		
-		super(agentList, hapDir);
-		
+		super(agentList, hapDir);		
 		
 		// numberOfFriends: each Character has 0 friends
 		this.friends = new HashMap<Character, Integer>();
@@ -489,6 +501,18 @@ public class IslandModel extends PlotModel<IslandEnvironment> {
 		public void poison() {
 			this.poisoned = true;
 		}
+	}
+
+
+
+
+	@Override
+	public List<String> getAllPossibleFeatures() {
+		LinkedList<String> allFeatures = new LinkedList<String>();
+		for(String i: this.features) {
+			allFeatures.add(i);
+		}
+		return allFeatures;
 	}
 	
 
