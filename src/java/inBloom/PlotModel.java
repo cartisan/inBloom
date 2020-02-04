@@ -46,7 +46,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 
 	public static final boolean X_AXIS_IS_TIME = true;		// defines whether moods will be mapped based on plotTim or timeStep
 															// in latter case, average mood will be calculated over all cycles in a timeStep
-	public static final String DEFAULT_LOCATION_NAME = "far far away";
+	public static final String DEFAULT_LOCATION_NAME = "farFarAway";
 
 	protected HashMap<String, Character> characters = null;
 	protected HashMap<String, Location> locations = null;
