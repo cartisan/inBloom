@@ -230,6 +230,6 @@ public class PlotAwareAg extends AffectiveAgent {
 	}
 
 	public void initializeMoodMapper() {
-		PlotLauncher.runner.getUserModel().mapMood(this.name, this.getPersonality().defaultMood());
+		PlotLauncher.runner.getUserModel().mapMood(this.name, this.getPersonality().getDefaultMood());
 	}
 }

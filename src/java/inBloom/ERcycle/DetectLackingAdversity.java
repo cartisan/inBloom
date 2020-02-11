@@ -73,7 +73,7 @@ public class DetectLackingAdversity extends ProblemDetectionState {
 		Double minP = moodData.getMinY();
 		
 		LauncherAgent chara = er.getAgent(name);
-		Double defP = chara.personality.defaultMood().getP();
+		Double defP = chara.personality.getDefaultMood().getP();
 		
 		// Pleasure must be low, but if default mood is already low then it needs to drop even below that
 		if ((minP < NEG_MOOD_THRESHOLD) & (minP < 1.2 * defP)) {
