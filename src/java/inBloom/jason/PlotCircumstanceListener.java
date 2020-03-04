@@ -66,7 +66,7 @@ public class PlotCircumstanceListener implements CircumstanceListener {
 		if(!i.isFinished()) {
 			String drop = "" + i.peek().getTrigger();
 			String cause = "" + this.agent.getTS().getC().getSelectedOption().getPlan().getTrigger();
-			PlotGraphController.getPlotListener().addEvent(this.name, "drop_intention(" + drop + ")[" + Edge.Type.CAUSALITY.toString() +"(" + TermParser.removeAnnots(cause) + ")]", Type.INTENTION, PlotLauncher.getRunner().getUserEnvironment().getStep());
+			PlotGraphController.getPlotListener().addEvent(this.name, "drop_intention(" + TermParser.removeAnnots(drop) + ")[" + Edge.Type.CAUSALITY.toString() +"(" + TermParser.removeAnnots(cause) + ")]", Type.INTENTION, PlotLauncher.getRunner().getUserEnvironment().getStep());
 		}
 	}
 
