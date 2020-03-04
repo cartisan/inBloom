@@ -38,7 +38,7 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         LauncherAgent hen = new LauncherAgent("hen",					  	   // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
 					Arrays.asList("hungry", "self(farm_animal)"),
 					    new LinkedList<String>(),
-					    new Personality(0,  1, 0.7,  0.3, 0.65)    //punishment
+					    new Personality(0,  1, 0.7,  0.3, 0.5)    //punishment
 	//					new Personality(0,  1, 0.7,  0.3,  -1)     //low neurot --> no punishment
 //						new Personality(0,  1, 0.7,  0.7,  -1)     //high aggrea --> sharing
 
@@ -50,19 +50,19 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         LauncherAgent dog = new LauncherAgent("dog",
 					Arrays.asList("hungry", "self(farm_animal)"),
 				    	new LinkedList<String>(),
-						new Personality(0, -1, 0, -0.7, -0.8)
+						new Personality(0, -1, -0.3, -0.7, -0.7)
 		//				new Personality(0, 1, 0, -0.7, -0.8)	// doggie helps hen v1
 		);
         LauncherAgent cow = new LauncherAgent("cow",
 					Arrays.asList("hungry", "self(farm_animal)"),
 				    	new LinkedList<String>(),
-						new Personality(0, -1, 0, -0.7, -0.8)
+						new Personality(0, -1, -0.3, -0.7, -0.7)
 		//				new Personality(0, 1, 0, -0.7, -0.8)	// cow helps hen v1
 		);
         LauncherAgent pig = new LauncherAgent("pig",
 					Arrays.asList("hungry", "self(farm_animal)"),
 						new LinkedList<String>(),
-						new Personality(0, -1, 0, -0.7, -0.8)
+						new Personality(0, -1, -0.3, -0.7, -0.7)
 		);
 
         ImmutableList<LauncherAgent> agents = ImmutableList.of(hen, dog, cow, pig);

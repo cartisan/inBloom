@@ -18,7 +18,7 @@ wish(relax).
 /******************************************************************************/
 
 // Share when very agreeable character, unless in a bad mood
-@share_food_plan2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
+@sharefood[atomic, affect(and(personality(agreeableness,positive), not(mood(pleasure,low))))]
 +has(X) : hungry & is_pleasant(eat(X)) & has(X) <- 			// still has X when event selected
 	-wish(has(X));
 	.appraise_emotion(joy, "has(X)");
@@ -101,20 +101,28 @@ wish(relax).
 	.abolish(accepted_request(help_with(Helpee,Req)));
 	-asking(help_with(Req), Name).
 
-@reject_request[atomic]
+@rejectrequest[atomic]
 +!reject(Helpee, Plan) <-
 	.appraise_emotion(reproach, "request(Plan)", Helpee);
 	.print("can't help you! request(", Plan, ") is too much work for me!");
 	.send(Helpee, tell, rejected_request(Plan));
 	-obligation(Plan).
 	
+@rejectrequest_2[atomic, affect(personality(neuroticism, high))]
++!reject(Helpee, Plan) : .my_name(Me)<-
+	.appraise_emotion(reproach, "request(Plan)", Helpee);
+	.print("can't help you! request(", Plan, ") is too much work for me!");
+	.send(Helpee, tell, rejected_request(Plan));
+	fret;
+	-obligation(Plan).
+	
 // TODO: How to turn this into an analogous accept without breaking FU structure?	
-@accept_request[atomic]
-+!help_with(Helpee, Plan) <-
+@acceptrequest[atomic]
++!help_with(Helpee, Plan) : .my_name(Me) <-
+	.appraise_emotion(pride, "request(Plan)", Me);
 	.print("I'll help you with ", Plan, ", ", Helpee);
 	.send(Helpee, tell, accepted_request(Plan));
 	help(Helpee);
-	.appraise_emotion(happy_for, "request(Plan)", Helpee);
 	-obligation(Plan).
 
 /****** Mood  management ******************************************************/
@@ -130,6 +138,12 @@ wish(relax).
 
 -mood(hostile) <-
 	-wish(punish).
+	
++mood(relaxed) <-
+	-wish(relax).
+	
++mood(anxious) <-
+	+wish(relax).
 	
 /******************************************************************************/
 /***** Plans  *****************************************************************/
@@ -150,28 +164,25 @@ wish(relax).
 	!X;
 	-already_asked(X).
 
-@create_bread_1[affect(personality(conscientiousness,high))]
+
 +!create(bread) : has(wheat[state(seed)]) <-
 	!plant(wheat).
 
-@create_bread_2[affect(personality(conscientiousness,high))]
 +!create(bread) : at(wheat[state(growing)], farm) <-
 	!tend(wheat).
 
-@create_bread_3[affect(personality(conscientiousness,high))]
 +!create(bread) : at(wheat[state(ripe)], farm) <-
 	!harvest(wheat).
 
-@create_bread_4[affect(personality(conscientiousness,high))]
 +!create(bread) : has(wheat[state(harvested)]) <-
 	!grind(wheat).
 
-@create_bread_5[affect(personality(conscientiousness,high))]
 +!create(bread) : has(wheat[state(flour)]) <-
 	!bake(bread);
 	.resume(obligation(farm_work));
 	.resume(wish(relax));
-	-obligation(create(bread)).
+	-obligation(create(bread));
+	.appraise_emotion(satisfaction, "bake(bread)").
 
 +!has(Thing) : has(Agent, Thing) & at(Agent, Loc1) & at(Loc2) & not Loc1==Loc2 <- 	//crowfox
 	!approach(Agent).
@@ -192,6 +203,19 @@ wish(relax).
 	!eat(X);
 	-wish(punish).
 
+@punish_2[atomic, affect(personality(neuroticism, high))]	
++!punish : mood(hostile) & has(X) & is_pleasant(eat(X)) & hungry & .my_name(Me)<-
+	fret;
+	?affect_target(Anims);
+	if (.empty(Anims)) {
+		true;
+	} else {
+		.send(Anims, achieve, eat(X));
+		.print("Asked ", Anims, " to eat ", X, ". But not shareing necessary ressources. xoxo");
+	};
+	!eat(X);
+	-wish(punish).
+
 +!share_food(Food, Others) <-
 	!share(Food, Others);
 	!eat(Food);
@@ -200,6 +224,13 @@ wish(relax).
 /******************************************************************************/
 /*****      Action Execution Goals ********************************************/
 /******************************************************************************/
+// positive extraversion means that a relax action removes the desire to relax
+@relax[affect(personality(extraversion,positive))]
++!relax <-
+	relax;
+	-wish(relax).
+
+// while negative extraversion means relaxing remains a desire
 +!relax <-
 	relax.
 	
@@ -260,12 +291,12 @@ wish(relax).
 +!sing <-
 	sing.
 
-@share1[affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
+@share_1[affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +!share(Item, Agent) <-
 	.print("Sharing: ", Item, " with", Agent);
 	share(Item, Agent).
 
-@share2[affect(personality(agreeableness,low))]
+@share_2[affect(personality(agreeableness,low))]
 +!share(Item, Agent) <- 
 	.print("I'm not sharing with anyone!");
 	!refuseHandOver(Item, Agent).

@@ -116,7 +116,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 			agent.addToInventory(new Bread());
 
 			logger.info(agent.name + ": baked some bread.");
-			res.addPerception(agent.name, new PerceptAnnotation("pride", "joy"));
+			res.addPerception(agent.name, new PerceptAnnotation("pride"));
 			res.success =  true;
 		}
 

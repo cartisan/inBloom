@@ -175,7 +175,7 @@ public class Character extends Existent {
 
 			if (item.isEdible()) {
 				this.removeFromInventory(item);
-				res.addPerception(this.name, PerceptAnnotation.fromEmotion("satisfaction"));
+				res.addPerception(this.name, PerceptAnnotation.fromEmotion("joy"));
 				res.success = true;
 			}
 		}
@@ -189,6 +189,12 @@ public class Character extends Existent {
 			return new ActionReport(false);
 		}
 		return new ActionReport(true);
+	}
+
+	public ActionReport fret() {
+		ActionReport res = new ActionReport(true);
+		res.addPerception(this.name, PerceptAnnotation.fromEmotion("distress"));
+		return res;
 	}
 
 	public ActionReport sing() {

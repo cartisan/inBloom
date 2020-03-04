@@ -135,7 +135,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     private boolean initialized = false;
 
     /**
-     * Jason-internal initialization executed by the framwork during
+     * Jason-internal initialization executed by the framework during
      * {@link jason.infra.centralised.CentralisedEnvironment#CentralisedEnvironment(jason.mas2j.ClassParameters,
      *  jason.infra.centralised.BaseCentralisedMAS) CentralisedEnvironment instaniation}. Responsible for setting
      *  up timeouts and over action policy.

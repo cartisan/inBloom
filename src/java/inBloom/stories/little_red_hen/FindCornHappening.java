@@ -2,7 +2,6 @@ package inBloom.stories.little_red_hen;
 
 import java.util.function.Predicate;
 
-import inBloom.helper.PerceptAnnotation;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;
 
@@ -17,7 +16,7 @@ public class FindCornHappening extends Happening<FarmModel> {
 
 		this.effect = null;			// we implement a custom execute method, no need for Consumer stored in effect
 		this.percept = "found(" + this.wheat.literal() +")";
-		this.annotation = PerceptAnnotation.fromEmotion("hope");
+//		this.annotation = PerceptAnnotation.fromEmotion("hope");
 	}
 
 	public FindCornHappening(Predicate<FarmModel> trigger, String patient){

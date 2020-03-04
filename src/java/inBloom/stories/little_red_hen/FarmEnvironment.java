@@ -116,6 +116,10 @@ public class FarmEnvironment extends PlotEnvironment<FarmModel> {
 			result = agent.relax();
     	}
 
+    	else if (action.getFunctor().equals("fret")) {
+    		result = agent.fret();
+    	}
+
     	return result;
     }
 }
