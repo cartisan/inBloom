@@ -22,11 +22,14 @@ import org.jfree.ui.RefineryUtilities;
 
 import com.google.common.collect.ImmutableMap;
 
+import jason.asSemantics.Mood;
+
 import inBloom.PlotControlsLauncher;
 import inBloom.PlotEnvironment;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
 import inBloom.helper.MoodMapper;
+import inBloom.storyworld.Character;
 
 
 /**
@@ -51,6 +54,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 
 	private XYSeriesCollection moodData = null;
 	private String selectedMoodDimension = null;
+	private String selectedAgent = null;
 	private JFreeChart chart = null;
 
 	public static MoodGraph getMoodListener() {
@@ -85,15 +89,28 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 		Long endTime = mapper.latestEndTime();
 		startTime = startTime - startTime % 10 + 10;		// round up start time to next multiple of 10
 
-		for(String agName: mapper.mappedAgents()) {
-			this.moodData.addSeries(new XYSeries(agName));
+		if(this.selectedMoodDimension != null) {
+			for(String agName: mapper.mappedAgents()) {
+				this.moodData.addSeries(new XYSeries(agName));
 
-
-			// for every 10ms from start time until end time sample mood and put it into the graph
-			for (Long x_val = startTime; x_val < endTime + 1; x_val += samplingStep) {
-				Double sampledMood = mapper.sampleMood(agName, x_val).get(this.selectedMoodDimension);
-				this.addMoodPoint(sampledMood, x_val, agName);
+				// for every 10ms from start time until end time sample mood and put it into the graph
+				for (Long x_val = startTime; x_val < endTime + 1; x_val += samplingStep) {
+					Double sampledMood = mapper.sampleMood(agName, x_val).get(this.selectedMoodDimension);
+					this.addMoodPoint(sampledMood, x_val, agName);
+				}
 			}
+		} else if (this.selectedAgent != null) {
+			for(String dim: MOOD_DIMS) {
+				this.moodData.addSeries(new XYSeries(dim));
+
+				// for every 10ms from start time until end time sample mood and put it into the graph
+				for (Long x_val = startTime; x_val < endTime + 1; x_val += samplingStep) {
+					Double sampledMood = mapper.sampleMood(this.selectedAgent, x_val).get(dim);
+					this.addMoodPoint(sampledMood, x_val, dim);
+				}
+			}
+		} else {
+			throw new RuntimeException("Mood Graph: Wrong dimension selected in drop down.");
 		}
 	}
 
@@ -106,7 +123,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 		JFreeChart lineChart = ChartFactory.createXYLineChart(
 				title,
 				X_LABEL_IS_TIME.get(PlotModel.X_AXIS_IS_TIME),
-				this.selectedMoodDimension,
+				"value",
 				data,
 				PlotOrientation.VERTICAL,
 				true,true,false);
@@ -143,6 +160,10 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 
 		// create dropdown to select mood dimension
 		JComboBox<String> moodDimensionList = new JComboBox<>(MOOD_DIMS);
+		for (Character chara : PlotLauncher.getRunner().getUserModel().getCharacters()) {
+			moodDimensionList.addItem(chara.name);
+		}
+
 		moodDimensionList.setSelectedItem(this.selectedMoodDimension);
 		moodDimensionList.addActionListener(new ActionListener() {
 			@SuppressWarnings("unchecked")
@@ -151,12 +172,16 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 				JComboBox<String> combo = (JComboBox<String>) event.getSource();
 				String selectedDimension = (String) combo.getSelectedItem();
 
-				MoodGraph.getMoodListener().selectedMoodDimension = selectedDimension;
+				MoodGraph.getMoodListener().selectedMoodDimension = null;
+				MoodGraph.getMoodListener().selectedAgent = null;
+				if(Mood.DIMENSIONS.contains(selectedDimension)) {
+					MoodGraph.getMoodListener().selectedMoodDimension = selectedDimension;
+				} else {
+					MoodGraph.getMoodListener().selectedAgent = selectedDimension;
+				}
 				MoodGraph.getMoodListener().createData(((PlotEnvironment<PlotModel<?>>)PlotLauncher.getRunner().getEnvironmentInfraTier().getUserEnvironment()).getModel().moodMapper);
 
-				((XYPlot) MoodGraph.getMoodListener().chart.getPlot()).getRangeAxis().setLabel(
-						MoodGraph.getMoodListener().selectedMoodDimension
-				);
+				((XYPlot) MoodGraph.getMoodListener().chart.getPlot()).getRangeAxis().setLabel("value");
 
 				MoodGraph.getMoodListener().repaint();
 			}
@@ -188,8 +213,8 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
     	gui.graphClosed(this);
 	}
 
-	private void addMoodPoint(Double value, Long time, String agName) {
-		this.moodData.getSeries(agName).add(time, value);
+	private void addMoodPoint(Double value, Long time, String series) {
+		this.moodData.getSeries(series).add(time, value);
 	}
 
 	public XYSeriesCollection getData() {
