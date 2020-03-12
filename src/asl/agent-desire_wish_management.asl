@@ -20,7 +20,10 @@
 @reject_request_2[atomic, affect(and(mood(dominance,high), personality(agreeableness,negative)))]
 +!obligation(help_with(Helpee, Plan)) : wish(Y) & is_work(help_with(Plan)) <-
 	!reject(Helpee, help_with(Helpee,Plan)).
-// if none of these is true, treat it like normal obligation
+// if none of these is true, do help
++!obligation(help_with(Helpee, Plan)) <-
+	!help_with(Helpee, Plan); 
+	!obligation(help_with(Helpee, Plan)).
 
 // only do hard obligations if really conscientious
 @obligation1[affect(personality(conscientiousness,high))]

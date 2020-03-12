@@ -13,26 +13,25 @@
 wish(relax).
 +self(farm_animal) <- +obligation(farm_work).
 
++hungry <- +wish(eat).
+-hungry <- -wish(eat).
+
 /******************************************************************************/
 /********** perception management *********************************************/
 /******************************************************************************/
 
-// Share when very agreeable character, unless in a bad mood
-@sharefood[atomic, affect(and(personality(agreeableness,positive), not(mood(pleasure,low))))]
-+has(X) : hungry & is_pleasant(eat(X)) & has(X) <- 			// still has X when event selected
++has(X) : hungry & edible(X)  <-
 	-wish(has(X));
 	.appraise_emotion(joy, "has(X)");
-	?present(Anims);
-	+wish(share_food(X, Anims));
 	.resume(wish(relax)).
 
-+has(X) : hungry & is_pleasant(eat(X)) & has(X)  <-			// still has X when event selected 
++has(X) : dislike(X) <-
 	-wish(has(X));
-	.appraise_emotion(joy, "has(X)");
-	+wish(eat(X));
-	.resume(wish(relax)).
+	.appraise_emotion(hate, "has(X)").
 
-
++has(X)  <-
+	-wish(has(X));
+	.appraise_emotion(love, "has(X)").
 
 +see(Thing)[location(Loc), owner(Per)] : is_useful(Thing) <-   // crowfox
 	+at(Per,Loc);
@@ -49,13 +48,15 @@ wish(relax).
 	+wish(has(Thing)).
 
 //TODO: how to make creatable_from(X,Y) recursive?
-+found(X) : creatable_from(X,Y) & is_useful(Y) <-
++found(Item[Annots]) : creatable_from(Item,Y) & is_useful(Y) <-
+	.appraise_emotion(hope, "found(Item[Annots])");
 	.suspend(obligation(farm_work));	// only for brevity of graph
 	.suspend(wish(relax));
 	+obligation(create(Y)).
 
 +is_dropped(Thing)[owner(Agent)] : .my_name(Agent) <-		//crowfox
-	.appraise_emotion(remorse, "has(Thing)", Agent, true).
+//	.appraise_emotion(remorse, "has(Thing)", Agent, true).
+	.appraise_emotion(remorse, "is_dropped(Thing)", Agent, false).
 
 
 @is_dropped[atomic]
@@ -85,6 +86,25 @@ wish(relax).
 	// TODO: continue story by an attack mechanism?
 	.resume(wish(relax)).
 		
+/***** action-perception management **********************************************/
+/******************************************************************************/
+
+@collect[atomic]
++collect(Thing)[success(true)] <-
+	-wish(has(Thing)).
+	
++share(Other, Item, Me)[success(true)] : .my_name(Me) <-
+	+has(Item).
+	
++share(Other, Item, List)[success(true)] : .my_name(Me) & .list(List) & .member(Me,List) <-
+	+has(Item).
+	
++handOver(Other, Item, Me)[success(true)] : .my_name(Me) <-
+	+has(Item).
+	
++handOver(Item, Agent)[success(true)] <-
+	-has(Item).
+		
 /***** request answer management **********************************************/
 /******************************************************************************/
 
@@ -97,7 +117,7 @@ wish(relax).
 	-asking(help_with(Req), Name).
 	
 +accepted_request(help_with(Helpee,Req))[source(Name)] <-
-	.appraise_emotion(gratitude, "accepted_request(help_with(Req))[source(Name)]", Name, false);
+	.appraise_emotion(gratitude, "accepted_request(help_with(Helpee,Req))[source(Name)]", Name, false);
 	.abolish(accepted_request(help_with(Helpee,Req)));
 	-asking(help_with(Req), Name).
 
@@ -119,11 +139,11 @@ wish(relax).
 // TODO: How to turn this into an analogous accept without breaking FU structure?	
 @acceptrequest[atomic]
 +!help_with(Helpee, Plan) : .my_name(Me) <-
-	.appraise_emotion(pride, "request(Plan)", Me);
+	.appraise_emotion(pride, "request(help_with(Helpee, Plan))", Me);
 	.print("I'll help you with ", Plan, ", ", Helpee);
-	.send(Helpee, tell, accepted_request(Plan));
+	.send(Helpee, tell, accepted_request(help_with(Helpee, Plan)));
 	help(Helpee);
-	-obligation(Plan).
+	-obligation(help_with(Helpee, Plan)).
 
 /****** Mood  management ******************************************************/
 /******************************************************************************/
@@ -160,7 +180,7 @@ wish(relax).
 		.send(Animal, tell, request(help_with(Me,X)));
 		+asking(help_with(X), Animal);
 	}
-	.wait(not asking(help_with(X), _), 1000);
+	.wait(not asking(help_with(X), _), 500);
 	!X;
 	-already_asked(X).
 
@@ -252,11 +272,23 @@ wish(relax).
 +!bake(bread) <-
 	bake(bread).
 
-@eat_1[atomic]	
+@eat1[atomic]
++!eat : has(Item) & edible(Item) <-
+	!eat(Item);
+	-wish(eat).
+
+//share what you eat if you are nice
+@eat2[atomic, affect(and(personality(agreeableness,positive), not(mood(pleasure,low))))]
++!eat(Food) : not wish(punish) <-
+	?present(Others);
+	!share(Food, Others);
+	eat(Food);
+	-hungry.
+
+@eat3[atomic]
 +!eat(X) <- 
 	eat(X);
-	-hungry;
-	-wish(eat(X)).
+	-hungry.
 
 +!eat(X) : not has(X)<- 
 	.appraise_emotion(disappointment, "eat(X)").
@@ -291,7 +323,7 @@ wish(relax).
 +!sing <-
 	sing.
 
-@share_1[affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
+@share_1[affect(and(personality(agreeableness,positive), not(mood(pleasure,low))))]
 +!share(Item, Agent) <-
 	.print("Sharing: ", Item, " with", Agent);
 	share(Item, Agent).

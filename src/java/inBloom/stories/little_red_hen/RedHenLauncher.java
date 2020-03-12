@@ -38,26 +38,25 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
         LauncherAgent hen = new LauncherAgent("hen",					  	   // works with Mood.MAX_DECAY_TIME = 50 and MAX_UPDATE_TIME = 5
 					Arrays.asList("hungry", "self(farm_animal)"),
 					    new LinkedList<String>(),
-					    new Personality(0,  1, 0.7,  0.3, 0.5)    //punishment
-	//					new Personality(0,  1, 0.7,  0.3,  -1)     //low neurot --> no punishment
-//						new Personality(0,  1, 0.7,  0.7,  -1)     //high aggrea --> sharing
-
-	//					new Personality(0, -1, 0.7,  0.3, 0.15)    //low consc --> no plot
-
-	//					new Personality(0,  1, 0,    0.3, 0.15)    //low extra --> no help requests, no punishment, no sharing <-- not after update!
-	//					new Personality(0,  1, 0,    0.7, 0.15)    //low extra, high aggrea --> no help requests, no punishment, sharing
+					    new Personality(0,  1, 0.7, -0.3, -0.2)    //punishment
+//						new Personality(0, -1, 0.7, -0.3, -0.2)    //low consc --> no plot
+//						new Personality(0,  1, 0.7, -0.3,   -1)    //low neurot --> eat alone, no punishment
+//						new Personality(0,  1, 0.7,  1,   -0.2)    //high aggrea --> sharing despite refusals
+//						new Personality(0,  1, 0,   -0.3, -0.2)    //lower extra --> no help requests, no punishment, sharing
+//						new Personality(0,  1, 0,   -0.3,  -1)     //lower extra, low neurot --> no help requests, no punishment, no sharing
+////					    new Personality(0,  1, 0.7, 1, -1)   //low neurot, neg aggrea --> no punishment, no share
         );
         LauncherAgent dog = new LauncherAgent("dog",
 					Arrays.asList("hungry", "self(farm_animal)"),
 				    	new LinkedList<String>(),
 						new Personality(0, -1, -0.3, -0.7, -0.7)
-		//				new Personality(0, 1, 0, -0.7, -0.8)	// doggie helps hen v1
+//						new Personality(0, -1, -0.3, 0.7, -0.7)	// doggie helps hen v1
 		);
         LauncherAgent cow = new LauncherAgent("cow",
 					Arrays.asList("hungry", "self(farm_animal)"),
 				    	new LinkedList<String>(),
 						new Personality(0, -1, -0.3, -0.7, -0.7)
-		//				new Personality(0, 1, 0, -0.7, -0.8)	// cow helps hen v1
+//						new Personality(0, -1, -0.3, 0.7, -0.7)	// cow helps hen v1
 		);
         LauncherAgent pig = new LauncherAgent("pig",
 					Arrays.asList("hungry", "self(farm_animal)"),
