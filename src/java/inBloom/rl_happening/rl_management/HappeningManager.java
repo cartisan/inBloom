@@ -24,7 +24,7 @@ import inBloom.storyworld.ScheduledHappeningDirector;
 public class HappeningManager {
 	
 	// TODO evtl. zu ConditionalHappening ändern
-	private static LinkedList<Happening> allHappenings;
+	private static LinkedList<Happening<?>> allHappenings;
 	
 	public static ScheduledHappeningDirector createHappeningDirector() {
 		return new ScheduledHappeningDirector();
@@ -162,7 +162,7 @@ public class HappeningManager {
 	// TODO Beware that allHappenings are only declared after scheduleHappenings has been called.
 	// This should be okay since scheduleHappenings should be called at the very beginning of each
 	// run, but I am not 100% sure.
-	public static LinkedList<Happening> getAllHappenings() {
+	public static LinkedList<Happening<?>> getAllHappenings() {
 		return allHappenings;
 	}
 

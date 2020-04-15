@@ -7,17 +7,21 @@ import java.util.HashSet;
 import java.util.List;
 
 import inBloom.LauncherAgent;
+import inBloom.PlotEnvironment;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
 import inBloom.ERcycle.CounterfactualityEngageResult;
 import inBloom.ERcycle.EngageResult;
 import inBloom.ERcycle.PlotCycle;
 import inBloom.ERcycle.ReflectResult;
+import inBloom.ERcycle.PlotCycle.Cycle;
 import inBloom.graph.PlotDirectedSparseGraph;
+import inBloom.graph.PlotGraphController;
 import inBloom.helper.Counterfactuality;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
 import jason.asSemantics.Personality;
+import jason.runtime.MASConsoleGUI;
 
 // CC = CounterfactualityCycle
 // RHCC = RedHenCounterfactualityCycle
@@ -50,17 +54,8 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	 */
 	protected PlotLauncher<?,?> lastRunner;
 	
-	// Never used in RHCC - TO DELETE
-//	private PlotDirectedSparseGraph originalGraph; // TODO why needed? -> for Tellability or GUI or something? Analysing?
-	// This is actually called somewehere at some point (EngagementResult oder so, s. andere Klassen), aber ich weiß nciht,
-	// wie ich RC mit diesem Parameter im Konstruktor aufrufen kann (wo ich den herbekomme. RHCC hat nämlich einfach keine main mehr)
-//	private MoodMapper originalMood; // TODO why needed?
 	
-	// Never used in RHCC - TO DELETE
-	/**
-//	 * The set of domain-specific Happenings that can occur in one Cycle
-//	 */
-//	public HashSet<Class<?>> availableHappenings = new HashSet<>();
+	private SarsaLambda rlApplication;
 	
 	
 
@@ -85,6 +80,9 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		this.agentPersonalities = agentPersonalities;	
 //		this.originalGraph = originalGraph; // TODO why needed? -> for Tellability or GUI or something? Analysing?
 //		this.originalMood = originalMood; // TODO why needed?
+		
+		this.rlApplication = new SarsaLambda();
+		this.rlApplication.initializeParameters();
 	}
 
 	@Override
@@ -203,6 +201,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		// flush and close handled by super implementation
 		super.finish(er);
 	}
+
 	
 	
 	
@@ -227,6 +226,8 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		}
 	}
 	
+	
+
 	
 	// In PlotCycle engage -> Thread erstellt mit Cycle drin -> Cycle weiter unter, hat Run, bekommt
 	// auch ein happeningScheduler übergeben

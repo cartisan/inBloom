@@ -24,32 +24,35 @@ public class AutomatedHappeningDirector<T extends PlotModel<?>> implements Happe
 
 	// an Action can either be a Happening or null
 	
-	//private LinkedList<Action> allActions; // TODO empty Happening
-	private LinkedList<Happening<?>> allHappenings;
-	private HashMap<Integer, Happening<T>> policy; // only 1 Action per TimeStep possible!
+	private List<Happening<?>> allHappenings;
+	private SarsaLambda sarsa;
 	
 	private PlotModel<?> model;
 	
-	public AutomatedHappeningDirector() {
-		//this.allActions = new LinkedList<Action>();
+	public AutomatedHappeningDirector(SarsaLambda rlApplication) {
 		this.allHappenings = new LinkedList<Happening<?>>();
-		this.allHappenings.add(null); // TODO necessary
+		this.allHappenings.add(null); // TODO necessary?
 		
-		this.policy = new HashMap<Integer,Happening<T>>();
+		this.sarsa = rlApplication;
 		
-		//this.allActions.add(new EmptyHappening());
 	}
 	
 	/**
 	 * IMPLEMENTED METHODS FROM INTERFACE
 	 */
 	
+	/**
+	 * IN HERE SARSA IS CALLED
+	 */
 	@Override
 	public List<Happening<?>> getTriggeredHappenings(int step) {
 		
 		LinkedList<Happening<?>> triggeredHappeningsInThisStep = new LinkedList<Happening<?>>();
 		
-		Happening<T> currentAction = policy(step);
+		/*
+		 * HERE SARSA IS CALLED WITH PERFORMSTEP
+		 */
+		Happening<?> currentAction = this.sarsa.performStep(step);
 		if(currentAction != null) {
 			triggeredHappeningsInThisStep.add(currentAction);
 		}
@@ -67,22 +70,22 @@ public class AutomatedHappeningDirector<T extends PlotModel<?>> implements Happe
 		this.model = model;
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
 	public AutomatedHappeningDirector<T> clone() {
-		AutomatedHappeningDirector<T> clone = new AutomatedHappeningDirector<T>();
-		//clone.model = this.model;
-		//clone.allActions = (LinkedList<Action>) ((LinkedList<Action>)this.allActions).clone();
-
-		clone.reset();
+		AutomatedHappeningDirector<T> clone = new AutomatedHappeningDirector<T>(this.sarsa);
+		for(Happening<?> h: this.allHappenings) {
+			clone.addHappening(h);
+		}
 		return clone;
 	}
+	
+	
+	
 	
 	/**
 	 * NEW METHODS
 	 */
 	
-	public void addHappening(Happening<T> happening) {
+	public void addHappening(Happening<?> happening) {
 		//this.allActions.add((Action)happening);
 		this.allHappenings.add(happening);
 	}
@@ -90,13 +93,9 @@ public class AutomatedHappeningDirector<T extends PlotModel<?>> implements Happe
 	public void reset() {
 		// TODO
 		// reset all scheduled happenings to just generally all happenings
-		//this.scheduledHappenings = (LinkedList<Happening<?>>) ((LinkedList<Happening<?>>) this.allHappenings).clone();
+		// this.scheduledHappenings = (LinkedList<Happening<?>>) ((LinkedList<Happening<?>>) this.allHappenings).clone();
 	}
 	
-	private Happening<T> policy(int step) {
-		 Happening<T> currentAction = this.policy.get(step);
-		 return currentAction;
-	}
 	
 	
 	

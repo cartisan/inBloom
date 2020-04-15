@@ -22,15 +22,23 @@ import inBloom.storyworld.Happening;
  */
 public class SarsaLambda {
 	
-	//private List<Integer> weights;
+	/**
+	 * FINE-TUNABLE VARIABLES
+	 */
+	private final double epsilon = 0; // epsilon-soft greedy actio nselection criteria
+	private final double lambda = 0; // or int? // lambda-value
+	private final double gamma = 0; // or int? // discount factor
+	private final double alpha = 0; // or int? // learning rate
+	
+	/**
+	 * DATA STRUCTURES FOR PERFORMING THE ALGORITHM
+	 */
 	private List<Integer> eligibilityTraces;
 	private HashMap<String, Integer> weights;
-	/* Rows: States (Integer)
-	 * Columns: Actions (Happenings)
-	 * Values: Q-Values (State-Action-Utility)*/
-	private HashBasedTable<Integer, Happening, Integer> qValues;
-	
-	private LinkedList<Happening> allHappenings;
+	private HashBasedTable<Integer, Happening<?>, Integer> qValues; /* Rows: States (Integer)
+	 															  	 * Columns: Actions (Happenings)
+	 															  	 * Values: Q-Values (State-Action-Utility)*/
+	private Happening<?>[] allHappenings;
 	
 
 	
@@ -38,30 +46,20 @@ public class SarsaLambda {
 
 		// TODO possibel problem: allhappenings are onyl initialized after HappeningManager.scheduleHappenings has been called
 		// -> may change in the future since we won't really schedule Happenings anymore?
-		this.allHappenings = HappeningManager.getAllHappenings();
+		this.allHappenings = (Happening<?>[])HappeningManager.getAllHappenings().toArray();
 		this.eligibilityTraces = new LinkedList<Integer>();
 		
-		this.initializeWeights(); // arbitrarily
-		this.initiailizeEligibilityTraces(); // with 0
+		this.initializeWeights();
+		this.initializeEligibilityTraces();
 		
 	}
 	
-	// TODO how do we find out if we are in an end state -> see RL_Cycle
-	// TODO how do we get the Tellability in the end? Where is it saved? -> Tellability or similar?
-	// TODO how do we get currentReward at all?
-	public void sarsa_lambda_episode(int currentState, int currentReward) {
-		
-		// get initial state of the episode
-		
-		// Iterate over all possible actions
-		for(Happening happening: allHappenings) {
-			
-		}
+	public void initializeParameters() {
+		this.initializeWeights();
+		this.initializeEligibilityTraces();
 	}
 	
-	private boolean isEnd(int currentState) {
-		return false;
-	}
+
 	
 	/**
 	 * So far we just by 50% choose random Happening and by 50% choose the Happening with the highest q-Value so far
@@ -73,59 +71,35 @@ public class SarsaLambda {
 	 * 			The state we are in right now from which we should choose the next Action
 	 * @return The Happening that will be the next Action
 	 */
-	private Happening chooseNewAction(int currentState) {
-		// TODO WTF is f?!?
-		// So far: Act like f chooses the action with the maximum state-action-utility -> TODO add probability
-		// TODO check out lecture? MoAI?
+	public Happening<?> chooseNewAction(int currentState) {
+		// TODO
 		
-		// f: 50% choose Happening with biggest utility
-		//    50% choose Happening randomly
-		
-		boolean chooseRandomly = false;
-		int randomHappeningIndex = 0;
-		
-		if(Math.random() >= 0.5) {
-			chooseRandomly = true;
-			int numberOfHappenings = this.allHappenings.size();
-			randomHappeningIndex = new Random().nextInt(numberOfHappenings);
+		for(Happening<?> action: this.allHappenings) {
+			// features of action = get the features present in this state and action
+			// q-value of action = for all features of action get weight and sum it up
+			//		idea: put in in a sorted way already?
 		}
 		
-		// perform a maximum value search for the Happening with the highest qValue
-		Happening bestHappening = this.allHappenings.getFirst();
-		int bestQValue = 0; // the value of the first Happening will be calculated and added to bestQValue during the for-loop
-							// anyways, so calculating the actual value here would be wasted Runtime.
-		int indexOfHappening = 0;
+		// find action with the maximum q-value
+		// if random < epsilon:
+		//		choose random action
 		
-		// Go through all Happenings and find the one with the highest q-Value or the one we chose randomly
-		for(Happening happening: this.allHappenings) {
-			
-			// find the one we chose randomly
-			if(chooseRandomly) {
-				if(indexOfHappening == randomHappeningIndex) {
-					bestHappening = happening;
-					break;
-				}
-			}
-
-			
-			// find the one with the highest q-value with maximum value search
-			else {
-				if(this.qValues.contains(currentState, happening)) {
-					// get the qValue of this Happening
-					int qValue = this.qValues.get(currentState, happening);
-					if(qValue > bestQValue) {
-						bestQValue = qValue;
-						bestHappening = happening;
-					}
-
-				} else {
-					throw new NullPointerException("No mapping from State to Happening when choosing new Action. "
-							+ "Q-Value hasn't been initialized yet.");
-				}
-			}
+		
+		Happening<?> action;
+		// with chance of epsilon: choose a random action
+		// 		we chose echt kleiner, since 0.0 is included in Math.random(), but 1.0 is not, so we decided to put epsilon itself in the "right" category (going to 1.0)
+		if(Math.random() < epsilon) {
+			int numberOfHappenings = this.allHappenings.length;
+			int randomHappeningIndex = new Random().nextInt(numberOfHappenings);
+			action = allHappenings[randomHappeningIndex];
 		}
 		
-		return bestHappening;
+		// greedily choose the best action
+		else {
+			
+		}
+		
+		return null;
 	}
 
 	
@@ -139,8 +113,13 @@ public class SarsaLambda {
 		// TODO initialize weights randomly
 	}
 	
-	private void initiailizeEligibilityTraces() {
+	private void initializeEligibilityTraces() {
 		// TODO initialize eligibilityTraces with 0
+	}
+	
+
+	public Happening<?> performStep(int step) {
+		return null;
 	}
 	
 	

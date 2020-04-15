@@ -30,10 +30,11 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	
 	private Collection<Character> allCharacters;
 	
+	private final String defaultValue = "default";
 	// MoodType will look like this: character name + moodType. F.e. "robinsonbored"
-	private String currentMoodType = "none";
+	private String currentMoodType = defaultValue;
 	// MoodType will look like this: character name + moodStrength. F.e. "robinsonslightly"
-	private String currentMoodStrength = "none";
+	private String currentMoodStrength = defaultValue;
 	
 	// TODO so far only one character can have a mood
 	private final String[] moodTypes = {"bored",
@@ -47,6 +48,9 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	private final String[] moodStrength = {"slightly",
 										   "moderately",
 										   "fully"};
+	
+	
+	// reflections.getSubTypesOf(aClazz))
 	
 	// How to get the name of a mood:
 	// character.getMood().getFullName()
@@ -172,7 +176,7 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	
 	// TODO when will this be called? Whenever we ask for the presentFeatures
 	public boolean updateMoodFeatures() {
-		if(!this.currentMoodType.equals("none") && !this.currentMoodType.equals("none")) {
+		if(!this.currentMoodType.equals(defaultValue) && !this.currentMoodType.equals(defaultValue)) {
 			deactivateAllMoodFeatures();
 		} // otherwise the mood Features haven't been initialized yet and don't need to be activated
 		

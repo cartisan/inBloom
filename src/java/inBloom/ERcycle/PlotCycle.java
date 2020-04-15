@@ -44,10 +44,10 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	protected List<PlotDirectedSparseGraph> stories;
 	
 	/** The source file of the agent code. */
-	private String agentSrc;
+	protected String agentSrc;
 	
 	/** Whether the next cycle should start after the current one is finished. */
-	private boolean isPaused;
+	protected boolean isPaused;
 	
 	/** can be used to provide args to PlotLauncher */
 	public String[] cycle_args = new String[0]; 
@@ -57,7 +57,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	
 	protected static int currentCycle = 0;
 	
-	private boolean isRunning = true;
+	protected boolean isRunning = true;
 	
 	/**
 	 * Creates a new cycle object with specified agents.

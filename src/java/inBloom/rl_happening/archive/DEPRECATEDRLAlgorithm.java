@@ -1,7 +1,7 @@
 /**
  * 
  */
-package inBloom.rl_happening.rl_management;
+package inBloom.rl_happening.archive;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -10,6 +10,7 @@ import java.util.Random;
 
 import com.google.common.collect.HashBasedTable;
 
+import inBloom.rl_happening.rl_management.HappeningManager;
 import inBloom.storyworld.Happening;
 
 /**
@@ -19,14 +20,14 @@ import inBloom.storyworld.Happening;
  * @version 19.1.20
  *
  */
-public class RLAlgorithm {
+public class DEPRECATEDRLAlgorithm {
 	
 	private HashMap<Integer, Happening> policy;
 	private HashMap<Integer, Integer> utilityFunction;
 	private HashBasedTable<Integer, Happening, Integer> transitionModel;
 	
 	
-	private LinkedList<Happening> allHappenings;
+	private LinkedList<Happening<?>> allHappenings;
 	
 	/* Rows: States (Integer)
 	 * Columns: Actions (Happenings)
@@ -43,7 +44,7 @@ public class RLAlgorithm {
 	private final int MAX_NUMBER_OF_STEPS = 40;
 	private final int NUMBER_OF_HAPPENINGS = 7;
 	
-	public RLAlgorithm() {
+	public DEPRECATEDRLAlgorithm() {
 		
 		this.policy = new HashMap<Integer, Happening>();
 		this.utilityFunction = new HashMap<Integer, Integer>();
@@ -145,6 +146,7 @@ public class RLAlgorithm {
 			if(chooseRandomly) {
 				if(indexOfHappening == randomHappeningIndex) {
 					bestHappening = happening;
+					// TODO increase indexOfHappening?
 					break;
 				}
 			}
