@@ -74,12 +74,8 @@ public enum UnitVertexType {
 	}
 
 	private static void setAffect(UnitVertexType vertexType, boolean hasPositive, boolean hasNegative) {
-		if (hasPositive) {
-			vertexType.hasPosEmotion = true;
-		}
-		if (hasNegative) {
-			vertexType.hasNegEmotion = true;
-		}
+		vertexType.hasPosEmotion = hasPositive;
+		vertexType.hasNegEmotion = hasNegative;
 	}
 
 	/**
