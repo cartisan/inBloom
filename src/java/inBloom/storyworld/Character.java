@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import jason.RevisionFailedException;
 import jason.asSemantics.AffectiveDimensionChecks;
 import jason.asSemantics.Mood;
 import jason.asSemantics.Personality;
@@ -12,7 +13,6 @@ import jason.asSyntax.Literal;
 
 import inBloom.ActionReport;
 import inBloom.LauncherAgent;
-import inBloom.PlotEnvironment;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
 import inBloom.helper.PerceptAnnotation;
@@ -51,7 +51,12 @@ public class Character extends Existent {
 		// important to set location and inventory using the respective methods, so that percepts are generated for ASL agent
 		this.model.getLocation(lAgent.location).enter(this);
 		for (Item i : lAgent.inventory) {
-			this.addToInventory(i);
+			try {
+				this.plotAgentPendant.addBel(ASSyntax.createLiteral("has", i.literal()));
+				this.addToInventory(i);
+			} catch (RevisionFailedException e) {
+				logger.severe("Couldn't add belief about initial inventory item: " + i.getItemName());
+			}
 		}
 	}
 
@@ -81,16 +86,10 @@ public class Character extends Existent {
 
 	public void addToInventory(Item item) {
 		this.inventory.add(item);
-
-		// update agents inventory perception
-		this.model.environment.addPercept(this.name, ASSyntax.createLiteral("has", item.literal()));
 	}
 
 	public Item removeFromInventory(Item item) {
 		if(this.inventory.remove(item)) {
-			// update agents inventory perception
-			this.model.environment.removePercept(this.name, ASSyntax.createLiteral("has", item.literal()));
-
 			return item;
 		}
 		logger.severe("Character " + this.name + " can't remove item " + item.getItemName() + ". Doesn't have one.");
@@ -100,9 +99,6 @@ public class Character extends Existent {
 	public Item removeFromInventory(String itemName) {
 		for (Item item : this.inventory) {
 			if (item.getItemName().equals(itemName)) {
-				// update agents inventory perception
-				this.model.environment.removePercept(this.name, ASSyntax.createLiteral("has", item.literal()));
-
 				return item;
 			}
 		}

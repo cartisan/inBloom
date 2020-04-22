@@ -49,13 +49,14 @@ wish(relax).
 
 //TODO: how to make creatable_from(X,Y) recursive?
 +found(Item[Annots]) : creatable_from(Item,Y) & is_useful(Y) <-
+	+has(Item[Annots]);
 	.appraise_emotion(hope, "found(Item[Annots])");
 	.suspend(obligation(farm_work));	// only for brevity of graph
 	.suspend(wish(relax));
 	+obligation(create(Y)).
 
 +is_dropped(Thing)[owner(Agent)] : .my_name(Agent) <-		//crowfox
-//	.appraise_emotion(remorse, "has(Thing)", Agent, true).
+	-has(Thing);
 	.appraise_emotion(remorse, "is_dropped(Thing)", Agent, false).
 
 
@@ -63,7 +64,6 @@ wish(relax).
 +is_dropped(Thing)[owner(Agent)] : wish(has(Thing)) <-		//crowfox
 	.appraise_emotion(gloating, "is_dropped(Thing)", Agent);
 	!collect(Thing);
-	-wish(has(X));
 	.resume(wish(relax)).
 
 @compliment[atomic]
@@ -85,12 +85,13 @@ wish(relax).
 +refuseHandOver(Thing, Agent) <-
 	// TODO: continue story by an attack mechanism?
 	.resume(wish(relax)).
-		
+
 /***** action-perception management **********************************************/
 /******************************************************************************/
 
 @collect[atomic]
 +collect(Thing)[success(true)] <-
+	+has(Thing);
 	-wish(has(Thing)).
 	
 +share(Other, Item, Me)[success(true)] : .my_name(Me) <-
@@ -186,23 +187,26 @@ wish(relax).
 
 
 +!create(bread) : has(wheat[state(seed)]) <-
-	!plant(wheat).
+	!plant(wheat);
+	-has(wheat[_]).
 
 +!create(bread) : at(wheat[state(growing)], farm) <-
 	!tend(wheat).
 
 +!create(bread) : at(wheat[state(ripe)], farm) <-
-	!harvest(wheat).
+	!harvest(wheat);
+	+has(wheat[state(harvested)]). // TODO: get env to give this information?
 
 +!create(bread) : has(wheat[state(harvested)]) <-
-	!grind(wheat).
+	!grind(wheat);
+	-+has(wheat[state(flour)]). // TODO: get env to give this information? 
 
 +!create(bread) : has(wheat[state(flour)]) <-
 	!bake(bread);
 	.resume(obligation(farm_work));
 	.resume(wish(relax));
-	-obligation(create(bread));
-	.appraise_emotion(satisfaction, "bake(bread)").
+	-obligation(create(bread)).
+
 
 +!has(Thing) : has(Agent, Thing) & at(Agent, Loc1) & at(Loc2) & not Loc1==Loc2 <- 	//crowfox
 	!approach(Agent).
@@ -222,7 +226,7 @@ wish(relax).
 	};
 	!eat(X);
 	-wish(punish).
-
+	
 @punish_2[atomic, affect(personality(neuroticism, high))]	
 +!punish : mood(hostile) & has(X) & is_pleasant(eat(X)) & hungry & .my_name(Me)<-
 	fret;
@@ -269,8 +273,11 @@ wish(relax).
 +!grind(wheat) <-
 	grind(wheat).
 
+@bake[atomic]
 +!bake(bread) <-
-	bake(bread).
+	bake(bread);
+	-has(wheat[_]);
+	+has(bread). // TODO: get env to give this information?
 
 @eat1[atomic]
 +!eat : has(Item) & edible(Item) <-
@@ -278,17 +285,28 @@ wish(relax).
 	-wish(eat).
 
 //share what you eat if you are nice
-@eat2[atomic, affect(and(personality(agreeableness,positive), not(mood(pleasure,low))))]
+// TODO: Also when you are happy?!
+@eat2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +!eat(Food) : not wish(punish) <-
 	?present(Others);
 	!share(Food, Others);
 	eat(Food);
-	-hungry.
+	-hungry;
+	-has(X).
+	
+@eat4[atomic, affect(and(personality(agreeableness,medium), mood(pleasure,high)))]
++!eat(Food) : not wish(punish) <-
+	?present(Others);
+	!share(Food, Others);
+	eat(Food);
+	-hungry;
+	-has(X).
 
 @eat3[atomic]
 +!eat(X) <- 
 	eat(X);
-	-hungry.
+	-hungry;
+	-has(X).
 
 +!eat(X) : not has(X)<- 
 	.appraise_emotion(disappointment, "eat(X)").
@@ -323,7 +341,7 @@ wish(relax).
 +!sing <-
 	sing.
 
-@share_1[affect(and(personality(agreeableness,positive), not(mood(pleasure,low))))]
+//@share_1[affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +!share(Item, Agent) <-
 	.print("Sharing: ", Item, " with", Agent);
 	share(Item, Agent).
