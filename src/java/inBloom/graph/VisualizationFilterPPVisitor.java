@@ -52,6 +52,8 @@ public class VisualizationFilterPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitPercept(Vertex vertex) {
+		// TODO: merge percepts into action here instead of VertexMergingPPVisitor?
+		// Would allow to get rid of addition of + during causality matching in EdgeGenerationPPVisitor#visitPercept.
 		/* remove percept if it is not
 		 *  - a wish or obligation that is being added or removed 					[for pwt visualization]
 		 *  - the start of a mood, or the end of a mood that triggers something		[for visual clarity]

@@ -459,9 +459,13 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 
 		// Create analysed graph with semantically interpretable edges and collapsed vertices
 		PlotDirectedSparseGraph g = new VertexMergingPPVisitor().apply(this.graph);
+		g.setName("Merged Plot Graph");
+		this.addGraph(g);
 		g = new EdgeGenerationPPVisitor().apply(g);
+		g.setName("Analysed Graph");
+		this.addGraph(g);
 		g = new VisualizationFilterPPVisitor().apply(g);
-		g.setName("Analyzed Plot Graph");
+		g.setName("Filtered Plot Graph");
 
 		// compute all necessary statictics for tellability
 		this.analysisResult = new Tellability(g);
