@@ -19,9 +19,6 @@ smelly(poo).
 		!do_stuff;
 	};
 	!intrinsic_motivation.
-
-+!do_stuff <-
-	do_stuff.
 	
 +self(has_purpose) <-
 	.suspend(intrinsic_motivation).
@@ -50,48 +47,61 @@ smelly(poo).
 /*********************/
 
 -has(X) <-
+	+missing(X);
 	if(is_important(X)) {
 		.appraise_emotion(distress, "has(X)[source(percept)]", "self", true);
 		+self(has_purpose);
-	};
-	+lost(X).
-
-+has(X) : not lost(X) & is_important(X) <-
+		.print("I need to find my ", X, ", it's very important to me! :(");
+		!find(X);
+	}.
+	
++has(X) : not missing(X) & is_important(X) <-
 	.appraise_emotion(pride, "has(X)[source(percept)]", "self").
 
-+has(X) : lost(X) <-
+@p0[atomic]
++has(X) : missing(X) <-
 	.appraise_emotion(relief, "has(X)[source(percept)]", "self");
 	.succeed_goal(find(X));
 	-self(has_purpose);
-	-lost(X);												  // creates termination edge to lost
-		.appraise_emotion(joy, "missing(X)[source(self)]", "self");   // artifice to create positive trade-off of second kind (see Wilke thesis pp. 19) 
+	-missing(X);												  // creates termination edge to missing
+	.appraise_emotion(joy, "missing(X)[source(self)]", "self");   // artifice to create positive trade-off of second kind (see Wilke thesis pp. 19) 
 	+is_bad(lost(X)).
 	
-	
-+lost(X) : is_important(X) <-
-	.print("I need to find my ", X, ", it's very important to me! :(");
-	!find(X).
 	
 @p1[atomic]
 +step_on(X) : smelly(X) <-
 	!clean.
+
++lost(X) <-
+	-has(X).
+	
+@p2[atomic]	
++found(X) <-
+	+has(X).
 	
 +avoid_accident <-
 	!get(drink).
 
+
++!do_stuff <-
+	do_stuff.
+
 +!find(X) <-
 	search(X);
-	if(lost(X)) {
+	if(not has(X)) {
 		!find(X)
 	}.
 
-@p2[atomic]	
+@p3[atomic]	
 +!clean <-
 	clean.
 	
 +!get(drink) <-
 	get(drink).
 
+/******************/
 /* Change of Mind */
+/******************/
+
 +bored <- !rethink_life.
 +!rethink_life <- .drop_desire(intrinsic_motivation).

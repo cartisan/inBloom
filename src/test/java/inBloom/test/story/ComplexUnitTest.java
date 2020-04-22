@@ -8,7 +8,6 @@ import java.util.Set;
 import org.junit.Test;
 
 import inBloom.graph.PlotDirectedSparseGraph;
-import inBloom.graph.PlotGraphController;
 import inBloom.graph.Vertex;
 import inBloom.graph.isomorphism.FunctionalUnits;
 import inBloom.graph.isomorphism.UnitFinder;
@@ -105,7 +104,6 @@ public class ComplexUnitTest  {
 	@Test
 	public void testRetaliationExpand() {
 		UnitFinder finder = new UnitFinder();
-		Class cls = PlotGraphController.class;
 
 		PlotDirectedSparseGraph plotGraph = new PlotDirectedSparseGraph();
 		Vertex v1 = FunctionalUnits.makeSpeech(1, plotGraph);

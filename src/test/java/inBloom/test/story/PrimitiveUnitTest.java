@@ -16,9 +16,11 @@ import jason.asSemantics.Personality;
 import inBloom.LauncherAgent;
 import inBloom.graph.Vertex;
 import inBloom.graph.isomorphism.UnitFinder;
+import inBloom.helper.Tellability;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import inBloom.test.story.helperClasses.AbstractPlotTest;
 import inBloom.test.story.helperClasses.HappeningsCollection;
+import inBloom.test.story.helperClasses.TestModel;
 import inBloom.test.story.helperClasses.TestUnits;
 
 public class PrimitiveUnitTest extends AbstractPlotTest {
@@ -36,9 +38,13 @@ public class PrimitiveUnitTest extends AbstractPlotTest {
 							)
 						);
 
+        agents.get(0).inventory.add(new TestModel.Wallet());
+
         // Initialize happenings
         ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 
+        // happening to start action, by loosing wallet
+        hapDir.scheduleHappening(HappeningsCollection.looseWallet);
         // happening for primitive unit complex positive event
         hapDir.scheduleHappening(HappeningsCollection.findFriendHap);
         // happenings for primitive unit hidden blessing
