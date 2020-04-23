@@ -2,7 +2,7 @@ package inBloom.graph.visitor;
 
 import java.util.function.Consumer;
 
-import inBloom.graph.Edge;
+import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.Vertex;
 
 /**
@@ -14,19 +14,24 @@ import inBloom.graph.Vertex;
  * }
  * @author Sven Wilke
  */
-public class ForEachVisitor extends PlotGraphVisitorAdapter {
+public class ForEachVisitor extends PlotGraphVisitor {
 
 	private Consumer<Vertex> action;
 
 	public ForEachVisitor(Consumer<Vertex> action) {
 		this.action = action;
 	}
-	
+
 	@Override
-	public void visitVertex(Vertex vertex) {
-		action.accept(vertex);
+	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
+		graph.accept(this);
+		return graph;
 	}
-	
+
+	public void visitVertex(Vertex vertex) {
+		this.action.accept(vertex);
+	}
+
 	@Override
 	public void visitRoot(Vertex vertex) {
 		this.visitVertex(vertex);
@@ -36,7 +41,7 @@ public class ForEachVisitor extends PlotGraphVisitorAdapter {
 	public void visitEvent(Vertex vertex) {
 		this.visitVertex(vertex);
 	}
-	
+
 	@Override
 	public void visitAction(Vertex vertex) {
 		this.visitVertex(vertex);
@@ -65,16 +70,5 @@ public class ForEachVisitor extends PlotGraphVisitorAdapter {
 	@Override
 	public void visitIntention(Vertex vertex) {
 		this.visitVertex(vertex);
-	}
-	
-	@Override
-	public EdgeVisitResult visitEdge(Edge edge) {
-		switch(edge.getType()) {
-			case ROOT:
-			case TEMPORAL:
-				return EdgeVisitResult.CONTINUE;
-			default:
-				return EdgeVisitResult.TERMINATE;
-		}
 	}
 }

@@ -1,4 +1,4 @@
-package inBloom.graph;
+package inBloom.graph.visitor;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,8 +15,9 @@ import com.google.common.collect.Sets;
 
 import jason.asSemantics.Emotion;
 
-import inBloom.graph.visitor.EdgeVisitResult;
-import inBloom.graph.visitor.PlotGraphVisitor;
+import inBloom.graph.Edge;
+import inBloom.graph.PlotDirectedSparseGraph;
+import inBloom.graph.Vertex;
 import inBloom.helper.TermParser;
 
 /**
@@ -25,11 +26,10 @@ import inBloom.helper.TermParser;
  * creating all primitive FU.
  * @author Leonid Berov
  */
-public class EdgeGenerationPPVisitor implements PlotGraphVisitor {
+public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 	protected static Logger logger = Logger.getLogger(EdgeGenerationPPVisitor.class.getName());
 	private static final boolean KEEP_MOTIVATION = true;
 
-	private PlotDirectedSparseGraph graph;
 	private LinkedList<Vertex> eventList;
 	private Vertex currentRoot;
 	/** Safes which actions and perceptions were annotated with which crossChar ID.
@@ -37,14 +37,15 @@ public class EdgeGenerationPPVisitor implements PlotGraphVisitor {
 	 *  Maps: ID -> Multuple Vertices */
 	private ArrayListMultimap<String, Vertex> xCharIDMap;
 
-	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
-		this.graph = graph.clone();
+	public EdgeGenerationPPVisitor() {
 		this.eventList = new LinkedList<>();
 		this.xCharIDMap = ArrayListMultimap.create();
+	}
 
-		this.graph.accept(this);
-
+	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
+		super.apply(graph);
 		this.postProcessing();
+
 		return this.graph;
 	}
 
@@ -130,18 +131,6 @@ public class EdgeGenerationPPVisitor implements PlotGraphVisitor {
 		this.attachMotivation(vertex);
 		this.eventList.addFirst(vertex);
 	}
-
-	@Override
-	public EdgeVisitResult visitEdge(Edge edge) {
-		switch(edge.getType()) {
-			case ROOT:
-			case TEMPORAL:
-				return EdgeVisitResult.CONTINUE;
-			default:
-				return EdgeVisitResult.TERMINATE;
-		}
-	}
-
 
 	private void lookForPerseverance(Vertex vertex) {
 		for(Vertex target : this.eventList) {

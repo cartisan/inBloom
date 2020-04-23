@@ -1,4 +1,4 @@
-package inBloom.graph;
+package inBloom.graph.visitor;
 
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -6,9 +6,10 @@ import java.util.stream.Collectors;
 
 import jason.asSemantics.Mood;
 
+import inBloom.graph.Edge;
+import inBloom.graph.PlotDirectedSparseGraph;
+import inBloom.graph.Vertex;
 import inBloom.graph.Edge.Type;
-import inBloom.graph.visitor.EdgeVisitResult;
-import inBloom.graph.visitor.PlotGraphVisitor;
 
 /**
  * This post-process visitor is supposed to operate one the fully analysed plot graph created by
@@ -18,16 +19,14 @@ import inBloom.graph.visitor.PlotGraphVisitor;
  * Used to filter irrelevant vertices from the final version of the graph.
  * @author Sven Wilke
  */
-public class VisualizationFilterPPVisitor implements PlotGraphVisitor {
+public class VisualizationFilterPPVisitor extends PlotGraphVisitor {
 	protected static Logger logger = Logger.getLogger(VisualizationFilterPPVisitor.class.getName());
 
-	private PlotDirectedSparseGraph graph;
 	private Vertex currentRoot;
 
+	@Override
 	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
-		this.graph = graph.clone();
-
-		this.graph.accept(this);
+		super.apply(graph);
 		this.postProcessing();
 
 		return this.graph;
@@ -106,17 +105,6 @@ public class VisualizationFilterPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitListen(Vertex vertex) {
-	}
-
-	@Override
-	public EdgeVisitResult visitEdge(Edge edge) {
-		switch(edge.getType()) {
-			case ROOT:
-			case TEMPORAL:
-				return EdgeVisitResult.CONTINUE;
-			default:
-				return EdgeVisitResult.TERMINATE;
-		}
 	}
 
 	/**

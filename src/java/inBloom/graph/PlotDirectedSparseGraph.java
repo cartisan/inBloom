@@ -562,7 +562,9 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 					for(Edge e : edges) {
 						remEdges.add(new RemovedEdge(e, this.getDest(e)));
 					}
+
 					this.acceptVertex((Vertex)o, visitor);
+
 					if(this.containsVertex((Vertex)o)) {
 						for(Edge e : edges) {
 							visitQueue.addFirst(e);
@@ -572,9 +574,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 							visitQueue.addFirst(e);
 						}
 					}
-				} else
-				if(o instanceof Edge) {
-
+				} else if(o instanceof Edge) {
 					switch(visitor.visitEdge((Edge)o)) {
 						case CONTINUE:
 							visitQueue.addLast(this.getDest((Edge)o));
@@ -586,8 +586,7 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 						default:
 							break;
 					}
-				} else
-				if(o instanceof RemovedEdge) {
+				} else if(o instanceof RemovedEdge) {
 					switch(visitor.visitEdge(((RemovedEdge)o).getEdge())) {
 						case CONTINUE:
 							visitQueue.addLast(((RemovedEdge)o).getDest());

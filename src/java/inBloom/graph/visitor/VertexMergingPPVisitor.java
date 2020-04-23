@@ -1,12 +1,11 @@
-package inBloom.graph;
+package inBloom.graph.visitor;
 
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import jason.asSemantics.Emotion;
 
-import inBloom.graph.visitor.EdgeVisitResult;
-import inBloom.graph.visitor.PlotGraphVisitor;
+import inBloom.graph.Vertex;
 import inBloom.helper.TermParser;
 
 /**
@@ -14,20 +13,14 @@ import inBloom.helper.TermParser;
  * It will collapse emotions, percepts and action into a single vertex.
  * @author Sven Wilke
  */
-public class VertexMergingPPVisitor implements PlotGraphVisitor {
+public class VertexMergingPPVisitor extends PlotGraphVisitor {
 	protected static Logger logger = Logger.getLogger(VertexMergingPPVisitor.class.getName());
 
-	private PlotDirectedSparseGraph graph;
 	private LinkedList<Vertex> eventList;
 	private Vertex currentRoot;
 
-	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
-		this.graph = graph.clone();
+	public VertexMergingPPVisitor() {
 		this.eventList = new LinkedList<>();
-
-		this.graph.accept(this);
-
-		return this.graph;
 	}
 
 	@Override
@@ -49,14 +42,12 @@ public class VertexMergingPPVisitor implements PlotGraphVisitor {
 
 	@Override
 	public void visitEmotion(Vertex vertex) {
-		Emotion emotion;
-
 		// Create emotion from toString() representation of emotion
 		// (instead of previously used literal representation)
-		emotion = TermParser.emotionFromString(vertex.getLabel());
+		Emotion emotion = TermParser.emotionFromString(vertex.getLabel());
 
 		if(emotion == null) {
-			logger.info("Emotion in PP was invalid. " + vertex.toString());
+			logger.severe("Emotion in PP was invalid. " + vertex.toString());
 			return;
 		}
 
@@ -135,17 +126,6 @@ public class VertexMergingPPVisitor implements PlotGraphVisitor {
 
 		if(vertex.getType() == Vertex.Type.PERCEPT) {
 			this.eventList.addFirst(vertex);
-		}
-	}
-
-	@Override
-	public EdgeVisitResult visitEdge(Edge edge) {
-		switch(edge.getType()) {
-			case ROOT:
-			case TEMPORAL:
-				return EdgeVisitResult.CONTINUE;
-			default:
-				return EdgeVisitResult.TERMINATE;
 		}
 	}
 

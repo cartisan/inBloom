@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import jason.asSemantics.Emotion;
 
+import inBloom.graph.visitor.VertexMergingPPVisitor;
 import inBloom.helper.TermParser;
 
 /**
@@ -41,8 +42,8 @@ public class Vertex implements Cloneable {
 	private boolean isPolyvalent;
 
 	/**
-	 * Stores emotions that have been attached to this Vertex. Only PERCEPT-type vertices can contain emotions, and
-	 * these emotions are collapsed into the percept during graph analysis by {@linkplain VertexMergingPPVisitor}, which
+	 * Stores emotions that have been attached to this Vertex. Only PERCEPT and ACTION type vertices can contain emotions, and
+	 * these emotions are collapsed into them during graph analysis by {@linkplain VertexMergingPPVisitor}, which
 	 * means the emotions a vertex has are not usually known during vertex creation.
 	 */
 	private LinkedList<String> emotions = new LinkedList<>();

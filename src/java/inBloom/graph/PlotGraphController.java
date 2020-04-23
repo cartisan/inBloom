@@ -37,7 +37,10 @@ import inBloom.ERcycle.CounterfactualityCycle;
 import inBloom.graph.isomorphism.FunctionalUnit;
 import inBloom.graph.isomorphism.FunctionalUnit.Instance;
 import inBloom.graph.isomorphism.FunctionalUnits;
+import inBloom.graph.visitor.EdgeGenerationPPVisitor;
 import inBloom.graph.visitor.EdgeLayoutVisitor;
+import inBloom.graph.visitor.VertexMergingPPVisitor;
+import inBloom.graph.visitor.VisualizationFilterPPVisitor;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
 

@@ -3,27 +3,25 @@ package inBloom.graph.visitor;
 import java.util.Collection;
 
 import inBloom.graph.Edge;
-import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.Vertex;
 
 /**
  * Computes and sets the offsets of a graph's edges for later display.
  * @author Sven Wilke
  */
-public class EdgeLayoutVisitor implements PlotGraphVisitor {
-	
+public class EdgeLayoutVisitor extends PlotGraphVisitor {
+
 	/**
 	 * Number of pixels between two edges.
 	 */
 	private static final int EDGE_SPACING = 9;
-	
-	private PlotDirectedSparseGraph graph;
+
 	private Vertex[] occupanceLeft;
 	private Vertex[] occupanceRight;
-	
+
 	/**
 	 * Creates a visitor for a given graph, with maximally <i>numLanes</i> columns
-	 * in either direction. 
+	 * in either direction.
 	 * @param g
 	 * @param numLanes
 	 */
@@ -31,15 +29,7 @@ public class EdgeLayoutVisitor implements PlotGraphVisitor {
 		this.occupanceLeft = new Vertex[numLanes];
 		this.occupanceRight = new Vertex[numLanes];
 	}
-	
 
-	@Override
-	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
-		this.graph = graph;
-		this.graph.accept(this);
-		return this.graph;
-	}
-	
 	private void visitVertex(Vertex vertex) {
 		for(int i = 0; i < this.occupanceLeft.length; i++) {
 			if(this.occupanceLeft[i] == vertex) {
@@ -62,7 +52,7 @@ public class EdgeLayoutVisitor implements PlotGraphVisitor {
 			}
 		}
 	}
-	
+
 	@Override
 	public EdgeVisitResult visitEdge(Edge edge) {
 		Edge.Type type = edge.getType();
@@ -70,8 +60,8 @@ public class EdgeLayoutVisitor implements PlotGraphVisitor {
 			return EdgeVisitResult.CONTINUE;
 		}
 		if(type == Edge.Type.MOTIVATION || type == Edge.Type.CAUSALITY) {
-			int lane = getFreeLaneLeft();
-			this.occupanceLeft[lane] = graph.getDest(edge);
+			int lane = this.getFreeLaneLeft();
+			this.occupanceLeft[lane] = this.graph.getDest(edge);
 			int offset = EDGE_SPACING + lane * EDGE_SPACING;
 			edge.setOffset(offset);
 			Vertex vertexA = this.graph.getDest(edge);
@@ -81,7 +71,7 @@ public class EdgeLayoutVisitor implements PlotGraphVisitor {
 		}
 		return EdgeVisitResult.TERMINATE;
 	}
-	
+
 	private int getFreeLaneLeft() {
 		for(int i = 0; i < this.occupanceLeft.length; i++) {
 			if(this.occupanceLeft[i] == null) {
@@ -90,7 +80,7 @@ public class EdgeLayoutVisitor implements PlotGraphVisitor {
 		}
 		return 0;
 	}
-	
+
 	private int getFreeLaneRight() {
 		for(int i = 0; i < this.occupanceRight.length; i++) {
 			if(this.occupanceRight[i] == null) {
