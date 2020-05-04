@@ -506,7 +506,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 
 
 	@Override
-	public List<String> getAllPossibleFeatures() {
+	public LinkedList<String> getDomainDependentFeatures() {
 		LinkedList<String> allFeatures = new LinkedList<String>();
 		for(String i: features) {
 			allFeatures.add(i);

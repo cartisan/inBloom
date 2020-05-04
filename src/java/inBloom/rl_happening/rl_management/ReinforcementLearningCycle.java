@@ -53,6 +53,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	 * The launcher of the last cycle.
 	 */
 	protected PlotLauncher<?,?> lastRunner;
+	protected FeaturePlotModel<?> plotModel;
 	
 	
 	private SarsaLambda rlApplication;
@@ -81,8 +82,8 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 //		this.originalGraph = originalGraph; // TODO why needed? -> for Tellability or GUI or something? Analysing?
 //		this.originalMood = originalMood; // TODO why needed?
 		
-		this.rlApplication = new SarsaLambda();
-		this.rlApplication.initializeParameters();
+		this.rlApplication = new SarsaLambda(this.plotModel);
+		//this.rlApplication.initializeParameters();
 	}
 
 	@Override
@@ -176,7 +177,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		 * 
 		 * We get the story specific model
 		 */
-		PlotModel<?> model = this.getPlotModel(agents);
+		this.plotModel = this.getPlotModel(agents);
 		// TODO hier HappeningScheduler übergeben -> s. RedhenHappening
 		
 		
@@ -186,7 +187,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		 * A ReflectResult saves the information we need for the next simulation, e.g.
 		 * the PlotLauncher, the Model and the LauncherAgents
 		 */
-		ReflectResult reflectResult = new ReflectResult(runner, model, agents);
+		ReflectResult reflectResult = new ReflectResult(runner, this.plotModel, agents);
 		
 		this.log("Cycle " + currentCycle);
 		
@@ -211,7 +212,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	
 	public abstract PlotLauncher<?, ?> getPlotLauncher();
 	
-	public abstract PlotModel<?> getPlotModel(List<LauncherAgent> agents);
+	public abstract FeaturePlotModel<?> getPlotModel(List<LauncherAgent> agents);
 	
 
 	

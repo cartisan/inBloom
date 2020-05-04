@@ -32,6 +32,8 @@ public class RobinsonCycle extends ReinforcementLearningCycle {
 	// needs to be static, so that it can be accessed during the invocation of the super constructor
 	private static String[] agentNames = {"robinson"};
 	private static Personality[] agentPersonalities = {new Personality(1, 0, 0.5, -0.5, 0)};
+	
+	
 
 	/**
 	 * Constructor, invokingthe super constructor using the given source of the asl file for the agents
@@ -42,6 +44,7 @@ public class RobinsonCycle extends ReinforcementLearningCycle {
 	 */
 	public RobinsonCycle() {
 		super("islandAgent", agentNames, agentPersonalities);
+		
 	}
 	
 	public static void main(String[] args) {
@@ -58,7 +61,7 @@ public class RobinsonCycle extends ReinforcementLearningCycle {
 	// gethappeningDirector, which CREATES A NEW HappeningDirector and schedules all Happenings
 	// NEWLY
 	@Override
-	public PlotModel<?> getPlotModel(List<LauncherAgent> agents) {
+	public FeaturePlotModel<?> getPlotModel(List<LauncherAgent> agents) {
 		// TODO change the ScheduledHappeningDirector into my own RL one :D
 		//return new IslandModel(agents, new ScheduledHappeningDirector());
 		return new IslandModel(new ArrayList<LauncherAgent>(), this.getHappeningDirector());

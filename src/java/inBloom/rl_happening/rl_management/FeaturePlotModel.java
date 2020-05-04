@@ -4,6 +4,7 @@
 package inBloom.rl_happening.rl_management;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import inBloom.LauncherAgent;
@@ -23,10 +24,10 @@ import inBloom.storyworld.Character;
 public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> extends PlotModel<EnvType> {
 	
 	// a list of all possible domain-specific features that are relevant to the model state
-	public List<String> allPossibleFeatures;
+	private LinkedList<String> allPossibleFeatures;
 	// IDEA: Make has HashSet<String, boolean> -> only have one variable
 	// a list of all currently activated features, meaning all features present in the current state of the model
-	public List<String> presentFeatures;
+	private LinkedList<String> presentFeatures;
 	
 	private Collection<Character> allCharacters;
 	
@@ -55,6 +56,12 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	// How to get the name of a mood:
 	// character.getMood().getFullName()
 	
+	
+	
+	/**
+	 * CONSTRUCTOR
+	 */
+	
 	public FeaturePlotModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		
 		super(agentList, hapDir);
@@ -62,8 +69,8 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 		// The Character HashMap has been initialized and filled with all Characters in the super Constructor
 		this.allCharacters = this.getCharacters();
 		
-		// Create a list of all possible domain-specific features
-		this.allPossibleFeatures = this.getAllPossibleFeatures();
+		// Create a list of all domain-specific features
+		this.allPossibleFeatures = this.getDomainDependentFeatures();
 		// Add all domain independent features
 		for(Character character: this.allCharacters) {
 			this.createMoodFeatures(this.allCharacters, this.moodTypes);
@@ -79,23 +86,18 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 		}
 	}
 	
-	public abstract List<String> getAllPossibleFeatures();
-		
+	
+	
+	
 	/**
-	 * Adds all Features from a given String array to the list opf all possible features, which
-	 * is everything needed to create a feature
-	 * 
-	 * @param featureNames
-	 * 			String Array of all feature names to be added as features
+	 * METHODS FOR GETTING FEATURE LISTS
 	 */
-	public void createMoodFeatures(Collection<Character> characters, String[] featureNames) {
-		for(Character character: characters) {
-			for(String featureName: featureNames) {
-				String feature = this.createCharacterDependentFeature(character, featureName);
-				this.allPossibleFeatures.add(feature);
-			}
-		}
+	
+	public LinkedList<String> getAllPossibleFeatures() {
+		return this.allPossibleFeatures;
 	}
+	
+	public abstract LinkedList<String> getDomainDependentFeatures();
 	
 	/**
 	 * Returns a list of features that should already be activated before the story starts.
@@ -110,6 +112,13 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 		this.updateMoodFeatures();
 		return this.presentFeatures;
 	}
+	
+	
+	
+	
+	/**
+	 * METHODS TO (DE)ACTIVATE FEATURES
+	 */
 	
 	/**
 	 * Activates a given feature for the PlotModel by adding the feature to the list of present features
@@ -165,14 +174,6 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 			return true;
 		}
 	}
-
-	public String getMoodName(Character character) {
-		return character.getMood().getType();
-	}
-	
-	public String getMoodStrength(Character character) {
-		return character.getMood().getStrength();
-	}
 	
 	// TODO when will this be called? Whenever we ask for the presentFeatures
 	public boolean updateMoodFeatures() {
@@ -207,7 +208,45 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 		assert(strengthSuccess): "Mood Strength hadn't been activated yet.";
 	}
 	
+	
+	
+	
+	/**
+	 * METHODS TO CREATE (DOMAIN INDEPENDENT) FEATURES
+	 */
+	
 	private String createCharacterDependentFeature(Character character, String featureName) {
 		return character.name + featureName;
+	}
+	
+	/**
+	 * Adds all Features from a given String array to the list opf all possible features, which
+	 * is everything needed to create a feature
+	 * 
+	 * @param featureNames
+	 * 			String Array of all feature names to be added as features
+	 */
+	public void createMoodFeatures(Collection<Character> characters, String[] featureNames) {
+		for(Character character: characters) {
+			for(String featureName: featureNames) {
+				String feature = this.createCharacterDependentFeature(character, featureName);
+				this.allPossibleFeatures.add(feature);
+			}
+		}
+	}
+	
+	
+	
+	
+	/**
+	 * HELPER METHODS FOR BACKGROUND INFORMATION
+	 */
+	
+	public String getMoodName(Character character) {
+		return character.getMood().getType();
+	}
+	
+	public String getMoodStrength(Character character) {
+		return character.getMood().getStrength();
 	}
 }

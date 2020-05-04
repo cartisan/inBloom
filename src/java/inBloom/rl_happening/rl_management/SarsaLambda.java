@@ -11,6 +11,7 @@ import java.util.Random;
 
 import com.google.common.collect.HashBasedTable;
 
+import inBloom.PlotModel;
 import inBloom.storyworld.Happening;
 
 /**
@@ -21,6 +22,11 @@ import inBloom.storyworld.Happening;
  *
  */
 public class SarsaLambda {
+	
+	/**
+	 * UNDERLYING MODEL
+	 */
+	FeaturePlotModel<?> featurePlotModel;
 	
 	/**
 	 * FINE-TUNABLE VARIABLES
@@ -34,15 +40,20 @@ public class SarsaLambda {
 	 * DATA STRUCTURES FOR PERFORMING THE ALGORITHM
 	 */
 	private List<Integer> eligibilityTraces;
-	private HashMap<String, Integer> weights;
+	private HashMap<String, Integer> weights;		/* String = Name of the Feature
+													 * Integer = Weight */
 	private HashBasedTable<Integer, Happening<?>, Integer> qValues; /* Rows: States (Integer)
 	 															  	 * Columns: Actions (Happenings)
 	 															  	 * Values: Q-Values (State-Action-Utility)*/
 	private Happening<?>[] allHappenings = new Happening<?>[0];
 	
+	private LinkedList<String> allFeatures;
+	
 
 	
-	public SarsaLambda() {
+	public SarsaLambda(FeaturePlotModel<?> model) {
+		
+		this.featurePlotModel = model;
 
 		// TODO possibel problem: allhappenings are onyl initialized after HappeningManager.scheduleHappenings has been called
 		// -> may change in the future since we won't really schedule Happenings anymore?
@@ -58,18 +69,18 @@ public class SarsaLambda {
 //			this.allHappenings.
 //		}
 //		this.allHappenings = 
-				
-		this.eligibilityTraces = new LinkedList<Integer>();
+		
+		this.allFeatures = this.featurePlotModel.getAllPossibleFeatures();
 		
 		this.initializeWeights();
 		this.initializeEligibilityTraces();
 		
 	}
 	
-	public void initializeParameters() {
-		this.initializeWeights();
-		this.initializeEligibilityTraces();
-	}
+//	public void initializeParameters() {
+//		this.initializeWeights();
+//		this.initializeEligibilityTraces();
+//	}
 	
 
 	
@@ -123,10 +134,13 @@ public class SarsaLambda {
 	
 	private void initializeWeights() {
 		// TODO initialize weights randomly
+		// private HashMap<String, Integer> weights;
+		this.weights = new HashMap<String, Integer>();
 	}
 	
 	private void initializeEligibilityTraces() {
 		// TODO initialize eligibilityTraces with 0
+		this.eligibilityTraces = new LinkedList<Integer>();
 	}
 	
 
