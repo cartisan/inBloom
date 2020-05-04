@@ -47,8 +47,9 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	
 	/**
 	 * All feature names
+	 * Needs to be static in order to create features during initialisation
 	 */
-	String[] features = {"isAlive",
+	static String[] features = {"isAlive",
 						 "isOnCruise",
 						 "hasAHut",
 						 "hasAtLeastOneFriend"};
@@ -507,7 +508,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	@Override
 	public List<String> getAllPossibleFeatures() {
 		LinkedList<String> allFeatures = new LinkedList<String>();
-		for(String i: this.features) {
+		for(String i: features) {
 			allFeatures.add(i);
 		}
 		return allFeatures;
