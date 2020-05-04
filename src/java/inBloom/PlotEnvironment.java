@@ -123,6 +123,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * in order to create an actualization edge.
      * This relaying is necessary, because the action needs to be plotted when it is executed,
      * and not when it is scheduled, otherwise the graph would get out of order.
+     * maps: {agent name -> {action -> intention}}
      */
     private ConcurrentHashMap<String, HashMap<Structure, Intention>> actionIntentionMap = new ConcurrentHashMap<>();
 
@@ -215,16 +216,16 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	@Override
     public boolean executeAction(String agentName, Structure action) {
     	// add attempted action to plot graph
-		String motivation = "[" + Edge.Type.MOTIVATION.toString() + "(%s)]";
+		String annotation = "[" + Edge.Type.ACTUALIZATION.toString() + "(%s)]";
 		Intention intent = this.actionIntentionMap.get(agentName).get(action);
 		if(intent != null) {
-			motivation = String.format(motivation, TermParser.removeAnnots(intent.peek().getTrigger().getTerm(1).toString()));
+			annotation = String.format(annotation, TermParser.removeAnnots(intent.peek().getTrigger().getTerm(1).toString()));
 		} else {
-			motivation = "";
+			annotation = "";
 		}
 		this.actionIntentionMap.get(agentName).remove(action);
 
-		PlotGraphController.getPlotListener().addEvent(agentName, action.toString() + motivation, Type.ACTION, this.getStep());
+		PlotGraphController.getPlotListener().addEvent(agentName, action.toString() + annotation, Type.ACTION, this.getStep());
 
     	// let the domain specific subclass handle the actual action execution
     	// ATTENTION: this is were domain-specific action handling code goes

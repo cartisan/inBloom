@@ -73,15 +73,17 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 	@Override
 	public void visitAction(Vertex vertex) {
  		// create actualization edges to causing intention
-		String motivation = TermParser.getAnnotation(vertex.getLabel(), Edge.Type.MOTIVATION.toString());
+		String intention = TermParser.getAnnotation(vertex.getLabel(), Edge.Type.ACTUALIZATION.toString());
 
-		if(motivation.length() > 0) {
+		if(intention.length() > 0) {
 			for(Vertex target : this.eventList) {
-				if(motivation.equals(target.getIntention())) {
+				if(intention.equals(target.getIntention())) {
 					this.graph.addEdge(new Edge(Edge.Type.ACTUALIZATION), target, vertex);
 					break;
 				}
 			}
+		} else {
+			logger.severe("Found action with no intention annotation: " + vertex.getLabel());
 		}
 
 		this.processCrossCharAnnotation(vertex);
@@ -115,7 +117,17 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 
 	@Override
 	public void visitSpeech(Vertex vertex) {
-		this.attachMotivation(vertex);
+		String intention = TermParser.getAnnotation(vertex.getLabel(), Edge.Type.ACTUALIZATION.toString());
+		if(intention.length() > 0) {
+			intention = TermParser.removeAnnots(intention);
+			for(Vertex target : this.eventList) {
+				if(intention.equals(target.getIntention())) {
+					this.graph.addEdge(new Edge(Edge.Type.ACTUALIZATION), target, vertex);
+					break;
+				}
+			}
+		}
+
 		this.eventList.addFirst(vertex);
 	}
 

@@ -67,7 +67,7 @@ public class FunctionalUnits {
 		v3 = makeIntention(3, deniedRequest);
 		deniedRequest.addEdge(makeMotivation(), v2, v3);
 		v2 = makeSpeech(4, deniedRequest);
-		deniedRequest.addEdge(makeMotivation(), v3, v2);
+		deniedRequest.addEdge(makeActualization(), v3, v2);
 		v3 = makeNegative(5, deniedRequest);
 		deniedRequest.addEdge(makeCrosschar(), v2, v3);
 		DENIED_REQUEST = new FunctionalUnit("Denied Request", deniedRequest, 1, 2);
@@ -89,7 +89,7 @@ public class FunctionalUnits {
 		v3 = makeIntention(3, retaliation);
 		retaliation.addEdge(makeMotivation(), v2, v3);
 		v2 = makeActive(4, retaliation);
-		retaliation.addEdge(makeMotivation(), v3, v2);
+		retaliation.addEdge(makeActualization(), v3, v2); // TODO was motivation?
 		v1 = makeIntention(5, retaliation);
 		retaliation.addEdge(makeCrosschar(), v2, v1);
 		v2 = makeNegative(6, retaliation);
@@ -167,13 +167,13 @@ public class FunctionalUnits {
 		INADVERTENT_AGGRAVATION = new FunctionalUnit("Inadv. Aggr.", inadvAggr);
 
 		PlotDirectedSparseGraph honoredRequest = new PlotDirectedSparseGraph();
-		v1 = makeIntention(1, honoredRequest);
+		v1 = makeSpeech(1, honoredRequest);
 		v2 = makePositive(2, honoredRequest);
 		honoredRequest.addEdge(makeCrosschar(), v1, v2);
 		v3 = makeIntention(3, honoredRequest);
 		honoredRequest.addEdge(makeMotivation(), v2, v3);
-		v2 = makeIntention(4, honoredRequest);
-		honoredRequest.addEdge(makeMotivation(), v3, v2);
+		v2 = makeSpeech(4, honoredRequest);
+		honoredRequest.addEdge(makeActualization(), v3, v2);
 		v3 = makePositive(5, honoredRequest);
 		honoredRequest.addEdge(makeCrosschar(), v2, v3);
 		HONORED_REQUEST = new FunctionalUnit("Honored Request", honoredRequest, 1, 2);

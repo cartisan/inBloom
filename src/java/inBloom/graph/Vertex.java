@@ -213,27 +213,20 @@ public class Vertex implements Cloneable {
 	}
 
 	/**
-	 * Returns the label of this string if it is an intention.
-	 * It only returns something other than the empty string,
-	 * if the label starts with "!".
-	 * For vertices of type INTENTION or SPEECHACT, this returns
-	 * the complete label without annotations, without "!".
-	 * For vertices of type LISTEN, this returns the vertex label
-	 * without annotations and without the leading "+!".
+	 * Returns the propositional content of this label if it is an intention.
 	 * For all other vertices, this returns an empty string.
 	 */
 	public String getIntention() {
-		switch(this.type) {
-			case INTENTION:
-			case SPEECHACT:
-				String removedAnnots = TermParser.removeAnnots(this.label);
-				if(removedAnnots.startsWith("!")) {
-					return removedAnnots.substring(1);
-				} else {
-					return "";
-				}
-			default:
+		if (Vertex.Type.INTENTION == this.type) {
+			String removedAnnots = TermParser.removeAnnots(this.label);
+			if(removedAnnots.startsWith("!")) {
+				return removedAnnots.substring(1);
+			} else {
+				logger.severe("Found intention that does not start with !: " + this.label);
 				return "";
+			}
+		} else {
+			return "";
 		}
 	}
 

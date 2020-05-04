@@ -32,7 +32,7 @@ public class PlotAwareCentralisedAgArch extends CentralisedAgArch {
     	Intention sourceIntention = this.getTS().getC().getSelectedIntention();
     	String motivation = "";
     	if(sourceIntention != null) {
-    		 motivation = String.format("[" + Edge.Type.MOTIVATION.toString() + "(%1s)]", TermParser.removeAnnots(sourceIntention.peek().getTrigger().getTerm(1).toString()));
+    		 motivation = String.format("[" + Edge.Type.ACTUALIZATION.toString() + "(%1s)]", TermParser.removeAnnots(sourceIntention.peek().getTrigger().getTerm(1).toString()));
     	}
 
     	Vertex senderV = PlotGraphController.getPlotListener().addMsgSend(m, motivation, step);
