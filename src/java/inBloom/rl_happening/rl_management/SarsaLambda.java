@@ -29,6 +29,12 @@ public class SarsaLambda {
 	FeaturePlotModel<?> featurePlotModel;
 	
 	/**
+	 * PARAMETER RESTRICTIONS
+	 */
+	private final int INITIAL_WEIGHT_MAX = 1;
+	private final int INITIAL_WEIGHT_MIN = 0;
+	
+	/**
 	 * FINE-TUNABLE VARIABLES
 	 */
 	private final double epsilon = 0; // epsilon-soft greedy actio nselection criteria
@@ -57,30 +63,19 @@ public class SarsaLambda {
 
 		// TODO possibel problem: allhappenings are onyl initialized after HappeningManager.scheduleHappenings has been called
 		// -> may change in the future since we won't really schedule Happenings anymore?
+		// TODO change to LinkedList in general, not Array?
 		LinkedList<Happening<?>> happeningList = HappeningManager.getAllHappenings();
-		
 		happeningList.toArray(this.allHappenings);
+	
 		
-//		/**
-//		 * convert List to Array
-//		 * TODO change the array to List in general?
-//		 */
-//		for(Happening<?> happening: happeningList) {
-//			this.allHappenings.
-//		}
-//		this.allHappenings = 
 		
+		// needed to create the initial weights and eligibility Traces for every feature
 		this.allFeatures = this.featurePlotModel.getAllPossibleFeatures();
 		
 		this.initializeWeights();
 		this.initializeEligibilityTraces();
 		
 	}
-	
-//	public void initializeParameters() {
-//		this.initializeWeights();
-//		this.initializeEligibilityTraces();
-//	}
 	
 
 	
@@ -132,17 +127,41 @@ public class SarsaLambda {
 	 * INITIALIZING STUFF
 	 */
 	
+	/**
+	 * Initializes random initial weights for every possible feature of the underlying FeaturePlotModel
+	 */
 	private void initializeWeights() {
-		// TODO initialize weights randomly
-		// private HashMap<String, Integer> weights;
+		
+		// initialize the HashMap that maps from Feature to Weight
 		this.weights = new HashMap<String, Integer>();
+		
+		// go through all features to assign random initial weight to them
+		for(String feature: this.allFeatures) {
+			
+			// generate a random value for the initial weight
+			int initialWeightValue = new Random().nextInt(INITIAL_WEIGHT_MAX - INITIAL_WEIGHT_MIN + 1) + INITIAL_WEIGHT_MIN;
+			
+			// set the initial weight for this feature to the generated value
+			this.weights.put(feature, initialWeightValue);
+		}
 	}
 	
+	/**
+	 * Initializes all inital eligibility values as 0 for every possible feature of the underlying FeaturePlotModel
+	 */
 	private void initializeEligibilityTraces() {
-		// TODO initialize eligibilityTraces with 0
+		
+		// initialize the HashMap that maps from Feature to Eligibility Value
 		this.eligibilityTraces = new LinkedList<Integer>();
+
+		// go through all features to assign random initial eligibility values to them
+		for(String feature: this.allFeatures) {
+
+			// set the initial eligibility value for this feature to 0
+			this.weights.put(feature, 0);
+		}
 	}
-	
+
 
 	public Happening<?> performStep(int step) {
 		return null;

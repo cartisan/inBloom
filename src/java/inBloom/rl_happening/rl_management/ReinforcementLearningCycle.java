@@ -82,8 +82,23 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 //		this.originalGraph = originalGraph; // TODO why needed? -> for Tellability or GUI or something? Analysing?
 //		this.originalMood = originalMood; // TODO why needed?
 		
-		this.rlApplication = new SarsaLambda(this.plotModel);
-		//this.rlApplication.initializeParameters();
+		/* 
+		 * AGENTS -> TODO same (copied) as in in this class: createInitialReflectResult
+		 * 
+		 * A set of functioning LauncherAgents is created from a list of names and a seperate
+		 * list of matching personalities
+		 */
+		List<LauncherAgent> agents = this.createAgs(this.agentNames, this.agentPersonalities);
+		
+		
+		/**
+		 * SARSA(LAMBDA) - Initialization
+		 * - create all Happenings
+		 * - initialize Weights
+		 * - initialize eligibility Traces
+		 */
+		this.rlApplication = new SarsaLambda(this.getPlotModel(agents));
+
 	}
 
 	@Override
@@ -203,6 +218,73 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		super.finish(er);
 	}
 
+	/**
+	 * @Override
+	 * 
+	 * Runs a single simulation until it is paused (finished by Plotmas or user) or some time has passed.
+	 * @param rr ReflectResult containing Personality array with length equal to agent count as well as PlotLauncher instance
+	 * @return EngageResult containing the graph of this simulation and its tellability score.
+	 */
+	protected EngageResult engage(ReflectResult rr) {
+		log("  Engaging...");
+		log("    Parameters: " + rr.toString());
+		PlotLauncher<?,?> runner = rr.getRunner();
+
+		try {
+			Thread t = new Thread(new Cycle(runner, rr.getModel(), cycle_args, rr.getAgents(), this.agentSrc));
+			t.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		MASConsoleGUI.get().setPause(false);
+		boolean hasAddedListener = false;
+		long startTime = System.currentTimeMillis();
+		while(isRunning) {
+			try {
+				// This is needed in the loop, because the plot environment is null before starting
+				if(!hasAddedListener) {
+					if(runner.getEnvironmentInfraTier() != null) {
+						if(runner.getEnvironmentInfraTier().getUserEnvironment() != null) {
+							runner.getUserEnvironment().addListener(this);
+							hasAddedListener = true;
+						}
+					}
+				}
+				// Handle the timeout if it was set
+				if(TIMEOUT > -1 && (System.currentTimeMillis() - startTime) >= TIMEOUT && PlotEnvironment.getPlotTimeNow() >= TIMEOUT) {
+					log("[PlotCycle] SEVERE: timeout for engagement step triggered, analyzing incomplete story and moving on");
+					isRunning = false;
+				}
+				Thread.sleep(150);
+			} catch (InterruptedException e) {
+			}
+		}
+		while(isPaused) {
+			try {
+				Thread.sleep(150);
+			} catch(InterruptedException e) {
+			}
+		}
+		
+		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
+		Tellability tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
+		analyzedGraph.setName("ER Cycle, engagement step " + currentCycle);
+		log("Tellability" + Double.toString(tel.compute()));
+		
+		MoodMapper moodData = runner.getUserModel().moodMapper;
+		EngageResult er = this.createEngageResult(rr, runner, analyzedGraph, tel, moodData);
+		
+		if (PlotCycle.SHOW_FULL_GRAPH) {
+			PlotDirectedSparseGraph displayGraph = PlotGraphController.getPlotListener().getGraph().clone();
+			displayGraph.setName("ER Cycle (full), step " + currentCycle);
+			er.setAuxiliaryGraph(displayGraph);
+		}
+		
+		runner.reset();
+		isRunning = true;
+		return er;
+	}
 	
 	
 	
