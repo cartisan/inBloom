@@ -24,6 +24,8 @@ import inBloom.graph.PlotGraphController;
 import inBloom.helper.EnvironmentListener;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
+import inBloom.rl_happening.rl_management.SarsaLambda;
+import inBloom.storyworld.HappeningDirector;
 import jason.JasonException;
 import jason.asSemantics.Personality;
 import jason.infra.centralised.RunCentralisedMAS;
@@ -325,6 +327,50 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 			for(LauncherAgent ag : agents) {
 				model.addCharacter(ag);
 			}
+		}
+
+		@Override
+		public void run() {
+			try {
+				runner.initialize(args, model, agents, agSrc);
+				runner.run();
+			} catch (JasonException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	
+	
+	
+	
+	
+	/**
+	 * Runnable for a single (rl) simulation.
+	 */
+	public static class RLCycle implements Runnable {
+		
+		private PlotLauncher<?, ?> runner;
+		private PlotModel<?> model;
+		private String[] args;
+		private List<LauncherAgent> agents;
+		private String agSrc;
+		
+		public RLCycle(PlotLauncher<?, ?> runner, PlotModel<?> model, String[] args, List<LauncherAgent> agents, String agSrc, HappeningDirector hapDir) throws Exception {
+			this.runner = runner;
+			this.args = args;
+			this.agents = agents;
+			this.agSrc = agSrc;
+			this.model = (PlotModel<?>) model.getClass().getConstructors()[0].newInstance(agents, model.happeningDirector);
+			
+			for(LauncherAgent ag : agents) {
+				model.addCharacter(ag);
+			}
+			
+			// TODO add SarsaLambda to the IslandLauncher, so the IslandLauncher can give it to the AutomatedHappeningDirector
+			// Alternative: Let the ReinforcementLearningCycle create the AUtomatedHappeningDirector (with its known SarsaLambda) and give it to
+			// this cycle, so here we can add the AutomatedHappeningDirector to the Launcher.
+			runner.setHappeningDirector(hapDir);
 		}
 
 		@Override

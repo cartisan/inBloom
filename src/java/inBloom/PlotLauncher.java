@@ -43,8 +43,10 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 	
 	/**
 	 * The HappeningDirector used for this PlotLaunchers run
+	 * static such that the subclass IslandLauncher can access the happeningDirector in the static main method
+	 * when giving it to the IslandModel that is being initialized in that moment
 	 */
-	private HappeningDirector happeningDirector;
+	protected static HappeningDirector happeningDirector;
 	
 	
 	

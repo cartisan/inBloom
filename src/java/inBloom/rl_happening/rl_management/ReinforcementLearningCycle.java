@@ -6,6 +6,8 @@ package inBloom.rl_happening.rl_management;
 import java.util.HashSet;
 import java.util.List;
 
+import org.jfree.util.Log;
+
 import inBloom.LauncherAgent;
 import inBloom.PlotEnvironment;
 import inBloom.PlotLauncher;
@@ -75,6 +77,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	 * 			in the same order as the list of the agents' names
 	 */
 	public ReinforcementLearningCycle(String agentSource, String[] agentNames, Personality[] agentPersonalities) {
+		
 		super(agentSource, true);
 		
 		this.agentNames = agentNames;
@@ -97,7 +100,8 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		 * - initialize Weights
 		 * - initialize eligibility Traces
 		 */
-		this.rlApplication = new SarsaLambda(this.getPlotModel(agents));
+		log("Initialising Sarsa(Lambda)");
+		this.rlApplication = new SarsaLambda(this.getPlotModel(agents), this); // this is given for SarsaLambda to have access to the log method
 
 	}
 
@@ -231,8 +235,14 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		PlotLauncher<?,?> runner = rr.getRunner();
 
 		try {
-			Thread t = new Thread(new Cycle(runner, rr.getModel(), cycle_args, rr.getAgents(), this.agentSrc));
+			
+			// create AutomatedHappeningDirector with SarsaLambda
+			AutomatedHappeningDirector hapDir = new AutomatedHappeningDirector(this.rlApplication);
+			// create a Thread that also gets the AutomatedHappeningDirector. RLCycle will then attach the AutomatedHappeningDirector to the given PlotLauncher
+			Thread t = new Thread(new RLCycle(runner, rr.getModel(), cycle_args, rr.getAgents(), this.agentSrc, hapDir));
+			
 			t.start();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

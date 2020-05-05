@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.jfree.util.Log;
+
 import com.google.common.collect.HashBasedTable;
 
 import inBloom.PlotModel;
@@ -57,7 +59,7 @@ public class SarsaLambda {
 	
 
 	
-	public SarsaLambda(FeaturePlotModel<?> model) {
+	public SarsaLambda(FeaturePlotModel<?> model, ReinforcementLearningCycle daddy) {
 		
 		this.featurePlotModel = model;
 
@@ -72,7 +74,9 @@ public class SarsaLambda {
 		// needed to create the initial weights and eligibility Traces for every feature
 		this.allFeatures = this.featurePlotModel.getAllPossibleFeatures();
 		
+		daddy.log("Initialising Weights");
 		this.initializeWeights();
+		daddy.log("Initialising eligibility traces");
 		this.initializeEligibilityTraces();
 		
 	}
@@ -166,6 +170,7 @@ public class SarsaLambda {
 	public Happening<?> performStep(int step) {
 		return null;
 	}
+	
 	
 	
 }
