@@ -296,7 +296,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 * '\n' is appended automatically.
 	 * @param string Message to log
 	 */
-	protected void log(String string) {
+	public void log(String string) {
 		if(logTextArea != null) {
 			logTextArea.append(string + "\n");
 			logTextArea.setCaretPosition(logTextArea.getText().length());
