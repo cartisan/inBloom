@@ -215,26 +215,23 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 				if(!target.getWithoutAnnotation().substring(0, 1).equals(vertex.getWithoutAnnotation().substring(0, 1))) {
 					// If both vertices belong to same character
 					if(target.getRoot().equals(vertex.getRoot())) {
-						boolean isPositive = false;
-						boolean isNegative = false;
-						for(String em : vertex.getEmotions()) {
-							isPositive |= Emotion.getEmotion(em).getP() > 0;
-							isNegative |= Emotion.getEmotion(em).getP() < 0;
-						}
-						// This is either loss or resolution (second vertex has both valences!)
-						if(isPositive && isNegative) {
-							this.createTermination(vertex, target);
-							break;
-						// If there is only one valence check the first vertex:
-						} else {
-							for(String em : target.getEmotions()) {
-								// This is a loss!
-								if(!isPositive && Emotion.getEmotion(em).getP() > 0) {
-									this.createTermination(vertex, target);
-									break;
-								} else
-								// This is a resolution!
-								if(!isNegative && Emotion.getEmotion(em).getP() < 0) {
+
+						boolean vPos = vertex.getEmotions().stream()
+														   .map(em -> Emotion.getEmotion(em).getP())
+														   .anyMatch(p -> p > 0);
+						boolean vNeg = vertex.getEmotions().stream()
+														   .map(em -> Emotion.getEmotion(em).getP())
+														   .anyMatch(p -> p < 0);
+
+						boolean tPos = target.getEmotions().stream()
+								   						   .map(em -> Emotion.getEmotion(em).getP())
+								   						   .anyMatch(p -> p > 0);
+						boolean tNeg = target.getEmotions().stream()
+								   						   .map(em -> Emotion.getEmotion(em).getP())
+								   						   .anyMatch(p -> p < 0);
+
+						// Only create termination edge if affects in v and t are opposite
+						if (vPos & tNeg || vNeg & tPos) {
 									this.createTermination(vertex, target);
 									break;
 								}
