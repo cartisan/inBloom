@@ -1,5 +1,6 @@
 package inBloom.helper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -7,6 +8,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import jason.asSemantics.Emotion;
+import jason.asSyntax.ASSyntax;
+import jason.asSyntax.Term;
+import jason.asSyntax.parser.ParseException;
 
 import inBloom.graph.Edge;
 
@@ -66,6 +70,18 @@ public class PerceptAnnotation {
 		}
 
 		return result;
+	}
+
+	public List<Term> toTerms() {
+		List<Term> l = new ArrayList<>();
+		for (String a : this.annots) {
+			try {
+				l.add(ASSyntax.parseTerm(a));
+			} catch (ParseException e) {
+				logger.warning("Couldn't create ASL term from annotation: " + a);
+			}
+		}
+		return l;
 	}
 
 	public PerceptAnnotation addAnnotation(String functor, String... args) {

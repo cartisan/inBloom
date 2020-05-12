@@ -560,6 +560,13 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * @param perceptions state perceptions
      */
     public void addPercept(Location loc, Literal... perceptions) {
+    	// insert x-chara edge
+    	for (Literal p : perceptions) {
+    		PerceptAnnotation annot = new PerceptAnnotation();
+    		annot.addCrossCharAnnotation(p.toString(), System.nanoTime());
+    		p.addAnnots(annot.toTerms());
+    	}
+
     	loc.getCharacters().forEach(chara -> super.addPercept(chara.name, perceptions));
     }
 
