@@ -139,7 +139,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		}
 
 		public void updateProduceState(Wheat.STATES state) {
-			this.model.environment.removePerceptsByUnif(this, Literal.parseLiteral("at(wheat[X]," + this.literal() + ")"));
+			this.model.environment.removePerceptsByUnif(this, Literal.parseLiteral("at(wheat[X]," + this.literal() + ")[_]"));
 
 			if (state == null) {
 				this.produce = null;

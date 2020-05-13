@@ -30,9 +30,6 @@ smelly(poo).
 /* Positive tradeoff in */
 /* mental notes         */
 /************************/
-
-+!take_day_off(X) : is_holiday(X) <-
-	.drop_intention(take_day_off(X)).
 	
 +!take_day_off(X) <-
 	.print("That was exhausting! I'm taking ", X, " off to relax.");
@@ -104,4 +101,6 @@ smelly(poo).
 /******************/
 
 +bored <- !rethink_life.
-+!rethink_life <- .drop_desire(intrinsic_motivation).
++!rethink_life <- 
+	.drop_intention(intrinsic_motivation).	// creates termination edge to intrinsic_motivation
+//	.drop_desire(intrinsic_motivation).		// alternative way of doing this

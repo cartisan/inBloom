@@ -128,7 +128,7 @@ public class PrimitiveUnitTest extends AbstractPlotTest {
 	public void testChangeOfMind() {
 		UnitFinder finder = new UnitFinder();
 		Set<Map<Vertex, Vertex>> mappings = finder.findUnits(TestUnits.CHANGE_OF_MIND.getGraph(), analyzedGraph);
-		assertTrue(mappings.size() >= 1);
+		assertTrue(mappings.size() == 1);
 	}
 
 	@Test
