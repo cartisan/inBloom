@@ -155,7 +155,7 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 
 	public void handleDropIntention(Vertex vertex) {
 		String label = vertex.getLabel();
-		Pattern pattern = Pattern.compile("drop_intention\\((?<drop>.*?)\\)\\[" + Edge.Type.CAUSALITY.toString() + "\\((?<cause>.*)\\)\\]");
+		Pattern pattern = Pattern.compile("drop_intention\\((?<drop>.*?)\\)\\[" + Edge.Type.TERMINATION.toString() + "\\((?<termination>.*)\\)\\]");
 		Matcher matcher = pattern.matcher(label);
 
 		// Remove the vertex if it is somehow degenerate (pattern could not be matched)
@@ -180,7 +180,7 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 		}
 
 		// Look for the cause in previous vertices
-		String causeString = matcher.group(Edge.Type.CAUSALITY.toString());
+		String causeString = matcher.group("termination");
 		if(causeString.startsWith("+!")) {	// we need to match causes of form +self(has_prupose), but also !rethink_life, which appears as +!rethink_life
 			causeString = causeString.substring(1);
 		}
