@@ -50,12 +50,37 @@ public class SarsaLambda {
 	private List<Integer> eligibilityTraces;
 	private HashMap<String, Integer> weights;		/* String = Name of the Feature
 													 * Integer = Weight */
-	private HashBasedTable<Integer, Happening<?>, Integer> qValues; /* Rows: States (Integer)
-	 															  	 * Columns: Actions (Happenings)
-	 															  	 * Values: Q-Values (State-Action-Utility)*/
-	private Happening<?>[] allHappenings = new Happening<?>[0];
+//	private HashBasedTable<Integer, Happening<?>, Integer> qValues; /* Rows: States (Integer)
+//	 															  	 * Columns: Actions (Happenings)
+//	 															  	 * Values: Q-Values (State-Action-Utility)*/
 	
+	private HashMap<StateActionPair, Integer> qValues;
+	
+	private class StateActionPair {
+		int state;
+		Happening<?> action;
+
+		public StateActionPair(int state, Happening<?> action) {
+			this.state = state;
+			this.action = action;
+		}
+		
+		public int getState() {
+			return this.state;
+		}
+		
+		public Happening<?> getAction() {
+			return this.action;
+		}
+	}
+	
+	
+	/**
+	 * BACKGROUND INFORMATION NEEDED
+	 */
+	private Happening<?>[] allHappenings;
 	private LinkedList<String> allFeatures;
+	private Happening<?> previousHappening;
 	
 
 	
@@ -66,13 +91,24 @@ public class SarsaLambda {
 		// TODO possibel problem: allhappenings are onyl initialized after HappeningManager.scheduleHappenings has been called
 		// -> may change in the future since we won't really schedule Happenings anymore?
 		// TODO change to LinkedList in general, not Array?
+		
+		// Initialize allHappenings
 		LinkedList<Happening<?>> happeningList = HappeningManager.getAllHappenings();
+		this.allHappenings = new Happening<?>[9];
 		happeningList.toArray(this.allHappenings);
 	
 		
-		
+		// Initialize allFeatures
 		// needed to create the initial weights and eligibility Traces for every feature
 		this.allFeatures = this.featurePlotModel.getAllPossibleFeatures();
+		
+		
+		// initialise qValues
+		this.qValues = new HashMap<StateActionPair, Integer>();
+		
+		
+		// Initialize previousHappening (null) -> TODO change to when first called later? But first, to make sure no NullPointer when starting or similar, we put it here
+		this.previousHappening = null;
 		
 		daddy.log("Initialising Weights");
 		this.initializeWeights();
@@ -87,7 +123,6 @@ public class SarsaLambda {
 	 * So far we just by 50% choose random Happening and by 50% choose the Happening with the highest q-Value so far
 	 * TODO Overthink or research this maybe
 	 * TODO we have to involve the frequencies in here at some point
-	 * TODO find out WTF IS F AND WHERE IT IS EXPLAINED WTF DUDE
 	 * 
 	 * @param currentState
 	 * 			The state we are in right now from which we should choose the next Action
@@ -98,8 +133,27 @@ public class SarsaLambda {
 		
 		for(Happening<?> action: this.allHappenings) {
 			// features of action = get the features present in this state and action
+			LinkedList<String> presentFeatures = this.getFeatures(action);
+			
+			
 			// q-value of action = for all features of action get weight and sum it up
 			//		idea: put in in a sorted way already?
+			
+			int qvalue = 0;
+			
+			for(String feature: presentFeatures) {
+				qvalue += this.getWeightOfFeature(feature);
+			}
+			
+			// TODO: This is the version where we also save the state.
+			// get state to be saved in the q-value table
+			int state = this.featurePlotModel.getStateValue();
+			
+			
+//			this.qValues.put(state, action, qvalue);
+			this.qValues.put(new StateActionPair(state, action), qvalue);
+			
+			
 		}
 		
 		// find action with the maximum q-value
@@ -118,7 +172,8 @@ public class SarsaLambda {
 		
 		// greedily choose the best action
 		else {
-			
+			// choose the action with the highest qvalue
+			//qValues.
 		}
 		
 		return null;
@@ -168,9 +223,66 @@ public class SarsaLambda {
 
 
 	public Happening<?> performStep(int step) {
+		// observe reward:	none, bc only Tellability in the end.
+		// alternative:		some punishment or similar for having taken an artificial action
+		// QUESTION: what is the reward function dependent on? -> not specified in pseudo-code
+		//			 idea: on the last action (Happening vs. no Happening). Unless we have Tellability
+		
+		// delta = delta + gamma * Q(a) where a ist the last performed action
+		
+		
+		// TODO call action selection?
+		// TODO maybe this doesn't make sense, I'm just inserting it for testing reasons
+		this.chooseNewAction(this.getCurrentStateOfModel());
+		
+		
 		return null;
 	}
 	
 	
+	
+	
+	/**
+	 * METHODS THAT RETURN INTERNALLY NEEDED VALUES
+	 */
+	
+	/**
+	 * Returns the Features present in the current State of the PlotModel and the selected action
+	 * 
+	 * @param action
+	 * 			The currently selected Action on which the Feature-space is dependent on.
+	 * 			The feature space returned is also dependent on the current state of the PlotModel
+	 * 			but that one is not given as a parameter since it can implicitaly be read from the
+	 * 			known instance variable FeaturedPlotModel (since it is on its own in its current state)
+	 * @return
+	 */
+	private LinkedList<String> getFeatures(Happening<?> action) {
+		
+		LinkedList<String> presentFeatures = new LinkedList<String>();
+		
+		// DEBUG this returns an empty list
+		presentFeatures = this.featurePlotModel.getPresentFeatures();
+		
+		// TODO include the features of the action or the combination of state and action
+		
+		return presentFeatures;
+	}
+	
+	/**
+	 * Returns the current weight of the given feature
+	 * 
+	 * @param feature
+	 * 			A string representing the feature that we want to know the weight of
+	 * @return
+	 * 			The weight (int) of the given feature
+	 */
+	private int getWeightOfFeature(String feature) {
+		return this.weights.get(feature);
+	}
+	
+	
+	private int getCurrentStateOfModel() {
+		return this.featurePlotModel.getStateValue();
+	}
 	
 }
