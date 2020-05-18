@@ -30,7 +30,8 @@ public class AutomatedHappeningDirector<T extends PlotModel<?>> implements Happe
 	private PlotModel<?> model;
 	
 	public AutomatedHappeningDirector(SarsaLambda rlApplication) {
-		this.allHappenings = new LinkedList<Happening<?>>();
+		this.allHappenings = new LinkedList<Happening<?>>(); // TODO get your Happenings lol? :D
+		this.allHappenings.addAll(HappeningManager.getAllHappenings());
 		this.allHappenings.add(null); // TODO necessary?
 		
 		this.sarsa = rlApplication;
@@ -53,6 +54,10 @@ public class AutomatedHappeningDirector<T extends PlotModel<?>> implements Happe
 		 * HERE SARSA IS CALLED WITH PERFORMSTEP
 		 */
 		Happening<?> currentAction = this.sarsa.performStep(step);
+		
+		/*
+		 * Let the Happening happen
+		 */
 		if(currentAction != null) {
 			triggeredHappeningsInThisStep.add(currentAction);
 		}

@@ -32,6 +32,7 @@ public class HomesickHappening extends ConditionalHappening<IslandModel> {
 
 	@Override
 	protected void executeModelEffects(IslandModel model, Character chara) {
+		model.activateFeature(IslandModel.homesick);
 		model.getLogger().info(chara.name + " is homesick.");
 	}
 

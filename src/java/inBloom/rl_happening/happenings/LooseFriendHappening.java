@@ -31,6 +31,7 @@ public class LooseFriendHappening extends ConditionalHappening<IslandModel> {
 	@Override
 	protected void executeModelEffects(IslandModel model, Character chara) {
 		model.deleteFriend(chara);
+		// Feature of having a friend is automatically deactivated in deleteFriend
 		model.getLogger().info(chara + "'s friend was eaten by a monkey.");
 	}
 

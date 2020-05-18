@@ -33,6 +33,7 @@ public class FireHappening extends ConditionalHappening<IslandModel> {
 	protected void executeModelEffects(IslandModel model, Character chara) {
 		// TODO burning as a boolean in Island
 		model.island.isBurning = true;
+		model.activateFeature(IslandModel.fire);
 		model.getLogger().info("The island is burning!");
 	}
 

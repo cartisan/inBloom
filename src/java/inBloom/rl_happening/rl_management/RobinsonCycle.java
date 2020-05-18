@@ -19,6 +19,7 @@ import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.stories.little_red_hen.FarmModel;
 import inBloom.stories.little_red_hen.RedHenHappeningCycle;
 import inBloom.stories.little_red_hen.RedHenLauncher;
+import inBloom.storyworld.HappeningDirector;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.asSemantics.Personality;
 
@@ -67,9 +68,9 @@ public class RobinsonCycle extends ReinforcementLearningCycle {
 		return new IslandModel(new ArrayList<LauncherAgent>(), this.getHappeningDirector());
 	}
 	
-	public ScheduledHappeningDirector getHappeningDirector() {
-		ScheduledHappeningDirector hapDir = HappeningManager.createHappeningDirector();
-		HappeningManager.scheduleHappenings(hapDir);
+	public HappeningDirector getHappeningDirector() {
+		AutomatedHappeningDirector hapDir = HappeningManager.createHappeningDirector(this.rlApplication);
+		//HappeningManager.scheduleHappenings(hapDir);
 		return hapDir;
 	}
 

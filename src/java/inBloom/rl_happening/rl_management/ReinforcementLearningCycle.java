@@ -58,7 +58,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	protected FeaturePlotModel<?> plotModel;
 	
 	
-	private SarsaLambda rlApplication;
+	protected SarsaLambda rlApplication;
 	
 	
 

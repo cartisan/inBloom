@@ -36,6 +36,8 @@ public class StormHappening extends ConditionalHappening<IslandModel>{
 		// Shipwrecked
 		if(chara.location.equals(model.ship)) {
 			chara.goTo(model.island);
+			model.deactivateFeature(IslandModel.onCruise);
+			model.activateFeature(IslandModel.onIsland);
 			model.getLogger().info(this.getPatient() + " stranded on island " + model.island.name);
 		}
 
@@ -43,6 +45,7 @@ public class StormHappening extends ConditionalHappening<IslandModel>{
 		if(model.island.hasHut()) {
 			// TODO hasHut als Unterlocation -> gibt es ein Location exists (!=null)
 			model.destroyHut();
+			// feature of having a hut is automatically deactivated in destroyHut()
 			model.getLogger().info("The hut was destroyed.");
 		}	
 	}

@@ -34,12 +34,12 @@ public class FoodPoisoningHappening extends ConditionalHappening<IslandModel> {
 
 	@Override
 	protected void executeModelEffects(IslandModel model, Character chara) {
-		// TODO get rid of this varible?
-		//model.foodIsOkay = false;
 		
 		// not as a precondition, but to make sure we don't run into a NullPointerException
+		// though this should theoretically be implicetely true through the precondition in hasEffect
 		if(chara.has("food")) {
 			((Food)model.getCharacter(chara.name).get("food")).poison();
+			model.activateFeature(IslandModel.poisonedFood);
 			model.getLogger().info(chara + "'s food was poisoned!");
 		} else {
 			// Should never occur due to the precondition of this Happening

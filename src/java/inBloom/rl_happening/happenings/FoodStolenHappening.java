@@ -31,6 +31,7 @@ public class FoodStolenHappening extends ConditionalHappening<IslandModel> {
 	@Override
 	protected void executeModelEffects(IslandModel model, Character chara) {
 		chara.removeFromInventory("food");
+		model.deactivateFeature(IslandModel.hasFood);
 		model.getLogger().info("Monkey stole " + chara.name + "'s food. Holy crap.");
 		
 	}

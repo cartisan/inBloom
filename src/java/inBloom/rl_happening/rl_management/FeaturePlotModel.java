@@ -77,8 +77,12 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 			this.createMoodFeatures(this.allCharacters, this.moodStrength);
 		}
 		
+		// Initializing presentFeature List. At the beginning the List is empty, so no Features are activated
+		// with the exception of whatever getInitiallyActivatedFeatures returns
+		this.presentFeatures = new LinkedList<String>();
+		
 		// If possible, activate all features that should be initially activated before the start of the story
-		List<String> initiallyActivatedFeatures = this.getInitiallyActivatedFeatures();
+		LinkedList<String> initiallyActivatedFeatures = this.getInitiallyActivatedFeatures();
 		if(initiallyActivatedFeatures != null) {
 			for(String feature: initiallyActivatedFeatures) {
 				this.activateFeature(feature);
@@ -104,15 +108,16 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	 * 
 	 * @return A list of features that should already be activated before the story starts
 	 */
-	public List<String> getInitiallyActivatedFeatures() {
+	public LinkedList<String> getInitiallyActivatedFeatures() {
 		return null;
 	}
 	
-	public List<String> getPresentFeatures() {
+	public LinkedList<String> getPresentFeatures() {
 		this.updateMoodFeatures();
 		return this.presentFeatures;
 	}
 	
+
 	
 	
 	
@@ -138,13 +143,17 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	 */
 	public boolean activateFeature(String featureName) {
 		if(!this.allPossibleFeatures.contains(featureName)) {
+			logger.info("Feature " + featureName + " could not be enabled, because it does not exist "
+					+ "in the list of all possible features.");
 			throw new IllegalArgumentException("No feature with this name could be found.");
 		} else if (this.presentFeatures.contains(featureName)){
 			// the feature is already activated
+			logger.info("Feature " + featureName + " could not be activated because it was already activated.");
 			return false;
 		} else {
 			// The feature is valid and hasn't been activated yet
 			this.presentFeatures.add(featureName);
+			logger.info("Feature " + featureName + " has been activated.");
 			return true;
 		}
 	}
