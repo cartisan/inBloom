@@ -132,7 +132,10 @@ public class State {
 		int[] outOld = this.out2;
 
 		int lengthDiff = g2New.getPlotVertexCount() - this.n2;
+		assert lengthDiff == 1;
+
 		this.n2 = g2New.getPlotVertexCount();
+		this.candidateV2 = v2 + 1;
 		this.core2 = new int[this.n2];
 		this.in2 = new int[this.n2];
 		this.out2 = new int[this.n2];
@@ -145,14 +148,24 @@ public class State {
 				this.core2[i] = coreOld[i];
 				this.in2[i] = inOld[i];
 				this.out2[i] = outOld[i];
-			} else if (i < v2 + lengthDiff + 1) {
-				this.core2[i] = NULL_NODE;
-				this.in2[i] = NULL_NODE;
-				this.out2[i] = NULL_NODE;
+			} else if (i == v2) {						// !! We insert new vertex from expansion here
+				this.core2[i] = NULL_NODE;				//		newly inserted vertex doesn't point anywhere
+				this.in2[i] = NULL_NODE;				//		incoming egdes now have to start from end of insertion
+				this.out2[i] = outOld[i];				//		outgoing edges continue to point to beginning of insertion (now: wildcard type)
+			} else if (i == v2 + 1) {					// !! old vertex was moved here
+				this.core2[i] = coreOld[i - 1];			//		old mapping was moved one up due to insertion
+				this.in2[i] = inOld[i - 1];				//		incoming egdes now have to start from end of insertion
+				this.out2[i] = NULL_NODE;				//		outgoing edges continue to point to beginning of insertion (now: wildcard type)
 			} else {
 				this.core2[i] = coreOld[i - lengthDiff];
 				this.in2[i] = inOld[i - lengthDiff];
 				this.out2[i] = outOld[i - lengthDiff];
+			}
+		}
+
+		for(int i=0; i < this.n1; i++) {				// update reverse mappings in core1: whatever pointed to after insertion, has to move up one
+			if (this.core1[i] >= v2 ) {
+				this.core1[i] += 1;
 			}
 		}
 	}
@@ -248,7 +261,7 @@ public class State {
 			for(int g1v0 = 0; g1v0 < this.n1; g1v0++) {
 					t0.add(new State(this, g1v0, g2v0));
 					if(tolerance > this.transformationNum) {
-						t0.addAll(this.createStatesByTransformation(g1v0, g2v0, true));
+						t0.addAll(this.createStatesByTransformation(g1v0, g2v0));
 					}
 			}
 			return t0;
@@ -256,13 +269,13 @@ public class State {
 
 		// Consider successor pairs
 		HashSet<State> tOut = new HashSet<>();
-		for(int currentOut1 = 0; currentOut1 < this.n1; currentOut1++) {
-			if(this.out1[currentOut1] != NULL_NODE && this.core1[currentOut1] == NULL_NODE) {
-				for(int currentOut2 = 0; currentOut2 < this.n2; currentOut2++) {
-					if(this.out2[currentOut2] != NULL_NODE && this.core2[currentOut2] == NULL_NODE) {
+		for(int currentOut2 = 0; currentOut2 < this.n2; currentOut2++) {	// iterate over FU
+			if(this.out2[currentOut2] != NULL_NODE && this.core2[currentOut2] == NULL_NODE) {
+			for(int currentOut1 = 0; currentOut1 < this.n1; currentOut1++) {	// iterate over plot
+				if(this.out1[currentOut1] != NULL_NODE && this.core1[currentOut1] == NULL_NODE) {
 						tOut.add(new State(this, currentOut1, currentOut2));
 						if(tolerance > this.transformationNum) {
-							tOut.addAll(this.createStatesByTransformation(currentOut1, currentOut2, true));
+							tOut.addAll(this.createStatesByTransformation(currentOut1, currentOut2));
 						}
 					}
 				}
@@ -274,13 +287,13 @@ public class State {
 
 		// Consider predecessor pairs
 		HashSet<State> tIn = new HashSet<>();
-		for(int currentIn1 = 0; currentIn1 < this.n1; currentIn1++) {
-			if(this.in1[currentIn1] != NULL_NODE && this.core1[currentIn1] == NULL_NODE) {
-				for(int currentIn2 = 0; currentIn2 < this.n2; currentIn2++) {
-					if(this.in2[currentIn2] != NULL_NODE && this.core2[currentIn2] == NULL_NODE) {
+		for(int currentIn2 = 0; currentIn2 < this.n2; currentIn2++) {	// iterate over FU
+			if(this.in2[currentIn2] != NULL_NODE && this.core2[currentIn2] == NULL_NODE) {
+				for(int currentIn1 = 0; currentIn1 < this.n1; currentIn1++) {	// iterate over plot
+					if(this.in1[currentIn1] != NULL_NODE && this.core1[currentIn1] == NULL_NODE) {
 						tIn.add(new State(this, currentIn1, currentIn2));
 						if(tolerance > this.transformationNum) {
-							tIn.addAll(this.createStatesByTransformation(currentIn1, currentIn2, false));
+							tIn.addAll(this.createStatesByTransformation(currentIn1, currentIn2));
 						}
 					}
 				}
@@ -291,14 +304,13 @@ public class State {
 		}
 
 		HashSet<State> tall = new HashSet<>();
-		for(int current1 = 0; current1 < this.n1; current1++) {
-			if(this.core1[current1] == NULL_NODE) {
-				for(int current2 = 0; current2 < this.n2; current2++) {
-					if(this.core2[current2] == NULL_NODE) {
+		for(int current2 = 0; current2 < this.n2; current2++) {	// iterate over FU
+			if(this.core2[current2] == NULL_NODE) {
+			for(int current1 = 0; current1 < this.n1; current1++) {	// iterate over plot
+				if(this.core1[current1] == NULL_NODE) {
 						tall.add(new State(this, current1, current2));
 						if(tolerance > this.transformationNum) {
-							tall.addAll(this.createStatesByTransformation(current1, current2, true));
-							tall.addAll(this.createStatesByTransformation(current1, current2, false));
+							tall.addAll(this.createStatesByTransformation(current1, current2));
 						}
 					}
 				}
@@ -315,20 +327,16 @@ public class State {
 	 * @param candidateV1
 	 * @param candidateV2
 	 */
-	private HashSet<State> createStatesByTransformation(int candidateV1, int candidateV2, boolean followingSucc) {
+	private HashSet<State> createStatesByTransformation(int candidateV1, int candidateV2) {
 		HashSet<State> stateCollection = new HashSet<>();
-
-		// when we follow successor edges, FU candidate was beginning of insertion so candidateV2 index correctly shows on newly inserted vertex
-		// when we follow predecessor edges, FU candidate was end of insertion so candidateV2 index needs to be updated to +1
-		int pointerUpdate = 0;
-		if (!followingSucc) {
-			pointerUpdate = 1;
-		}
 
 		Collection<PlotDirectedSparseGraph> transformedG2s = FUTransformationRule.applyAllTransformations(candidateV2, this.g2);
 		for (PlotDirectedSparseGraph g2n : transformedG2s) {
 			try {
-				stateCollection.add(new State(this, candidateV1, candidateV2 + pointerUpdate, g2n));
+				stateCollection.add(new State(this, candidateV1, candidateV2, g2n));
+				if (candidateV1 + 1 < this.n1 && this.core1[candidateV1 + 1] == NULL_NODE) {
+					stateCollection.add(new State(this, candidateV1 + 1, candidateV2, g2n)); 	// required for [I] -> [I]-[I] transformations, where candV2 could match both candV1 or its successor
+				}
 			} catch (RuntimeException e) {
 				// if g2n, resulting from transformation, is bigger then plot graph, try next transformation
 				continue;
