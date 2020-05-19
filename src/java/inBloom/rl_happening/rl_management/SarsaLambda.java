@@ -4,6 +4,7 @@
 package inBloom.rl_happening.rl_management;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -162,21 +163,46 @@ public class SarsaLambda {
 		
 		
 		Happening<?> action;
-		// with chance of epsilon: choose a random action
-		// 		we chose echt kleiner, since 0.0 is included in Math.random(), but 1.0 is not, so we decided to put epsilon itself in the "right" category (going to 1.0)
-		if(Math.random() < epsilon) {
-			int numberOfHappenings = this.allHappenings.length;
-			int randomHappeningIndex = new Random().nextInt(numberOfHappenings);
-			action = allHappenings[randomHappeningIndex];
-		}
 		
-		// greedily choose the best action
-		else {
+		// choose a random action (that will stay with chance of epsilon)
+
+		int numberOfHappenings = this.allHappenings.length;
+		int randomHappeningIndex = new Random().nextInt(numberOfHappenings);
+		action = allHappenings[randomHappeningIndex];
+
+
+		// with chance of 1 - epsilon: choose a greedy action
+		// 		we chose (echt kleiner epsilon) for p(random action)
+		//		therefore (größer gleich epsilon) for p(greedy action)
+		// , since 0.0 is included in Math.random(), but 1.0 is not, so we decided to put epsilon itself in the "right" category (going to 1.0)
+		if(Math.random() >= epsilon) {
 			// choose the action with the highest qvalue
-			//qValues.
+
+			int max = 0;
+
+			Iterator<Map.Entry<StateActionPair,Integer>> entryIterator = this.qValues.entrySet().iterator();
+			
+			while(entryIterator.hasNext()) {
+				
+				Map.Entry<StateActionPair,Integer> pair = (Map.Entry<StateActionPair,Integer>)entryIterator.next();
+
+				System.out.println(pair.getKey() + " = " + pair.getValue());
+
+				int currentValue = pair.getValue();
+
+				if(currentValue > max) {
+					max = currentValue;
+					action = pair.getKey().getAction();
+				}
+
+				entryIterator.remove(); // avoids a ConcurrentModificationException
+			}
+						
 		}
 		
-		return null;
+		System.out.println("Chosen Action: " + action);
+		
+		return action;
 	}
 
 	
