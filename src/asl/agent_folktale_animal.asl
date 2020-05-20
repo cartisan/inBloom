@@ -13,8 +13,12 @@
 wish(relax).
 +self(farm_animal) <- +obligation(farm_work).
 
-+hungry <- +wish(eat).
--hungry <- -wish(eat).
++hungry <- 
+	.appraise_emotion(distress, "hungry");
+	+wish(eat).
+-hungry <- 
+	-wish(eat);
+	-wish(eat(_)).
 
 /******************************************************************************/
 /********** perception management *********************************************/
@@ -49,6 +53,11 @@ wish(relax).
 	
 +share(Other, Item, List)[success(true)] : .my_name(Me) & .list(List) & .member(Me,List) <-
 	+has(Item).
+
+@eatP[atomic]
++eat(Food)[success(true)] <-
+	-hungry;
+	-has(Food).
 	
 /***** request answer management **********************************************/
 /******************************************************************************/
@@ -216,7 +225,7 @@ wish(relax).
 	-has(wheat[_]);
 	+has(bread). // TODO: get env to give this information?
 
-@eat1[atomic]
+//@eat1[atomic]
 +!eat : has(Item) & edible(Item) <-
 	!eat(Item);
 	-wish(eat).
@@ -227,23 +236,16 @@ wish(relax).
 +!eat(Food) : not wish(punish) <-
 	?present(Others);
 	!share(Food, Others);
-	eat(Food);
-	-hungry;
-	-has(X).
+	eat(Food).
 	
 @eat4[atomic, affect(and(personality(agreeableness,medium), mood(pleasure,high)))]
 +!eat(Food) : not wish(punish) <-
 	?present(Others);
 	!share(Food, Others);
-	eat(Food);
-	-hungry;
-	-has(X).
+	eat(Food).
 
-@eat3[atomic]
-+!eat(X) <- 
-	eat(X);
-	-hungry;
-	-has(X).
++!eat(Food) <- 
+	eat(Food).
 
 +!eat(X) : not has(X)<- 
 	.appraise_emotion(disappointment, "eat(X)").

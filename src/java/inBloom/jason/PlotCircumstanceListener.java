@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import jason.asSemantics.CircumstanceListener;
 import jason.asSemantics.Event;
 import jason.asSemantics.Intention;
+import jason.asSyntax.Trigger.TEType;
 
 import inBloom.PlotLauncher;
 import inBloom.graph.Edge;
@@ -37,21 +38,21 @@ public class PlotCircumstanceListener implements CircumstanceListener {
 		}
 
 		if(!e.getTrigger().isAchvGoal()) {
-			String toAdd = "";
-			String source = "";
-			// If it has source(self) (i.e. is mental note) and has a parent event (stored by jason on the intention stack)
-			// then change the source from self to whatever the source is.
-			if(e.getTrigger().toString().endsWith("[source(self)]") && e.getIntention() != null) {
-				toAdd = e.getTrigger().toString().split("\\[source\\(self\\)\\]")[0];
-				source = String.format("[source(%s)]",
-						e.getIntention().peek().getTrigger().getOperator().toString() +							// + or - for belief addition or removal
-						TermParser.removeAnnots(e.getIntention().peek().getTrigger().getLiteral().toString()));	// causing event without annotation
-				toAdd += source;
-			} else {
-				toAdd = e.getTrigger().toString();
+			String percept = e.getTrigger().toString();
+
+			// If it has source(self) (i.e. is mental note) and
+			// has a parent event (stored by jason on the intention stack) and
+			// the parent event is not an intention add/remove then
+			// note that parent event as cause of this mental note
+			if(e.getTrigger().toString().endsWith("[source(self)]") && e.getIntention() != null && e.getIntention().peek().getTrigger().getType() != TEType.achieve) {
+				String cause = e.getIntention().peek().getTrigger().getOperator().toString() +					// + or - for belief addition or removal
+						TermParser.removeAnnots(e.getIntention().peek().getTrigger().getLiteral().toString());	// causing event without annotation
+
+				percept = percept.substring(0, percept.length() - 1);		// remove: "]" from end
+				percept += "," + Edge.Type.CAUSALITY + "(" + cause + ")]";	// append: ",cause(X)]" at end
 			}
 
-			PlotGraphController.getPlotListener().addEvent(this.name, toAdd, Vertex.Type.PERCEPT, PlotLauncher.getRunner().getUserEnvironment().getStep());
+			PlotGraphController.getPlotListener().addEvent(this.name, percept, Vertex.Type.PERCEPT, PlotLauncher.getRunner().getUserEnvironment().getStep());
 		}
 	}
 
