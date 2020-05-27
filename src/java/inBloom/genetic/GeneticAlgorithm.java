@@ -20,7 +20,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	public float crossover_prob;
 	public float mutation_prob;
 	
-	public Fitness<?,?> fit;
+	private static double[] discreteValues = {-1,-0.9,-0.75,-0.5,-0.25,-0.1,0,0.1,0.25,0.5,0.75,0.9,1};
+	
+	private Fitness<?,?> fit;
 	private Candidate[] gen_pool;
 	private Candidate[] offspring;
 	private Candidate[] mutated_offspring;
@@ -42,9 +44,24 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.mutation_prob = mutation_prob;		
 		
 		//<GEN_ENV.EnvType,GEN_ENV.ModType>
-		this.fit = new Fitness<EnvType,ModType>(args, GEN_ENV);
+		this.fit = new Fitness<EnvType,ModType>(GEN_ENV);
 		
-		initialize_pop();
+		//initialize_pop();
+	}
+
+	public void setPersonalityValues(double[] discreteValues) {
+		
+		this.discreteValues = discreteValues;
+	}
+	
+	public double[] getPersonalityValues() {
+		
+		return discreteValues;
+	}
+	
+	public double round(double value) {
+		
+		return Math.round(value*100-0.5)/100;
 	}
 	
 	/*
@@ -63,8 +80,38 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			
 			//Create new Chromosomes
 			//TODO: Different Initializers
-			ChromosomePersonality personality = randomPersonalityInitializer();
-			ChromosomeHappenings happenings = randomHappeningsInitializer();
+
+			ChromosomePersonality personality = new ChromosomePersonality(number_agents);
+
+			int persType = (int)Math.round(Math.random()*3-0.5);
+			
+			switch(persType) {
+			
+			case(0): 
+				personality = randomPersonalityInitializer();
+			
+			case(1):
+				personality = discretePersonalityInitializer();
+			
+			case(2):
+				personality = steadyDiscretePersonalityInitializer();
+			}
+
+			ChromosomeHappenings happenings = new ChromosomeHappenings(number_agents,number_happenings);
+			
+			int hapType = (int)Math.round(Math.random()*3-0.5);
+			
+			switch(hapType) {
+			
+			case(0): 
+				happenings = randomHappeningsInitializer();
+			
+			case(1):
+				happenings = probabilisticHappeningsInitializer();
+			
+			case(2):
+				happenings = steadyHappeningsInitializer();
+			}
 			
 			//Check for Duplicates
 			for(int i = 0; i < index; i++) {
@@ -78,6 +125,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		Arrays.sort(gen_pool);
 	}
 	
+	
 	/*
 	 * Random initializer for ChomosomePersonality
 	 */
@@ -88,23 +136,107 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		for(int i = 0; i < number_agents;i++) {
 			for(int j = 0; j < 5; j++) {
-				personality.values[i][j] = Math.random()*2-1;
+				
+				double value = Math.random()*2-1;
+				personality.values[i][j] = round(value);
 			}
 		}
 		return personality;
 	}	
+	
+	
+	/*
+	 * discrete initializer for ChomosomePersonality
+	 */
+	
+	public ChromosomePersonality discretePersonalityInitializer() {
+		
+		ChromosomePersonality personality = new ChromosomePersonality(number_agents);
+		
+		for(int i = 0; i < number_agents;i++) {
+			for(int j = 0; j < 5; j++) {
+				personality.values[i][j] = discreteValues[Math.round((int)Math.random()*(discreteValues.length-1))];
+			}
+		}
+		return personality;
+	}
+	
+	
+	/*
+	 * like discretePersonalityInitializer() but with unique values
+	 */
+	
+	public ChromosomePersonality steadyDiscretePersonalityInitializer() {
+		
+		ChromosomePersonality personality = new ChromosomePersonality(number_agents);
+		
+		for(int i = 0; i < number_agents;i++) {
 
+			ArrayList<Double> discreteList = new ArrayList<Double>();
+			
+			for(int j = 0; j < discreteValues.length; j++) {
+				discreteList.add(discreteValues[j]);
+			}
+			
+			for(int j = 0; j < 5; j++) {
+				int position = Math.round((int)Math.random()*(discreteValues.length-j-1));
+				personality.values[i][j] = discreteList.get(position);
+				discreteList.remove(position);
+			}
+		}
+		return personality;
+	}
+
+	
 	/*
 	 * Random initializer for ChromosomeHappening
 	 */
-	
+
 	public ChromosomeHappenings randomHappeningsInitializer() {
+		
 		ChromosomeHappenings happenings = new ChromosomeHappenings(number_agents,number_happenings);
 		
 		for(int i = 0; i < number_agents;i++) {
 			for(int j = 0; j < number_happenings; j++) {
 				happenings.values[i][j] = (int)Math.round(Math.random()*max_steps);
 			}
+		}
+		return happenings;
+	}
+	
+	
+	/*
+	 * Instantiates a happening with probability 1/number_agents
+	 */
+	
+	public ChromosomeHappenings probabilisticHappeningsInitializer() {
+		
+		ChromosomeHappenings happenings = new ChromosomeHappenings(number_agents,number_happenings);
+		
+		for(int i = 0; i < number_agents;i++) {
+			for(int j = 0; j < number_happenings; j++) {
+				if(Math.random()<1/number_agents) {
+					happenings.values[i][j] = (int)Math.round(Math.random()*max_steps);
+				}
+			}
+		}
+		return happenings;
+	}
+	
+	
+	/*
+	 * Instantiates every happening exactly ones and assigns it to a random agent
+	 */
+	
+	public ChromosomeHappenings steadyHappeningsInitializer() {
+		
+		ChromosomeHappenings happenings = new ChromosomeHappenings(number_agents,number_happenings);
+		
+		for(int i = 0; i < number_agents;i++) {
+			
+			int j = (int)Math.round(Math.random()*(number_agents-1));
+			
+			happenings.values[i][j] = (int)Math.round(Math.random()*max_steps);
 		}
 		return happenings;
 	}
@@ -197,7 +329,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			int two = positions.get(pos);
 			positions.remove(pos);
 			
-			int type = (int)Math.round(Math.random()*3);
+			int type = (int)Math.round(Math.random()*4-0.5);
 			
 			switch(type) {
 			
@@ -435,7 +567,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				}
 				
 				personalityRandom.values[i][j] = candidates.get(pos).get_personality(i,j);
-				personalityAverage.values[i][j] = (int)Math.round(sum/candidates.size());
+				personalityAverage.values[i][j] = round(sum/candidates.size());
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
@@ -445,14 +577,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				
 				for(int k = 0; k < candidates.size(); k++) {
 					
-					sum += candidates.get(k).get_happenings().values[i][j];
+					sum += candidates.get(k).get_happenings(i,j);
 				}
-				
-				if(Math.random()>crossover_prob) {
-					
-					happeningsRandom.values[i][j] = candidates.get(pos).get_happenings(i,j);
-					happeningsAverage.values[i][j] = (int)Math.round(sum/candidates.size());
-				}
+									
+				happeningsRandom.values[i][j] = candidates.get(pos).get_happenings(i,j);
+				happeningsAverage.values[i][j] = (int)Math.round(sum/candidates.size());
 			}
 		}
 		offspring[index] = new Candidate(personalityAverage,happeningsAverage,fit);
@@ -467,7 +596,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		for(int i = 0; i < selection_size; i++) {
 			
-			int mode = (int)Math.round(Math.random()*2);
+			int mode = (int)Math.round(Math.random()*3-0.5);
 			
 			switch(mode) {
 			
@@ -504,7 +633,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			for(int j = 0; j < 5; j++) {
 				
 				if(Math.random()<mutation_prob) {
-					mutatedPersonality.values[i][j] = Math.random()*2-1;
+					mutatedPersonality.values[i][j] = round(Math.random()*2-1);
 				}else {
 					mutatedPersonality.values[i][j] = recipient.get_personality(i,j);
 				}
@@ -551,7 +680,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 							yPos = (int)Math.round(Math.random()*(4));
 						}
 					}
-					mutatedPersonality.values[i][j] += (Math.random()*2-1) * (recipient.get_personality(xPos,yPos) - recipient.get_personality(i,j));
+					mutatedPersonality.values[i][j] += round((Math.random()*2-1) * (recipient.get_personality(xPos,yPos) - recipient.get_personality(i,j)));
 				}
 			}
 			
@@ -595,7 +724,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				
 				if(Math.random()<mutation_prob) {
 					
-					mutatedPersonality.values[i][j] += (Math.random()*2-1) * (mutator.get_personality(i,j) - recipient.get_personality(i,j));
+					mutatedPersonality.values[i][j] += round((Math.random()*2-1) * (mutator.get_personality(i,j) - recipient.get_personality(i,j)));
 				}
 			}
 			
@@ -806,6 +935,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	public double robinsonTest() {
 		
+		
 		ChromosomePersonality personality = new ChromosomePersonality(this.number_agents);
 		
 		personality.values[0][0] = 1;
@@ -828,6 +958,5 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		tellability = robinson.get_tellability();
 		
 		return tellability;
-		
 	}
 }

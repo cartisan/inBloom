@@ -40,16 +40,17 @@ public class GeneticIsland extends GeneticEnvironment<IslandEnvironment, IslandM
 		return agents;
 	}
 
+	/*
+	 * All static happenings
+	 * Define Happenings that definitely need to happen (e.g. Robinson stranding on an island)
+	 * Define triggered Happenings?
+	 */
+	
 	@Override
 	public ImmutableList<Happening> init_staticHappenings(ImmutableList<LauncherAgent> agents) {
 		
 		List<Happening> happeningList = new ArrayList<Happening>();
 		
-		/*
-		 * All static happenings
-		 * Define Happenings that definitely need to happen (e.g. Robinson stranding on an island)
-		 * Define triggered Happenings?
-		 */
 		
 		StormHappening shipWrecked = new StormHappening(
 				(IslandModel model) -> {
