@@ -7,9 +7,9 @@ import java.util.stream.Collectors;
 import jason.asSemantics.Mood;
 
 import inBloom.graph.Edge;
+import inBloom.graph.Edge.Type;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.Vertex;
-import inBloom.graph.Edge.Type;
 
 /**
  * This post-process visitor is supposed to operate one the fully analysed plot graph created by

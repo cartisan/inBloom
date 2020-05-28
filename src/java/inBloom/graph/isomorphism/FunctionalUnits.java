@@ -377,11 +377,11 @@ public class FunctionalUnits {
 	}
 
 	public static Vertex makeAction(int step, PlotDirectedSparseGraph graph) {
-		return new Vertex("FU action", Vertex.Type.ACTION, step, graph);
+		return new Vertex("FU A", Vertex.Type.ACTION, step, graph);
 	}
 
 	public static Vertex makeSpeech(int step, PlotDirectedSparseGraph graph) {
-		return new Vertex("FU speech", Vertex.Type.SPEECHACT, step, graph);
+		return new Vertex("FU S", Vertex.Type.SPEECHACT, step, graph);
 	}
 
 	public static Vertex makePositive(int step, PlotDirectedSparseGraph graph) {
@@ -397,7 +397,7 @@ public class FunctionalUnits {
 	}
 
 	public static Vertex makePolyemotional(int step, PlotDirectedSparseGraph graph) {
-		Vertex vertex = new Vertex("FU *", Type.PERCEPT, step, graph);
+		Vertex vertex = new Vertex("FU +/-", Type.PERCEPT, step, graph);
 		vertex.addEmotion("love");
 		vertex.addEmotion("hate");
 		return vertex;
@@ -409,7 +409,7 @@ public class FunctionalUnits {
 	}
 
 	public static Vertex makeActive(int step, PlotDirectedSparseGraph graph) {
-		Vertex vertex = new Vertex("FU act/speech", Vertex.Type.ACTIVE, step, graph);
+		Vertex vertex = new Vertex("FU A/S", Vertex.Type.ACTIVE, step, graph);
 		return vertex;
 	}
 
