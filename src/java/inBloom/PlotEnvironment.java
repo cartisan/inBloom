@@ -57,7 +57,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
 
 	/** number of times all agents need to repeat an action sequence before system is paused; -1 to switch off */
-	public static final Integer MAX_REPEATE_NUM = 5;
+	public static Integer MAX_REPEATE_NUM = 5;
 	/** number of environment steps, before system automatically pauses; -1 to switch off */
 	public static Integer MAX_STEP_NUM = -1;
 	/** time in ms that {@link TimeSteppedEnvironment} affords agents to propose an action, before each step times out */
@@ -68,6 +68,26 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     /** Aggregates the durations of all pauses, so that plot time can disregard time spent paused. */
     private static Long pauseDuration = 0L;
 
+    
+    /**
+     * Updates {@link #MAX_REPEATE_NUM} with the number of steps all agents need to be idle in order to pause the system.
+     * @param steps in int
+     */
+    
+    public void updateMaxRepeate(Integer steps) {
+    	MAX_REPEATE_NUM = steps;
+    }
+    
+    /**
+     * Updates {@link #MAX_STEP_NUM} with the number of steps the simulation will run.
+     * @param steps in int
+     */
+    
+    public void updateMaxSteps(Integer steps) {
+    	MAX_STEP_NUM = steps;
+    }
+    
+    
     /**
      * Returns the current plot time in ms, i.e. the time that has passed since simulation was started
      * @return time in ms (Long)
@@ -692,7 +712,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	    			l.onPauseRepeat();
 	    		}
 	    	}
-	    	if (MAX_STEP_NUM > -1 && this.getStep() % MAX_STEP_NUM == 0) {
+	    	if (MAX_STEP_NUM > -1 && this.getStep() == MAX_STEP_NUM) {
 	    		logger.info("Auto-paused execution of simulation, because system ran for MAX_STEP_NUM steps.");
 
 	    		PlotLauncher.runner.pauseExecution();
@@ -796,19 +816,17 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     private void printAllStateValuesAndSteps() {
     	
     	/* Print WITH steps in front of the value */
-    		for(Integer i: this.stateValues.keySet()) {
+		for(Integer i: this.stateValues.keySet()) {
 
-    			if(this.includeStepsInPrinting) {
-    				System.out.print("Step " + i + ": ");
-    			}
+			if(this.includeStepsInPrinting) {
+				System.out.print("Step " + i + ": ");
+			}
 
-    			if(this.stateValues.get(i) == null) {
-    				System.out.println("0");
-    			} else {
-    				System.out.println(this.stateValues.get(i));
-    			}
-    		}
-    	
+			if(this.stateValues.get(i) == null) {
+				System.out.println("0");
+			} else {
+				System.out.println(this.stateValues.get(i));
+			}
+		}
     }
-    
 }
