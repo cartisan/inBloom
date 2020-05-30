@@ -25,10 +25,10 @@ import jason.runtime.MASConsoleGUI;
 public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends PlotLauncher implements EnvironmentListener {
 	
 	public GeneticEnvironment<?, ?> GEN_ENV;
-	//private String[] args = {};
-	private String[] args = {PlotLauncher.DEAULT_FILE_NAME, "","20","-1"};
+	private String[] args = {};
+	//private String[] args = {PlotLauncher.DEAULT_FILE_NAME, "","20","-1"};
 
-	protected boolean isRunning = true;
+	protected static boolean isRunning = false;
 
 	/** Timeout in ms before a single simulation is forcibly stopped. A value of -1 means no timeout.  */
 	protected static long TIMEOUT = -1;
@@ -47,6 +47,11 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	
 	public double evaluate_Candidate(Candidate candidate) throws JasonException {
 		
+		// Initialize Parameters
+		double result = -1;
+		isRunning = true;
+		Integer simulation_length = candidate.get_simLength();
+		
 		// Instantiate Objects with methods of GeneticEnvironment
 		ImmutableList<LauncherAgent> agents = GEN_ENV.init_agents(candidate.get_personality().values);
 		ImmutableList<Happening> happenings = GEN_ENV.init_happenings(agents, candidate.get_happenings().values);
@@ -60,15 +65,14 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			
 		}
 
-		//Initialize PlotModel and set agent.location
+		// Initialize PlotModel and set agent.location
 		PlotModel model = GEN_ENV.init_model(agents, hapDir);
 		
 		GEN_ENV.init_location(agents, model);
 		
 		/*
-		 * From PlotCycle.java
+		 * From PlotCycle.java :
 		 */
-		double result = -1;
 		
 		try {
 			Thread t = new Thread(new Cycle(runner, model, args, agents, GEN_ENV.agentSrc));
@@ -80,12 +84,20 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		MASConsoleGUI.get().setPause(false);
 		boolean hasAddedListener = false;
 		long startTime = System.currentTimeMillis();
+		
 		while(isRunning) {
 			try {
 				// This is needed in the loop, because the plot environment is null before starting
 				if(!hasAddedListener) {
 					if(runner.getEnvironmentInfraTier() != null) {
 						if(runner.getEnvironmentInfraTier().getUserEnvironment() != null) {
+
+							//runner.getUserEnvironment().updateMaxSteps(numberEnd);
+							//runner.getUserEnvironment().updateMaxRepeate(numberRep);
+					    	
+							PlotEnvironment.MAX_REPEATE_NUM = -1;
+							PlotEnvironment.MAX_STEP_NUM = simulation_length;
+							
 							runner.getUserEnvironment().addListener(this);
 							hasAddedListener = true;
 						}
@@ -100,13 +112,20 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			} catch (InterruptedException e) {
 			}
 		}
-		
-		// Get graph and compute tellability
+
+		/*
+		 * Get the plot graph and compute corresponding tellability 
+		 */
 		
 		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();	
 		Tellability tellability = PlotGraphController.getPlotListener().analyze(graph);
 		result = tellability.compute();
+		
+		/*
+		 * End simulation and reset runner. 
+		 */
 
+        MASConsoleGUI.get().close();
 		runner.reset();
 		
 		return result;
@@ -114,7 +133,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	
 	@Override
 	public void onPauseRepeat() {
-		this.isRunning = false;
+		isRunning = false;
 	}
 	
 	
@@ -146,19 +165,9 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			try {
 				runner.initialize(args, model, agents, agSrc);
 				runner.run();
-			} catch (JasonException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 	}
 }
-
-// How to get this into Environment.class?
-
-// number of times all agents need to repeat an action sequence before system is paused; -1 to switch off */
-//public static final Integer MAX_REPEATE_NUM = 5;
-// number of environment steps, before system automatically pauses; -1 to switch off */
-//public static Integer MAX_STEP_NUM = -1;
-// time in ms that {@link TimeSteppedEnvironment} affords agents to propose an action, before each step times out */
-//static final String STEP_TIMEOUT = "300";
-

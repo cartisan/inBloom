@@ -7,11 +7,13 @@ public class Candidate implements Comparable<Candidate>{
 	private ChromosomePersonality chromosome_personality;
 	private ChromosomeHappenings chromosome_happenings;
 	private double tellability;
+	private Integer simulation_length;
 	
-	public Candidate(ChromosomePersonality personality, ChromosomeHappenings happenings, Fitness<?,?> fit){
+	public Candidate(ChromosomePersonality personality, ChromosomeHappenings happenings, Integer simLength, Fitness<?,?> fit){
 		
 		this.chromosome_personality = personality;
 		this.chromosome_happenings = happenings;
+		this.simulation_length = simLength;
 		
 		try {
 			tellability = fit.evaluate_Candidate(this);
@@ -21,6 +23,10 @@ public class Candidate implements Comparable<Candidate>{
 	}
 	
 	// Get-Methods
+	
+	public Integer get_simLength() {
+		return simulation_length;
+	}
 	
 	public ChromosomePersonality get_personality() {
 		return chromosome_personality;
@@ -51,7 +57,13 @@ public class Candidate implements Comparable<Candidate>{
 	 */
 	
 	public boolean equals(Candidate other) {
-		return this.chromosome_personality.equals(other.chromosome_personality) && this.chromosome_happenings.equals(other.chromosome_happenings);
+		if(this.simulation_length != other.get_simLength())
+			return false;
+		if(!this.chromosome_personality.equals(other.chromosome_personality))
+			return false;
+		if(!this.chromosome_happenings.equals(other.chromosome_happenings))
+			return false;
+		return true;
 	}
 	
 	/*
@@ -59,8 +71,14 @@ public class Candidate implements Comparable<Candidate>{
 	 * This saves runtime since we do not need to run a simulation in order to determine the tellability.
 	 */
 	
-	public boolean equals(ChromosomePersonality other_personality, ChromosomeHappenings other_happenings) {
-		return this.chromosome_personality.equals(other_personality) && this.chromosome_happenings.equals(other_happenings);
+	public boolean equals(ChromosomePersonality other_personality, ChromosomeHappenings other_happenings, Integer other_simLength) {
+		if(this.simulation_length != other_simLength)
+			return false;
+		if(!this.chromosome_personality.equals(other_personality))
+			return false;
+		if(!this.chromosome_happenings.equals(other_happenings))
+			return false;
+		return true;
 	}
 	
 	/*

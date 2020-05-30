@@ -43,12 +43,15 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.crossover_prob = crossover_prob;
 		this.mutation_prob = mutation_prob;		
 		
-		//<GEN_ENV.EnvType,GEN_ENV.ModType>
 		this.fit = new Fitness<EnvType,ModType>(GEN_ENV);
 		
 		//initialize_pop();
 	}
 
+	/*
+	 * Utility Functions
+	 */
+	
 	public void setPersonalityValues(double[] discreteValues) {
 		
 		this.discreteValues = discreteValues;
@@ -64,8 +67,26 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		return Math.round(value*100-0.5)/100;
 	}
 	
+	public Integer determineLength(ChromosomeHappenings happenings) {
+		
+		Integer length = 0;
+		
+		for(int i = 0; i < number_agents;i++) {
+			for(int j = 0; j < number_happenings; j++) {
+				if(happenings.values[i][j] >= length) {
+					length=happenings.values[i][j];
+				}
+			}
+		}
+		// let simulation run for a few more steps
+		int buffer = (int)Math.round(Math.random()*0.2*length);
+		
+		return length+buffer;
+	}
+	
 	/*
 	 * Initialization
+	 * Generates Initial population
 	 */
 	
 	public void initialize_pop() {
@@ -78,8 +99,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		while(index<pop_size) {
 			
-			//Create new Chromosomes
-			//TODO: Different Initializers
+			// Create new Chromosomes
 
 			ChromosomePersonality personality = new ChromosomePersonality(number_agents);
 
@@ -113,21 +133,24 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				happenings = steadyHappeningsInitializer();
 			}
 			
-			//Check for Duplicates
+			// Check for Duplicates
 			for(int i = 0; i < index; i++) {
-				if(!gen_pool[i].equals(personality,happenings)) {
+				if(!gen_pool[i].equals(personality,happenings,max_steps)) {
 
-					gen_pool[index] = new Candidate(personality,happenings,this.fit);
+					gen_pool[index] = new Candidate(personality,happenings,determineLength(happenings),this.fit);
 					index++;
 				}
 			}
 		}
+		// Sort Candidates by performance. Best Candidate will be at position zero descending
 		Arrays.sort(gen_pool);
 	}
 	
 	
 	/*
 	 * Random initializer for ChomosomePersonality
+	 * Chooses 5 values from the Interval [-1;1] randomly for every agent
+	 * @Return: Instantiated Chromosome
 	 */
 	
 	public ChromosomePersonality randomPersonalityInitializer() {
@@ -147,6 +170,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	/*
 	 * discrete initializer for ChomosomePersonality
+	 * Chooses the personality values from a set of predetermined values
+	 * @Return: Instantiated Chromosome
 	 */
 	
 	public ChromosomePersonality discretePersonalityInitializer() {
@@ -164,6 +189,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	/*
 	 * like discretePersonalityInitializer() but with unique values
+	 * @Return: Instantiated Chromosome
 	 */
 	
 	public ChromosomePersonality steadyDiscretePersonalityInitializer() {
@@ -190,6 +216,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	/*
 	 * Random initializer for ChromosomeHappening
+	 * Inserts random numbers from the Interval [0;max_steps] into the chromosome
+	 * @Return: Instantiated Chromosome
 	 */
 
 	public ChromosomeHappenings randomHappeningsInitializer() {
@@ -207,6 +235,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	/*
 	 * Instantiates a happening with probability 1/number_agents
+	 * @Return: Instantiated Chromosome
 	 */
 	
 	public ChromosomeHappenings probabilisticHappeningsInitializer() {
@@ -225,7 +254,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	
 	/*
-	 * Instantiates every happening exactly ones and assigns it to a random agent
+	 * Instantiates every happening exactly once and assigns it to a random agent
+	 * @Return: Instantiated Chromosome
 	 */
 	
 	public ChromosomeHappenings steadyHappeningsInitializer() {
@@ -241,8 +271,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		return happenings;
 	}
 	
+	
 	/*
 	 * Selection
+	 * 
+	 * Picks Candidates for further application of genetic operators
+	 * @Return: List with positions in gen_pool of chosen individuums 
 	 */
 	
 	public List<Integer> select() {
@@ -265,8 +299,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		return result;
 	}
 	
+	
 	/*
-	 *  Selection by random
+	 *  Random Selection
+	 *  
+	 *  Chooses selection_size many Candidates from the gen_pool in a random manner
+	 * @Return: List with positions of chosen individuums 
 	 */
 	
 	public List<Integer> randomSelector(){
@@ -274,21 +312,26 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		List<Integer> selectedIndividuums = new ArrayList<Integer>();
 		
 		while(selectedIndividuums.size() < selection_size) {
+			
 			int position = (int)Math.round(Math.random()*(pop_size-1));
 			if(!selectedIndividuums.contains(position)) {
 				selectedIndividuums.add(position);
-			}
-				
+			}	
 		}
 		return selectedIndividuums;
 	}
 	
+	
 	/*
 	 * Fitness based Selection
+	 * 
+	 * Uses roulette wheel approach to increase likelihood of choosing the best performing individuums
+	 * @Return: List with positions of chosen individuums 
 	 */
 	
 	public List<Integer> rouletteWheelSelector() {
 		
+		// Construct roulette wheel
 		double total_fitness = 0.0;
 		double[] rouletteWheel = new double[pop_size];
 		
@@ -297,6 +340,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			rouletteWheel[i] = total_fitness;
 		}
 		
+		// Pick Candidates
 		List<Integer> selectedIndividuums = new ArrayList<Integer>();
 		
 		while(selectedIndividuums.size() < selection_size) {
@@ -314,8 +358,13 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		return selectedIndividuums;
 	}
 	
+	
 	/*
 	 * Crossover
+	 * 
+	 * Chooses two candidates randomly from the selected Individuums list.
+	 * Generated Candidates will be stored into this.offspring
+	 * @param positions: List of candidate positions generated by Selection
 	 */
 	
 	public void crossover(List<Integer> positions) {
@@ -367,22 +416,29 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				voteCrossover(candidates,i);
 			}
 		}
+		// Sort Candidates by performance. Best Candidate will be at position zero descending
 		Arrays.sort(offspring);
 	}
+	
 	
 	/*
 	 * "Simply" exchanges ChromosomePersonality and ChromosomeHappenings
 	 * Is equal to onePointCrossover with a fixed crossover Point
+	 * @param one, two: The candidates to be crossed over
+	 * @param index: position in offspring
 	 */
 
 	public void simpleCrossover(Candidate one, Candidate two, int index) {
 		
-		offspring[index] = new Candidate(one.get_personality(), two.get_happenings(),fit);
-		offspring[index+1] = new Candidate(two.get_personality(), one.get_happenings(),fit);
+		offspring[index] = new Candidate(one.get_personality(), two.get_happenings(),two.get_simLength(),fit);
+		offspring[index+1] = new Candidate(two.get_personality(), one.get_happenings(),one.get_simLength(),fit);
 	}
+	
 	
 	/*
 	 * Exchanges Allele with probability crossover_prob
+	 * @param one, two: The candidates to be crossed over
+	 * @param index: position in offspring
 	 */
 	
 	public void binomialCrossover(Candidate one, Candidate two, int index) {
@@ -418,13 +474,16 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 		}
 		
-		offspring[index] = new Candidate(personalityOne,happeningsOne,fit);
-		offspring[index+1] = new Candidate(personalityTwo,happeningsTwo,fit);	
+		offspring[index] = new Candidate(personalityOne,happeningsOne,determineLength(happeningsOne),fit);
+		offspring[index+1] = new Candidate(personalityTwo,happeningsTwo,determineLength(happeningsTwo),fit);	
 	}
 	
+	
 	/*
-	 * Exchanges allele between crossover points
-	 * crossover points are generated by the function setCrossoverPoints()
+	 * Exchanges allele between crossover points.
+	 * Crossover points are generated by the function setCrossoverPoints()
+	 * @param one, two: The candidates to be crossed over
+	 * @param index: position in offspring
 	 */
 	
 	public void xPointCrossover(Candidate one, Candidate two, int index) {
@@ -462,12 +521,16 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				}
 			}
 		}	
-		offspring[index] = new Candidate(personalityOne,happeningsOne,fit);
-		offspring[index+1] = new Candidate(personalityTwo,happeningsTwo,fit);	
+		offspring[index] = new Candidate(personalityOne,happeningsOne,determineLength(happeningsOne),fit);
+		offspring[index+1] = new Candidate(personalityTwo,happeningsTwo,determineLength(happeningsTwo),fit);	
 	}
+	
 	
 	/*
 	 * Generate crossover points
+	 * 
+	 * @param x,y: dimensions of the array
+	 * @return: Array containing truth values
 	 */
 	
 	public boolean[][] setCrossoverPoints(int x, int y){
@@ -493,22 +556,26 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			ylist.add(i);
 		}
 		
+		// mode is used to determine in which manner we iterate the array
 		int mode = (int)Math.round(Math.random());
 		
 		if(mode == 0) {
 			
 			for(int i = 0; i < x; i++) {
 				
+				// Get a random x position
 				int xPos = (int)Math.round(Math.random()*(x-1-i));
 				int xCoord = xlist.get(xPos);
 				xlist.remove(xPos);		
 						
 				for(int j = 0; j < y; j++){
-					
+
+					// Get a random y position
 					int yPos = (int)Math.round(Math.random()*(y-1-j));
 					int yCoord = xlist.get(yPos);
 					ylist.remove(yPos);
 					
+					// Determine whether current position will be a crossover point
 					if(Math.random()<crossover_prob) {
 						cross = !cross;
 					}
@@ -519,17 +586,20 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}else {		
 			
 			for(int j = 0; j < y; j++){
-		
+
+				// Get a random y position
 				int yPos = (int)Math.round(Math.random()*(y-1-j));
 				int yCoord = xlist.get(yPos);
 				ylist.remove(yPos);
 				
 				for(int i = 0; i < x; i++) {
-				
+
+					// Get a random x position
 					int xPos = (int)Math.round(Math.random()*(x-1-i));
 					int xCoord = xlist.get(xPos);
 					xlist.remove(xPos);
-					
+
+					// Determine whether current position will be a crossover point
 					if(Math.random()<crossover_prob) {
 						cross = !cross;
 					}
@@ -541,9 +611,15 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		return result;
 	}
 	
+	
 	/*
 	 * Multi-sexual crossover
-	 * Since we need to generate 2 Candidates per crossover operation we return the average & a random generated resultant
+	 * 
+	 * Yields two candidates. The first one being the average of the vote values, 
+	 * the latter being constructed by choosing values randomly from the voters
+	 * 
+	 * @param candidates: The candidates to be crossed over
+	 * @param index: position in offspring
 	 */
 	
 	public void voteCrossover(List<Candidate> candidates, int index) {
@@ -556,6 +632,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		for(int i = 0; i < number_agents; i++) {
 			
+			// Personality
 			for(int j = 0; j < 5; j++) {
 				
 				int sum = 0;
@@ -570,6 +647,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				personalityAverage.values[i][j] = round(sum/candidates.size());
 			}
 			
+			// Happenings
 			for(int j = 0; j < number_happenings; j++) {
 				
 				int sum = 0;
@@ -584,12 +662,16 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				happeningsAverage.values[i][j] = (int)Math.round(sum/candidates.size());
 			}
 		}
-		offspring[index] = new Candidate(personalityAverage,happeningsAverage,fit);
-		offspring[index+1] = new Candidate(personalityRandom,happeningsRandom,fit);	
+		offspring[index] = new Candidate(personalityAverage,happeningsAverage,determineLength(happeningsAverage),fit);
+		offspring[index+1] = new Candidate(personalityRandom,happeningsRandom,determineLength(happeningsRandom),fit);	
 	}
+	
 	
 	/*
 	 * Mutation
+	 * 
+	 * Applies one mutation operator to every candidate in the offspring.
+	 * Results will be stored into mutated_offspring
 	 */
 	
 	public void mutate() {
@@ -617,10 +699,18 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				mutated_offspring[i]=guidedMutator(offspring[i],offspring[j]);
 			}
 		}
+		//Sort Candidates by performance. Best Candidate will be at position zero descending
+		Arrays.sort(mutated_offspring);
 	}
+	
 	
 	/*
 	 * Random Mutation
+	 * 
+	 * Iterates the Chromosome and chooses a new random value for a position with probability mutation_prob
+	 * 
+	 * @param recipient: Candidate to be mutated
+	 * @return: mutated Candidate
 	 */
 	
 	public Candidate randomMutator(Candidate recipient) {
@@ -630,6 +720,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		for(int i = 0; i < number_agents; i++) {
 			
+			// Personality
 			for(int j = 0; j < 5; j++) {
 				
 				if(Math.random()<mutation_prob) {
@@ -639,6 +730,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				}
 			}
 			
+			// Happenings
 			for(int j = 0; j < number_happenings; j++) {
 
 				if(Math.random()<mutation_prob) {
@@ -648,12 +740,17 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				}
 			}
 		}	
-
-		return new Candidate(mutatedPersonality, mutatedHappenings,fit);
+		return new Candidate(mutatedPersonality, mutatedHappenings,determineLength(mutatedHappenings),fit);
 	}
 	
+	
 	/*
-	 * Mutate value towards or away from another internal value (different position)
+	 * Oriented Mutation
+	 * 
+	 * Mutate value towards or away from another internal value at a different position
+	 * 
+	 * @param recipient: Candidate to be mutated
+	 * @return: mutated Candidate
 	 */
 	
 	public Candidate orientedMutator(Candidate recipient) {
@@ -663,12 +760,14 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		for(int i = 0; i < number_agents; i++) {
 			
+			// Personality
 			for(int j = 0; j < 5; j++) {
 
 				mutatedPersonality.values[i][j] = recipient.get_personality(i,j);
 				
 				if(Math.random()<mutation_prob) {
 					
+					// Generate other position to look at
 					int xPos = i;
 					int yPos = j;
 					
@@ -684,12 +783,14 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				}
 			}
 			
+			// Happenings
 			for(int j = 0; j < number_happenings; j++) {
 
 				mutatedHappenings.values[i][j] = recipient.get_happenings(i,j);
 				
 				if(Math.random()<mutation_prob) {
-					
+
+					// Generate other position to look at
 					int xPos = i;
 					int yPos = j;
 					
@@ -705,12 +806,18 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				}
 			}
 		}
-		return new Candidate(mutatedPersonality, mutatedHappenings,fit);
+		return new Candidate(mutatedPersonality, mutatedHappenings,determineLength(mutatedHappenings),fit);
 	}
 	
 	/*
-	 * Mutate value towards or away from another external value (same position)
+	 * Guided Mutation
+	 * 
+	 * Mutate a value towards or away from the corresponding value of another candidate with probability mutation_prob
+	 * 
+	 * @param recipient: Candidate to be mutated
+	 * @return: mutated Candidate
 	 */
+	
 	public Candidate guidedMutator(Candidate recipient, Candidate mutator) {
 		
 		ChromosomePersonality mutatedPersonality = new ChromosomePersonality(number_agents);
@@ -738,7 +845,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				}
 			}
 		}
-		return new Candidate(mutatedPersonality, mutatedHappenings,fit);
+		return new Candidate(mutatedPersonality, mutatedHappenings,determineLength(mutatedHappenings),fit);
 	}
 	
 	/*
@@ -751,7 +858,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			gen_pool = steadyNoDuplicatesReplacer();
 		else
 			gen_pool = partiallyRandomNoDuplicatesReplacer();
-		
+
+		//Sort Candidates by performance. Best Candidate will be at position zero descending
 		Arrays.sort(gen_pool);
 		
 		// remove artifacts
@@ -762,6 +870,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	/*
 	 * Keep best half of last generation
 	 * Fill up other half with best performing individuums from offspring
+	 * 
+	 * @return: Array containing candidates chosen to remain in the population
 	 */
 	
 	public Candidate[] steadyNoDuplicatesReplacer() {
@@ -830,6 +940,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	/*
 	 * Keep best n Candidates with n = pop_size/2
 	 * Fill up other half random individuals from the population
+	 * 
+	 * @return: Array containing candidates chosen to remain in the population
 	 */
 	
 	public Candidate[] partiallyRandomNoDuplicatesReplacer() {
@@ -954,7 +1066,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		double tellability = -1;
 		
-		Candidate robinson = new Candidate(personality,happenings,this.fit);
+		Candidate robinson = new Candidate(personality,happenings,determineLength(happenings),this.fit);
 		tellability = robinson.get_tellability();
 		
 		return tellability;
