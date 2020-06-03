@@ -157,9 +157,10 @@ public class SarsaLambda {
 			
 		}
 		
-		// find action with the maximum q-value
-		// if random < epsilon:
-		//		choose random action
+		/* find action with the maximum q-value
+		 * if random < epsilon:
+		 *		choose random action
+		 */
 		
 		
 		Happening<?> action;
@@ -259,10 +260,10 @@ public class SarsaLambda {
 		
 		// TODO call action selection?
 		// TODO maybe this doesn't make sense, I'm just inserting it for testing reasons
-		this.chooseNewAction(this.getCurrentStateOfModel());
+		Happening<?> chosenAction = this.chooseNewAction(this.getCurrentStateOfModel());
 		
 		
-		return null;
+		return chosenAction;
 	}
 	
 	
