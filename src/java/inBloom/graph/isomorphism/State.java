@@ -417,9 +417,102 @@ public class State {
 
 		if(!rPred || !rSucc) {
 			return false;
-		} else {
-			return true;
 		}
+
+		// Calculate whether R_In and R_Out hold.
+		boolean rIn;
+		boolean rOut;
+
+		int cardSuccIn1 = 0;
+		int cardSuccIn2 = 0;
+		int cardPredIn1 = 0;
+		int cardPredIn2 = 0;
+		int cardSuccOut1 = 0;
+		int cardSuccOut2 = 0;
+		int cardPredOut1 = 0;
+		int cardPredOut2 = 0;
+
+		for(int n = 0; n < this.n1; n++) {
+			if(this.in1[n] != NULL_NODE) {
+				if(succ1.contains(n)) {
+					cardSuccIn1++;
+				}
+				if(pred1.contains(n)) {
+					cardPredIn1++;
+				}
+			}
+			if(this.out1[n] != NULL_NODE) {
+				if(succ1.contains(n)) {
+					cardSuccOut1++;
+				}
+				if(pred1.contains(n)) {
+					cardPredOut1++;
+				}
+			}
+		}
+		for(int n = 0; n < this.n2; n++) {
+			if(this.in2[n] != NULL_NODE) {
+				if(succ2.contains(n)) {
+					cardSuccIn2++;
+				}
+				if(pred2.contains(n)) {
+					cardPredIn2++;
+				}
+			}
+			if(this.out2[n] != NULL_NODE) {
+				if(succ2.contains(n)) {
+					cardSuccOut2++;
+				}
+				if(pred2.contains(n)) {
+					cardPredOut2++;
+				}
+			}
+		}
+
+		rIn = cardSuccIn1 >= cardSuccIn2 && cardPredIn1 >= cardPredIn2;
+		rOut = cardSuccOut1 >= cardSuccOut2 && cardPredOut1 >= cardPredOut2;
+
+		if(!(rIn && rOut)) {
+			return false;
+		}
+
+		// Calculate whether R_New holds.
+		boolean rNew;
+
+		int cardN1Pred = 0;
+		int cardN2Pred = 0;
+		int cardN1Succ = 0;
+		int cardN2Succ = 0;
+
+		for(int n = 0; n < this.n1; n++) {
+			if(   this.core1[n] != NULL_NODE
+				&&  this.in1[n] != NULL_NODE
+				&& this.out1[n] != NULL_NODE) {
+				if(pred1.contains(n)) {
+					cardN1Pred++;
+				}
+				if(succ1.contains(n)) {
+					cardN1Succ++;
+				}
+			}
+		}
+		for(int n = 0; n < this.n2; n++) {
+			if(   this.core2[n] != NULL_NODE
+				&&  this.in2[n] != NULL_NODE
+				&& this.out2[n] != NULL_NODE) {
+				if(pred2.contains(n)) {
+					cardN2Pred++;
+				}
+				if(succ2.contains(n)) {
+					cardN2Succ++;
+				}
+			}
+		}
+
+		rNew = cardN1Pred >= cardN2Pred && cardN1Succ >= cardN2Succ;
+
+		return rNew;
+
 	}
 
 	/**
