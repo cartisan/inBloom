@@ -11,6 +11,7 @@ import inBloom.PlotModel;
 import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
 
+@SuppressWarnings("rawtypes")
 public abstract class GeneticEnvironment <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
 	
 	// Environment Class is needed for Plot_Launcher
@@ -24,8 +25,8 @@ public abstract class GeneticEnvironment <EnvType extends PlotEnvironment<ModTyp
 	public int max_steps;
 	public int pop_size;
 	public int number_selections;
-	public float crossover_prob;
-	public float mutation_prob;
+	public double crossover_prob;
+	public double mutation_prob;
 	
 	// Array to activate different genetic operators?
 	// public boolean[] operators
@@ -43,7 +44,7 @@ public abstract class GeneticEnvironment <EnvType extends PlotEnvironment<ModTyp
 	 * 
 	 */
 	
-	public GeneticEnvironment(Class<?> ENV_CLASS, String agentSrc, int number_agents, int number_staticHappenings, int number_dynamicHappenings, int max_steps, int pop_size, int number_selections, float crossover_prob, float mutation_prob) {
+	public GeneticEnvironment(Class<?> ENV_CLASS, String agentSrc, int number_agents, int number_staticHappenings, int number_dynamicHappenings, int max_steps, int pop_size, int number_selections, double crossover_prob, double mutation_prob) {
 		
 		this.ENV_CLASS = ENV_CLASS;
 		this.agentSrc = agentSrc;
@@ -58,9 +59,11 @@ public abstract class GeneticEnvironment <EnvType extends PlotEnvironment<ModTyp
 		
 	}
 
+	
 	/*
 	 * Constructor with standard values for GA Parameters
 	 */
+	
 	public GeneticEnvironment(Class<?> ENV_CLASS, String agentSrc, int number_agents, int number_staticHappenings, int number_dynamicHappenings, int max_steps) {
 		
 		this.ENV_CLASS = ENV_CLASS;
@@ -71,22 +74,35 @@ public abstract class GeneticEnvironment <EnvType extends PlotEnvironment<ModTyp
 		this.max_steps = max_steps;
 		this.pop_size = 20;
 		this.number_selections = 2;
-		this.crossover_prob = 0.05f;
-		this.mutation_prob = 0.01f;		
+		this.crossover_prob = 0.05;
+		this.mutation_prob = 0.01;		
 		
 	}
 
+	
 	/*
 	 * Hands over informations to start the Genetic Algorithm
 	 */
 	
-	public void start_GA(String[] args) {
-
+	public void run_GA(String[] args, int time) {
 
 		GeneticAlgorithm<EnvType,ModType> ga = new GeneticAlgorithm<EnvType,ModType> (args, this, this.number_agents, this.number_dynamicHappenings, this.max_steps, this.pop_size, this.number_selections, this.crossover_prob, this.mutation_prob);
-		System.out.println(ga.robinsonTest());
+		//System.out.println(ga.robinsonTest());
+		ga.setMaxRuntime(time);
+		ga.run();
 		
 	}
+	
+	
+	/*
+	 * Returns the genetic algorithm class in order to further customize the settings
+	 */
+	
+	public GeneticAlgorithm get_GA(String[] args){
+			
+		return new GeneticAlgorithm<EnvType,ModType> (args, this, this.number_agents, this.number_dynamicHappenings, this.max_steps, this.pop_size, this.number_selections, this.crossover_prob, this.mutation_prob);
+	}
+	
 	
 	/* _____________________________________________________________________________________________
 	 * 
@@ -99,7 +115,7 @@ public abstract class GeneticEnvironment <EnvType extends PlotEnvironment<ModTyp
 	
 	/*
 	 * Instantiate agents with Personality values from GA
-	 * @param: personality values. 5 floats for each person e [-1;1]
+	 * @param: personality values. 5 doubles for each person e [-1;1]
 	 * @return: Immutable List containing instantiated agents
 	 */
 	
@@ -113,8 +129,8 @@ public abstract class GeneticEnvironment <EnvType extends PlotEnvironment<ModTyp
 	 * 		happenings = Points in time where a happening occurs to a specific person
 	 * @return: Immutable List with instantiated happenings which will be handed over to ScheduledHappeningDirector
 	 */
-	
-	@SuppressWarnings("deprecation")
+
+
 	public ImmutableList<Happening> init_happenings(ImmutableList<LauncherAgent> agents, int[][] happenings){
 		
 		List<Happening> happeningList = new ArrayList<Happening>();

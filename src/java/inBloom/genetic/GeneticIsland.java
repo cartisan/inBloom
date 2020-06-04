@@ -20,13 +20,14 @@ import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.asSemantics.Personality;
 
+@SuppressWarnings("rawtypes")
 public class GeneticIsland extends GeneticEnvironment<IslandEnvironment, IslandModel>{
 
 	public GeneticIsland() {
-		super(IslandEnvironment.class, "islandAgent", 1, 3, 5, 40);
+		super(IslandEnvironment.class, "islandAgent", 1, 3, 5, 30);
 	}
-	public GeneticIsland(int pop_size, int number_selections, float crossover_prob, float mutation_prob) {
-		super(IslandEnvironment.class, "islandAgent", 1, 3, 5, 40, pop_size, number_selections, crossover_prob, mutation_prob);
+	public GeneticIsland(int pop_size, int number_selections, double crossover_prob, double mutation_prob) {
+		super(IslandEnvironment.class, "islandAgent", 1, 3, 5, 30, pop_size, number_selections, crossover_prob, mutation_prob);
 	}
 
 	@Override

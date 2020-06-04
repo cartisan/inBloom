@@ -9,8 +9,6 @@ import inBloom.PlotControlsLauncher;
 import inBloom.PlotEnvironment;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
-import inBloom.ERcycle.ReflectResult;
-import inBloom.ERcycle.PlotCycle.Cycle;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
 import inBloom.helper.EnvironmentListener;
@@ -18,21 +16,21 @@ import inBloom.helper.Tellability;
 import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.JasonException;
-import jason.environment.TimeSteppedEnvironment;
 import jason.infra.centralised.BaseCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
 
+@SuppressWarnings("rawtypes")
 public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends PlotLauncher implements EnvironmentListener {
 	
 	public GeneticEnvironment<?, ?> GEN_ENV;
-	private String[] args = {};
-	//private String[] args = {PlotLauncher.DEAULT_FILE_NAME, "","20","-1"};
+	private static String[] args = {};
 
 	protected static boolean isRunning = false;
 
 	/** Timeout in ms before a single simulation is forcibly stopped. A value of -1 means no timeout.  */
 	protected static long TIMEOUT = -1;
 
+	@SuppressWarnings("unchecked")
 	public Fitness(GeneticEnvironment<?, ?> environment){
 	//public Fitness(String[] args, GeneticEnvironment<?, ?> environment){
 		
@@ -59,7 +57,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		// Initialize MAS with a scheduled happening director
 		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
 		
-		for(Happening happening : happenings) {
+		for(Happening<?> happening : happenings) {
 			
 			hapDir.scheduleHappening(happening);
 			
@@ -91,9 +89,6 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 				if(!hasAddedListener) {
 					if(runner.getEnvironmentInfraTier() != null) {
 						if(runner.getEnvironmentInfraTier().getUserEnvironment() != null) {
-
-							//runner.getUserEnvironment().updateMaxSteps(numberEnd);
-							//runner.getUserEnvironment().updateMaxRepeate(numberRep);
 					    	
 							PlotEnvironment.MAX_REPEATE_NUM = -1;
 							PlotEnvironment.MAX_STEP_NUM = simulation_length;
@@ -124,8 +119,9 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		/*
 		 * End simulation and reset runner. 
 		 */
-
-        MASConsoleGUI.get().close();
+		
+		MASConsoleGUI.get().setPause(true);
+		
 		runner.reset();
 		
 		return result;
@@ -136,9 +132,24 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		isRunning = false;
 	}
 	
+	// Reset() without NullPointerException
+	@Override
+	public void reset() {
+    	if (control != null) {
+    		control.stop();
+    		control = null;
+    	}
+    	if (env != null) {
+    		env.stop();
+    		env = null;
+    	}
+    	stopAgs();
+    }
+	
 	
 	/**
 	 * Runnable for a single simulation.
+	 * From PlotCycle.java :
 	 */
 	public static class Cycle implements Runnable {
 		
@@ -165,7 +176,9 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			try {
 				runner.initialize(args, model, agents, agSrc);
 				runner.run();
-			} catch (Exception e) {
+			} catch (JasonException e) {
+				e.printStackTrace();
+			} catch (NullPointerException e) {
 				e.printStackTrace();
 			}
 		}

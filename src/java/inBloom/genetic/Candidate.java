@@ -19,6 +19,8 @@ public class Candidate implements Comparable<Candidate>{
 			tellability = fit.evaluate_Candidate(this);
 		} catch (JasonException e) {
 			e.printStackTrace();
+		} catch (NullPointerException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -57,12 +59,12 @@ public class Candidate implements Comparable<Candidate>{
 	 */
 	
 	public boolean equals(Candidate other) {
-		if(this.simulation_length != other.get_simLength())
-			return false;
+		
 		if(!this.chromosome_personality.equals(other.chromosome_personality))
 			return false;
 		if(!this.chromosome_happenings.equals(other.chromosome_happenings))
 			return false;
+		
 		return true;
 	}
 	
@@ -71,9 +73,8 @@ public class Candidate implements Comparable<Candidate>{
 	 * This saves runtime since we do not need to run a simulation in order to determine the tellability.
 	 */
 	
-	public boolean equals(ChromosomePersonality other_personality, ChromosomeHappenings other_happenings, Integer other_simLength) {
-		if(this.simulation_length != other_simLength)
-			return false;
+	public boolean equals(ChromosomePersonality other_personality, ChromosomeHappenings other_happenings) {
+		
 		if(!this.chromosome_personality.equals(other_personality))
 			return false;
 		if(!this.chromosome_happenings.equals(other_happenings))
