@@ -1,7 +1,7 @@
 /**
  * 
  */
-package inBloom.rl_happening.islandWorld;
+package inBloom.rl_happening.archive;
 
 import com.google.common.collect.ImmutableList;
 
@@ -9,6 +9,8 @@ import inBloom.LauncherAgent;
 import inBloom.PlotControlsLauncher;
 import inBloom.PlotLauncher;
 import inBloom.rl_happening.happenings.*;
+import inBloom.rl_happening.islandWorld.IslandEnvironment;
+import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import inBloom.storyworld.Character;
 import jason.JasonException;

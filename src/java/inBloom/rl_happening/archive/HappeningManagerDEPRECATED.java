@@ -1,12 +1,14 @@
 /**
  * 
  */
-package inBloom.rl_happening.rl_management;
+package inBloom.rl_happening.archive;
 
 import java.util.LinkedList;
 
 import inBloom.rl_happening.happenings.*;
 import inBloom.rl_happening.islandWorld.IslandModel;
+import inBloom.rl_happening.rl_management.AutomatedHappeningDirector;
+import inBloom.rl_happening.rl_management.SarsaLambda;
 import inBloom.storyworld.Happening;
 
 /**
