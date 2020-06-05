@@ -108,6 +108,10 @@ public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happe
 	 */
 	protected abstract String getConditionalEmotion();
 	
+	protected boolean isEmpty() {
+		return false;
+	}
+	
 }
 
 
