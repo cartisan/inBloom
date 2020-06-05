@@ -26,18 +26,13 @@ import inBloom.storyworld.Happening;
  * @version 5.6.20
  *
  */
+@SuppressWarnings("unused")
 public class SarsaLambda {
 	
 	/**
 	 * UNDERLYING MODEL
 	 */
 	FeaturePlotModel<?> featurePlotModel;
-	
-	/**
-	 * PARAMETER RESTRICTIONS
-	 */
-	private final int INITIAL_WEIGHT_MAX = 1;
-	private final int INITIAL_WEIGHT_MIN = 0;
 	
 	/**
 	 * FINE-TUNABLE VARIABLES
@@ -51,32 +46,15 @@ public class SarsaLambda {
 	 * DATA STRUCTURES FOR PERFORMING THE ALGORITHM
 	 */
 	private HashMap<String, Integer> eligibilityTraces;
-	private HashMap<String, HashMap<Happening<?>, Integer>> weights;		/* String = Name of the Feature
+	private HashMap<String, HashMap<Happening<?>, Double>> weights;		/* String = Name of the Feature
 																			 * Happening = Action (incl. empty Happening)
 	 																		 * Integer = Weight */
 //	private HashBasedTable<Integer, Happening<?>, Integer> qValues; /* Rows: States (Integer)
 //	 															  	 * Columns: Actions (Happenings)
 //	 															  	 * Values: Q-Values (State-Action-Utility)*/
 	
-	private HashMap<StateActionPair, Integer> qValues;
-	
-	private class StateActionPair {
-		int state;
-		Happening<?> action;
-
-		public StateActionPair(int state, Happening<?> action) {
-			this.state = state;
-			this.action = action;
-		}
-		
-		public int getState() {
-			return this.state;
-		}
-		
-		public Happening<?> getAction() {
-			return this.action;
-		}
-	}
+	//private HashMap<StateActionPair, Integer> qValues;
+	private HashMap<Happening<?>, Double> qValues;
 	
 	
 	/**
@@ -113,7 +91,7 @@ public class SarsaLambda {
 		
 		
 		// initialise qValues
-		this.qValues = new HashMap<StateActionPair, Integer>();
+		this.qValues = new HashMap<Happening<?>, Double>();
 		
 		
 		// Initialize previousHappening (null) -> TODO change to when first called later? But first, to make sure no NullPointer when starting or similar, we put it here
@@ -151,19 +129,18 @@ public class SarsaLambda {
 			// q-value of action = for all features of action get weight and sum it up
 			//		idea: put in in a sorted way already?
 			
-			int qvalue = 0;
+			double qvalue = 0.0;
 			
+			// get the weight of this specific state-action-dependent feature (where states are represented as features?)
 			for(String feature: presentFeatures) {
 				qvalue += this.getWeightOfFeature(feature, action);
 			}
 			
-			// TODO: This is the version where we also save the state.
-			// get state to be saved in the q-value table
-			int state = this.featurePlotModel.getStateValue();
+
+			//int state = this.featurePlotModel.getStateValue();
 			
 			
-//			this.qValues.put(state, action, qvalue);
-			this.qValues.put(new StateActionPair(state, action), qvalue);
+			this.qValues.put(action, qvalue);
 			
 			
 		}
@@ -190,21 +167,21 @@ public class SarsaLambda {
 		if(Math.random() >= epsilon) {
 			// choose the action with the highest qvalue
 
-			int max = 0;
+			double max = 0.0;
 
-			Iterator<Map.Entry<StateActionPair,Integer>> entryIterator = this.qValues.entrySet().iterator();
+			Iterator<Map.Entry<Happening<?>,Double>> entryIterator = this.qValues.entrySet().iterator();
 			
 			while(entryIterator.hasNext()) {
 				
-				Map.Entry<StateActionPair,Integer> pair = (Map.Entry<StateActionPair,Integer>)entryIterator.next();
+				Map.Entry<Happening<?>,Double> pair = (Map.Entry<Happening<?>,Double>)entryIterator.next();
 
 				System.out.println(pair.getKey() + " = " + pair.getValue());
 
-				int currentValue = pair.getValue();
+				double currentValue = pair.getValue();
 
 				if(currentValue > max) {
 					max = currentValue;
-					action = pair.getKey().getAction();
+					action = pair.getKey();
 				}
 
 				entryIterator.remove(); // avoids a ConcurrentModificationException
@@ -230,7 +207,7 @@ public class SarsaLambda {
 	private void initializeWeights() {
 		
 		// initialize the HashMap that maps from Feature to Weight
-		this.weights = new HashMap<String, HashMap<Happening<?>,Integer>>();
+		this.weights = new HashMap<String, HashMap<Happening<?>,Double>>();
 		
 		
 		/* 
@@ -245,13 +222,14 @@ public class SarsaLambda {
 		// go through all features to assign random initial weight to each of their actions
 		for(String feature: this.allFeatures) {
 			
-			HashMap<Happening<?>,Integer> actionDependentWeights = new HashMap<Happening<?>,Integer>();
+			HashMap<Happening<?>,Double> actionDependentWeights = new HashMap<Happening<?>,Double>();
 			
 			for(Happening<?> action: this.allHappenings) {
 				
-				// TODO so far only 0 or 1, nothing in between ... because weights are integers rn not doubles
 				// generate a random value for the initial weight
-				int initialWeightValue = new Random().nextInt(INITIAL_WEIGHT_MAX - INITIAL_WEIGHT_MIN + 1) + INITIAL_WEIGHT_MIN;
+				// Math.random() method returns a double value with a positive sign, greater than or equal to 0.0 and less than 1.0.
+				// (from https://www.java2novice.com/java-fundamentals/math/random/)
+				double initialWeightValue = Math.random();
 				
 				actionDependentWeights.put(action, initialWeightValue);
 				
@@ -337,7 +315,7 @@ public class SarsaLambda {
 	 * @return
 	 * 			The weight (int) of the given feature
 	 */
-	private int getWeightOfFeature(String feature, Happening<?> action) {
+	private double getWeightOfFeature(String feature, Happening<?> action) {
 		return this.weights.get(feature).get(action);
 	}
 	
