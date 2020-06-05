@@ -73,7 +73,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.crossover_prob = crossover_prob;
 		this.mutation_prob = mutation_prob;
 		
-		//this.fit = new Fitness<EnvType,ModType>(GEN_ENV);
+		while(selection_size>=pop_size) {
+			selection_size/=2;
+		}
 	}
 	
 	
@@ -264,8 +266,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 	public Integer determineLength(ChromosomeHappenings happenings, double ratio) {
 		
-		// Let every Simulation run for atleast 1 step
-		Integer length = 1;
+		Integer length = 0;
 		
 		for(int i = 0; i < number_agents;i++) {
 			for(int j = 0; j < number_happenings; j++) {
@@ -354,23 +355,36 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		initialize_pop();
 		evaluatePopulation();
 		
-		System.out.println(start_time+max_runtime);
-		System.out.println(System.currentTimeMillis());
-		
 		// Repeat until termination (no improvements found or time criterion -if set- is met):
 		while(no_improvement<termination && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0)) {
-			System.out.println("New Generation: " + population_average.get(population_average.size()-1));
+			
+			// Verbose
+			int generation = population_best.size()-1;
+			
+			System.out.println();
+			System.out.println("New Generation: " + generation);
+			System.out.println();
+			System.out.println("Best Individuum: " + population_best.get(generation));
+			System.out.println("Generation Average: " + population_average.get(generation));
+			System.out.println();
+			
+			if(no_improvement>0) {
+				System.out.println("No improvement found for " + no_improvement + " generations!");
+				System.out.println();
+			}
+
 			crossover(select());
 			mutate();
 			recombine();
 			evaluatePopulation();
 		}
-		System.out.println("");
+		
+		System.out.println();
 		System.out.println("This is the End!");
-		System.out.println("");
+		System.out.println();
 		System.out.println("Generations: " + population_best.size());
-		System.out.println("Best so far: " + gen_pool[0].get_tellability());
-		System.out.println("");
+		System.out.println("Best so far: " + gen_pool[0].get_tellability() + " , with simulation length: " + gen_pool[0].get_simLength());
+		System.exit(0);
 	}
 	
 	
@@ -412,49 +426,68 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			System.out.println("No initialization set for happenings chromosome. Defaulting to random init!");
 			hapInitializer.add(0);
 		}
+		
 		// Initialize population
 		while(index<pop_size) {
 			
-			// Create new Chromosomes
-
+			// Create new personality chromosome
 			ChromosomePersonality personality = new ChromosomePersonality(number_agents);
 
 			int persType = persInitializer.get((int)Math.round(Math.random()*persInitializer.size()-0.5));
 			
-			switch(persType) {
-			
-			case(0): 
-				personality = randomPersonalityInitializer();
-			
-			case(1):
-				if(discretePersValues.length>0)
-					personality = discretePersonalityInitializer();
-				else
-					personality = randomPersonalityInitializer();	
-			
-			case(2):
-				if(discretePersValues.length>4)
-					personality = steadyDiscretePersonalityInitializer();
-				else if(discretePersValues.length>0)
-					personality = discretePersonalityInitializer();
-				else
-					personality = randomPersonalityInitializer();					
-			}
+			switch(persType) {	
 
+			case(2):
+				
+				if(discretePersValues.length>4) {
+					personality = steadyDiscretePersonalityInitializer();
+					break;
+				}
+
+			case(1):
+				
+				if(discretePersValues.length>0) {
+					personality = discretePersonalityInitializer();
+					break;
+				}
+					
+			case(0):
+
+				personality = randomPersonalityInitializer();
+				break;
+				
+			default:
+				
+				System.out.println("Fatal Error @ Personality Initialization Selection!");
+				break;
+			}
+			
+			// Create new happening chromosome
 			ChromosomeHappenings happenings = new ChromosomeHappenings(number_agents,number_happenings);
 			
 			int hapType = hapInitializer.get((int)Math.round(Math.random()*hapInitializer.size()-0.5));
-			
-			switch(hapType) {
-			
-			case(0): 
+
+			switch(hapType) {	
+
+			case(0):	
+				
 				happenings = randomHappeningsInitializer();
-			
+				break;
+
 			case(1):
+	
 				happenings = probabilisticHappeningsInitializer();
-			
+				break;
+				
 			case(2):
+				
 				happenings = steadyHappeningsInitializer();
+				break;
+				
+			default:
+				
+				System.out.println("Fatal Error @ Happening Initialization Selection!");
+				break;
 			}
 			
 			// Check for Duplicates
@@ -632,15 +665,21 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		switch(type) {
 		
-		case(0): 
-			
+		case(0):
+
 			result = randomSelector();
-		
+			break;
+			
 		case(1):
 			
 			result = rouletteWheelSelector();
+			break;			
 			
-		}
+		default:
+			
+			System.out.println("Fatal Error @ Selection Operator Selection!");
+			break;
+		}	
 		return result;
 	}
 	
@@ -728,12 +767,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}
 		
 		for(int i = 0; i < selection_size; i+=2) {
-
-			System.out.println("Starting Crossover: " + i);
-			System.out.println("Starting Crossover: " + i);
-			System.out.println("Starting Crossover: " + i);
-			System.out.println("Starting Crossover: " + i);
-			System.out.println("Starting Crossover: " + i);
 			
 			int pos = (int)Math.round(Math.random()*positions.size()-0.5);
 			int one = positions.get(pos);
@@ -745,20 +778,24 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			Integer type = crossoverList.get((int)Math.round(Math.random()*crossoverList.size()-0.5));
 			
 			switch(type) {
+
+			case(0):
 			
-			case(0): 
-				
 				simpleCrossover(gen_pool[one],gen_pool[two],i);
+				break;
 			
-			case(1): 
-				
+			case(1):
+			
 				binomialCrossover(gen_pool[one],gen_pool[two],i);
+				break;
+				
 			
-			case(2): 
+			case(2):
 				
 				xPointCrossover(gen_pool[one],gen_pool[two],i);
+				break;
 			
-			case(3): 
+			case(3):
 				
 				// Add 2 initial candidates to the List
 				List<Candidate> candidates = new ArrayList<Candidate>();
@@ -766,18 +803,32 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				candidates.add(gen_pool[one]);
 				candidates.add(gen_pool[two]);
 				
+				// Initialize list containing additional possible voters
+				List<Integer> possibleVoters = new ArrayList<Integer>();
+				
+				for(int v = 0; v < pop_size; v++) {
+					if(v != one && v != two) 
+						possibleVoters.add(v);
+				}
+				
 				// Add additional Votes
 				int additionalVotes = (int)Math.round(Math.random()*(pop_size-2)-0.5);
 				
 				while(additionalVotes > 0) {
 					
-					int votePos = (int)Math.round(Math.random()*pop_size-0.5);
+					int votePos = (int)Math.round(Math.random()*possibleVoters.size()-0.5);
 					
-					if(!candidates.contains(gen_pool[votePos])) {
-						candidates.add(gen_pool[votePos]);
-					}
+					candidates.add(gen_pool[possibleVoters.get(votePos)]);
+					additionalVotes--;
 				}
+				
 				voteCrossover(candidates,i);
+				break;
+				
+			default:
+				
+				System.out.println("Fatal Error @ Crossover Operator Selection!");
+				break;
 			}
 		}
 		// Sort Candidates by performance. Best Candidate will be at position zero descending
@@ -1070,14 +1121,17 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			case(0):
 				
 				mutated_offspring[i]=randomMutator(offspring[i]);
+				break;
 			
 			case(1):
 				
 				mutated_offspring[i]=toggleMutator(offspring[i]);
+				break;
 				
 			case(2):
 				
 				mutated_offspring[i]=orientedMutator(offspring[i]);
+				break;
 				
 			case(3):
 				
@@ -1086,6 +1140,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					j = (int)Math.round(Math.random()*selection_size-0.5);
 				}
 				mutated_offspring[i]=guidedMutator(offspring[i],offspring[j]);
+				break;
+				
+			default:
+				
+				System.out.println("Fatal Error @ Crossover Operator Selection!");
+				break;
 			}
 		}
 		//Sort Candidates by performance. Best Candidate will be at position zero descending
@@ -1359,58 +1419,74 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		int steady = pop_size/2;
 		
-		// Keep best performing individuums of current Population
+		// Create List of all newly generated Candidates sorted by fitness descending (rest of old population is at end)
+		List<Candidate> total_offspring = new ArrayList<Candidate>();
+		int posPop = steady;
+		int posOff = 0;
+		int posMut = 0;
+		
+		for(int i = 0; i < (pop_size-steady)+selection_size*2; i++) {
+			
+			int best = 0;
+			double bestTellability = -1;
+			
+			if(posOff < selection_size) {
+				if(offspring[posOff].get_tellability()>bestTellability) {
+					best = 1;
+					bestTellability = offspring[posOff].get_tellability();
+				}
+			}
+			
+			if(posMut < selection_size) {
+				if(mutated_offspring[posMut].get_tellability()>bestTellability) {
+					best = 2;
+					bestTellability = mutated_offspring[posMut].get_tellability();
+				}
+			}
+			
+			switch(best) {
+			
+			case(0):
+				
+				total_offspring.add(gen_pool[posPop]);
+				posPop++;
+				break;
+
+			case(1):
+				
+				total_offspring.add(offspring[posOff]);
+				posOff++;
+				break;
+				
+			case(2):
+				
+				total_offspring.add(mutated_offspring[posMut]);
+				posMut++;
+				break;
+				
+			default:
+			
+				System.out.println("Missing Candidates @ partiallyRandomNoDuplicatesReplacer()");
+				return null;
+			}
+		}
+		
+		// Keep best performing candidates of current Population
 		for(int i = 0; i < steady; i++) {
 			next_gen[i] = gen_pool[i];
 		}
 		
-		// Create List of all newly generated Candidates sorted by fitness descending
-		List<Candidate> total_offspring = new ArrayList<Candidate>();
-		int posOff = 0;
-		int posMut = 0;
-		
-		while(posOff+posMut < selection_size*2) {
-			
-			if(posOff<selection_size) {
-				
-				if(posMut<selection_size) {
-					
-					if(offspring[posOff].get_tellability()>mutated_offspring[posMut].get_tellability()) {
-						total_offspring.add(offspring[posOff]);
-						posOff++;
-					}else {
-						total_offspring.add(offspring[posMut]);
-						posMut++;
-					}
-					
-				}else {
-					total_offspring.add(offspring[posOff]);
-					posOff++;
-				}
-				
-			}else {
-				total_offspring.add(offspring[posMut]);
-				posMut++;
-			}
-		}
-		
-		// Add best individuums from total_offspring to next_gen avoiding duplicates
+		// Add best candidates from total_offspring to next_gen avoiding duplicates
 		for(int i = steady; i<pop_size; i++) {
 			
 			boolean done = false;
 			
 			while(!done) {
-				if(!total_offspring.isEmpty()) {
-					if(!total_offspring.get(0).isContainedIn(next_gen)) {
-						next_gen[i] = total_offspring.get(0);
-						done = true;
-					}
-					total_offspring.remove(0);
-				// If there are not enough candidates in total_offspring, reuse old population
-				}else {
-					next_gen[i] = gen_pool[i];
+				if(!total_offspring.get(0).isContainedIn(next_gen)) {
+					next_gen[i] = total_offspring.get(0);
 					done = true;
 				}
+				total_offspring.remove(0);
 			}
 		}
 		return next_gen;
@@ -1460,31 +1536,34 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				}
 			}
 			
-			switch(best){
+			switch(best) {
 			
-			case(0):
-				
-				System.out.println("Missing Candidates @ partiallyRandomNoDuplicatesReplacer()");
-				return null;
-
 			case(1):
 				
 				allCandidates.add(gen_pool[posPop]);
 				posPop++;
-				
+				break;
+
 			case(2):
 				
 				allCandidates.add(offspring[posOff]);
 				posOff++;
+				break;
 				
 			case(3):
 				
 				allCandidates.add(mutated_offspring[posMut]);
 				posMut++;
-			}	
+				break;
+				
+			default:
+			
+				System.out.println("Missing Candidates @ partiallyRandomNoDuplicatesReplacer()");
+				return null;
+			}
 		}
 		
-		// Keep best performing individuums of current Population
+		// Keep best performing candidates of current Population
 		int steady = pop_size/2;
 		
 		for(int i = 0; i < steady; i++) {
@@ -1500,7 +1579,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 		}
 		
-		// Fill rest with random individuums but avoid adding duplicates
+		// Fill rest with random candidates but avoid adding duplicates
 		for(int i = steady; i<pop_size; i++) {
 			
 			boolean done = false;

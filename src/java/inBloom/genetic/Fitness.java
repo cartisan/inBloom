@@ -75,6 +75,10 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		try {
 			Thread t = new Thread(new Cycle(runner, model, args, agents, GEN_ENV.agentSrc));
 			t.start();
+		} catch (JasonException e) {
+			e.printStackTrace();
+		} catch (NullPointerException e) {
+			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -111,20 +115,26 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		/*
 		 * Get the plot graph and compute corresponding tellability 
 		 */
-		
+
 		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();	
 		Tellability tellability = PlotGraphController.getPlotListener().analyze(graph);
 		result = tellability.compute();
 		
 		/*
-		 * End simulation and reset runner. 
+		 * End simulation and reset runner. Need?
 		 */
 		
 		MASConsoleGUI.get().setPause(true);
-		
 		runner.reset();
-		
+
 		return result;
+	}
+	
+	@Override
+	public void pauseExecution() {
+
+		MASConsoleGUI.get().setPause(true);
+		runner.reset();
 	}
 	
 	@Override
@@ -137,11 +147,9 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	public void reset() {
     	if (control != null) {
     		control.stop();
-    		control = null;
     	}
     	if (env != null) {
     		env.stop();
-    		env = null;
     	}
     	stopAgs();
     }

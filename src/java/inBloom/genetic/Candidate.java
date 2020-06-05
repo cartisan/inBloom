@@ -22,6 +22,8 @@ public class Candidate implements Comparable<Candidate>{
 		} catch (NullPointerException e) {
 			e.printStackTrace();
 		}
+
+		System.out.println("Finish");
 	}
 	
 	// Get-Methods
@@ -88,16 +90,14 @@ public class Candidate implements Comparable<Candidate>{
 	
 	public boolean isContainedIn(Candidate[] others) {
 		
-		boolean contained = false;
-		
 		for(int i = 0; i < others.length; i++) {
 			if(others[i]!=null) {
 				if(this.equals(others[i])) {
-					contained = true;
+					return true;
 				}
 			}
 		}
-		return contained;
+		return false;
 	}
 	
 	
