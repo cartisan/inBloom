@@ -1,7 +1,7 @@
 /**
  * 
  */
-package inBloom.rl_happening.rl_management;
+package inBloom.rl_happening.archive;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,18 +15,19 @@ import org.jfree.util.Log;
 import com.google.common.collect.HashBasedTable;
 
 import inBloom.PlotModel;
+import inBloom.rl_happening.rl_management.FeaturePlotModel;
+import inBloom.rl_happening.rl_management.HappeningManager;
+import inBloom.rl_happening.rl_management.ReinforcementLearningCycle;
 import inBloom.storyworld.Happening;
 
 /**
  * A class implementing everything necessary for executing SARSA(lambda) on the Storyworld
  * 
- * Using a two-dimensional hashMap for the weights
- * 
  * @author Julia Wippermann
- * @version 5.6.20
+ * @version 19.1.20
  *
  */
-public class SarsaLambda {
+public class SarsaLambdaDEPRECATED {
 	
 	/**
 	 * UNDERLYING MODEL
@@ -51,9 +52,8 @@ public class SarsaLambda {
 	 * DATA STRUCTURES FOR PERFORMING THE ALGORITHM
 	 */
 	private HashMap<String, Integer> eligibilityTraces;
-	private HashMap<String, HashMap<Happening<?>, Integer>> weights;		/* String = Name of the Feature
-																			 * Happening = Action (incl. empty Happening)
-	 																		 * Integer = Weight */
+	private HashMap<String, Integer> weights;		/* String = Name of the Feature
+													 * Integer = Weight */
 //	private HashBasedTable<Integer, Happening<?>, Integer> qValues; /* Rows: States (Integer)
 //	 															  	 * Columns: Actions (Happenings)
 //	 															  	 * Values: Q-Values (State-Action-Utility)*/
@@ -82,7 +82,6 @@ public class SarsaLambda {
 	/**
 	 * BACKGROUND INFORMATION NEEDED
 	 */
-	// TODO include the empty Happening in this representation
 	private Happening<?>[] allHappenings;
 	private LinkedList<String> allFeatures;
 	private Happening<?> previousHappening;
@@ -92,7 +91,7 @@ public class SarsaLambda {
 	
 
 	
-	public SarsaLambda(FeaturePlotModel<?> model, ReinforcementLearningCycle daddy) {
+	public SarsaLambdaDEPRECATED(FeaturePlotModel<?> model, ReinforcementLearningCycle daddy) {
 		
 		this.featurePlotModel = model;
 		this.daddy = daddy;
@@ -141,10 +140,7 @@ public class SarsaLambda {
 		// TODO
 		
 		for(Happening<?> action: this.allHappenings) {
-			
 			// features of action = get the features present in this state and action
-			// we make this only state-dependent, actions will have their effect when we look into the weights
-			// because those are different depending on which action is chosen
 			LinkedList<String> presentFeatures = this.getFeatures(action);
 			
 			
@@ -154,7 +150,7 @@ public class SarsaLambda {
 			int qvalue = 0;
 			
 			for(String feature: presentFeatures) {
-				qvalue += this.getWeightOfFeature(feature, action);
+				qvalue += this.getWeightOfFeature(feature);
 			}
 			
 			// TODO: This is the version where we also save the state.
@@ -230,37 +226,18 @@ public class SarsaLambda {
 	private void initializeWeights() {
 		
 		// initialize the HashMap that maps from Feature to Weight
-		this.weights = new HashMap<String, HashMap<Happening<?>,Integer>>();
+		this.weights = new HashMap<String, Integer>();
 		
-		
-		/* 
-		 * for each feature
-		 * 		for each Happening
-		 * 			create a random weight
-		 * 			assign this weight to this Happening
-		 * 		assign this HashMap to this feature
-		 */
-		
-		
-		// go through all features to assign random initial weight to each of their actions
+		// go through all features to assign random initial weight to them
 		for(String feature: this.allFeatures) {
 			
-			HashMap<Happening<?>,Integer> actionDependentWeights = new HashMap<Happening<?>,Integer>();
-			
-			for(Happening<?> action: this.allHappenings) {
-				
-				// TODO so far only 0 or 1, nothing in between ... because weights are integers rn not doubles
-				// generate a random value for the initial weight
-				int initialWeightValue = new Random().nextInt(INITIAL_WEIGHT_MAX - INITIAL_WEIGHT_MIN + 1) + INITIAL_WEIGHT_MIN;
-				
-				actionDependentWeights.put(action, initialWeightValue);
-				
-			}
+			// generate a random value for the initial weight
+			int initialWeightValue = new Random().nextInt(INITIAL_WEIGHT_MAX - INITIAL_WEIGHT_MIN + 1) + INITIAL_WEIGHT_MIN;
 			
 			// set the initial weight for this feature to the generated value
-			this.weights.put(feature, actionDependentWeights);
+			this.weights.put(feature, initialWeightValue);
 			
-			daddy.log("Feature: " + feature + " has initial weights: " + actionDependentWeights.values());
+			daddy.log("Feature: " + feature + " has initial weight: " + initialWeightValue);
 		}
 		
 		
@@ -337,8 +314,8 @@ public class SarsaLambda {
 	 * @return
 	 * 			The weight (int) of the given feature
 	 */
-	private int getWeightOfFeature(String feature, Happening<?> action) {
-		return this.weights.get(feature).get(action);
+	private int getWeightOfFeature(String feature) {
+		return this.weights.get(feature);
 	}
 	
 	
