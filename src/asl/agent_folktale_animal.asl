@@ -141,19 +141,23 @@ wish(relax).
 
 +!create(bread) : has(wheat[state(seed)]) <-
 	!plant(wheat);
-	-has(wheat[_]).
+	-has(wheat[_]);
+	!create(bread).
 
 +!create(bread) : at(wheat[state(growing)], farm) <-
-	!tend(wheat).
+	!tend(wheat);
+	!create(bread).
 
 +!create(bread) : at(wheat[state(ripe)], farm) <-
 	!harvest(wheat);
-	+has(wheat[state(harvested)]). // TODO: get env to give this information?
-
+	+has(wheat[state(harvested)]); // TODO: get env to give this information?
+	!create(bread).
+	
 +!create(bread) : has(wheat[state(harvested)]) <-
 	!grind(wheat);
-	-+has(wheat[state(flour)]). // TODO: get env to give this information? 
-
+	-+has(wheat[state(flour)]); // TODO: get env to give this information? 
+	!create(bread).
+	
 +!create(bread) : has(wheat[state(flour)]) <-
 	!bake(bread);
 	.resume(obligation(farm_work));

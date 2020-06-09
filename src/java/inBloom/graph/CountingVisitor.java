@@ -96,17 +96,17 @@ public class CountingVisitor extends PlotGraphVisitor {
 			return EdgeVisitResult.CONTINUE;
 		}
 
-		if(type == Edge.Type.ACTUALIZATION) {
+		if(type == Edge.Type.ACTUALIZATION) {	// [I] -a->[+/-]
 			this.productiveConflicts.get(this.currentRoot).add(new Pair<>(this.graph.getSource(edge), this.graph.getDest(edge)));
 		}
 
-		if(type == Edge.Type.TERMINATION) {
+		else if(type == Edge.Type.TERMINATION) {	// [I] <-t- [I]
 			if(this.graph.getDest(edge).getType() == Type.INTENTION) {
 				this.productiveConflicts.get(this.currentRoot).add(new Pair<>(this.graph.getDest(edge), this.graph.getSource(edge)));
 			}
 		}
 
-		if(type == Edge.Type.MOTIVATION) {
+		else if(type == Edge.Type.MOTIVATION & this.graph.getSource(edge).getType() == Type.INTENTION ) {
 			Vertex src =  this.graph.getSource(edge);
 			Vertex dest = this.graph.getDest(edge);
 
@@ -169,18 +169,18 @@ public class CountingVisitor extends PlotGraphVisitor {
 
 			for (Pair<Vertex, Vertex> pair: confPairs) {
 				Vertex intention = pair.getFirst();
-				Vertex action = pair.getSecond();
+				Vertex resolution = pair.getSecond();		//is an intention in case of t edge, or an action in case of m edge
 
 				if (this.motivationChains.contains(agent, intention)) {
 					List<Vertex> motivations = this.motivationChains.get(agent, intention);
 					intention = motivations.get(motivations.size() - 1);
 				}
 
-				int localSuspense = action.getStep() - intention.getStep();
+				int localSuspense = resolution.getStep() - intention.getStep();
 
-				if (suspense < localSuspense) {
+				if (suspense <= localSuspense) { // <= is important, because with == suspense we want the stuff closer to the end
 					suspense = localSuspense;
-					this.mostSuspensefulIntention = new Triple<>(agent, intention, action);
+					this.mostSuspensefulIntention = new Triple<>(agent, intention, resolution);
 				}
 			}
 		}
