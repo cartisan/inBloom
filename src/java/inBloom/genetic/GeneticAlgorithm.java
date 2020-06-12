@@ -30,6 +30,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	// Performance measurement
 	private static List<Double> population_best = new ArrayList<Double>();
+	private static List<Double> population_bestHalf = new ArrayList<Double>();
 	private static List<Double> population_average = new ArrayList<Double>();
 	
 	// Termination criteria
@@ -73,9 +74,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.crossover_prob = crossover_prob;
 		this.mutation_prob = mutation_prob;
 		
-		while(selection_size>=pop_size) {
-			selection_size/=2;
-		}
 	}
 	
 	
@@ -86,7 +84,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	// Set termination criterion
 	public void setTermination(int end) {
 		
-		termination = end;
+		if(end>0)
+			termination = end;
 	}
 	
 	// Set maximum runtime in seconds.
@@ -237,7 +236,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	/**
 	 * Utility Functions
 	 */
-	
+
 	
 	/*
 	 * Rounds personality values in order to discretize the search space.
@@ -248,6 +247,48 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	public double round(double value) {
 		
 		return Math.round(value*100-0.5)/100;
+	}
+	
+	
+	/*
+	 * Checks the parameters of the genetic algorithm.
+	 * @return: boolean determining whether algorithm is runnable.
+	 */
+	
+	public boolean parameterCheck() {
+
+		// Ensure correctness of parameters
+		
+		// Minimum Population size
+		if(pop_size<4) {
+			System.out.println("Size of population defaulted to 4!");
+			this.pop_size = 4;
+		}
+		
+		// Selection size must be and even number smaller pop_size
+		while(selection_size>=pop_size) {
+			selection_size/=2;
+			selection_size%=2;
+			System.out.println("Selection_size reduced to: " + selection_size);
+		}
+		
+		// There need to be agents and happenings
+		if(number_agents <= 0 || number_happenings <= 0) {
+			System.out.println("Bad Configuration!");
+			return false;
+		}
+
+		if(mutation_prob<0||mutation_prob>1) {
+			System.out.println("Mutation_prob: " + mutation_prob + " is suboptimal!");
+			return false;
+		}
+		
+		if(crossover_prob<0||crossover_prob>1) {
+			System.out.println("Crossover_prob: " + crossover_prob + "is suboptimal!");
+			return false;
+		}
+		
+		return true;
 	}
 	
 	
@@ -278,7 +319,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		// Determine extra length
 		Integer buffer = (int)Math.round(Math.random()*ratio*length);
 		
-		// Let the simulation run atleast 1 more step than the last happening
+		// Let the simulation run for at least 1 more step than the last happening 
 		return length+buffer+1;
 	}
 	
@@ -309,7 +350,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * The average fitness of the population as well as best candidate's fitness is saved.
 	 * If there was no improvement compared to the last generation, termination criterion counter gets incremented.
 	 * If there was an improvement, termination criterion counter is reset.
-	 * If we use the random replacer, average will only take the best half of population into account to ensure termination.
+	 * Average will only take the best half of population into account to ensure termination.
 	 */
 	
 	public void evaluatePopulation() {
@@ -317,26 +358,30 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		Double best = gen_pool[0].get_tellability();
 		Double average = 0.0;
 		
-		int relevant_size = pop_size;
+		int relevant_size = pop_size/2;
 		
-		if(!steadyReplace)
-			relevant_size = pop_size/2;
-		
-		for(int i = 0; i < relevant_size; i++) {
+		for(int i = 0; i < relevant_size; i++)
 			
 			average += gen_pool[i].get_tellability();
-		}
+		
+		double halfAverage = average/relevant_size;
+		
+		for(int i = relevant_size; i < pop_size; i++)
+			
+			average += gen_pool[i].get_tellability();
 		
 		average /= pop_size;
 		
+		
 		// Determine if there was improvement
 		if(population_best.size()>0) {
-			if(population_best.get(population_best.size()-1)==best && population_average.get(population_average.size()-1)==average)
+			if(population_best.get(population_best.size()-1)==best && population_bestHalf.get(population_bestHalf.size()-1)==halfAverage)
 				no_improvement++;
 			else
 				no_improvement=0;
 		}
 		population_best.add(best);
+		population_bestHalf.add(halfAverage);
 		population_average.add(average);
 	}
 	
@@ -348,43 +393,47 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	public void run() {
 		
-		// Save current time
-		start_time = System.currentTimeMillis();
-		
-		// Generate and evaluate initial population 
-		initialize_pop();
-		evaluatePopulation();
-		
-		// Repeat until termination (no improvements found or time criterion -if set- is met):
-		while(no_improvement<termination && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0)) {
+		// Ensure correct Parameters
+		if(parameterCheck()) {
 			
-			// Verbose
-			int generation = population_best.size()-1;
+			// Save current time
+			start_time = System.currentTimeMillis();
 			
-			System.out.println();
-			System.out.println("New Generation: " + generation);
-			System.out.println();
-			System.out.println("Best Individuum: " + population_best.get(generation));
-			System.out.println("Generation Average: " + population_average.get(generation));
-			System.out.println();
-			
-			if(no_improvement>0) {
-				System.out.println("No improvement found for " + no_improvement + " generations!");
-				System.out.println();
-			}
-
-			crossover(select());
-			mutate();
-			recombine();
+			// Generate and evaluate initial population 
+			initialize_pop();
 			evaluatePopulation();
+			
+			// Repeat until termination (no improvements found or time criterion -if set- is met):
+			while(no_improvement<termination && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0)) {
+				
+				// Verbose
+				int generation = population_best.size()-1;
+				
+				System.out.println();
+				System.out.println("New Generation: " + generation);
+				System.out.println();
+				System.out.println("Best Individuum: " + population_best.get(generation));
+				System.out.println("Generation Average: " + population_average.get(generation));
+				System.out.println();
+				
+				if(no_improvement>0) {
+					System.out.println("No improvement found for " + no_improvement + " generations!");
+					System.out.println();
+				}
+	
+				crossover(select());
+				mutate();
+				recombine();
+				evaluatePopulation();
+			}
+			
+			System.out.println();
+			System.out.println("This is the End!");
+			System.out.println();
+			System.out.println("Generations: " + population_best.size());
+			System.out.println("Best so far: " + gen_pool[0].get_tellability() + " , with simulation length: " + gen_pool[0].get_simLength());
+			System.exit(0);
 		}
-		
-		System.out.println();
-		System.out.println("This is the End!");
-		System.out.println();
-		System.out.println("Generations: " + population_best.size());
-		System.out.println("Best so far: " + gen_pool[0].get_tellability() + " , with simulation length: " + gen_pool[0].get_simLength());
-		System.exit(0);
 	}
 	
 	
@@ -581,7 +630,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	/*
 	 * Random initializer for ChromosomeHappening
-	 * Inserts random numbers from the Interval [0;max_steps] into the chromosome
+	 * Inserts random numbers between 0 and max_steps into the chromosome.
+	 * Numbers are discretized to be multiples of max_steps/number_happenings
 	 * @Return: Instantiated Chromosome
 	 */
 
@@ -591,7 +641,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		for(int i = 0; i < number_agents;i++) {
 			for(int j = 0; j < number_happenings; j++) {
-				happenings.values[i][j] = (int)Math.round(Math.random()*(max_steps+1)-0.5);
+				happenings.values[i][j] = (int)Math.round(Math.random()*(max_steps/number_happenings+1)-0.5)*number_happenings;
 			}
 		}
 		return happenings;
@@ -600,6 +650,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	/*
 	 * Instantiates a happening with probability 1/number_agents
+	 * Inserts random numbers between 0 and max_steps into the chromosome.
+	 * Numbers are discretized to be multiples of max_steps/number_happenings
 	 * @Return: Instantiated Chromosome
 	 */
 	
@@ -610,7 +662,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		for(int i = 0; i < number_agents;i++) {
 			for(int j = 0; j < number_happenings; j++) {
 				if(Math.random()<1/number_agents) {
-					happenings.values[i][j] = (int)Math.round(Math.random()*(max_steps)+0.5);
+					happenings.values[i][j] = (int)Math.round(Math.random()*(max_steps/number_happenings)+0.5)*number_happenings;
 				}
 			}
 		}
@@ -620,6 +672,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	/*
 	 * Instantiates every happening exactly once and assigns it to a random agent
+	 * Inserts random numbers between 0 and max_steps into the chromosome.
+	 * Numbers are discretized to be multiples of max_steps/number_happenings
 	 * @Return: Instantiated Chromosome
 	 */
 	
@@ -630,8 +684,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		for(int i = 0; i < number_agents;i++) {
 			
 			int j = (int)Math.round(Math.random()*number_agents-0.5);
-			
-			happenings.values[i][j] = (int)Math.round(Math.random()*(max_steps)+0.5);
+
+			happenings.values[i][j] = (int)Math.round(Math.random()*(max_steps/number_happenings)+0.5)*number_happenings;
 		}
 		return happenings;
 	}
@@ -641,7 +695,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * Selection
 	 * 
 	 * Picks Candidates for further application of genetic operators
-	 * @Return: List with positions in gen_pool of chosen individuums 
+	 * @Return: List with positions in gen_pool of chosen candidates
 	 */
 	
 	public List<Integer> select() {
@@ -1596,36 +1650,5 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 		}
 		return next_gen;
-	}
-	
-	/*
-	 * Test for Robinson Environment
-	 * Initializes the IslandEnvironment with predefined Personality traits and time points for Happenings
-	 */
-	
-	public double robinsonTest() {
-		
-		ChromosomePersonality personality = new ChromosomePersonality(this.number_agents);
-		
-		personality.values[0][0] = 1;
-		personality.values[0][1] = 0;
-		personality.values[0][2] = 0.5;
-		personality.values[0][3] = -0.5;
-		personality.values[0][4] = 0;
-		
-		ChromosomeHappenings happenings = new ChromosomeHappenings(this.number_agents,this.number_happenings);
-
-		happenings.values[0][0] = 9;
-		happenings.values[0][1] = 8;
-		happenings.values[0][2] = 18;
-		happenings.values[0][3] = 25;
-		happenings.values[0][4] = 29;
-		
-		double tellability = -1;
-		
-		Candidate robinson = new_Candidate(personality,happenings);
-		tellability = robinson.get_tellability();
-		
-		return tellability;
 	}
 }

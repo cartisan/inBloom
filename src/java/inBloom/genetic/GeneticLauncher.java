@@ -4,8 +4,8 @@ public class GeneticLauncher {
 
 	public static void main(String[] args) { 
 		
-		GeneticIsland island = new GeneticIsland(10,2,0.2,0.1);
-		int time = 60;
+		GeneticIsland island = new GeneticIsland(20,4,0.2,0.1);
+		int time = 600;
 		int max_repetitions = 50;
 		boolean customize = true;
 		
