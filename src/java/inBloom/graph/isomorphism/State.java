@@ -114,28 +114,34 @@ public class State {
 	 * @param other State to copy.
 	 * @param v1 index of mapping candidate vertex in graph 1
 	 * @param v2 index of mapping candidate vertex in graph 2
+	 * @param inEdge boolean indicating whether transformation was performed after following an incoming edge 
 	 */
-	public State(State other, int v1, int v2, PlotDirectedSparseGraph g2New) {
+	public State(State other, int v1, int v2, PlotDirectedSparseGraph g2New, boolean inEdge) {
 		this(other, v1, v2);
+
 		assert this.n2 < g2New.getPlotVertexCount(); // new fu graph should always be longer than old one
-
 		if(MAX_FU_SIZE < g2New.getPlotVertexCount() || this.n1 < g2New.getPlotVertexCount()) {
-			throw new RuntimeException("Split FU Graph larger than plot graph or allowed maxm size");
+			throw new RuntimeException("Expanded FU Graph larger than plot graph or allowed max size");
 		}
-
-		this.transformationNum = other.transformationNum + 1;
-
-		// update representation to represent new FU graph
-		this.g2 = g2New;
-		int[] coreOld = this.core2;
-		int[] inOld = this.in2;
-		int[] outOld = this.out2;
 
 		int lengthDiff = g2New.getPlotVertexCount() - this.n2;
 		assert lengthDiff == 1;
 
+		// update values
 		this.n2 = g2New.getPlotVertexCount();
-		this.candidateV2 = v2 + 1;
+		this.transformationNum = other.transformationNum + 1;
+		this.g2 = g2New;
+		if (inEdge) {
+			this.candidateV2 = v2 + 1;
+		}
+
+		// update representation to represent new FU graph
+		// safe old values
+		int[] coreOld = this.core2;
+		int[] inOld = this.in2;
+		int[] outOld = this.out2;
+
+		// prepare arrays of new length
 		this.core2 = new int[this.n2];
 		this.in2 = new int[this.n2];
 		this.out2 = new int[this.n2];
@@ -143,6 +149,7 @@ public class State {
 		Arrays.fill(this.in2, NULL_NODE);
 		Arrays.fill(this.out2, NULL_NODE);
 
+		// update representation in arrays by shifting it appropriately
 		for(int i = 0; i < this.n2; i++) {
 			if (i < v2) {
 				this.core2[i] = coreOld[i];
@@ -162,7 +169,6 @@ public class State {
 				this.out2[i] = outOld[i - lengthDiff];
 			}
 		}
-
 		for(int i=0; i < this.n1; i++) {				// update reverse mappings in core1: whatever pointed to after insertion, has to move up one
 			if (this.core1[i] >= v2 ) {
 				this.core1[i] += 1;
@@ -261,7 +267,7 @@ public class State {
 			for(int g1v0 = 0; g1v0 < this.n1; g1v0++) {
 					t0.add(new State(this, g1v0, g2v0));
 					if(tolerance > this.transformationNum) {
-						t0.addAll(this.createStatesByTransformation(g1v0, g2v0));
+						t0.addAll(this.createStatesByTransformation(g1v0, g2v0, false));
 					}
 			}
 			return t0;
@@ -275,7 +281,7 @@ public class State {
 				if(this.out1[currentOut1] != NULL_NODE && this.core1[currentOut1] == NULL_NODE) {
 						tOut.add(new State(this, currentOut1, currentOut2));
 						if(tolerance > this.transformationNum) {
-							tOut.addAll(this.createStatesByTransformation(currentOut1, currentOut2));
+							tOut.addAll(this.createStatesByTransformation(currentOut1, currentOut2, false));
 						}
 					}
 				}
@@ -293,31 +299,13 @@ public class State {
 					if(this.in1[currentIn1] != NULL_NODE && this.core1[currentIn1] == NULL_NODE) {
 						tIn.add(new State(this, currentIn1, currentIn2));
 						if(tolerance > this.transformationNum) {
-							tIn.addAll(this.createStatesByTransformation(currentIn1, currentIn2));
+							tIn.addAll(this.createStatesByTransformation(currentIn1, currentIn2, true));
 						}
 					}
 				}
 			}
 		}
-		if(!tIn.isEmpty()) {
-			return tIn;
-		}
-
-		HashSet<State> tall = new HashSet<>();
-		for(int current2 = 0; current2 < this.n2; current2++) {	// iterate over FU
-			if(this.core2[current2] == NULL_NODE) {
-			for(int current1 = 0; current1 < this.n1; current1++) {	// iterate over plot
-				if(this.core1[current1] == NULL_NODE) {
-						tall.add(new State(this, current1, current2));
-						if(tolerance > this.transformationNum) {
-							tall.addAll(this.createStatesByTransformation(current1, current2));
-						}
-					}
-				}
-			}
-		}
-
-		return tall;
+		return tIn;
 	}
 
 	/**
@@ -327,16 +315,13 @@ public class State {
 	 * @param candidateV1
 	 * @param candidateV2
 	 */
-	private HashSet<State> createStatesByTransformation(int candidateV1, int candidateV2) {
+	private HashSet<State> createStatesByTransformation(int candidateV1, int candidateV2, boolean inEdge) {
 		HashSet<State> stateCollection = new HashSet<>();
 
 		Collection<PlotDirectedSparseGraph> transformedG2s = FUTransformationRule.applyAllTransformations(candidateV2, this.g2);
 		for (PlotDirectedSparseGraph g2n : transformedG2s) {
 			try {
-				stateCollection.add(new State(this, candidateV1, candidateV2, g2n));
-				if (candidateV1 + 1 < this.n1 && this.core1[candidateV1 + 1] == NULL_NODE) {
-					stateCollection.add(new State(this, candidateV1 + 1, candidateV2, g2n)); 	// required for [I] -> [I]-[I] transformations, where candV2 could match both candV1 or its successor
-				}
+				stateCollection.add(new State(this, candidateV1, candidateV2, g2n, inEdge));
 			} catch (RuntimeException e) {
 				// if g2n, resulting from transformation, is bigger then plot graph, try next transformation
 				continue;
