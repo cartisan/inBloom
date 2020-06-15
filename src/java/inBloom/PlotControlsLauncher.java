@@ -16,17 +16,21 @@ import jason.infra.centralised.RunCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
 
 import inBloom.framing.FramingGenerator;
+import inBloom.graph.AnalysisResultListener;
+import inBloom.graph.GraphAnalyzer;
 import inBloom.graph.MoodGraph;
+import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
 import inBloom.graph.PlotmasGraph;
 import inBloom.helper.PlotFormatter;
+import inBloom.helper.Tellability;
 
 /**
  * Encapsulates the changes to the Jason GUI that are needed by {@link PlotLauncher}. Doesn't provide any
  * plot relevant functionality apart from changing the GUI.
  * @author Leonid Berov
  */
-public class PlotControlsLauncher extends RunCentralisedMAS {
+public class PlotControlsLauncher extends RunCentralisedMAS implements AnalysisResultListener {
 	public static PlotLauncher<?,?> runner = null;
 
 	protected static Level LOG_LEVEL = Level.INFO;
@@ -198,8 +202,8 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 		btAnalyze.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				if(MASConsoleGUI.get().isPause()) {
-					PlotGraphController.getPlotListener().analyze();
-					PlotControlsLauncher.this.summaryButton.setEnabled(true);
+					GraphAnalyzer analyzer = new GraphAnalyzer(PlotGraphController.getPlotListener().getGraph(), PlotControlsLauncher.this);
+					analyzer.start();	// Analyzer thread starts, results are returned once it finishes, via callback on reiceiveAnalysisResult
 				}
 			}
 
@@ -208,17 +212,28 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 		MASConsoleGUI.get().addButton(btAnalyze);
 	}
 
+	@Override
+	public void reiceiveAnalysisResult(Tellability analysisResult, PlotDirectedSparseGraph analyzedGraph) {
+		PlotGraphController.getPlotListener().displayAnalysisResult(analysisResult);
+		PlotControlsLauncher.this.summaryButton.setEnabled(true);
+
+	}
+
 	protected void createSummaryButton() {
 		JButton btSummary = new JButton("Summarize Plot");
 
 		btSummary.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph.removeEntailed();
-				PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph.prunePrimitives();
-				PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph.mergeTimeEquivalents();
-				PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph.display();
+				if( null == PlotGraphController.getPlotListener().getAnalysisResult()) {
+					logger.info("No analysisResult in PlotGraphController, analyze plot graph first!");
+				} else {
+					PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph.removeEntailed();
+					PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph.prunePrimitives();
+					PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph.mergeTimeEquivalents();
+					PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph.display();
 
-				logger.info("Summary: " + FramingGenerator.generateFraming(PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph));
+					logger.info("Summary: " + FramingGenerator.generateFraming(PlotGraphController.getPlotListener().getAnalysisResult().connectivityGraph));
+				}
 			}
 		});
 
@@ -258,5 +273,4 @@ public class PlotControlsLauncher extends RunCentralisedMAS {
 	    MASConsoleGUI.get().addButton(btPause);
 	    this.pauseButton = btPause;
 	}
-
 }

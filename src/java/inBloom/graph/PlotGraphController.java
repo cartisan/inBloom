@@ -7,8 +7,6 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.logging.Logger;
 
@@ -37,10 +35,6 @@ import inBloom.ERcycle.CounterfactualityCycle;
 import inBloom.graph.isomorphism.FunctionalUnit;
 import inBloom.graph.isomorphism.FunctionalUnit.Instance;
 import inBloom.graph.isomorphism.FunctionalUnits;
-import inBloom.graph.visitor.EdgeGenerationPPVisitor;
-import inBloom.graph.visitor.EdgeLayoutVisitor;
-import inBloom.graph.visitor.VertexMergingPPVisitor;
-import inBloom.graph.visitor.VisualizationFilterPPVisitor;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
 
@@ -57,7 +51,7 @@ import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 /**
  * Responsible for maintaining and visualizing the graph that represents the emergent plot of the narrative universe.
  * Class provides an instance: <i>plotListener</i>, which is accessible throughout inBloom for saving plot-relevant
- * events. In order to open a JFrame with the graph call the  non-static
+ * events. In order to open a JFrame with the graph call the non-static
  * {@link #visualizeGraph(boolean) visualizeGraph} method.
  * @author Leonid Berov
  */
@@ -398,15 +392,19 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	}
 
 	/**
-	 * Adds a graph to the graph type list.
-	 * If a graph with the same name is already in the list,
-	 * the new one will replace it.
+	 * Adds a graph to the graph type list. If a graph with the same name is already in the list, the new one will
+	 * replace it.</br>
+	 * The name of graph g has to be set, otherwise it can not be selected using {@link #setSelectedGraph(PlotDirectedSparseGraph)}.
 	 * @param g Graph to add
 	 */
 	public void addGraph(PlotDirectedSparseGraph g) {
+		if(g.getName() == null) {
+			throw new RuntimeException("Name of graph g has to be set");
+		}
+
 		for(int i = 0; i < this.graphTypeList.getItemCount(); i++) {
-			String n = this.graphTypeList.getItemAt(i).toString();
-			if(n.equals(g.toString())) {
+			String n = this.graphTypeList.getItemAt(i).getName();
+			if(n.equals(g.getName())) {
 				this.graphTypeList.removeItemAt(i);
 				this.graphTypeList.addItem(g);
 				return;
@@ -425,54 +423,37 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	}
 
 	/**
-	 * Uses the combobox graphTypeList to select graph g. Results in {@linkplain #visualizeGraph} showing this graph.
-	 * @param g
+	 * Uses the combobox graphTypeList to select graph g, results in {@linkplain #visualizeGraph} showing this graph.
+	 * The name of graph g should be set, as should be the names of the graphs in this.graphTypeList
+	 * (see {@link #addGraph(PlotDirectedSparseGraph)}).
+	 * @param g Graph to be selected
 	 */
 	public void setSelectedGraph(PlotDirectedSparseGraph g) {
-		this.graphTypeList.setSelectedItem(g);
-	}
-
-	/**
-	 * Analyzes the plot graph, computes the plots tellability and returns it.
-	 * Unlike {@link analyze(PlotDirectedSparseGraph) analyze}, does not store the
-	 * analyzed version of the graph for further processing.
-	 */
-	public Tellability analyze() {
-		return this.analyze(null);
-	}
-
-	/**
-	 * Analyzes the plot graph, computes the plots tellability and returns it.
-	 * <ul>
-	 *  <li> Analyzing a plot graph includes merging related vertices and specifying the edge types from mere temporal to
-	 * ones with more appropriate semantics so all primitive plot units can be represented. The resulting <b> new plot
-	 * graph is stored in analyzedGraphContainer </b> for displaying and further analyzes e.g. by the ER cycle.</li>
-	 *  <li> Computing the tellability atm includes just computing functional polyvalence and dispalying the results
-	 *  in the info panel. </li>
-	 *  </ul>
-	 * @param analyzedGraphContainer an (empty) plot graph that will be used to store the analyzed graph, or null
-	 * @return
-	 */
-	public Tellability analyze(PlotDirectedSparseGraph analyzedGraphContainer) {
-		Instant start = Instant.now();
-
-		if(this.analysisResult != null) {
-			return this.analysisResult;
+		// Using index and name-based equality instead of graphTypeList.setSelected(g), which relies on equality,
+		// because computing graph equality is costly
+		if(g.getName() == null) {
+			throw new RuntimeException("Name of graph g has to be set");
 		}
+		for(int i = 0; i < this.graphTypeList.getItemCount(); i++) {
+			String otherName = this.graphTypeList.getItemAt(i).getName();
+			if(otherName.equals(g.getName())) {
+				this.graphTypeList.setSelectedIndex(i);
+			}
+		}
+	}
 
-		// Create analysed graph with semantically interpretable edges and collapsed vertices
-		PlotDirectedSparseGraph g = new VertexMergingPPVisitor().apply(this.graph);
-		g.setName("Merged Plot Graph");
-		this.addGraph(g);
-		g = new EdgeGenerationPPVisitor().apply(g);
-		g.setName("Analysed Graph");
-		this.addGraph(g);
-		g = new VisualizationFilterPPVisitor().apply(g);
-		g.setName("Filtered Plot Graph");
+	/**
+	 * Updates the UI to show results of tellability analysis, also safes the analysis results for later retrieval by
+	 * summarization algorithm and their like.
+	 * @param analysisResult
+	 */
+	public void displayAnalysisResult(Tellability analysisResult) {
+		this.analysisResult = analysisResult;
+		//Remove old analysis Results from view
+		this.infoPanel.removeAll();
 
-		// compute all necessary statictics for tellability
-		this.analysisResult = new Tellability(g);
 
+		// Add new analysis results
 		// Create GUI representation of tellability analysis
 		this.addInformation("#Functional Units: " + this.analysisResult.numFunctionalUnits);
 		this.addInformation("Highlight Units:");
@@ -485,19 +466,6 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		this.createCounterfactButton();
 		//add Button to infopanel
 		this.infoPanel.add(this.counterfactButton);
-
-		// Insert spacing between motivation edges
-		g = new EdgeLayoutVisitor(9).apply(g);
-
-		this.addGraph(g);
-		this.graphTypeList.setSelectedItem(g);
-
-		if(analyzedGraphContainer != null) {
-			g.cloneInto(analyzedGraphContainer);
-		}
-
-		logger.info( "Analyze time in ms:" + Duration.between(start, Instant.now()).toMillis());
-		return this.analysisResult;
 	}
 
 	/**

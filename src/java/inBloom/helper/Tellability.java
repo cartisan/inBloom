@@ -16,6 +16,8 @@ import inBloom.graph.Vertex;
 import inBloom.graph.isomorphism.FunctionalUnit;
 import inBloom.graph.isomorphism.FunctionalUnits;
 import inBloom.graph.isomorphism.UnitFinder;
+import inBloom.graph.visitor.EdgeGenerationPPVisitor;
+import inBloom.graph.visitor.VertexMergingPPVisitor;
 
 public class Tellability {
 	public static int GRAPH_MATCHING_TOLERANCE = 1;
@@ -49,7 +51,8 @@ public class Tellability {
 
 	/**
 	 * Takes an analyzed graph and computes all necessary statistics of the plot to compute tellability.
-	 * @param graph a graph that has been processed by both VertexMergingPPVisitor and VisualizationFilterPPVisitor
+	 * @param graph whose tellability needs to be determined and that has been been processed by 
+	 * {@link VertexMergingPPVisitor} and  {@link EdgeGenerationPPVisitor}. 
 	 */
 	public Tellability(PlotDirectedSparseGraph graph) {
 		this.counter = new CountingVisitor();
@@ -126,6 +129,7 @@ public class Tellability {
 
 		String foundUnits = this.functionalUnitCount.entrySet().stream().filter(entry -> entry.getValue() > 0)
 													.map(entry -> entry.getKey().getName() + ": " + entry.getValue())
+													.sorted()
 													.reduce( (a,b) -> a = a + ", " + b)
 													.orElse("<none>");
 		logger.info("-> Found units: " + foundUnits);

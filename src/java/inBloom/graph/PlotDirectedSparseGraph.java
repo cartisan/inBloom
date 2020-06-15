@@ -225,6 +225,23 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 	}
 
 	/**
+	 * Returns the vertex to position mapping for debugging purposes.
+	 * @param vertexId
+	 * @return Vertex
+	 */
+	public List<String> getVertexIDArray() {
+		if(this.isDirty) {
+			this.regenerateVertexArray();
+		}
+
+		List<String> res = new ArrayList<>();
+		for (int i=0; i<this.vertexArray.length; i++) {
+			res.add(Integer.toString(i) + ":" +  this.vertexArray[i].toString() + "\r\n");
+		}
+		return res;
+	}
+
+	/**
 	 * Finds the id of a given vertex. Generates orderedVertexList if needed.
 	 * @param vertex
 	 * @return int vertexId
