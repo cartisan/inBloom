@@ -3,13 +3,11 @@ package inBloom.test.graph;
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 
 import org.junit.BeforeClass;
 
 import com.google.common.cache.LoadingCache;
 
-import inBloom.LauncherAgent;
 import inBloom.graph.Edge;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
@@ -34,11 +32,7 @@ public class PlotGraphLayoutTest extends TestCase {
 	 * @throws Exception
 	 */
 	public void visuallyInspectLayout(PlotDirectedSparseGraph g) throws Exception {
-		PlotGraphController.instantiatePlotListener(new ArrayList<LauncherAgent>());
-		PlotGraphController controller = PlotGraphController.getPlotListener();
-
-		controller.addGraph(g);
-		controller.setSelectedGraph(g);
+		PlotGraphController controller = PlotGraphController.fromGraph(g);
 
 		controller.visualizeGraph();
 		System.out.println("Press enter to continue execution...");
@@ -84,6 +78,7 @@ public class PlotGraphLayoutTest extends TestCase {
 	@SuppressWarnings("unchecked")
 	public void testRootLocationsMovesDueToLongLabel() throws Exception {
 		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
+		graph.setName("Test");
 
 		// Create Trees for each agent and add the roots
 		Vertex v1 = graph.addRoot("len:200 ***********************************************************************************************************************************************************************************************");
@@ -91,8 +86,11 @@ public class PlotGraphLayoutTest extends TestCase {
 		Layout<Vertex, Edge> layout = new PlotGraphLayout(graph);
 		LoadingCache<Vertex, Point2D> locations = (LoadingCache<Vertex, Point2D>) this.LOC.get(layout);
 
+		// !!! Check out how it looks
+//		this.visuallyInspectLayout(graph);
+
 		// test pos of first root
-		assertEquals(Double.valueOf(812.0), locations.get(v1).getX());
+		assertEquals(Double.valueOf(1022.0), locations.get(v1).getX());
 	}
 
 	public void testCanvasGrows() throws Exception  {
@@ -274,11 +272,11 @@ public class PlotGraphLayoutTest extends TestCase {
 		assertEquals(locations.get(v6).getY() + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET, locations.get(v3).getY());
 	}
 
-	/** Expected failure, this feature is not yet implemented */
 	@SuppressWarnings("unchecked")
 	public void testMissingSteps_endOfGraph() throws Exception {
 		// ...... Building test graph ......
 		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();
+		graph.setName("Test");
 
 		// ... first column ...
 		Vertex v1 = graph.addRoot("hen");
@@ -303,7 +301,7 @@ public class PlotGraphLayoutTest extends TestCase {
 		graph.addEdge(new Edge(), v7, v8);
 
 		// !!! Check out how it looks
-//		visuallyInspectLayout(graph);
+//		this.visuallyInspectLayout(graph);
 
 //		// ..... Testing locations ......
 		Layout<Vertex, Edge> layout = new PlotGraphLayout(graph);

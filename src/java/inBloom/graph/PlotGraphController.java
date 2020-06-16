@@ -116,7 +116,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	}
 
 	/**
-	 * Opens a window visualizing graph, creates roots and steps if necessary. For debugging purposes.
+	 * Opens a window visualizing 'graph', creates roots and steps if necessary. For debugging purposes.
 	 * @param graph graph to be displayed
 	 * @param plotLayout whether the inBloom plot layout should be used, or a jung default-layout
 	 * @param the step numbers of the vertices that are to be used as first vertex in each char subgraph, i.e. to be connected with the roots
