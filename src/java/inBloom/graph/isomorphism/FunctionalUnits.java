@@ -62,7 +62,7 @@ public class FunctionalUnits {
 
 		PlotDirectedSparseGraph deniedRequest = new PlotDirectedSparseGraph();
 		v1 = makeSpeech(1, deniedRequest);
-		v2 = makeNegative(2, deniedRequest);
+		v2 = makeIntention(2, deniedRequest);
 		deniedRequest.addEdge(makeCrosschar(), v1, v2);
 		v3 = makeIntention(3, deniedRequest);
 		deniedRequest.addEdge(makeMotivation(), v2, v3);
@@ -89,11 +89,9 @@ public class FunctionalUnits {
 		v3 = makeIntention(3, retaliation);
 		retaliation.addEdge(makeMotivation(), v2, v3);
 		v2 = makeActive(4, retaliation);
-		retaliation.addEdge(makeActualization(), v3, v2); // TODO was motivation?
-		v1 = makeIntention(5, retaliation);
+		retaliation.addEdge(makeActualization(), v3, v2);
+		v1 = makeNegative(5, retaliation);
 		retaliation.addEdge(makeCrosschar(), v2, v1);
-		v2 = makeNegative(6, retaliation);
-		retaliation.addEdge(makeActualization(), v1, v2);
 		RETALIATION = new FunctionalUnit("Retaliation", retaliation, 1, 2);
 		RETALIATION.setSubject(new Pair<>(v3, "(.*)"));
 
@@ -168,14 +166,17 @@ public class FunctionalUnits {
 
 		PlotDirectedSparseGraph honoredRequest = new PlotDirectedSparseGraph();
 		v1 = makeSpeech(1, honoredRequest);
-		v2 = makePositive(2, honoredRequest);
+		v2 = makeIntention(2, honoredRequest);
 		honoredRequest.addEdge(makeCrosschar(), v1, v2);
 		v3 = makeIntention(3, honoredRequest);
 		honoredRequest.addEdge(makeMotivation(), v2, v3);
 		v2 = makeSpeech(4, honoredRequest);
 		honoredRequest.addEdge(makeActualization(), v3, v2);
-		v3 = makePositive(5, honoredRequest);
-		honoredRequest.addEdge(makeCrosschar(), v2, v3);
+		v1 = makePositive(5, honoredRequest);
+		honoredRequest.addEdge(makeCrosschar(), v2, v1);
+		v2 = makeAction(6, honoredRequest);
+		honoredRequest.addEdge(makeActualization(), v3, v2);
+
 		HONORED_REQUEST = new FunctionalUnit("Honored Request", honoredRequest, 1, 2);
 		HONORED_REQUEST.setSubject(new Pair<>(v1, "request\\((.*)\\)"));
 
@@ -197,17 +198,17 @@ public class FunctionalUnits {
 		MALICIOUS_ACT = new FunctionalUnit("Malicious Act", maliciousAct, 1, 4);
 
 		ALL[0] = HONORED_REQUEST;
-		ALL[1] = RETALIATION;
-		ALL[2] = NESTED_GOAL;
-		ALL[3] = INTENTIONAL_PROBLEM_RESOLUTION;
-		ALL[4] = FORTUITOUS_PROBLEM_RESOLUTION;
-		ALL[5] = SUCCESS_BORN_OF_ADVERSITY;
+		ALL[1] = DENIED_REQUEST;
+		ALL[2] = RETALIATION;
+		ALL[3] = MALICIOUS_ACT;
+		ALL[4] = INTENTIONAL_PROBLEM_RESOLUTION;
+		ALL[5] = FORTUITOUS_PROBLEM_RESOLUTION;
 		ALL[6] = FLEETING_SUCCESS;
 		ALL[7] = STARTING_OVER;
 		ALL[8] = GIVING_UP;
 		ALL[9] = SACRIFICE;
-		ALL[10] = MALICIOUS_ACT;
-		ALL[11] = DENIED_REQUEST;
+		ALL[10] = SUCCESS_BORN_OF_ADVERSITY;
+		ALL[11] = NESTED_GOAL;
 		ALL[12] = INADVERTENT_AGGRAVATION;
 
 		PlotDirectedSparseGraph allUnitsGraph = ALL[0].getDisplayGraph();

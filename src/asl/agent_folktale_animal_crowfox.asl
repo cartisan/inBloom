@@ -18,7 +18,7 @@
 	
 +is_dropped(Thing)[owner(Agent)] : .my_name(Agent) <-
 	-has(Thing);
-	.appraise_emotion(remorse, "is_dropped(Thing)", Agent, false).
+	.appraise_emotion(remorse, "is_dropped(Thing)", Agent).
 
 
 @is_dropped[atomic]

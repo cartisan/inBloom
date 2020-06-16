@@ -56,11 +56,11 @@ public class Transformers {
         	VertexShapeFactory<Vertex> factory = new VertexShapeFactory<>(vertexSizeTransformer,
         																		vertexAspectRatioTransformer);
         	switch (v.getType()) {
-	        	case SPEECHACT:
         		case INTENTION:
         		case LISTEN:
         		case PERCEPT:
         			return factory.getRoundRectangle(v);
+        		case SPEECHACT:
         		case ACTION:
         			return factory.getRectangle(v);
         		default:
@@ -87,6 +87,7 @@ public class Transformers {
 	        	case ROOT:
 	        	case AXIS_LABEL:
 	        		return PlotGraphController.BGCOLOR;
+        		case SPEECHACT:
 	        	case ACTION:
 	        		return Color.getHSBColor(Float.valueOf("0"), Float.valueOf("0"), Float.valueOf("0.55"));
 	        	case PERCEPT: {

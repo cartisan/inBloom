@@ -362,8 +362,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	}
 
 	public Vertex addMsgSend(Message m, String motivation, int step) {
-		// Format message to intention format, i.e. "!performative(content)"
-		Vertex senderV = this.graph.addMsgSend(m.getSender(), "!" + m.getIlForce() + "(" + m.getPropCont().toString() + ")" + motivation, step);
+		Vertex senderV = this.graph.addMsgSend(m.getSender(), m.getIlForce() + "(" + m.getPropCont().toString() + ")" + motivation, step);
 		return senderV;
 	}
 
