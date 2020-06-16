@@ -61,6 +61,7 @@ public class Transformers {
         		case PERCEPT:
         			return factory.getRoundRectangle(v);
         		case SPEECHACT:
+        		case ACTIVE:
         		case ACTION:
         			return factory.getRectangle(v);
         		default:
@@ -88,6 +89,7 @@ public class Transformers {
 	        	case AXIS_LABEL:
 	        		return PlotGraphController.BGCOLOR;
         		case SPEECHACT:
+        		case ACTIVE:
 	        	case ACTION:
 	        		return Color.getHSBColor(Float.valueOf("0"), Float.valueOf("0"), Float.valueOf("0.55"));
 	        	case PERCEPT: {
