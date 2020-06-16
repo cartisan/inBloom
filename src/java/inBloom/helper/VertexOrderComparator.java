@@ -1,11 +1,7 @@
 package inBloom.helper;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.Vertex;
@@ -40,40 +36,11 @@ public class VertexOrderComparator implements Comparator<Vertex> {
 			return stepOrder;
 		}
 
-		// if step is the same, check if v2 is predecessor of v1 by following in-edges
-		LinkedList<Vertex> predsV1 = new LinkedList<>(this.graph.getRealPredecessors(v1));
-		ArrayList<Vertex> traversedVerticesV1 = new ArrayList<>();	// keep track of visited vertices to prevent infinite loop on shared event percepts which have bidirectional edges
-		traversedVerticesV1.add(v1);
-		while(!predsV1.isEmpty()) {
-			Vertex pred = predsV1.remove();
-			traversedVerticesV1.add(pred);
-			if(pred.equals(v2)) {
-				logger.fine("Result based on v1 predecessor search");
-				return 1;
-			}
-			List<Vertex> sameStepPreds = this.graph.getRealPredecessors(pred).stream()
-																			 .filter(v -> v.getStep() == v1.getStep())
-																			 .filter(v -> !traversedVerticesV1.contains(v))
-																			 .collect(Collectors.toList());
-			predsV1.addAll(sameStepPreds);
-		}
-
-		// check if v1 is predecessor of v2 by following in-edges
-		LinkedList<Vertex> predsV2 = new LinkedList<>(this.graph.getRealPredecessors(v2));
-		ArrayList<Vertex> traversedVerticesV2 = new ArrayList<>();
-		traversedVerticesV2.add(v2);
-		while(!predsV2.isEmpty()) {
-			Vertex pred = predsV2.remove();
-			traversedVerticesV2.add(pred);
-			if(pred.equals(v1)) {
-				logger.fine("Result based on v2 predecessor search");
-				return -1;
-			}
-			List<Vertex> sameStepPreds = this.graph.getRealPredecessors(pred).stream()
-																			 .filter(v -> v.getStep() == v2.getStep())
-																			 .filter(v -> !traversedVerticesV2.contains(v))
-																			 .collect(Collectors.toList());
-			predsV2.addAll(sameStepPreds);
+		// Attention: FU graphs don't have temporal edges, so this will always return 0, in FUs we rely on subsequent vertices having a different step
+		int innerStepOrder = Comparator.comparingInt(this.graph::getInnerStep).compare(v1, v2);
+		if (innerStepOrder != 0) {
+			logger.fine("Result based on inner step order comparison: " + innerStepOrder);
+			return innerStepOrder;
 		}
 
 		// if this fails too, order by id

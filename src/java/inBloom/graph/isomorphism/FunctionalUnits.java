@@ -7,6 +7,7 @@ import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.Vertex;
 import inBloom.graph.Vertex.Type;
 import inBloom.graph.visitor.EdgeLayoutVisitor;
+import inBloom.helper.VertexOrderComparator;
 
 /**
  * Class where all functional units are defined.
@@ -16,7 +17,9 @@ import inBloom.graph.visitor.EdgeLayoutVisitor;
  *
  * The vertex creation helper methods require a parameter,
  * indicating the vertex' place on the y-axis of the resulting
- * display graph of the functional unit.
+ * display graph of the functional unit. <b> Make sure that each
+ * vertex is alone on it step, otherwise vertex order comparison will
+ * not function properly in {@link VertexOrderComparator}.</b>
  * @author Sven Wilke
  *
  */
