@@ -126,9 +126,9 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 		if(vertex.hasEmotion()) {
 			this.handleBeliefSwitch(vertex);
 		}
+
 		this.eventList.addFirst(vertex);
 	}
-
 
 	@Override
 	public void visitSpeech(Vertex vertex) {
@@ -200,7 +200,11 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 		String causeString = matcher.group("termination");
 		if(causeString.startsWith("+!")) {	// we need to match causes of form +self(has_prupose), but also !rethink_life, which appears as +!rethink_life
 			causeString = causeString.substring(1);
+		} else if (causeString.startsWith("-wish") | causeString.startsWith("-obligation")) { // part of normal wish/obligation management, no need for edges
+			this.removeVertex(vertex);
+			return;
 		}
+
 		Vertex cause = null;
 		for(Vertex potentialCause : this.eventList) {
 			if(potentialCause.getWithoutAnnotation().equals(causeString)) {
@@ -234,14 +238,14 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 					if(target.getRoot().equals(vertex.getRoot())) {
 						// Only create termination edge if affects in v and t
 						if (target.hasEmotion()) {
-									this.createTermination(vertex, target);
-									break;
-								}
-							}
+							this.createTermination(vertex, target);
+							break;
 						}
 					}
 				}
 			}
+		}
+	}
 
 	/**
 	 * Add entry to xCharIDMap if cross-character annotation present, so that #postProcessing can create edges between
@@ -304,24 +308,31 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 	 */
 	private boolean handleIndirectRemoval(Vertex vertex, String cause) {
 		// Look for source
-		Vertex src = null;
+		Vertex causeV = null;
 		for(Vertex v : this.eventList) {
 			if(TermParser.removeAnnots(v.getLabel()).equals(cause) ||
 						TermParser.removeAnnots(v.getLabel()).equals(cause.substring(1)) & v.getType().equals(Vertex.Type.ACTION)) {
 				// Source found! We take every source!
-				src = v;
+				causeV = v;
 				break;
 			}
 		}
 
-		if(src == null) {
+		if(causeV == null) {
 			return false;
 		}
 
 		String target;
-		if(vertex.getWithoutAnnotation().substring(1).startsWith("wish") ||
-				vertex.getWithoutAnnotation().substring(1).startsWith("obligation")) {
-			// vertex is -wish(X)/obligation(X) removal --> target should be intention !X
+		// check if vertex is -wish(X)/obligation(X) removal --> something actualized an intention...
+		if(vertex.getWithoutAnnotation().substring(1).startsWith("wish") || vertex.getWithoutAnnotation().substring(1).startsWith("obligation")) {
+
+			if (causeV.getSource().equals("self")) {
+				// the cause was a mental note, not a perception of a happening or other agent's action
+				// only perceptions (of happenings or actions) can actualize an intention
+				return false;
+			}
+
+			//... target should be intention !X
 			target = vertex.getWithoutAnnotation().substring(1).split("wish|obligation")[1];
 			target = "!" + target.substring(1, target.length() - 1);
 
@@ -330,25 +341,25 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 				if(v.getWithoutAnnotation().equals(target)) {
 					// Great, found the intention! See if an ACTU edge already exists, we don't want duplication
 					SetView<Edge> inter = Sets.intersection(new HashSet<>(this.graph.getIncidentEdges(v)),
-									  						new HashSet<>(this.graph.getIncidentEdges(src)));
+									  						new HashSet<>(this.graph.getIncidentEdges(causeV)));
 
 					if (!inter.stream().anyMatch(e -> e.getType() == Edge.Type.ACTUALIZATION)) {
-						this.graph.addEdge(new Edge(Edge.Type.ACTUALIZATION), v, src);
+						this.graph.addEdge(new Edge(Edge.Type.ACTUALIZATION), v, causeV);
 						return true;
-			}
-		}
+					}
+				}
 			}
 
+		// vertex is regular belief removal --> target is mental note
 		} else {
-			// vertex is regular belief removal --> target is mental note
 			target = vertex.getWithoutAnnotation().substring(1);
 
 			// Let's find the corresponding addition of this mental note.
-			for(Vertex v : this.eventList) {
-				if(v.getWithoutAnnotation().substring(1).equals(target)) {
-					if(v.getWithoutAnnotation().substring(0, 1).equals("+")) {
+			for(Vertex targetV : this.eventList) {
+				if(targetV.getWithoutAnnotation().substring(1).equals(target)) {
+					if(targetV.getWithoutAnnotation().substring(0, 1).equals("+")) {
 						// Great, found the addition!
-						this.createTermination(src, v);
+						this.createTermination(causeV, targetV);
 						return true;
 					}
 				}
