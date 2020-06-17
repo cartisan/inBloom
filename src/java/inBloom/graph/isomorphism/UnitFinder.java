@@ -14,10 +14,12 @@ import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.Vertex;
 
 /**
- * Class which handles finding subgraph isomorphisms.
- * For further information, see:
- * 		https://ieeexplore.ieee.org/abstract/document/1323804/
- * @author Sven Wilke
+ * Class implementing the VF2 algorithm for inexact subgraph isomorphism matching.
+ * For further information, see: </br>
+ *  Cordella, L. P., Foggia, P., Sansone, C., & Vento, M. (1998). Subgraph transformations for the inexact matching of attributed relational graphs.</br>
+ *  Cordella, L. P., Foggia, P., Sansone, C., & Vento, M. (2004). A (Sub)Graph Isomorphism Algorithm for Matching Large Graphs.
+ *
+ * @author Sven Wilke and Leonid Berov
  */
 public class UnitFinder {
 	protected static Logger logger = Logger.getLogger(UnitFinder.class.getName());

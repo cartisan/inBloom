@@ -21,7 +21,8 @@ import inBloom.graph.Vertex;
 /**
  * Class used to hold the state of partial mappings in the
  * subgraph isomorphism algorithm.
- * @author Sven Wilke
+ * @author Sven Wilke and Leonid Berov
+ * @see UnitFinder
  */
 public class State {
 	protected static Logger logger = Logger.getLogger(State.class.getName());
@@ -114,7 +115,7 @@ public class State {
 	 * @param other State to copy.
 	 * @param v1 index of mapping candidate vertex in graph 1
 	 * @param v2 index of mapping candidate vertex in graph 2
-	 * @param inEdge boolean indicating whether transformation was performed after following an incoming edge 
+	 * @param inEdge boolean indicating whether transformation was performed after following an incoming edge
 	 */
 	public State(State other, int v1, int v2, PlotDirectedSparseGraph g2New, boolean inEdge) {
 		this(other, v1, v2);
@@ -360,27 +361,10 @@ public class State {
 		Set<Integer> succ1 = this.getSuccessors(this.g1, this.candidateV1);
 		Set<Integer> succ2 = this.getSuccessors(this.g2, this.candidateV2);
 
-		// Calculate whether R_Pred and R_Succ hold.
+		// Calculate whether R_Pred and R_Succ hold
+		// Attention: original paper solves induced subgraph isomorphism, which involves also checking the inverse. Not needed for present case.
 		boolean rPred = true;
 		boolean rSucc = true;
-
-		for(int n : pred1) {
-			if(this.core1[n] != NULL_NODE) {
-				if(!pred2.contains(this.core1[n])) {
-					rPred = false;
-					break;
-				}
-			}
-		}
-
-		for(int n : succ1) {
-			if(this.core1[n] != NULL_NODE) {
-				if(!succ2.contains(this.core1[n])) {
-					rSucc = false;
-					break;
-				}
-			}
-		}
 
 		for(int n : pred2) {
 			if(this.core2[n] != NULL_NODE) {
