@@ -197,6 +197,7 @@ public class FunctionalUnits {
 		maliciousAct.addEdge(makeActualization(), v3, v2);
 		v3 = makePositive(7, maliciousAct);
 		maliciousAct.addEdge(makeCrosschar(), v2, v3);
+		v3 = makePositive(8, maliciousAct);
 		maliciousAct.addEdge(makeActualization(), v1, v3);
 		MALICIOUS_ACT = new FunctionalUnit("Malicious Act", maliciousAct, 1, 4);
 
