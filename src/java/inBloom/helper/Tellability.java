@@ -1,7 +1,7 @@
 package inBloom.helper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 import inBloom.framing.ConnectivityGraph;
 import inBloom.graph.CountingVisitor;
@@ -17,6 +21,7 @@ import inBloom.graph.PlotGraphController;
 import inBloom.graph.Vertex;
 import inBloom.graph.Vertex.Type;
 import inBloom.graph.isomorphism.FunctionalUnit;
+import inBloom.graph.isomorphism.FunctionalUnit.Instance;
 import inBloom.graph.isomorphism.FunctionalUnits;
 import inBloom.graph.isomorphism.UnitFinder;
 import inBloom.graph.visitor.EdgeGenerationPPVisitor;
@@ -42,12 +47,14 @@ public class Tellability {
 	// Semantic Symmetry
 	public double symmetry;
 	public int charNum;
+	public Collection<Instance> fUinstances = new ArrayList<>();
 
 	// Semantic Opposition
 
 	// Suspense
 	public int suspense;
 	public int plotLength;
+
 
 
 	// Dynamic Points
@@ -67,7 +74,7 @@ public class Tellability {
 		this.detectPolyvalence(graph);
 
 		// calculate symmetry: intentionally switched off
-		// this.detectSymmetry(graph);
+		 this.detectSymmetry(graph);
 
 		// Perform quantitative analysis of plot
 		this.computeSimpleStatistics(graph);
@@ -88,7 +95,7 @@ public class Tellability {
 	}
 
 	/**
-	 * Identifies all instances of functional units in the plot graph and detects polyvalent vertices
+	 * Identifies all fUinstances of functional units in the plot graph and detects polyvalent vertices
 	 * at their overlap.
 	 * @param graph a graph that has been processed by both VertexMergingPPVisitor and VisualizationFilterPPVisitor
 	 */
@@ -118,8 +125,10 @@ public class Tellability {
 				FunctionalUnit.Instance instance = unit.new Instance(graph, map.values(), unit.getName());
 				instance.identifySubject(map);
 				this.connectivityGraph.addVertex(instance);
+				this.fUinstances.add(instance);
 				graph.addFUInstance(unit, instance);
 
+				// check for polyvalence
 				for(Vertex v : map.values()) {
 					if(!vertexUnitCount.containsKey(v)) {
 						vertexUnitCount.put(v, 1);
@@ -136,6 +145,8 @@ public class Tellability {
 			}
 		}
 
+		this.numFunctionalUnits = unitInstances;
+		this.numPolyvalentVertices = polyvalentVertices;
 
 		String foundUnits = this.functionalUnitCount.entrySet().stream().filter(entry -> entry.getValue() > 0)
 													.map(entry -> entry.getKey().getName() + ": " + entry.getValue())
@@ -144,6 +155,12 @@ public class Tellability {
 													.orElse("<none>");
 		logger.info("-> Found units: " + foundUnits);
 
+		// Mark polyvalent vertices with asterisk
+		for(Vertex v : polyvalentVertexSet) {
+			v.setPolyvalent();
+		}
+
+		// identify primitive Units for connectivity graph
 		for(FunctionalUnit primitiveUnit : FunctionalUnits.PRIMITIVES) {
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(primitiveUnit.getGraph(), graph);
 			for(Map<Vertex, Vertex> map : mappings) {
@@ -151,29 +168,55 @@ public class Tellability {
 				this.connectivityGraph.addVertex(instance);
 			}
 		}
-
-		this.numFunctionalUnits = unitInstances;
-		this.numPolyvalentVertices = polyvalentVertices;
-
-		// Mark polyvalent vertices with asterisk
-		for(Vertex v : polyvalentVertexSet) {
-			v.setPolyvalent();
-		}
 	}
 
 
 	/**
 	 * Calculates the story's overall symmetry based on the characters' beliefs, intentions, actions and emotions
 	 */
-	private void detectSymmetry(PlotDirectedSparseGraph graph)
-	{
+	private void detectSymmetry(PlotDirectedSparseGraph graph) {
+		HashMap<String, Collection<Instance>> fuSequences = new HashMap<>();
+		for(Instance i : this.fUinstances) {
+			Collection<Instance> agList = fuSequences.getOrDefault(i.getFirstAgent(), new ArrayList<>());
+			agList.add(i);
+			fuSequences.put(i.getFirstAgent(), agList);
+
+			if (i.getSecondAgent() != null) {
+				agList = fuSequences.getOrDefault(i.getSecondAgent(), new ArrayList<>());
+				agList.add(i);
+				fuSequences.put(i.getSecondAgent(), agList);
+			}
+		}
+
+		HashMap<String, List<Instance>> agentFuOrderMap = new HashMap<>();
+		for (String agent : fuSequences.keySet()) {
+			Collection<Instance> instances = fuSequences.get(agent);
+			agentFuOrderMap.put(agent, instances.stream().sorted(new FunctionalUnit.InstanceSubgraphOrderComparator(agent))
+														  .collect(Collectors.toList()));
+		}
+
+		logger.info("FU order (hen): " + agentFuOrderMap.get("hen"));
+		logger.info("FU order (dog): " + agentFuOrderMap.get("dog"));
+		logger.info("FU order (pig): " + agentFuOrderMap.get("pig"));
+		logger.info("FU order (cow): " + agentFuOrderMap.get("cow"));
+		logger.info("\n");
+
+		for (String agent : fuSequences.keySet()) {
+			double fuSym = this.sequenceAnalyser(agentFuOrderMap.get(agent).stream().map(i -> i.toString()).collect(Collectors.toList()));
+			double normFuEmotion = (fuSym - 0) / (this.sequenceAnalyser(Lists.newArrayList(Strings.repeat("A", agentFuOrderMap.get(agent).size()).split(""))) - 0);
+
+			logger.info("normalized FU similarity (" + agent + "): " + normFuEmotion);
+		}
+
 		// get the actions, emotions, intentions and beliefs of a character
 		double[] characterSymmetries = new double[graph.getRoots().size()];
 		double minNormal = 0;
 
+		HashMap<String, Collection<Vertex>> agentEventMap = new HashMap<>();
 		// for each character in the story
-		for (Vertex root : graph.getRoots())
-		{
+		for (Vertex root : graph.getRoots()) {
+			agentEventMap.put(root.toString(), new ArrayList<>());
+
 			List<String> emotionSequences = new ArrayList<>();
 			List<String> intentionSequences = new ArrayList<>();
 			List<String> beliefSequences = new ArrayList<>();
@@ -182,8 +225,9 @@ public class Tellability {
 			int charCounter = 0;
 
 			// get the character's story graph
-			for(Vertex v : graph.getCharSubgraph(root))
-			{
+			for(Vertex v : graph.getCharSubgraph(root)) {
+				agentEventMap.get(root.toString()).add(v);
+
 				// get the emotions of the character
 				if (!v.getEmotions().isEmpty())
 				{
@@ -202,19 +246,19 @@ public class Tellability {
 				// get the intentions of character
 				if (v.getType() == Type.PERCEPT)
 				{
-					beliefSequences.add(v.getFunctor());
+					beliefSequences.add(v.toString());
 				}
 
 				// get the actions of the character
-				if(v.getType() == Type.ACTION)
+				if(v.getType() == Type.ACTION || v.getType() == Type.SPEECHACT)
 				{
 					actionSequences.add(v.getFunctor());
 				}
 			}
 
-			logger.fine("\n\nCharacter: " + root.toString() + ": ");
-
-			logger.fine("Intentions:\n" + intentionSequences.toString());
+			logger.info("\n\nCharacter: " + root.toString() + ": ");
+			logger.info("All Event Sequence: ");
+			logger.info(agentEventMap.get(root.toString()).toString());
 
 			// run the analysis on the different states
 			double emotionSym = this.sequenceAnalyser(emotionSequences);
@@ -261,16 +305,21 @@ public class Tellability {
 			// take overall mean over the different states of the character
 			characterSymmetries[charCounter] = (normSymEmotion + normSymIntention + normSymBelief + normSymAction) / 4;
 
-			logger.fine("\n"+root.toString() + " Average Symmetry: "+ characterSymmetries[charCounter] +
-					"\nWith:\n" + normSymEmotion + "(Emotions),\n" +
-					normSymIntention + "(Intentions),\n" +
-					normSymBelief + "(Beliefs),\n" +
+			logger.info("\nSequences:" +
+					"\n Emotions: " + emotionSequences +
+					"\n Intentions: " + intentionSequences +
+					"\n Beliefs: " + beliefSequences +
+					"\n Actions: " + actionSequences);
+			logger.info("\nAverage Vertex Symmetry: "+ characterSymmetries[charCounter] +
+					"\nWith:\n " + normSymEmotion + "(Emotions),\n " +
+					normSymIntention + "(Intentions),\n " +
+					normSymBelief + "(Beliefs),\n " +
 					normSymAction + "(Actions)");
 			charCounter++;
 		}
 
 		// overall symmetry (normalisation to number of characters happens in the compute method)
-		this.symmetry = Arrays.stream(characterSymmetries).sum();
+//		this.symmetry = Arrays.stream(characterSymmetries).sum();
 	}
 
 	/**

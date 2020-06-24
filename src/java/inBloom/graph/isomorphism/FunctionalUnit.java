@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import jason.util.Pair;
 
@@ -272,7 +273,7 @@ public class FunctionalUnit {
 	 */
 	public class Instance implements Comparable<FunctionalUnit.Instance>{
 
-		private PlotDirectedSparseGraph graph;
+		public PlotDirectedSparseGraph graph;
 		private Collection<Vertex> vertices;
 		private int start = Integer.MAX_VALUE;
 		private int end = Integer.MIN_VALUE;
@@ -323,12 +324,6 @@ public class FunctionalUnit {
 						break;
 					}
 				}
-			}
-			if(this.firstAgent != null) {
-				this.firstAgent = "the " + this.firstAgent;
-			}
-			if(this.secondAgent != null) {
-				this.secondAgent = "the " + this.secondAgent;
 			}
 		}
 
@@ -488,7 +483,15 @@ public class FunctionalUnit {
 		}
 
 		/**
-		 * Orders functional units by their starting time.
+		 * Retrieves the time step of the last vertex of this unit.
+		 * @return
+		 */
+		public int getEnd() {
+			return this.end;
+		}
+
+		/**
+		 * Orders functional units by their starting step.
 		 */
 		@Override
 		public int compareTo(Instance arg0) {
@@ -533,5 +536,94 @@ public class FunctionalUnit {
 			result = name.substring(0, 3);
 		}
 		return result;
+	}
+
+	/**
+	 * Comparator that orders instances according to the order in which they appear in the subgraph of an agent. The order
+	 * is determined on the plot step of the last vertex, then on the order inside the step of the last vertex, then on
+	 * the plot step of the first vertex, then on the order inside the step of the first vertex.
+	 * @author Leonid Berov
+	 */
+	public static class InstanceSubgraphOrderComparator implements Comparator<Instance> {
+
+		private String agent;
+
+		/**
+		 * Initializes the comparator with the label of the root vertex that starts the subgraph in which order is to be
+		 * determined.
+		 * @param agent name of the agent
+		 */
+		public InstanceSubgraphOrderComparator(String agent) {
+			this.agent = agent;
+		}
+
+		@Override
+		public int compare(Instance instance1, Instance instance2) {
+			logger.fine("Comparing: " + instance1 + " and " + instance2);
+
+			// project instances on subgraph of currently processed agent
+			List<Vertex> thisAgentInstance1Vertices = instance1.getVertices().stream().filter(v -> v.getRoot().toString().equals(this.agent)).collect(Collectors.toList());
+			List<Vertex> thisAgentInstance2Vertices = instance2.getVertices().stream().filter(v -> v.getRoot().toString().equals(this.agent)).collect(Collectors.toList());
+
+			// Comparing based on step of last vertex of this instance in this subgraph
+			int maxStepThisAgent = thisAgentInstance1Vertices.stream().map(v -> v.getStep()).mapToInt(step -> step).max().getAsInt();
+			final int maxStepInstance1 = new Integer(maxStepThisAgent);
+
+			maxStepThisAgent = thisAgentInstance2Vertices.stream().map(v -> v.getStep()).mapToInt(step -> step).max().getAsInt();
+			final int maxStepInstance2 = new Integer(maxStepThisAgent);
+
+
+			int stepComparison = maxStepInstance1 - maxStepInstance2;
+			logger.fine("   last step comparison: " + stepComparison + "(" + maxStepInstance1 + ", " + maxStepInstance2 +")");
+			if(stepComparison != 0) {
+				return stepComparison;
+			}
+
+			// in case of same step, compare based on 'inner step', i.e. absolute position inside step
+			int maxInstance1Inner = thisAgentInstance1Vertices.stream().filter(v -> v.getStep() == maxStepInstance1)
+														      .map(v -> instance1.graph.getInnerStep(v))
+														      .mapToInt(innerStep -> innerStep)
+														      .max().getAsInt();
+
+			int maxInstance2Inner = thisAgentInstance2Vertices.stream().filter(v -> v.getStep() == maxStepInstance2)
+															  .map(v -> instance1.graph.getInnerStep(v))
+															  .mapToInt(innerStep -> innerStep)
+															  .max().getAsInt();
+
+			int innerStepComparison = maxInstance1Inner - maxInstance2Inner;
+			logger.fine("   last inner step comparison: " + innerStepComparison + "(" + maxInstance1Inner + ", " + maxInstance2Inner +")");
+			if(innerStepComparison != 0) {
+				return innerStepComparison;
+			}
+
+			// in case of same inner step (e.g. instances ending in same vertex), compare based on starting step and starting inner step
+			int minStepThisAgent = thisAgentInstance1Vertices.stream().map(v -> v.getStep()).mapToInt(step -> step).min().getAsInt();
+			final int minStepInstance1 = new Integer(minStepThisAgent);
+
+			minStepThisAgent = thisAgentInstance2Vertices.stream().map(v -> v.getStep()).mapToInt(step -> step).min().getAsInt();
+			final int minStepInstance2 = new Integer(minStepThisAgent);
+
+
+			stepComparison = minStepInstance1 - minStepInstance2;
+			logger.fine("   start step comparison: " + stepComparison + "(" + minStepInstance1 + ", " + minStepInstance2 +")");
+			if(stepComparison != 0) {
+				return stepComparison;
+			}
+
+			// in case of same step, compare based on 'inner step', i.e. absolute position inside step
+			int minInstance1Inner = thisAgentInstance1Vertices.stream().filter(v -> v.getStep() == minStepInstance1)
+														      .map(v -> instance1.graph.getInnerStep(v))
+														      .mapToInt(innerStep -> innerStep)
+														      .min().getAsInt();
+
+			int minInstance2Inner = thisAgentInstance2Vertices.stream().filter(v -> v.getStep() == minStepInstance2)
+															  .map(v -> instance1.graph.getInnerStep(v))
+															  .mapToInt(innerStep -> innerStep)
+															  .min().getAsInt();
+
+			innerStepComparison = minInstance1Inner - minInstance2Inner;
+			logger.fine("   start inner step comparison: " + innerStepComparison + "(" + minInstance1Inner + ", " + minInstance2Inner +")");
+			return innerStepComparison;
+		}
 	}
 }
