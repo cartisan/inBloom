@@ -2,20 +2,31 @@ package inBloom.helper;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.google.common.base.Supplier;
+
+import jason.util.Pair;
 
 
 public class TestSymmetry
 {
+	// [0,0,0,0], [0,1,0,1], [0,1,2,0]
+	private static ArrayList<List<String>> ascendingSequences = new ArrayList<>();
 
-	private static ArrayList<List<String>> SingleSequences = new ArrayList<>();
-	private static ArrayList<List<String>> BlockSequences = new ArrayList<>();
+	// [A,B,A,B], [A,A,B,B], [A,A,A,B]
+	private static ArrayList<List<String>> blockSequences = new ArrayList<>();
 
 
-    private static void fillSingleSequences(int maxLength)
+    private static void fillAscendingSequences(int maxLength)
     {
     	List<String> sequence = new ArrayList<>();
 
@@ -39,7 +50,7 @@ public class TestSymmetry
                 {
                     // add the sequences
                 	List<String> tmp = new ArrayList<>(sequence.subList(0, maxLength));
-          			SingleSequences.add(tmp);
+          			ascendingSequences.add(tmp);
                     break;
                 }
             }
@@ -69,7 +80,7 @@ public class TestSymmetry
           		if(sequence.size() >= maxLength)
           		{
           			List<String> tmp = new ArrayList<>(sequence.subList(0, maxLength));
-          			BlockSequences.add(tmp);
+          			blockSequences.add(tmp);
           			break;
             	}
         	}
@@ -82,91 +93,97 @@ public class TestSymmetry
      * below
      * @return int array containing the three symmetry values
      */
-    private static int[] sequenceAnalyser(List<String> testSequence)
-    {
-		// saves a sequence as key and its number of appearance as value
-		Map<List<String>, List<Integer>> sequenceMap = new HashMap<>();
+    private static Pair<List<String>, Integer> sequenceAnalyser(List<String> sequence) {
+		// maps sequences to the list of starting positions
+		Map<List<String>, ArrayList<Integer>> sequenceStartposMap = new HashMap<>();
 
-		// loop over the current test sequence and create its (sub)sequences
-		for (int start = 0; start < testSequence.size(); start++)
-		{
-			for (int end = testSequence.size(); end > start + 1; end--)
-			{
-				List<String> currentSeq = new ArrayList<>(testSequence.subList(start, end));
+		// loop over the sequence and find all subsequences and their starting position
+		for (int start = 0; start < sequence.size(); start++) {
+			for (int end = sequence.size(); end > start; end--) {
+				List<String> currentSeq = new ArrayList<>(sequence.subList(start, end));
 
-				// if the sequence already in the list, only increase the counter
-				if (sequenceMap.containsKey(currentSeq))
-				{
-					List<Integer> newSeq = sequenceMap.get(currentSeq);
-					newSeq.add(start);
-
-					sequenceMap.put(currentSeq, newSeq);
+				// if new sequence, create empty list of starting positions
+				if (!sequenceStartposMap.containsKey(currentSeq)) {
+					sequenceStartposMap.put(currentSeq, new ArrayList<Integer>());
 				}
-				else
-				{
-					List<Integer> newSeq = new ArrayList<>();
-					newSeq.add(start);
-
-					sequenceMap.put(currentSeq, newSeq);
-				}
+				// add current starting position to map
+				List<Integer> startingPositions = sequenceStartposMap.get(currentSeq);
+				startingPositions.add(start);
 			}
     	}
 
-		/*
-		* calculate symmetry values for all of the sequences
-		* in the best case, punish overlapping sequences to avoid duplications
-		* are two different entries but in theory the first contains the second
-		* three possible formulas for calculation:
-		* 1) Neg: currentSequenceStart - length of prevSequence
-		* 2) Dir: similar to (1), but only adds 1 if they do NOT overlap; else -1
-		* 3) Normal: currentSequenceStart - prevSequenceStart
-		*/
+		// maps sequences to the list of starting positions, ignoring overlapping sequences
+		Map<List<String>, ArrayList<Integer>> noOverlapSequenceMap = new HashMap<>();
+		for (Map.Entry<List<String>, ArrayList<Integer>> entry : sequenceStartposMap.entrySet()) {
+			// unpack entry
+			List<String> subsequence = entry.getKey();
+			ArrayList<Integer> startingPositions = (ArrayList<Integer>) entry.getValue().clone();
 
-		int weightedNeg = 0;
-		int weightedDir = 0;
-		int weightedNormal = 0;
+			// initialize noOverlapMap with empty list
+			ArrayList<Integer> startingPositionsNoOverlap = new ArrayList<>();
+			noOverlapSequenceMap.put(subsequence, startingPositionsNoOverlap);
 
-		int sequenceValueNeg = 0;
-		int sequenceValueDir = 0;
-		int sequenceValueNormal = 0;
+			// add first starting position into the list that contains positions to be used to remove overlaps
+			ArrayList<Integer> tmpLst = new ArrayList<>();
+			tmpLst.add(startingPositions.remove(0));
+			while(tmpLst.size() > 0) {
+				int includePosition = tmpLst.remove(0);
 
-		for (Map.Entry<List<String>, List<Integer>> entry : sequenceMap.entrySet())
-		{
-			// if a sequence appears more than once, weight them by their
-			// number of appearances and save the values in a new list
-			if (entry.getValue().size() > 1)
-			{
-				// sum of each sequence
-				sequenceValueNeg = 0;
-				sequenceValueDir = 0;
-				sequenceValueNormal = 0;
-
-				// sum the distances between the start indices within a sequence
-				for (int prevIdx = 0; prevIdx < entry.getValue().size(); prevIdx ++)
-				{
-					for (int currentIdx = prevIdx+1; currentIdx < entry.getValue().size(); currentIdx ++)
-					{
-						sequenceValueNeg += entry.getValue().get(currentIdx) - (entry.getValue().get(prevIdx) + entry.getKey().size());
-						sequenceValueDir += entry.getValue().get(currentIdx) - (entry.getValue().get(prevIdx) + entry.getKey().size()) >= 0 ? 1 : -1;
-						sequenceValueNormal += entry.getValue().get(currentIdx) - entry.getValue().get(prevIdx);
+				// search over all starting positions that have not been removed yet as overlaps
+				Iterator<Integer> staPoIt = startingPositions.listIterator();
+				while(staPoIt.hasNext()) {
+					int p = staPoIt.next();
+					// if starting position p is located before the end of the currently used position, remove p
+					// otherwise, transfer p into list of positions to be used to remove overlaps and abort
+					// that way, we find the first p that is not to be removed, and instantly switch to using it
+					if(includePosition + subsequence.size() > p) {
+						staPoIt.remove();
+					} else {
+						staPoIt.remove();
+						tmpLst.add(p);
+						break;
 					}
 				}
-
-				weightedNeg += sequenceValueNeg * entry.getKey().size();
-				weightedDir += sequenceValueDir * entry.getKey().size();
-				weightedNormal += sequenceValueNormal * entry.getKey().size();
+				// since we removed everything that overlapped with current position, we can safe it as overlap free
+				startingPositionsNoOverlap.add(includePosition);
 			}
 		}
 
-		// return the weighted sum of the sequences
-    	return new int[] { weightedNeg, weightedDir, weightedNormal};
+		// compute symmetry value of each subsequence, where symmetry value is: sequence length * number of occurrence
+		// filter out sequences that occur only once, since there is no symmetry in there
+		List<Pair<List<String>, Integer>> sequenceSymmetryPairs = noOverlapSequenceMap.entrySet().stream()
+																	   .filter(entry -> entry.getValue().size() > 1)
+									   								   .map(entry -> new Pair<>(entry.getKey(), entry.getValue().size() * entry.getKey().size()))
+									   								   .collect(Collectors.toList());
+
+		// return the sequence and symmetry value with the highest symmetry value
+		return sequenceSymmetryPairs.stream()
+									.max( new Comparator<Pair<List<String>, Integer>>() {
+										public int compare(Pair<List<String>, Integer> pair1, Pair<List<String>, Integer> pair2) {
+											int symValueComparison = pair1.getSecond().compareTo(pair2.getSecond());
+											if(symValueComparison != 0) {
+												return symValueComparison;
+											}
+											// choose between subsequences with same symmetry value by choosing the one with the higher sequence length
+											return ((Integer) pair1.getFirst().size()).compareTo(pair2.getFirst().size());
+										}
+									})
+									.orElseGet(new Supplier<Pair<List<String>,Integer>>() {
+										public Pair<List<String>, Integer> get() {
+											return new Pair<>(new ArrayList<>(), 0);
+										}
+									});
     }
 
 
-    public static void SaveResults(int[][] singleValues, int[][] blockValues)
+    public static void saveResults(int[][] ascendingSymValues, int[][] blockSymValues)
 	{
         FileWriter writer;
-        File file = new File("C:/Users/Leon/Desktop/Results.csv");
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yy-MM-dd_HH-mm-ss");
+        LocalDateTime now = LocalDateTime.now();
+
+        File file = new File("C:/Users/Leon/Desktop/results" + dtf.format(now) + ".csv");
 
         try
         {
@@ -177,27 +194,29 @@ public class TestSymmetry
 
 
 
-        	for(int i = 0; i < SingleSequences.size(); i++)
+        	for(int i = 0; i < ascendingSequences.size(); i++)
         	{
-        		List<String> currentSequence = new ArrayList<>(SingleSequences.get(i));
+        		List<String> currentSequence = new ArrayList<>(ascendingSequences.get(i));
 
         		for (int j = 0; j < currentSequence.size(); j++)
         		{
             		writer.append("\t" + currentSequence.get(j));
         		}
-        		writer.append("," + singleValues[i][0] + "," + singleValues[i][1] + "," + singleValues[i][2]);
+        		writer.append("," + ascendingSymValues[i][0] + "," + ascendingSymValues[i][1] + "," + ascendingSymValues[i][2]);
         		writer.append("\n"); // new line after each sequence
         	}
 
-        	for(int i = 0; i < BlockSequences.size(); i++)
+    		writer.append("\n"); // new line after each sequence
+
+        	for(int i = 0; i < blockSequences.size(); i++)
         	{
-        		List<String> currentSequence = new ArrayList<> (BlockSequences.get(i));
+        		List<String> currentSequence = new ArrayList<> (blockSequences.get(i));
 
         		for (int j = 0; j < currentSequence.size(); j++)
         		{
             		writer.append("\t" + currentSequence.get(j));
         		}
-        		writer.append("," + blockValues[i][0] + "," + blockValues[i][1] + "," + blockValues[i][2]);
+        		writer.append("," + blockSymValues[i][0] + "," + blockSymValues[i][1] + "," + blockSymValues[i][2]);
         		writer.append("\n"); // new line after each sequence
         	}
 
@@ -214,28 +233,27 @@ public class TestSymmetry
 	public static void main(String[] args)
 	{
 
-		// create the test sequences: SingleSequences are sequences containing pairs of numbers
-		// BlockSequences consist of the letter A and B with varying repetition
-        fillSingleSequences(5);
-		System.out.println("\n\n---------------------------------------------------------------\n");
-        fillBlockSequnces(5);
+		// create the test sequences: ascendingSequences are sequences containing pairs of numbers
+		// blockSequences consist of the letter A and B with varying repetition
+        fillAscendingSequences(6);
+        fillBlockSequnces(6);
 
         // analyse the test sequences with the sequenceAnalyser from here (uses all three formulas)
-        int[][] singleValues = new int[SingleSequences.size()][3];
-        int[][] blockValues = new int[BlockSequences.size()][3];
+        List<Pair<List<String>, Integer>> ascendingSymValues = new ArrayList<>();
+        List<Pair<List<String>, Integer>>  blockSymValues = new ArrayList<>();
 
-        for (int i = 0; i < SingleSequences.size(); i++)
+        for (int i = 0; i < ascendingSequences.size(); i++)
         {
-        	singleValues[i] = sequenceAnalyser(SingleSequences.get(i));
+        	ascendingSymValues.add(sequenceAnalyser(ascendingSequences.get(i)));
 
         }
 
-        for (int i = 0; i < BlockSequences.size(); i++)
+        for (int i = 0; i < blockSequences.size(); i++)
         {
-        	blockValues[i] = sequenceAnalyser(BlockSequences.get(i));
+        	blockSymValues.add(sequenceAnalyser(blockSequences.get(i)));
         }
 
         // save the results in a csv file
-        SaveResults(singleValues, blockValues);
+        saveResults(null, null);
 	}
 }
