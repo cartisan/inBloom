@@ -14,7 +14,7 @@ import com.google.common.base.Supplier;
 import jason.util.Pair;
 
 public class SymmetryAnalyzer {
-    static Logger logger = Logger.getLogger(TestSymmetry.class.getName());
+    static Logger logger = Logger.getLogger(SymmetryAnalyzer.class.getName());
 
     /**
      * Computes the overall symmetry score for a sequence, represented by string elements in a list.
@@ -26,7 +26,7 @@ public class SymmetryAnalyzer {
     	Map<List<String>, Integer> reflectional = computeReflectional(sequence);
 
 		logger.info("Translational symmetries: " + translational);
-		logger.info("Reflectoinal symmetries: " + reflectional);
+		logger.info("Reflectional symmetries: " + reflectional);
 
 		Pair<List<String>, Integer> maxTrans = findBestIndividualChain(translational);
 		Pair<List<String>, Integer> maxRefl = findBestIndividualChain(reflectional);
