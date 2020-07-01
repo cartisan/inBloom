@@ -11,9 +11,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-
 import inBloom.framing.ConnectivityGraph;
 import inBloom.graph.CountingVisitor;
 import inBloom.graph.PlotDirectedSparseGraph;
@@ -201,16 +198,15 @@ public class Tellability {
 		logger.info("FU order (cow): " + agentFuOrderMap.get("cow"));
 		logger.info("\n");
 
+		List<Float> fuSyms =  new ArrayList<>();
 		for (String agent : fuSequences.keySet()) {
-			double fuSym = this.sequenceAnalyser(agentFuOrderMap.get(agent).stream().map(i -> i.toString()).collect(Collectors.toList()));
-			double normFuEmotion = (fuSym - 0) / (this.sequenceAnalyser(Lists.newArrayList(Strings.repeat("A", agentFuOrderMap.get(agent).size()).split(""))) - 0);
-
-			logger.info("normalized FU similarity (" + agent + "): " + normFuEmotion);
+			Float fuSym = SymmetryAnalyzer.compute(agentFuOrderMap.get(agent).stream().map(i -> i.toString()).collect(Collectors.toList()));
+			logger.info("normalized FU similarity (" + agent + "): " + fuSym);
+			fuSyms.add(fuSym);
 		}
 
 		// get the actions, emotions, intentions and beliefs of a character
-		double[] characterSymmetries = new double[graph.getRoots().size()];
-		double minNormal = 0;
+		double[] eventSyms = new double[graph.getRoots().size()];
 
 		HashMap<String, Collection<Vertex>> agentEventMap = new HashMap<>();
 		// for each character in the story
@@ -229,8 +225,7 @@ public class Tellability {
 				agentEventMap.get(root.toString()).add(v);
 
 				// get the emotions of the character
-				if (!v.getEmotions().isEmpty())
-				{
+				if (!v.getEmotions().isEmpty()) {
 					for (String emotion : v.getEmotions())
 					{
 						emotionSequences.add(emotion);
@@ -238,151 +233,47 @@ public class Tellability {
 				}
 
 				// get the intentions of character
-				if (!v.getIntention().isEmpty())
-				{
+				if (!v.getIntention().isEmpty()) {
 					intentionSequences.add(v.getIntention());
 				}
 
 				// get the intentions of character
-				if (v.getType() == Type.PERCEPT)
-				{
+				if (v.getType() == Type.PERCEPT) {
 					beliefSequences.add(v.toString());
 				}
 
 				// get the actions of the character
-				if(v.getType() == Type.ACTION || v.getType() == Type.SPEECHACT)
-				{
+				if(v.getType() == Type.ACTION || v.getType() == Type.SPEECHACT) {
 					actionSequences.add(v.getFunctor());
 				}
 			}
 
 			logger.info("\n\nCharacter: " + root.toString() + ": ");
-			logger.info("All Event Sequence: ");
-			logger.info(agentEventMap.get(root.toString()).toString());
 
 			// run the analysis on the different states
-			double emotionSym = this.sequenceAnalyser(emotionSequences);
-			double intentionSym = this.sequenceAnalyser(intentionSequences);
-			double beliefSym = this.sequenceAnalyser(beliefSequences);
-			double actionSym = this.sequenceAnalyser(actionSequences);
-
-
-			// NORMALISATION
-			// for normalisaton: create maximal possible sequence and get its symmetry value
-			List<String> maxSeqEmotion = new ArrayList<>();
-			List<String> maxSeqIntention = new ArrayList<>();
-			List<String> maxSeqBelief = new ArrayList<>();
-			List<String> maxSeqAction = new ArrayList<>();
-
-			for (int i = 0 ; i < emotionSequences.size(); i++)
-			{
-				maxSeqEmotion.add("a");
-			}
-
-			for (int i = 0 ; i < intentionSequences.size(); i++)
-			{
-				maxSeqIntention.add("a");
-			}
-
-			for (int i = 0 ; i < beliefSequences.size(); i++)
-			{
-				maxSeqBelief.add("a");
-			}
-
-			for (int i = 0 ; i < actionSequences.size(); i++)
-			{
-				maxSeqAction.add("a");
-			}
-
-
-			// z-normalisation: (x - min) / (max - min)
-			double normSymEmotion = (emotionSym - minNormal) / (this.sequenceAnalyser(maxSeqEmotion) - minNormal);
-			double normSymIntention = (intentionSym - minNormal) / (this.sequenceAnalyser(maxSeqIntention) - minNormal);
-			double normSymBelief = (beliefSym - minNormal) / (this.sequenceAnalyser(maxSeqBelief) - minNormal);
-			double normSymAction = (actionSym - minNormal) / (this.sequenceAnalyser(maxSeqAction) - minNormal);
-
+			double emotionSym = SymmetryAnalyzer.compute(emotionSequences);
+			double intentionSym = SymmetryAnalyzer.compute(intentionSequences);
+			double beliefSym = SymmetryAnalyzer.compute(beliefSequences);
+			double actionSym = SymmetryAnalyzer.compute(actionSequences);
 
 			// take overall mean over the different states of the character
-			characterSymmetries[charCounter] = (normSymEmotion + normSymIntention + normSymBelief + normSymAction) / 4;
+			eventSyms[charCounter] = (emotionSym + intentionSym + beliefSym + actionSym) / 4;
 
 			logger.info("\nSequences:" +
 					"\n Emotions: " + emotionSequences +
 					"\n Intentions: " + intentionSequences +
 					"\n Beliefs: " + beliefSequences +
 					"\n Actions: " + actionSequences);
-			logger.info("\nAverage Vertex Symmetry: "+ characterSymmetries[charCounter] +
-					"\nWith:\n " + normSymEmotion + "(Emotions),\n " +
-					normSymIntention + "(Intentions),\n " +
-					normSymBelief + "(Beliefs),\n " +
-					normSymAction + "(Actions)");
+			logger.info("\nAverage Vertex Symmetry: "+ eventSyms[charCounter] +
+					"\nWith:\n " + emotionSym + "(Emotions),\n " +
+					intentionSym + "(Intentions),\n " +
+					beliefSym + "(Beliefs),\n " +
+					actionSym + "(Actions)");
 			charCounter++;
 		}
 
 		// overall symmetry (normalisation to number of characters happens in the compute method)
-//		this.symmetry = Arrays.stream(characterSymmetries).sum();
-	}
-
-	/**
-	 * Calculates the story's overall symmetry based on the characters' beliefs, intentions, actions and emotions
-	 * It uses the normal distance measurement. For testing all three: run TestSymmetry.java
-	 * @param a graph containing the respective character's events (beliefs, intentions, actions, emotions) as a list of strings
-	 * @return symmetry for the input graph
-	 */
-	public double sequenceAnalyser(List<String> graphSequence)
-	{
-		// saves a sequences as key with corresponding values [counter, List of Start Indices]
-		Map<List<String>, List<Integer>> sequenceMap = new HashMap<>();
-
-		// loop over the graph and create the (sub)sequences
-		for (int start = 0; start < graphSequence.size(); start++)
-		{
-			for (int end = graphSequence.size(); end > start + 1; end--)
-			{
-				List<String> currentSeq = new ArrayList<>(graphSequence.subList(start, end));
-
-				// if the sequence already in the list, only increase the counter
-				if (sequenceMap.containsKey(currentSeq))
-				{
-					List<Integer> newSeq = new ArrayList<>(sequenceMap.get(currentSeq));
-					newSeq.add(start);
-
-					sequenceMap.put(currentSeq, newSeq);
-				}
-				else
-				{
-					List<Integer> newSeq = new ArrayList<>();
-					newSeq.add(start);
-
-					sequenceMap.put(currentSeq, newSeq);
-				}
-			}
-		}
-
-		double sumWeightedNormals = 0;
-		int sequenceValueNormal = 0;
-
-		for (Map.Entry<List<String>, List<Integer>> entry : sequenceMap.entrySet())
-		{
-			// if a sequence appears more than once, weight them by their
-			// number of appearances and save the values in a new list
-			if (entry.getValue().size() > 1)
-			{
-				// reset sequence value
-				sequenceValueNormal = 0;
-				// sum the distances between the start indices within a sequence
-				for (int prevIdx = 0; prevIdx < entry.getValue().size(); prevIdx ++)
-				{
-					for (int currentIdx = prevIdx+1; currentIdx < entry.getValue().size(); currentIdx ++)
-					{
-						// sum distances between start indices
-						sequenceValueNormal += entry.getValue().get(currentIdx) - entry.getValue().get(prevIdx);
-					}
-				}
-				// weight the distances by their length
-				sumWeightedNormals += sequenceValueNormal * entry.getKey().size();
-			}
-		}
-		return sumWeightedNormals;
+		this.symmetry = fuSyms.stream().reduce((f1,f2) -> f1 + f2).get();
 	}
 
 	/**
@@ -398,12 +289,12 @@ public class Tellability {
 
 		logger.info("normalized polyvalence: " + (double) this.numPolyvalentVertices / this.numAllVertices);
 		logger.info("normalized suspense: " + (double) this.suspense / this.plotLength);
-//		logger.info("normalized symmetry: " + this.symmetry / this.charNum);
+		logger.info("normalized symmetry: " + this.symmetry / this.charNum);
 
 		double tellability = (double) this.numPolyvalentVertices / this.numAllVertices +
-							 (double) this.suspense / this.plotLength;
-//							 this.symmetry / this.charNum;					// normalize symmetry by the number of agents in the story
-		tellability /= 2;
+							 (double) this.suspense / this.plotLength +
+							 this.symmetry / this.charNum;					// normalize symmetry by the number of agents in the story
+		tellability /= 3;
 
 		logger.info("Overall tellability: " + tellability);
 		return tellability;
