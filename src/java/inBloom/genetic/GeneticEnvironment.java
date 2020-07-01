@@ -87,7 +87,6 @@ public abstract class GeneticEnvironment <EnvType extends PlotEnvironment<ModTyp
 	public void run_GA(String[] args, int time) {
 
 		GeneticAlgorithm<EnvType,ModType> ga = new GeneticAlgorithm<EnvType,ModType> (args, this, this.number_agents, this.number_dynamicHappenings, this.max_steps, this.pop_size, this.number_selections, this.crossover_prob, this.mutation_prob);
-		//System.out.println(ga.robinsonTest());
 		ga.setMaxRuntime(time);
 		ga.run();
 		

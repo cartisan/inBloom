@@ -93,6 +93,8 @@ public class Candidate implements Comparable<Candidate>{
 		for(int i = 0; i < others.length; i++) {
 			if(others[i]!=null) {
 				if(this.equals(others[i])) {
+					if(tellability>others[i].get_tellability())
+						others[i] = this;
 					return true;
 				}
 			}
@@ -107,10 +109,6 @@ public class Candidate implements Comparable<Candidate>{
 	
 	@Override
 	public int compareTo(Candidate other) {
-		
-		// Redundant since we do not have any duplicates.
-		//if(equals(other))
-		//	return 0;
 		
 		// smaller operator returns array in descending order
 		if(tellability < other.get_tellability())

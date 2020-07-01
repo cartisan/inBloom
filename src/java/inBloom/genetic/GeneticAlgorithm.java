@@ -22,8 +22,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	public double crossover_prob;
 	public double mutation_prob;
 	
-	// Container for fitness object and candidates
-	//private Fitness<?,?> fit;
+	// Container for candidates
 	private Candidate[] gen_pool;
 	private Candidate[] offspring;
 	private Candidate[] mutated_offspring;
@@ -140,7 +139,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	public void setHapInit(int pos, boolean bool) {
 		
-		if(pos>=0 && pos < persInitBool.length)
+		if(pos>=0 && pos < hapInitBool.length)
 			hapInitBool[pos] = bool;
 		else
 			System.out.println("Position is out of bounds");
@@ -284,7 +283,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}
 		
 		if(crossover_prob<0||crossover_prob>1) {
-			System.out.println("Crossover_prob: " + crossover_prob + "is suboptimal!");
+			System.out.println("Crossover_prob: " + crossover_prob + " is suboptimal!");
 			return false;
 		}
 		
