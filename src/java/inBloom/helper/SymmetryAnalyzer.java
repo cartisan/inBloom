@@ -53,14 +53,14 @@ public class SymmetryAnalyzer {
     	Map<List<String>, Integer> translational = computeTranslational(sequence);
     	Map<List<String>, Integer> reflectional = computeReflectional(sequence);
 
-		logger.info("Translational symmetries: " + translational);
-		logger.info("Reflectional symmetries: " + reflectional);
+		logger.fine("Translational symmetries: " + translational);
+		logger.fine("Reflectional symmetries: " + reflectional);
 
 		Pair<List<String>, Integer> maxTrans = findBestIndividualChain(translational);
 		Pair<List<String>, Integer> maxRefl = findBestIndividualChain(reflectional);
 
-		logger.info("Best trans chain: " + maxTrans.getFirst() + " with normalized value: " + (float) maxTrans.getSecond() / sequence.size());
-		logger.info("Best refl chain: " + maxRefl.getFirst() + " with normalized value: " + (float) maxRefl.getSecond() / sequence.size());
+		logger.fine("Best trans chain: " + maxTrans.getFirst() + " with normalized value: " + (float) maxTrans.getSecond() / sequence.size());
+		logger.fine("Best refl chain: " + maxRefl.getFirst() + " with normalized value: " + (float) maxRefl.getSecond() / sequence.size());
 
 		Float normalizedScore = ((float) maxTrans.getSecond() + maxRefl.getSecond()) / (2 * sequence.size());
 		logger.fine("Overall normalized score: " + normalizedScore);
@@ -206,7 +206,7 @@ public class SymmetryAnalyzer {
 	private static Pair<List<String>, Integer> findBestOverallChain(Map<List<String>, Integer> translational, Map<List<String>, Integer> reflectional) {
 		Map<List<String>, Integer> overall = new HashMap<>(translational);
 		reflectional.forEach((k, v) -> overall.merge(k, v, (i1,i2) -> i1 + i2));
-		logger.info("Overall symmetries: " + overall);
+		logger.fine("Overall symmetries: " + overall);
 
 		Pair<List<String>, Integer> max =  overall.entrySet().stream()
 								.map(entry -> new Pair<>(entry.getKey(), entry.getValue()))

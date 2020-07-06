@@ -12,18 +12,21 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
+import com.google.common.math.Stats;
 
 import inBloom.framing.ConnectivityGraph;
 import inBloom.graph.CountingVisitor;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
 import inBloom.graph.Vertex;
+import inBloom.graph.Vertex.Type;
 import inBloom.graph.isomorphism.FunctionalUnit;
 import inBloom.graph.isomorphism.FunctionalUnit.Instance;
 import inBloom.graph.isomorphism.FunctionalUnits;
 import inBloom.graph.isomorphism.UnitFinder;
 import inBloom.graph.visitor.EdgeGenerationPPVisitor;
 import inBloom.graph.visitor.VertexMergingPPVisitor;
+import inBloom.graph.visitor.VisualizationFilterPPVisitor;
 
 public class Tellability {
 	public static int GRAPH_MATCHING_TOLERANCE = 1;
@@ -69,11 +72,11 @@ public class Tellability {
 		this.counter = new CountingVisitor();
 		this.plotUnitTypes = new LinkedList<>();
 
-		// Find Functional Units and polyvalent Vertices
+		// find functional units and polyvalent vertices
 		this.detectPolyvalence(graph);
 
-		// calculate symmetry: intentionally switched off
-		 this.detectSymmetry(graph);
+		// calculate semantic symmetry and parallelism
+		 this.detectSymmetryAndParallelism(graph);
 
 		// Perform quantitative analysis of plot
 		this.computeSimpleStatistics(graph);
@@ -96,7 +99,8 @@ public class Tellability {
 	/**
 	 * Identifies all fUinstances of functional units in the plot graph and detects polyvalent vertices
 	 * at their overlap.
-	 * @param graph a graph that has been processed by both VertexMergingPPVisitor and VisualizationFilterPPVisitor
+	 * @param graph an analyzed plot graph, i.e. one that has been processed by {@linkplain VertexMergingPPVisitor},
+	 *              {@linkplain EdgeGenerationPPVisitor}, and {@linkplain VisualizationFilterPPVisitor} visitors.
 	 */
 	private void detectPolyvalence(PlotDirectedSparseGraph graph) {
 		Map<Vertex, Integer> vertexUnitCount = new HashMap<>();
@@ -171,27 +175,46 @@ public class Tellability {
 
 
 	/**
-	 * Calculates the story's overall symmetry based on FU or if none, the characters' beliefs, intentions, actions 
-	 * and emotion events.
+	 * Calculates the plot's  overall symmetry and parallelism based on FUs or, if none, raw events (emotions, intentions, beliefs, actions).
+	 * @param graph an analyzed plot graph, i.e. one that has been processed by {@linkplain VertexMergingPPVisitor},
+	 *              {@linkplain EdgeGenerationPPVisitor}, and {@linkplain VisualizationFilterPPVisitor} visitors.
 	 */
-	private void detectSymmetry(PlotDirectedSparseGraph graph) {
-		HashMap<String, List<String>> agentFuOrderMap = this.extractOrderedFUSequences();
-
-		boolean sufficientFuPresent = agentFuOrderMap.entrySet().stream().map( entry -> entry.getValue().size() )
+	private void detectSymmetryAndParallelism(PlotDirectedSparseGraph graph) {
+		HashMap<String, List<String>> agentFuSeqMap = this.extractOrderedFUSequences();
+		boolean sufficientFUPresent = agentFuSeqMap.entrySet().stream().map( entry -> entry.getValue().size() )
 																		 .mapToInt(size -> size)
 																		 .max().getAsInt() >= SIMILARITY_FU_THRESHOLD;
 
+		HashMap<String, List<String>> agentSeqMap;
 		List<Float> similarityScores =  new ArrayList<>();
-		if (sufficientFuPresent) {
-			similarityScores.addAll(this.fuBasedSym(agentFuOrderMap));
-			similarityScores.addAll(this.fuBasedPara(agentFuOrderMap));
+		if (sufficientFUPresent) {
+			logger.info("Perform FU based symmetry and parallelism analysis");
+			agentSeqMap = agentFuSeqMap;
 		} else {
-			similarityScores.addAll(this.eventBasedSym(graph));
-			similarityScores.addAll(this.eventBasedPara(graph));
+			logger.info("Not sufficient number of FU present in any of the sub graphs, fall back on event based symmetry and parallelism analysis");
+
+			// extract event sequence
+			HashMap<String, List<String>> agentEventSeqMap = new HashMap<>();
+			for (Vertex root : graph.getRoots()) {
+				agentEventSeqMap.put(root.toString(), new ArrayList<>());
+				for(Vertex v : graph.getCharSubgraph(root)) {
+					agentEventSeqMap.get(root.toString()).add(TermParser.removeAnnots(v.getLabel()));
+				}
+			}
+			agentSeqMap = agentEventSeqMap;
 		}
 
-		// overall symmetry is symmetry of all characters (normalisation to number of characters happens in the compute method)
-		this.symmetry = similarityScores.stream().reduce((f1,f2) -> f1 + f2).get();
+		// compute symmetry and parallelism on either FU or events (use tmp sequence for logging)
+		List<Float> tmp = this.symmetry(agentSeqMap);
+		logger.info("   average symmetry: " + Stats.meanOf(tmp));
+		similarityScores.addAll(tmp);
+
+		tmp = this.parallelism(agentSeqMap);
+		logger.info("   average paralellism: " + Stats.meanOf(tmp));
+		similarityScores.addAll(tmp);
+
+		// overall symmetry is average: over symmetry for each character and parallelism for each character pair
+		this.symmetry = similarityScores.stream().reduce((f1,f2) -> f1 + f2).get() / similarityScores.size();
 		return;
 	}
 
@@ -224,139 +247,39 @@ public class Tellability {
 									  entry -> entry.getValue().stream().map(elem -> elem.toString()).collect(Collectors.toList()))
 								  );
 
+		for(String agent: agentFuStringMap.keySet()) {
+			logger.fine("FU order (" + agent + "): " + agentFuStringMap.get(agent));
+		}
+		logger.fine("\n");
+
 		return agentFuStringMap;
 	}
 
-	private List<Float> fuBasedSym(HashMap<String, List<String>> agentFuOrderMap) {
-		List<Float> similarityScores =  new ArrayList<>();
-		for (String agent : agentFuOrderMap.keySet()) {
-			Float fuSym = SymmetryAnalyzer.computeSymmetry(agentFuOrderMap.get(agent));
-			logger.info("normalized FU similarity (" + agent + "): " + fuSym);
-			similarityScores.add(fuSym);
-		}
-		return similarityScores;
-	}
-
-	private List<Float> fuBasedPara(HashMap<String, List<String>> agentFuOrderMap) {
+	private List<Float> parallelism(HashMap<String, List<String>> agentSequenceMap) {
 		// find all possible pairings for parallelism comparison
-		Set<Set<String>> pairs = Sets.combinations(agentFuOrderMap.keySet(), 2);
+		Set<Set<String>> pairs = Sets.combinations(agentSequenceMap.keySet(), 2);
 
 		List<Float> parallelismScores =  new ArrayList<>();
 		for(Set<String> pairSet : pairs) {
 			ArrayList<String> pair = new ArrayList<>(pairSet);
 			String agent1 = pair.get(0);
 			String agent2 = pair.get(1);
-			Float fuPara = SymmetryAnalyzer.computeParallelism(agentFuOrderMap.get(agent1), agentFuOrderMap.get(agent2));
-			logger.info("     normalized FU parallelism (" + agent1 + ", " + agent2 +  "): " + fuPara);
+			Float fuPara = SymmetryAnalyzer.computeParallelism(agentSequenceMap.get(agent1), agentSequenceMap.get(agent2));
+			logger.info("     normalized parallelism (" + agent1 + ", " + agent2 +  "): " + fuPara);
 			parallelismScores.add(fuPara);
 		}
 
 		return parallelismScores;
 	}
 
-	private List<Float> eventBasedSym(PlotDirectedSparseGraph graph) {
-		logger.info("Not sufficient number of FU present in any of the sub graphs, fall back on event based symmetry analysis");
-		List<Float> eventSyms =  new ArrayList<>();
-		HashMap<String, List<String>> agentEventMap = new HashMap<>();
-		// for each character in the story
-		for (Vertex root : graph.getRoots()) {
-			agentEventMap.put(root.toString(), new ArrayList<>());
-
-			//  Leave commented section in, so detailed analysis of symmetry over individual event types can be switched back on if need be
-//			List<String> emotionSequences = new ArrayList<>();
-//			List<String> intentionSequences = new ArrayList<>();
-//			List<String> beliefSequences = new ArrayList<>();
-//			List<String> actionSequences = new ArrayList<>();
-//			List<String> mentalSequences = new ArrayList<>();
-
-			// get the character's story graph
-			for(Vertex v : graph.getCharSubgraph(root)) {
-				agentEventMap.get(root.toString()).add(TermParser.removeAnnots(v.getLabel()));
-//				// get the emotions of the character
-//				if (!v.getEmotions().isEmpty()) {
-//					for (String emotion : v.getEmotions()) {
-//						emotionSequences.add(emotion);
-//						mentalSequences.add(emotion);
-//					}
-//				}
-//				// get the intentions of character
-//				if (!v.getIntention().isEmpty()) {
-//					intentionSequences.add(v.getIntention());
-//					mentalSequences.add(v.getIntention());
-//				}
-//				// get the intentions of character
-//				if (v.getType() == Type.PERCEPT) {
-//					beliefSequences.add(TermParser.removeAnnots(v.getLabel()));
-//					mentalSequences.add(TermParser.removeAnnots(v.getLabel()));
-//				}
-//				// get the actions of the character
-//				if(v.getType() == Type.ACTION || v.getType() == Type.SPEECHACT) {
-//					actionSequences.add(v.getFunctor());
-//				}
-			}
-
-			logger.fine("\n\nCharacter: " + root.toString() + ": ");
-
-			// run the analysis on the different states
-//			double emotionSym = SymmetryAnalyzer.computeSymmetry(emotionSequences);
-//			double intentionSym = SymmetryAnalyzer.computeSymmetry(intentionSequences);
-//			double beliefSym = SymmetryAnalyzer.computeSymmetry(beliefSequences);
-//			double actionSym = SymmetryAnalyzer.computeSymmetry(actionSequences);
-//			double mentalSym = SymmetryAnalyzer.computeSymmetry(mentalSequences);
-			double allSym = SymmetryAnalyzer.computeSymmetry(agentEventMap.get(root.toString()));
-
-			logger.fine("\nSequences:" +
-//						"\n Emotions: " + emotionSequences +
-//						"\n Intentions: " + intentionSequences +
-//						"\n Beliefs: " + beliefSequences +
-//						"\n All Mentall: " + mentalSequences +
-//						"\n Actions: " + actionSequences +
-						"\n All Events: " + agentEventMap.get(root.toString())
-						);
-			logger.fine("\n");
-			logger.fine("\nVertex Symmetry Anlysis: \n "
-//						+ emotionSym + "(Emotions),\n "
-//						+ intentionSym + "(Intentions),\n "
-//						+ beliefSym + "(Beliefs),\n "
-//						+ actionSym + "(Actions), \n "
-//						+ "----> Average 4-part vertex symmetry: "+ (emotionSym + intentionSym + beliefSym + actionSym) / 4f + "\n "
-//						+ mentalSym + "(all mental), \n "
-//						+ actionSym + "(Actions), \n "
-//						+ "----> Average 2-part vertex symmetry: " + (mentalSym + actionSym) / 2f + "\n "
-						+ allSym + "(all events)"
-					);
-
-			eventSyms.add((float) allSym);
+	private List<Float> symmetry(HashMap<String, List<String>> agentSequenceMap) {
+		List<Float> symmetryScores =  new ArrayList<>();
+		for (String agent : agentSequenceMap.keySet()) {
+			Float fuSym = SymmetryAnalyzer.computeSymmetry(agentSequenceMap.get(agent));
+			logger.info("      normalized FU similarity (" + agent + "): " + fuSym);
+			symmetryScores.add(fuSym);
 		}
-
-		return eventSyms;
-	}
-
-	private List<Float>  eventBasedPara(PlotDirectedSparseGraph graph) {
-		HashMap<String, List<String>> agentEventMap = new HashMap<>();
-		// for each character in the story
-		for (Vertex root : graph.getRoots()) {
-			agentEventMap.put(root.toString(), new ArrayList<>());
-			// get the character's story graph
-			for(Vertex v : graph.getCharSubgraph(root)) {
-				agentEventMap.get(root.toString()).add(TermParser.removeAnnots(v.getLabel()));
-			}
-		}
-
-		// find all possible pairings for parallelism comparison
-		Set<Set<String>> pairs = Sets.combinations(agentEventMap.keySet(), 2);
-
-		List<Float> parallelismScores =  new ArrayList<>();
-		for(Set<String> pairSet : pairs) {
-			ArrayList<String> pair = new ArrayList<>(pairSet);
-			String agent1 = pair.get(0);
-			String agent2 = pair.get(1);
-			Float fuPara = SymmetryAnalyzer.computeParallelism(agentEventMap.get(agent1), agentEventMap.get(agent2));
-			logger.info("      normalized event parallelism (" + agent1 + ", " + agent2 +  "): " + fuPara);
-			parallelismScores.add(fuPara);
-		}
-
-		return parallelismScores;
+		return symmetryScores;
 	}
 
 	/**
@@ -381,5 +304,78 @@ public class Tellability {
 
 		logger.info("Overall tellability: " + tellability);
 		return tellability;
+	}
+
+	@SuppressWarnings("unused")		// left to be able to determine symmetry statistics  of split into event types, should the need arise
+	private List<Float> eventBasedSymmetry(HashMap<String, List<String>> agentEventMap, PlotDirectedSparseGraph graph) {
+		List<Float> eventSyms =  new ArrayList<>();
+
+		for (Vertex agent : graph.getRoots()) {
+			List<String> emotionSequences = new ArrayList<>();
+			List<String> intentionSequences = new ArrayList<>();
+			List<String> beliefSequences = new ArrayList<>();
+			List<String> actionSequences = new ArrayList<>();
+			List<String> mentalSequences = new ArrayList<>();
+
+			// get the character's story graph
+			for(Vertex v : graph.getCharSubgraph(agent)) {
+				// get the emotions of the character
+				if (!v.getEmotions().isEmpty()) {
+					for (String emotion : v.getEmotions()) {
+						emotionSequences.add(emotion);
+						mentalSequences.add(emotion);
+					}
+				}
+				// get the intentions of character
+				if (!v.getIntention().isEmpty()) {
+					intentionSequences.add(v.getIntention());
+					mentalSequences.add(v.getIntention());
+				}
+				// get the intentions of character
+				if (v.getType() == Type.PERCEPT) {
+					beliefSequences.add(TermParser.removeAnnots(v.getLabel()));
+					mentalSequences.add(TermParser.removeAnnots(v.getLabel()));
+				}
+				// get the actions of the character
+				if(v.getType() == Type.ACTION || v.getType() == Type.SPEECHACT) {
+					actionSequences.add(v.getFunctor());
+				}
+			}
+
+
+			// run the analysis on the different states
+			float emotionSym = SymmetryAnalyzer.computeSymmetry(emotionSequences);
+			float intentionSym = SymmetryAnalyzer.computeSymmetry(intentionSequences);
+			float beliefSym = SymmetryAnalyzer.computeSymmetry(beliefSequences);
+			float actionSym = SymmetryAnalyzer.computeSymmetry(actionSequences);
+			float mentalSym = SymmetryAnalyzer.computeSymmetry(mentalSequences);
+			float allSym = SymmetryAnalyzer.computeSymmetry(agentEventMap.get(agent.toString()));
+
+
+			logger.fine("\n\nCharacter: " + agent + ": ");
+			logger.fine("\nSequences:" +
+						"\n Emotions: " + emotionSequences +
+						"\n Intentions: " + intentionSequences +
+						"\n Beliefs: " + beliefSequences +
+						"\n All Mentall: " + mentalSequences +
+						"\n Actions: " + actionSequences +
+						"\n All Events: " + agentEventMap.get(agent)
+						);
+			logger.fine("\n");
+			logger.fine("\nVertex Symmetry Anlysis: \n "
+						+ emotionSym + "(Emotions),\n "
+						+ intentionSym + "(Intentions),\n "
+						+ beliefSym + "(Beliefs),\n "
+						+ actionSym + "(Actions), \n "
+						+ "----> Average 4-part vertex symmetry: "+ (emotionSym + intentionSym + beliefSym + actionSym) / 4f + "\n "
+						+ mentalSym + "(all mental), \n "
+						+ actionSym + "(Actions), \n "
+						+ "----> Average 2-part vertex symmetry: " + (mentalSym + actionSym) / 2f + "\n "
+						+ allSym + "(all events)"
+					);
+			eventSyms.add(allSym);
+		}
+
+		return eventSyms;
 	}
 }
