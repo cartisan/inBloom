@@ -1,6 +1,7 @@
 package inBloom.helper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,7 +22,7 @@ public class SymmetryAnalyzer {
      * @param sequence a list of strings encoding the sequence to be analyzed
      * @return the combined, normalized symmetry score of sequence
      */
-    public static Float compute(List<String> sequence) {
+    public static Float computeSymmetry(List<String> sequence) {
     	Map<List<String>, Integer> translational = computeTranslational(sequence);
     	Map<List<String>, Integer> reflectional = computeReflectional(sequence);
 

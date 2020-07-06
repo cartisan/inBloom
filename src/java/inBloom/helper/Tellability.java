@@ -11,12 +11,13 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Sets;
+
 import inBloom.framing.ConnectivityGraph;
 import inBloom.graph.CountingVisitor;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
 import inBloom.graph.Vertex;
-import inBloom.graph.Vertex.Type;
 import inBloom.graph.isomorphism.FunctionalUnit;
 import inBloom.graph.isomorphism.FunctionalUnit.Instance;
 import inBloom.graph.isomorphism.FunctionalUnits;
@@ -26,6 +27,7 @@ import inBloom.graph.visitor.VertexMergingPPVisitor;
 
 public class Tellability {
 	public static int GRAPH_MATCHING_TOLERANCE = 1;
+	public static int SIMILARITY_FU_THRESHOLD = 5;
 
 	protected static Logger logger = Logger.getLogger(Tellability.class.getName());
 
@@ -169,9 +171,29 @@ public class Tellability {
 
 
 	/**
-	 * Calculates the story's overall symmetry based on the characters' beliefs, intentions, actions and emotions
+	 * Calculates the story's overall symmetry based on FU or if none, the characters' beliefs, intentions, actions 
+	 * and emotion events.
 	 */
 	private void detectSymmetry(PlotDirectedSparseGraph graph) {
+		HashMap<String, List<String>> agentFuOrderMap = this.extractOrderedFUSequences();
+
+		boolean sufficientFuPresent = agentFuOrderMap.entrySet().stream().map( entry -> entry.getValue().size() )
+																		 .mapToInt(size -> size)
+																		 .max().getAsInt() >= SIMILARITY_FU_THRESHOLD;
+
+		List<Float> similarityScores =  new ArrayList<>();
+		if (sufficientFuPresent) {
+			similarityScores.addAll(this.fuBasedSym(agentFuOrderMap));
+		} else {
+			similarityScores.addAll(this.eventBasedSym(graph));
+		}
+
+		// overall symmetry is symmetry of all characters (normalisation to number of characters happens in the compute method)
+		this.symmetry = similarityScores.stream().reduce((f1,f2) -> f1 + f2).get();
+		return;
+	}
+
+	private HashMap<String, List<String>> extractOrderedFUSequences() {
 		HashMap<String, Collection<Instance>> fuSequences = new HashMap<>();
 		for(Instance i : this.fUinstances) {
 			Collection<Instance> agList = fuSequences.getOrDefault(i.getFirstAgent(), new ArrayList<>());
@@ -192,88 +214,103 @@ public class Tellability {
 														  .collect(Collectors.toList()));
 		}
 
-		logger.info("FU order (hen): " + agentFuOrderMap.get("hen"));
-		logger.info("FU order (dog): " + agentFuOrderMap.get("dog"));
-		logger.info("FU order (pig): " + agentFuOrderMap.get("pig"));
-		logger.info("FU order (cow): " + agentFuOrderMap.get("cow"));
-		logger.info("\n");
+		// translate FU sequences to string based representation
+		HashMap<String, List<String>> agentFuStringMap =
+				(HashMap<String, List<String>>) agentFuOrderMap.entrySet().stream()
+						  .collect(Collectors.toMap(
+									  entry -> entry.getKey(),
+									  entry -> entry.getValue().stream().map(elem -> elem.toString()).collect(Collectors.toList()))
+								  );
 
-		List<Float> fuSyms =  new ArrayList<>();
-		for (String agent : fuSequences.keySet()) {
-			Float fuSym = SymmetryAnalyzer.compute(agentFuOrderMap.get(agent).stream().map(i -> i.toString()).collect(Collectors.toList()));
+		return agentFuStringMap;
+	}
+
+	private List<Float> fuBasedSym(HashMap<String, List<String>> agentFuOrderMap) {
+		List<Float> similarityScores =  new ArrayList<>();
+		for (String agent : agentFuOrderMap.keySet()) {
+			Float fuSym = SymmetryAnalyzer.computeSymmetry(agentFuOrderMap.get(agent));
 			logger.info("normalized FU similarity (" + agent + "): " + fuSym);
-			fuSyms.add(fuSym);
+			similarityScores.add(fuSym);
 		}
+		return similarityScores;
+	}
 
-		// get the actions, emotions, intentions and beliefs of a character
-		double[] eventSyms = new double[graph.getRoots().size()];
-
-		HashMap<String, Collection<Vertex>> agentEventMap = new HashMap<>();
+	private List<Float> eventBasedSym(PlotDirectedSparseGraph graph) {
+		logger.info("Not sufficient number of FU present in any of the sub graphs, fall back on event based symmetry analysis");
+		List<Float> eventSyms =  new ArrayList<>();
+		HashMap<String, List<String>> agentEventMap = new HashMap<>();
 		// for each character in the story
 		for (Vertex root : graph.getRoots()) {
 			agentEventMap.put(root.toString(), new ArrayList<>());
 
-			List<String> emotionSequences = new ArrayList<>();
-			List<String> intentionSequences = new ArrayList<>();
-			List<String> beliefSequences = new ArrayList<>();
-			List<String> actionSequences = new ArrayList<>();
-
-			int charCounter = 0;
+			//  Leave commented section in, so detailed analysis of symmetry over individual event types can be switched back on if need be
+//			List<String> emotionSequences = new ArrayList<>();
+//			List<String> intentionSequences = new ArrayList<>();
+//			List<String> beliefSequences = new ArrayList<>();
+//			List<String> actionSequences = new ArrayList<>();
+//			List<String> mentalSequences = new ArrayList<>();
 
 			// get the character's story graph
 			for(Vertex v : graph.getCharSubgraph(root)) {
-				agentEventMap.get(root.toString()).add(v);
-
-				// get the emotions of the character
-				if (!v.getEmotions().isEmpty()) {
-					for (String emotion : v.getEmotions())
-					{
-						emotionSequences.add(emotion);
-					}
-				}
-
-				// get the intentions of character
-				if (!v.getIntention().isEmpty()) {
-					intentionSequences.add(v.getIntention());
-				}
-
-				// get the intentions of character
-				if (v.getType() == Type.PERCEPT) {
-					beliefSequences.add(v.toString());
-				}
-
-				// get the actions of the character
-				if(v.getType() == Type.ACTION || v.getType() == Type.SPEECHACT) {
-					actionSequences.add(v.getFunctor());
-				}
+				agentEventMap.get(root.toString()).add(TermParser.removeAnnots(v.getLabel()));
+//				// get the emotions of the character
+//				if (!v.getEmotions().isEmpty()) {
+//					for (String emotion : v.getEmotions()) {
+//						emotionSequences.add(emotion);
+//						mentalSequences.add(emotion);
+//					}
+//				}
+//				// get the intentions of character
+//				if (!v.getIntention().isEmpty()) {
+//					intentionSequences.add(v.getIntention());
+//					mentalSequences.add(v.getIntention());
+//				}
+//				// get the intentions of character
+//				if (v.getType() == Type.PERCEPT) {
+//					beliefSequences.add(TermParser.removeAnnots(v.getLabel()));
+//					mentalSequences.add(TermParser.removeAnnots(v.getLabel()));
+//				}
+//				// get the actions of the character
+//				if(v.getType() == Type.ACTION || v.getType() == Type.SPEECHACT) {
+//					actionSequences.add(v.getFunctor());
+//				}
 			}
 
-			logger.info("\n\nCharacter: " + root.toString() + ": ");
+			logger.fine("\n\nCharacter: " + root.toString() + ": ");
 
 			// run the analysis on the different states
-			double emotionSym = SymmetryAnalyzer.compute(emotionSequences);
-			double intentionSym = SymmetryAnalyzer.compute(intentionSequences);
-			double beliefSym = SymmetryAnalyzer.compute(beliefSequences);
-			double actionSym = SymmetryAnalyzer.compute(actionSequences);
+//			double emotionSym = SymmetryAnalyzer.computeSymmetry(emotionSequences);
+//			double intentionSym = SymmetryAnalyzer.computeSymmetry(intentionSequences);
+//			double beliefSym = SymmetryAnalyzer.computeSymmetry(beliefSequences);
+//			double actionSym = SymmetryAnalyzer.computeSymmetry(actionSequences);
+//			double mentalSym = SymmetryAnalyzer.computeSymmetry(mentalSequences);
+			double allSym = SymmetryAnalyzer.computeSymmetry(agentEventMap.get(root.toString()));
 
-			// take overall mean over the different states of the character
-			eventSyms[charCounter] = (emotionSym + intentionSym + beliefSym + actionSym) / 4;
+			logger.fine("\nSequences:" +
+//						"\n Emotions: " + emotionSequences +
+//						"\n Intentions: " + intentionSequences +
+//						"\n Beliefs: " + beliefSequences +
+//						"\n All Mentall: " + mentalSequences +
+//						"\n Actions: " + actionSequences +
+						"\n All Events: " + agentEventMap.get(root.toString())
+						);
+			logger.fine("\n");
+			logger.fine("\nVertex Symmetry Anlysis: \n "
+//						+ emotionSym + "(Emotions),\n "
+//						+ intentionSym + "(Intentions),\n "
+//						+ beliefSym + "(Beliefs),\n "
+//						+ actionSym + "(Actions), \n "
+//						+ "----> Average 4-part vertex symmetry: "+ (emotionSym + intentionSym + beliefSym + actionSym) / 4f + "\n "
+//						+ mentalSym + "(all mental), \n "
+//						+ actionSym + "(Actions), \n "
+//						+ "----> Average 2-part vertex symmetry: " + (mentalSym + actionSym) / 2f + "\n "
+						+ allSym + "(all events)"
+					);
 
-			logger.info("\nSequences:" +
-					"\n Emotions: " + emotionSequences +
-					"\n Intentions: " + intentionSequences +
-					"\n Beliefs: " + beliefSequences +
-					"\n Actions: " + actionSequences);
-			logger.info("\nAverage Vertex Symmetry: "+ eventSyms[charCounter] +
-					"\nWith:\n " + emotionSym + "(Emotions),\n " +
-					intentionSym + "(Intentions),\n " +
-					beliefSym + "(Beliefs),\n " +
-					actionSym + "(Actions)");
-			charCounter++;
+			eventSyms.add((float) allSym);
 		}
 
-		// overall symmetry (normalisation to number of characters happens in the compute method)
-		this.symmetry = fuSyms.stream().reduce((f1,f2) -> f1 + f2).get();
+		return eventSyms;
 	}
 
 	/**
