@@ -172,12 +172,12 @@ public class SymmetryAnalyzerTest {
 	}
 
 	@Test
-	public void testCompute() {
+	public void testComputeSymmetry() {
 		this.fillBlockSequnces(6);
         List<Float> blockSymValues = new ArrayList<>();
 
         for (int i = 0; i < this.blockSequences.size(); i++) {
-        	blockSymValues.add(SymmetryAnalyzer.compute(this.blockSequences.get(i)));
+        	blockSymValues.add(SymmetryAnalyzer.computeSymmetry(this.blockSequences.get(i)));
         }
 
         // [A, A, B, B, A, A] > [A, A, A, A, B, B]
@@ -199,5 +199,27 @@ public class SymmetryAnalyzerTest {
 		assertEquals(0.6666667, blockSymValues.get(3), 0.001);		// Sequence: [A, A, A, A, B, B]
 		assertEquals(0.75, blockSymValues.get(4), 0.001);			// Sequence: [A, A, A, A, A, B]
 		assertEquals(1.0, blockSymValues.get(5), 0.001);			// Sequence: [A, A, A, A, A, A]
+	}
+
+
+	@Test
+	public void testComputeParallelism() {
+		List<String> l1 = Arrays.asList("A", "B", "C", "E");
+		List<String> l2 = Arrays.asList();
+		assertEquals(0f, SymmetryAnalyzer.computeParallelism(l1, l2), 0.001);
+		assertEquals(1f, SymmetryAnalyzer.computeParallelism(l1, l1), 0.001);
+
+		l2 = Arrays.asList("B");
+		assertEquals(1f, SymmetryAnalyzer.computeParallelism(l1, l2), 0.001);	// we divide overlap length by the length of the shorter of the two sequences
+		assertEquals(1f, SymmetryAnalyzer.computeParallelism(l2, l1), 0.001);
+
+		l2 = Arrays.asList("B", "C");
+		assertEquals(1f, SymmetryAnalyzer.computeParallelism(l1, l2), 0.001);	// we divide overlap length by the length of the shorter of the two sequences
+
+		l2 = Arrays.asList("B", "C", "D");
+		assertEquals(2/3f, SymmetryAnalyzer.computeParallelism(l1, l2), 0.001);
+
+		l2 = Arrays.asList("B", "C", "D", "E");
+		assertEquals(1/2f, SymmetryAnalyzer.computeParallelism(l1, l2), 0.001);	// no interspersing allowed
 	}
 }

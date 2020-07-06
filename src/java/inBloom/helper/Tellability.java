@@ -184,8 +184,10 @@ public class Tellability {
 		List<Float> similarityScores =  new ArrayList<>();
 		if (sufficientFuPresent) {
 			similarityScores.addAll(this.fuBasedSym(agentFuOrderMap));
+			similarityScores.addAll(this.fuBasedPara(agentFuOrderMap));
 		} else {
 			similarityScores.addAll(this.eventBasedSym(graph));
+			similarityScores.addAll(this.eventBasedPara(graph));
 		}
 
 		// overall symmetry is symmetry of all characters (normalisation to number of characters happens in the compute method)
@@ -233,6 +235,23 @@ public class Tellability {
 			similarityScores.add(fuSym);
 		}
 		return similarityScores;
+	}
+
+	private List<Float> fuBasedPara(HashMap<String, List<String>> agentFuOrderMap) {
+		// find all possible pairings for parallelism comparison
+		Set<Set<String>> pairs = Sets.combinations(agentFuOrderMap.keySet(), 2);
+
+		List<Float> parallelismScores =  new ArrayList<>();
+		for(Set<String> pairSet : pairs) {
+			ArrayList<String> pair = new ArrayList<>(pairSet);
+			String agent1 = pair.get(0);
+			String agent2 = pair.get(1);
+			Float fuPara = SymmetryAnalyzer.computeParallelism(agentFuOrderMap.get(agent1), agentFuOrderMap.get(agent2));
+			logger.info("     normalized FU parallelism (" + agent1 + ", " + agent2 +  "): " + fuPara);
+			parallelismScores.add(fuPara);
+		}
+
+		return parallelismScores;
 	}
 
 	private List<Float> eventBasedSym(PlotDirectedSparseGraph graph) {
@@ -313,6 +332,33 @@ public class Tellability {
 		return eventSyms;
 	}
 
+	private List<Float>  eventBasedPara(PlotDirectedSparseGraph graph) {
+		HashMap<String, List<String>> agentEventMap = new HashMap<>();
+		// for each character in the story
+		for (Vertex root : graph.getRoots()) {
+			agentEventMap.put(root.toString(), new ArrayList<>());
+			// get the character's story graph
+			for(Vertex v : graph.getCharSubgraph(root)) {
+				agentEventMap.get(root.toString()).add(TermParser.removeAnnots(v.getLabel()));
+			}
+		}
+
+		// find all possible pairings for parallelism comparison
+		Set<Set<String>> pairs = Sets.combinations(agentEventMap.keySet(), 2);
+
+		List<Float> parallelismScores =  new ArrayList<>();
+		for(Set<String> pairSet : pairs) {
+			ArrayList<String> pair = new ArrayList<>(pairSet);
+			String agent1 = pair.get(0);
+			String agent2 = pair.get(1);
+			Float fuPara = SymmetryAnalyzer.computeParallelism(agentEventMap.get(agent1), agentEventMap.get(agent2));
+			logger.info("      normalized event parallelism (" + agent1 + ", " + agent2 +  "): " + fuPara);
+			parallelismScores.add(fuPara);
+		}
+
+		return parallelismScores;
+	}
+
 	/**
 	 * Computes the overall tellability score, by normalizing all features into a range of (0,1) and adding them,
 	 * which amounts to assigning each feature equal weight.
@@ -326,11 +372,11 @@ public class Tellability {
 
 		logger.info("normalized polyvalence: " + (double) this.numPolyvalentVertices / this.numAllVertices);
 		logger.info("normalized suspense: " + (double) this.suspense / this.plotLength);
-		logger.info("normalized symmetry: " + this.symmetry / this.charNum);
+		logger.info("normalized symmetry: " + this.symmetry);
 
 		double tellability = (double) this.numPolyvalentVertices / this.numAllVertices +
 							 (double) this.suspense / this.plotLength +
-							 this.symmetry / this.charNum;					// normalize symmetry by the number of agents in the story
+							 this.symmetry;
 		tellability /= 3;
 
 		logger.info("Overall tellability: " + tellability);

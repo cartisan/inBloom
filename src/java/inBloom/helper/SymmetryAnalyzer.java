@@ -17,6 +17,33 @@ import jason.util.Pair;
 public class SymmetryAnalyzer {
     static Logger logger = Logger.getLogger(SymmetryAnalyzer.class.getName());
 
+
+	public static Float computeParallelism(List<String> list1, List<String> list2) {
+		List<String> shortList = list1.size() <= list2.size() ? list1 : list2;
+		List<String> longList = list1.size() > list2.size() ? list1 : list2;
+
+		if(shortList.size() == 0) {
+			return 0f;
+		}
+
+		List<String> longestCommonSubList = new ArrayList<>();
+
+		// loop over the shorter sequence and check if any of its subsequences is contained in the longer sequence
+		for (int start = 0; start < shortList.size(); start++) {
+			for (int end = shortList.size(); end > start; end--) {
+				List<String> subList = shortList.subList(start, end);
+				if(Collections.indexOfSubList(longList, subList) != -1) {
+					longestCommonSubList = subList.size() > longestCommonSubList.size() ? subList : longestCommonSubList;
+					break;
+				}
+			}
+		}
+
+		logger.fine("longest common sub-sequence: " + longestCommonSubList);
+		logger.fine("shortlist size: " + shortList.size());
+		return longestCommonSubList.size() / (float) shortList.size();
+	}
+
     /**
      * Computes the overall symmetry score for a sequence, represented by string elements in a list.
      * @param sequence a list of strings encoding the sequence to be analyzed
