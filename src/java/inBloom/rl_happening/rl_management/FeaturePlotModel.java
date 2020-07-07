@@ -14,8 +14,8 @@ import inBloom.storyworld.HappeningDirector;
 import inBloom.storyworld.Character;
 
 /**
- * This is special type of PlotModel that creates and manages a set of features that can describe
- * a state of the model
+ * This is special type of PlotModel that additionally creates and manages a set of features that can
+ * describe a state of the model
  * 
  * @author Julia Wippermann
  * @version 3.2.20
@@ -50,8 +50,6 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 										   "moderately",
 										   "fully"};
 	
-	
-	// reflections.getSubTypesOf(aClazz))
 	
 	// How to get the name of a mood:
 	// character.getMood().getFullName()

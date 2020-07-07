@@ -118,6 +118,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		double currTellability = tellability.compute();
 		this.log(" Current Tellability: " + currTellability);
 		
+		
 		// Save tellability, graph and agent's personality if it was better than the best before
 		/*if(currTellability > this.bestTellability) {
 			this.bestTellability = currTellability;
@@ -167,6 +168,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 //		return null;
 	}
 
+	// initial = initial for each run = each episode = each plot
 	@Override
 	protected ReflectResult createInitialReflectResult() {
 		
@@ -217,7 +219,6 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	protected void finish(EngageResult erOriginal) {
 		EngageResult er = (EngageResult) erOriginal;
 		// Print results
-		this.log("This is the end.");
 		// flush and close handled by super implementation
 		super.finish(er);
 	}
