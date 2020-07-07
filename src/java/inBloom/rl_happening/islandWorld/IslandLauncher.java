@@ -32,9 +32,7 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 	
 	public static void main(String[] args) throws JasonException {		
 		logger.info("Starting up from Launcher");
-		
-		System.out.println("..........\n\n\n\n\n\n\n\n\nFUUUUUUUUUUUCK\n\n\n\n\n\n\n\n\n\n........");
-		
+				
 		PlotControlsLauncher.runner = new IslandLauncher();
 		
 		LauncherAgent robinson = new LauncherAgent("robinson",
