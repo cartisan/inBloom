@@ -112,6 +112,10 @@ public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happe
 		return false;
 	}
 	
+	public String toString() {
+		return this.getClass().getSimpleName();
+	}
+	
 }
 
 
