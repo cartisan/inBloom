@@ -149,14 +149,15 @@ public class Tellability {
 		}
 
 		this.numFunctionalUnits = unitInstances;
-		this.numPolyvalentVertices = polyvalentVertices;
-
 		String foundUnits = this.functionalUnitCount.entrySet().stream().filter(entry -> entry.getValue() > 0)
 													.map(entry -> entry.getKey().getName() + ": " + entry.getValue())
 													.sorted()
 													.reduce( (a,b) -> a = a + ", " + b)
 													.orElse("<none>");
 		logger.info("-> Found units: " + foundUnits);
+
+		this.numPolyvalentVertices = polyvalentVertices;
+		logger.info("Number of polyvalent vertices: " + this.numPolyvalentVertices);
 
 		// Mark polyvalent vertices with asterisk
 		for(Vertex v : polyvalentVertexSet) {

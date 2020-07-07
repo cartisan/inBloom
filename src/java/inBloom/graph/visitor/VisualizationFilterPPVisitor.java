@@ -59,13 +59,13 @@ public class VisualizationFilterPPVisitor extends PlotGraphVisitor {
 		 *	- has relevant edges attached to it										[for FU]
 		 *  - has at least one emotion												[for FU]
 		 */
-		if (! (this.isRelevantMood(vertex) | this.isWishObligation(vertex) | this.hasEdges(vertex) | vertex.hasEmotion()) ) {
+		if (! (this.isRelevantMood(vertex) | this.isWishObligation(vertex) | this.hasRelevantEdges(vertex) | vertex.hasEmotion()) ) {
 			this.graph.removeVertexAndPatchGraphAuto(this.currentRoot, vertex);
 			return;
 		}
 	}
 
-	private boolean hasEdges(Vertex vertex) {
+	private boolean hasRelevantEdges(Vertex vertex) {
 		// lets ignore initial beliefs for now, to make graphs less cluttered
 		if (vertex.getStep() == 0) {
 				return false;
@@ -73,7 +73,7 @@ public class VisualizationFilterPPVisitor extends PlotGraphVisitor {
 		return vertex.getIncidentEdges().stream().anyMatch(e -> e.getType().equals(Edge.Type.MOTIVATION) |
 //																e.getType().equals(Edge.Type.TERMINATION)|
 																e.getType().equals(Edge.Type.ACTUALIZATION)|
-																e.getType().equals(Edge.Type.CAUSALITY) |
+//																e.getType().equals(Edge.Type.CAUSALITY) |
 																e.getType().equals(Edge.Type.EQUIVALENCE));
 	}
 

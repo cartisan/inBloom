@@ -307,7 +307,7 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 	 * @return whether tradeoff was found
 	 */
 	private boolean handleIndirectRemoval(Vertex vertex, String cause) {
-		// Look for source
+		// Look for vertex noted in cause annotation
 		Vertex causeV = null;
 		for(Vertex v : this.eventList) {
 			if(TermParser.removeAnnots(v.getLabel()).equals(cause) ||
@@ -322,37 +322,33 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 			return false;
 		}
 
-		String target;
-		// check if vertex is -wish(X)/obligation(X) removal --> something actualized an intention...
+		// check if vertex is -wish(X)/-obligation(X) --> something actualized an intention, then we need an A edge from !X to the cause of this vertex
 		if(vertex.getWithoutAnnotation().substring(1).startsWith("wish") || vertex.getWithoutAnnotation().substring(1).startsWith("obligation")) {
+			// source of edge should be intention !X, since we are -wish(X)
+			String source = vertex.getWithoutAnnotation().substring(1).split("wish|obligation")[1];
+			source = "!" + source.substring(1, source.length() - 1);
 
-			if (causeV.getSource().equals("self")) {
-				// the cause was a mental note, not a perception of a happening or other agent's action
-				// only perceptions (of happenings or actions) can actualize an intention
-				return false;
-			}
-
-			//... target should be intention !X
-			target = vertex.getWithoutAnnotation().substring(1).split("wish|obligation")[1];
-			target = "!" + target.substring(1, target.length() - 1);
-
-			// Let's find the corresponding addition of this mental note.
-			for(Vertex v : this.eventList) {
-				if(v.getWithoutAnnotation().equals(target)) {
+			// Let's find the corresponding addition of this mental note
+			for(Vertex sourceV : this.eventList) {
+				if(sourceV.getWithoutAnnotation().equals(source)) {
 					// Great, found the intention! See if an ACTU edge already exists, we don't want duplication
-					SetView<Edge> inter = Sets.intersection(new HashSet<>(this.graph.getIncidentEdges(v)),
+					SetView<Edge> inter = Sets.intersection(new HashSet<>(this.graph.getIncidentEdges(sourceV)),
 									  						new HashSet<>(this.graph.getIncidentEdges(causeV)));
 
 					if (!inter.stream().anyMatch(e -> e.getType() == Edge.Type.ACTUALIZATION)) {
-						this.graph.addEdge(new Edge(Edge.Type.ACTUALIZATION), v, causeV);
+						this.graph.addEdge(new Edge(Edge.Type.ACTUALIZATION), sourceV, causeV);
 						return true;
 					}
 				}
 			}
 
-		// vertex is regular belief removal --> target is mental note
+		// vertex is regular belief removal -X --> we need a T edge from the cause of this vertex to +X
 		} else {
-			target = vertex.getWithoutAnnotation().substring(1);
+			// first, add causality edge. We are not interested in them for -wish/-obligations, but this case has been eliminated above
+			this.graph.addEdge(new Edge(Edge.Type.CAUSALITY), causeV, vertex);
+
+			// then, see if we can create a termination edge between cause and target +X
+			String target = vertex.getWithoutAnnotation().substring(1);
 
 			// Let's find the corresponding addition of this mental note.
 			for(Vertex targetV : this.eventList) {
