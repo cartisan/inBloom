@@ -274,7 +274,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		
 		while(rr.shouldContinue) {
 			++currentCycle;
-			log("Running cycle: " + currentCycle);
+			log("\nRunning cycle: " + currentCycle);
 			er = engage(rr);
 			stories.add(er.getPlotGraph());
 			if (SHOW_FULL_GRAPH){
