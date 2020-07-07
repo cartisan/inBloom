@@ -58,7 +58,7 @@ public class RobinsonCycle extends ReinforcementLearningCycle {
 	}
 	
 	public HappeningDirector getHappeningDirector() {
-		AutomatedHappeningDirector hapDir = HappeningManager.createHappeningDirector(this.rlApplication);
+		AutomatedHappeningDirector hapDir = HappeningManager.createHappeningDirector(this.sarsa);
 		//HappeningManager.scheduleHappenings(hapDir);
 		return hapDir;
 	}
