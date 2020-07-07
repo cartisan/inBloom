@@ -3,23 +3,17 @@
  */
 package inBloom.rl_happening.rl_management;
 
-import java.util.HashSet;
 import java.util.List;
-
-import org.jfree.util.Log;
 
 import inBloom.LauncherAgent;
 import inBloom.PlotEnvironment;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
-import inBloom.ERcycle.CounterfactualityEngageResult;
 import inBloom.ERcycle.EngageResult;
 import inBloom.ERcycle.PlotCycle;
 import inBloom.ERcycle.ReflectResult;
-import inBloom.ERcycle.PlotCycle.Cycle;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
-import inBloom.helper.Counterfactuality;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
 import jason.asSemantics.Personality;

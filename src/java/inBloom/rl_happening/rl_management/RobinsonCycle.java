@@ -4,23 +4,13 @@
 package inBloom.rl_happening.rl_management;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import inBloom.LauncherAgent;
 import inBloom.PlotLauncher;
-import inBloom.PlotModel;
-import inBloom.ERcycle.ReflectResult;
-import inBloom.graph.PlotDirectedSparseGraph;
-import inBloom.helper.MoodMapper;
 import inBloom.rl_happening.islandWorld.IslandLauncher;
 import inBloom.rl_happening.islandWorld.IslandModel;
-import inBloom.stories.little_red_hen.FarmModel;
-import inBloom.stories.little_red_hen.RedHenHappeningCycle;
-import inBloom.stories.little_red_hen.RedHenLauncher;
 import inBloom.storyworld.HappeningDirector;
-import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.asSemantics.Personality;
 
 /**
@@ -45,7 +35,6 @@ public class RobinsonCycle extends ReinforcementLearningCycle {
 	 */
 	public RobinsonCycle() {
 		super("islandAgent", agentNames, agentPersonalities);
-		
 	}
 	
 	public static void main(String[] args) {
