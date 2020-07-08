@@ -687,4 +687,19 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 				   							   		   .collect(Collectors.groupingBy(e -> e.getType(), Collectors.counting()));
 		return thisEdges.equals(otherEdges);
 	}
+
+	/**
+	 * Removes all vertices that follow lastV in its subgraph from this graph, but keeps lastV.
+	 * @param lastV
+	 */
+	public void removeBelow(Vertex lastV) {
+		// first recursively traverse subgraph till the end
+		Vertex next = this.getCharSuccessor(lastV);
+		if (null != next) {
+			this.removeBelow(next);
+
+			// after reaching the end, start deleting on the way back up the recursion
+			this.removeVertex(next);
+		}
+	}
 }

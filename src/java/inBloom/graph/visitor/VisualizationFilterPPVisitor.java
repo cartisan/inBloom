@@ -1,11 +1,16 @@
 package inBloom.graph.visitor;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import jason.asSemantics.Mood;
+import jason.util.Pair;
 
+import inBloom.PlotLauncher;
 import inBloom.graph.Edge;
 import inBloom.graph.Edge.Type;
 import inBloom.graph.PlotDirectedSparseGraph;
@@ -23,6 +28,7 @@ public class VisualizationFilterPPVisitor extends PlotGraphVisitor {
 	protected static Logger logger = Logger.getLogger(VisualizationFilterPPVisitor.class.getName());
 
 	private Vertex currentRoot;
+	private Map<String, LinkedList<Vertex>> agentActionMap = new HashMap<>();
 
 	@Override
 	public PlotDirectedSparseGraph apply(PlotDirectedSparseGraph graph) {
@@ -35,6 +41,7 @@ public class VisualizationFilterPPVisitor extends PlotGraphVisitor {
 	@Override
 	public void visitRoot(Vertex vertex) {
 		this.currentRoot = vertex;
+		this.agentActionMap.put(vertex.toString(), new LinkedList<Vertex>());
 	}
 
 	@Override
@@ -44,6 +51,7 @@ public class VisualizationFilterPPVisitor extends PlotGraphVisitor {
 
 	@Override
 	public void visitAction(Vertex vertex) {
+		this.agentActionMap.get(this.currentRoot.toString()).addFirst(vertex);
 	}
 
 	@Override
@@ -153,6 +161,26 @@ public class VisualizationFilterPPVisitor extends PlotGraphVisitor {
      * </ul>
 	 */
 	private void postProcessing() {
-		// TODO: Remove repeating pattern at end?
+		// Remove repeating pattern at end, if pause in execution was caused by a narrative equilibrium
+		HashMap<String, Pair<Integer, Integer>> seqMap = PlotLauncher.getRunner().getUserEnvironment().getRepeatingSequenceMap();
+
+		if (!seqMap.isEmpty()) {
+			for(String agent : seqMap.keySet()) {
+				// the length of the whole repeating sequence that cause the pause is len(chain) * num_rep
+				int repLength = seqMap.get(agent).getFirst() * seqMap.get(agent).getSecond();
+				if(repLength == 0) {
+					continue;
+				}
+				// the last vertex to keep is the last vertex in the chain, not the first
+				int lastActionIndex = repLength - (seqMap.get(agent).getFirst() - 1);
+
+				// since the list is already created in reversed order we simply use lastActionVertex, but correct for fact that count starts with 0
+				Vertex lastV = this.agentActionMap.get(agent).get(lastActionIndex - 1);
+				this.graph.removeBelow(lastV);
+
+				logger.info("Cutting subgraph for " + agent + " below step " + lastV.getStep() + " due to ensuing narrative equilibrium");
+			}
+		}
+
 	}
 }

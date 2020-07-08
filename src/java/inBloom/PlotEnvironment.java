@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ import jason.environment.TimeSteppedEnvironment;
 import jason.infra.centralised.CentralisedEnvironment;
 import jason.runtime.MASConsoleGUI;
 import jason.runtime.RuntimeServicesInfraTier;
+import jason.util.Pair;
 
 import inBloom.graph.Edge;
 import inBloom.graph.PlotGraphController;
@@ -62,6 +64,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	public static Integer MAX_STEP_NUM = -1;
 	/** time in ms that {@link TimeSteppedEnvironment} affords agents to propose an action, before each step times out */
 	static final String STEP_TIMEOUT = "200";
+	/** string used to represent that an agent took no action, used in agentActions map */
+	private static final String INACTION_STRING = "--";
 
     /** Safes the time the plot has started to compute plot time, i.e. temporal duration of the plot so far. */
     private static Long startTime = 0L;
@@ -134,6 +138,13 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     protected int step = 0;
 
     private boolean initialized = false;
+
+	/**
+	 * If environment execution was paused due to narrative equilibrium, this notes down for each agent the length of
+	 * the repeated sequence, as well as how often it was repeated.
+	 * maps: { agent name -> (seq_len, num_rep) }
+	 */
+    private HashMap<String, Pair<Integer, Integer>> repeatingSequenceMap = new HashMap<>();
 
     /**
      * Jason-internal initialization executed by the framework during
@@ -410,7 +421,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 			for (Character chara : this.model.getCharacters()) {
 				Object action = this.getActionInSchedule(chara.getName());
 				if(action == null) {
-					this.agentActions.get(chara.getName()).add("--");		// mark inaction by --
+					this.agentActions.get(chara.getName()).add(INACTION_STRING);
 				}
 			}
 		}
@@ -518,6 +529,15 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 */
 	private List<Literal> getListRemEvents(String agentName) {
 		return this.perceivedEventsMap.getOrDefault(agentName, new LinkedList<Literal>());
+	}
+
+
+	/**
+	 * Returns the map that contains agentName to (length of repeated sequence, repetition) mapping,
+	 * that was responsible for a narrative equilibrium.
+	 */
+	public HashMap<String,Pair<Integer, Integer>> getRepeatingSequenceMap() {
+		return this.repeatingSequenceMap;
 	}
 
 	/**
@@ -636,6 +656,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * Wakes up the environment when Launcher exits pause mode.
      */
     synchronized void wake() {
+    	this.repeatingSequenceMap.clear();
+
     	this.notifyAll();
     	logger.info(" Execution continued, switching to Jason GUI output");
     }
@@ -671,13 +693,14 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
 	protected void checkPause() {
 		if (this.initialized & !PlotLauncher.getRunner().isDebug()) {
-			// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
+			// same action was repeated MAX_REPEATE_NUM number of times by all agents:
 	    	if (this.narrativeExquilibrium()) {
 	    		// reset counter
 	    		logger.info("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
 	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
 	    		this.resetAllAgentActionCounts();
 	    		PlotLauncher.runner.pauseExecution();
+
 	    		for(EnvironmentListener l : this.listeners) {
 	    			l.onPauseRepeat();
 	    		}
@@ -722,6 +745,15 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
     		if (patRepeats.values().stream().mapToInt(x -> x).max().orElse(0) >= MAX_REPEATE_NUM) {
     			agentsRepeating.put(agent, true);
+
+    			// note down which sequence caused the pause for this agent, so we can remove the repitition from the graph later
+    			Entry<String,Integer> maxEntry = patRepeats.entrySet().stream().max((entry1, entry2) -> entry1.getValue().compareTo(entry2.getValue()))
+    																		   .get();
+    			if (maxEntry.getKey().equals(INACTION_STRING)) {
+    				this.repeatingSequenceMap.put(agent, new Pair<>(0, 0));
+    			} else {
+    				this.repeatingSequenceMap.put(agent, new Pair<>(maxEntry.getKey().split(" ").length, maxEntry.getValue()));
+    			}
     		}
     	}
 
@@ -729,6 +761,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	if (agentsRepeating.values().stream().allMatch(bool -> bool)) {
     		return true;
     	}
+
+    	this.repeatingSequenceMap.clear();
     	return false;
     }
 
