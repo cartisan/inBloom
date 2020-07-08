@@ -181,10 +181,10 @@ public class Tellability {
 	 *              {@linkplain EdgeGenerationPPVisitor}, and {@linkplain VisualizationFilterPPVisitor} visitors.
 	 */
 	private void detectSymmetryAndParallelism(PlotDirectedSparseGraph graph) {
-		HashMap<String, List<String>> agentFuSeqMap = this.extractOrderedFUSequences();
+		HashMap<String, List<String>> agentFuSeqMap = this.extractOrderedFUSequences(graph.getRoots().stream().map(v -> v.toString()).collect(Collectors.toList()));
 		boolean sufficientFUPresent = agentFuSeqMap.entrySet().stream().map( entry -> entry.getValue().size() )
-																		 .mapToInt(size -> size)
-																		 .max().getAsInt() >= SIMILARITY_FU_THRESHOLD;
+																	   .mapToInt(size -> size)
+																	   .max().orElse(0) >= SIMILARITY_FU_THRESHOLD;
 
 		HashMap<String, List<String>> agentSeqMap;
 		List<Float> similarityScores =  new ArrayList<>();
@@ -199,7 +199,10 @@ public class Tellability {
 			for (Vertex root : graph.getRoots()) {
 				agentEventSeqMap.put(root.toString(), new ArrayList<>());
 				for(Vertex v : graph.getCharSubgraph(root)) {
-					agentEventSeqMap.get(root.toString()).add(TermParser.removeAnnots(v.getLabel()));
+					// ignore vertices created from reading the ASL, only include plot from actual simulation
+					if(v.getStep() > 0) {
+						agentEventSeqMap.get(root.toString()).add(TermParser.removeAnnots(v.getLabel()));
+					}
 				}
 			}
 			agentSeqMap = agentEventSeqMap;
@@ -219,17 +222,17 @@ public class Tellability {
 		return;
 	}
 
-	private HashMap<String, List<String>> extractOrderedFUSequences() {
-		HashMap<String, Collection<Instance>> fuSequences = new HashMap<>();
+	private HashMap<String, List<String>> extractOrderedFUSequences(List<String> agentNames) {
+		Map<String, Collection<Instance>> fuSequences = agentNames.stream().collect(Collectors.toMap(agName -> agName,
+																									 agName -> new ArrayList<>()));
+
 		for(Instance i : this.fUinstances) {
-			Collection<Instance> agList = fuSequences.getOrDefault(i.getFirstAgent(), new ArrayList<>());
+			Collection<Instance> agList = fuSequences.get(i.getFirstAgent());
 			agList.add(i);
-			fuSequences.put(i.getFirstAgent(), agList);
 
 			if (i.getSecondAgent() != null) {
-				agList = fuSequences.getOrDefault(i.getSecondAgent(), new ArrayList<>());
+				agList = fuSequences.get(i.getSecondAgent());
 				agList.add(i);
-				fuSequences.put(i.getSecondAgent(), agList);
 			}
 		}
 
@@ -257,6 +260,11 @@ public class Tellability {
 	}
 
 	private List<Float> parallelism(HashMap<String, List<String>> agentSequenceMap) {
+		// if we have only 1 agent, no parallelism can be computed
+		if(agentSequenceMap.keySet().size() == 1) {
+			return new ArrayList<>();
+		}
+
 		// find all possible pairings for parallelism comparison
 		Set<Set<String>> pairs = Sets.combinations(agentSequenceMap.keySet(), 2);
 
