@@ -415,7 +415,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	public static class CivilizedWorld extends Location {
 
 		public CivilizedWorld() {
-			super("plain boring world");
+			super("plainBoringWorld");
 		}
 		
 	}
@@ -423,7 +423,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	public static class Ship extends Location {
 
 		public Ship() {
-			super("magnificent ship");
+			super("magnificentShip");
 		}
 		
 	}
@@ -435,7 +435,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		private Hut hut;
 		
 		public Island() {
-			super("lonely island");
+			super("lonelyIsland");
 			this.isBurning = false;
 			this.hut = null;
 		}
@@ -466,7 +466,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		private class Hut extends Location {
 
 			public Hut() {
-				super("cozy hut");
+				super("cozyHut");
 			}
 			
 		}
