@@ -254,7 +254,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * @return: boolean determining whether algorithm is runnable.
 	 */
 	
-	public boolean parameterCheck() {
+	public boolean check_parameters() {
 
 		// Ensure correctness of parameters
 		
@@ -264,7 +264,13 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			this.pop_size = 4;
 		}
 		
-		// Selection size must be and even number smaller pop_size
+		// Selection size must be positive
+		if(selection_size < 0) {
+			System.out.println("Selection_size defaulted to: " + selection_size);
+			selection_size = 2;
+		}
+		
+		// Selection size must be an even number smaller pop_size
 		while(selection_size>=pop_size) {
 			selection_size/=2;
 			selection_size%=2;
@@ -393,7 +399,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	public void run() {
 		
 		// Ensure correct Parameters
-		if(parameterCheck()) {
+		if(check_parameters()) {
 			
 			// Save current time
 			start_time = System.currentTimeMillis();
