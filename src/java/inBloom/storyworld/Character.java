@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import jason.RevisionFailedException;
 import jason.asSemantics.AffectiveDimensionChecks;
 import jason.asSemantics.Mood;
 import jason.asSemantics.Personality;
@@ -12,7 +13,6 @@ import jason.asSyntax.Literal;
 
 import inBloom.ActionReport;
 import inBloom.LauncherAgent;
-import inBloom.PlotEnvironment;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
 import inBloom.helper.PerceptAnnotation;
@@ -53,7 +53,12 @@ public class Character extends Existent {
 		// important to set location and inventory using the respective methods, so that percepts are generated for ASL agent
 		this.model.getLocation(lAgent.location).enter(this);
 		for (Item i : lAgent.inventory) {
-			this.addToInventory(i);
+			try {
+				this.plotAgentPendant.addBel(ASSyntax.createLiteral("has", i.literal()));
+				this.addToInventory(i);
+			} catch (RevisionFailedException e) {
+				logger.severe("Couldn't add belief about initial inventory item: " + i.getItemName());
+			}
 		}
 	}
 
@@ -83,16 +88,10 @@ public class Character extends Existent {
 
 	public void addToInventory(Item item) {
 		this.inventory.add(item);
-
-		// update agents inventory perception
-		this.model.environment.addPercept(this.name, ASSyntax.createLiteral("has", item.literal()));
 	}
 
 	public Item removeFromInventory(Item item) {
 		if(this.inventory.remove(item)) {
-			// update agents inventory perception
-			this.model.environment.removePercept(this.name, ASSyntax.createLiteral("has", item.literal()));
-
 			return item;
 		}
 		logger.severe("Character " + this.name + " can't remove item " + item.getItemName() + ". Doesn't have one.");
@@ -102,9 +101,6 @@ public class Character extends Existent {
 	public Item removeFromInventory(String itemName) {
 		for (Item item : this.inventory) {
 			if (item.getItemName().equals(itemName)) {
-				// update agents inventory perception
-				this.model.environment.removePercept(this.name, ASSyntax.createLiteral("has", item.literal()));
-
 				return item;
 			}
 		}
@@ -177,7 +173,7 @@ public class Character extends Existent {
 
 			if (item.isEdible()) {
 				this.removeFromInventory(item);
-				res.addPerception(this.name, PerceptAnnotation.fromEmotion("satisfaction"));
+				res.addPerception(this.name, PerceptAnnotation.fromEmotion("joy"));
 				res.success = true;
 			}
 		}
@@ -187,9 +183,16 @@ public class Character extends Existent {
 
 	public ActionReport relax() {
 		if( AffectiveDimensionChecks.BOUNDARIES.get(AffectiveDimensionChecks.HIG).apply(this.getMood().getA())) {
+			logger.info(this.name + " is to aroused to be able to relax.");
 			return new ActionReport(false);
 		}
 		return new ActionReport(true);
+	}
+
+	public ActionReport fret() {
+		ActionReport res = new ActionReport(true);
+		res.addPerception(this.name, PerceptAnnotation.fromEmotion("distress"));
+		return res;
 	}
 
 	public ActionReport sing() {
@@ -208,7 +211,7 @@ public class Character extends Existent {
 				String perceptString = "is_dropped(" + item.getItemName() + ")";
 				PerceptAnnotation annots = PerceptAnnotation.fromCause("sing");
 				annots.addAnnotation("owner", this.name);
-				annots.addCrossCharAnnotation(perceptString, PlotEnvironment.getPlotTimeNow());
+				annots.addCrossCharAnnotation(perceptString, System.nanoTime());
 
 				for (Character observer : this.location.getCharacters()) {
 					this.model.environment.addEventPercept(observer.getName(),
@@ -253,7 +256,7 @@ public class Character extends Existent {
 		return res;
 	}
 
-	public ActionReport handOver(Character receiver, String itemName) {
+	public ActionReport handOver(String itemName, Character receiver) {
 		ActionReport res = new ActionReport();
 
 		if (this.has(itemName) & this.location.present(receiver)){
@@ -269,7 +272,7 @@ public class Character extends Existent {
 		return res;
 	}
 
-	public ActionReport refuseHandOver(Character receiver, String itemName) {
+	public ActionReport refuseHandOver(String itemName, Character receiver) {
 		ActionReport res = new ActionReport();
 
 		if (this.has(itemName) & this.location.present(receiver)){

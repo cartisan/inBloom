@@ -9,6 +9,7 @@ import inBloom.PlotControlsLauncher;
 import inBloom.PlotEnvironment;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
+import inBloom.graph.GraphAnalyzer;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
 import inBloom.helper.EnvironmentListener;
@@ -115,10 +116,12 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		/*
 		 * Get the plot graph and compute corresponding tellability 
 		 */
-
-		PlotDirectedSparseGraph graph = new PlotDirectedSparseGraph();	
-		Tellability tellability = PlotGraphController.getPlotListener().analyze(graph);
-		result = tellability.compute();
+		
+		GraphAnalyzer analyzer = new GraphAnalyzer(PlotGraphController.getPlotListener().getGraph(), null);
+		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
+		Tellability tel = analyzer.runSynchronously(analyzedGraph);
+		result = tel.compute();
+		
 		
 		/*
 		 * End simulation and reset runner. Need?
@@ -139,6 +142,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	
 	@Override
 	public void onPauseRepeat() {
+		logger.info("Hier!");
 		isRunning = false;
 	}
 	

@@ -48,7 +48,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	/**
 	 * All feature names
 	 */
-	String[] features = {"isAlive",
+	static String[] features = {"isAlive",
 						 "isOnCruise",
 						 "hasAHut",
 						 "hasAtLeastOneFriend"};

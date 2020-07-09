@@ -47,7 +47,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 
 	public static final boolean X_AXIS_IS_TIME = true;		// defines whether moods will be mapped based on plotTim or timeStep
 															// in latter case, average mood will be calculated over all cycles in a timeStep
-	public static final String DEFAULT_LOCATION_NAME = "far far away";
+	public static final String DEFAULT_LOCATION_NAME = "farFarAway";
 
 	protected HashMap<String, Character> characters = null;
 	protected HashMap<String, Location> locations = null;
@@ -198,12 +198,15 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		List<Happening<?>> happenings = this.happeningDirector.getTriggeredHappenings(step);
 
 		for (Happening h : happenings) {
-			h.identifyCause(this.causalityMap);
-			h.execute(this);
-			this.environment.addEventPercept(h.getPatient(), h.getEventPercept());
+			// only execute h if its patient is still alive (otherwise getPatient returns null)
+			if(this.getCharacter(h.getPatient()) != null) {
+				h.identifyCause(this.causalityMap);
+				h.execute(this);
+				this.environment.addEventPercept(h.getPatient(), h.getEventPercept());
 
-			// update saved storyworld state, so that the happening h is entered as causes for the change
-			this.noteStateChanges(h);
+				// update saved storyworld state, so that the happening h is entered as causes for the change
+				this.noteStateChanges(h);
+			}
 		}
 	}
 

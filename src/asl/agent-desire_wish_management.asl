@@ -14,13 +14,17 @@
 	.drop_desire(Plan);
 	.succeed_goal(Plan).
 
-@reject_request_1[atomic, affect(and(personality(conscientiousness,low), not(mood(dominance,low))))]	
+// help request obligations
+@reject_request_1[atomic, affect(and(personality(agreeableness,low), not(mood(dominance,low))))]	
 +!obligation(help_with(Helpee, Plan)) <-
-	!reject(Helpee, help_with(Helpee,Plan)).
-@reject_request_2[atomic, affect(and(personality(conscientiousness,negative), mood(dominance,high)))]
+	!reject(Helpee, Plan).
+@reject_request_2[atomic, affect(and(mood(dominance,high), personality(agreeableness,negative)))]
 +!obligation(help_with(Helpee, Plan)) : wish(Y) & is_work(help_with(Plan)) <-
-	!reject(Helpee, help_with(Helpee,Plan)).
-// if none of these is true, treat it like normal obligation
+	!reject(Helpee, Plan).
+//    if none of these is true, do help
++!obligation(help_with(Helpee, Plan)) <-
+	!accept(Helpee, Plan); 
+	!obligation(help_with(Helpee, Plan)).
 
 // only do hard obligations if really conscientious
 @obligation1[affect(personality(conscientiousness,high))]

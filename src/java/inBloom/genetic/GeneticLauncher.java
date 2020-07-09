@@ -14,7 +14,7 @@ public class GeneticLauncher {
 			GeneticAlgorithm<?,?> ga = island.get_GA(args);
 			
 			// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
-			ga.setPersInit(true, true, true);
+			ga.setPersInit(true, false, false);
 			// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
 			ga.setHapInit(true, true, true);
 			// randomSelector, rouletteWheelSelection

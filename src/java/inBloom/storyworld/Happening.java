@@ -13,8 +13,8 @@ public class Happening<T extends PlotModel<?>> extends Event {
 
 	static protected Logger logger = Logger.getLogger(Happening.class.getName());
 
-	private Predicate<T> trigger;
-	private Consumer<T> effect;
+	protected Predicate<T> trigger = null;
+	protected Consumer<T> effect = null;
 	protected String causalProperty = "";
 
 	/**
@@ -68,6 +68,10 @@ public class Happening<T extends PlotModel<?>> extends Event {
 		this.percept = percept;
 	}
 
+	public Happening() {
+		// left empty intentionally
+	}
+
 	public boolean triggered(T model) {
 		return this.trigger.test(model);
 	}
@@ -111,11 +115,10 @@ public class Happening<T extends PlotModel<?>> extends Event {
 	 * value in model.
 	 */
 	public void identifyCause(Map<String, Pair<String, String>> causalityMap) {
-		
-		if(this.getCausalProperty() == null || this.getCausalProperty().contentEquals("")) {
+		if(this.getCausalProperty() == null || this.getCausalProperty().equals("")) {
 			return;
 		}
-		
+
 		Pair<String, String> causeTup = causalityMap.get(this.getCausalProperty());
 		String cause = causeTup.getSecond();
 		if( cause != null && !cause.equals("") ) {

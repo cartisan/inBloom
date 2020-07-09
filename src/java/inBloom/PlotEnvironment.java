@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ import jason.environment.TimeSteppedEnvironment;
 import jason.infra.centralised.CentralisedEnvironment;
 import jason.runtime.MASConsoleGUI;
 import jason.runtime.RuntimeServicesInfraTier;
+import jason.util.Pair;
 
 import inBloom.graph.Edge;
 import inBloom.graph.PlotGraphController;
@@ -62,6 +64,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	public static Integer MAX_STEP_NUM = -1;
 	/** time in ms that {@link TimeSteppedEnvironment} affords agents to propose an action, before each step times out */
 	static final String STEP_TIMEOUT = "300";
+	/** string used to represent that an agent took no action, used in agentActions map */
+	private static final String INACTION_STRING = "--";
 
     /** Safes the time the plot has started to compute plot time, i.e. temporal duration of the plot so far. */
     private static Long startTime = 0L;
@@ -123,11 +127,10 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * in order to create an actualization edge.
      * This relaying is necessary, because the action needs to be plotted when it is executed,
      * and not when it is scheduled, otherwise the graph would get out of order.
+     * maps: {agent name -> {action -> intention}}
      */
     private ConcurrentHashMap<String, HashMap<Structure, Intention>> actionIntentionMap = new ConcurrentHashMap<>();
 
-    
-    
     /**
      * Each state's value, needed to calculate the Reinforcement Learning algorithm
      */
@@ -141,8 +144,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
       * The current Environment step
       */
      public int currentStep = 0;
-    
-     
+
     /**
      * Counts plot steps, synchronously to {@link TimeSteppedEnvironment#step} but designating the step of the
      * first plotted intention as step 1. Should be preferred as step counter for all inBloom purposes.
@@ -151,8 +153,15 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
     private boolean initialized = false;
 
+	/**
+	 * If environment execution was paused due to narrative equilibrium, this notes down for each agent the length of
+	 * the repeated sequence, as well as how often it was repeated.
+	 * maps: { agent name -> (seq_len, num_rep) }
+	 */
+    private HashMap<String, Pair<Integer, Integer>> repeatingSequenceMap = new HashMap<>();
+
     /**
-     * Jason-internal initialization executed by the framwork during
+     * Jason-internal initialization executed by the framework during
      * {@link jason.infra.centralised.CentralisedEnvironment#CentralisedEnvironment(jason.mas2j.ClassParameters,
      *  jason.infra.centralised.BaseCentralisedMAS) CentralisedEnvironment instaniation}. Responsible for setting
      *  up timeouts and over action policy.
@@ -232,16 +241,16 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	@Override
     public boolean executeAction(String agentName, Structure action) {
     	// add attempted action to plot graph
-		String motivation = "[" + Edge.Type.MOTIVATION.toString() + "(%s)]";
+		String annotation = "[" + Edge.Type.ACTUALIZATION.toString() + "(%s)]";
 		Intention intent = this.actionIntentionMap.get(agentName).get(action);
 		if(intent != null) {
-			motivation = String.format(motivation, TermParser.removeAnnots(intent.peek().getTrigger().getTerm(1).toString()));
+			annotation = String.format(annotation, TermParser.removeAnnots(intent.peek().getTrigger().getTerm(1).toString()));
 		} else {
-			motivation = "";
+			annotation = "";
 		}
 		this.actionIntentionMap.get(agentName).remove(action);
 
-		PlotGraphController.getPlotListener().addEvent(agentName, action.toString() + motivation, Type.ACTION, this.getStep());
+		PlotGraphController.getPlotListener().addEvent(agentName, action.toString() + annotation, Type.ACTION, this.getStep());
 
     	// let the domain specific subclass handle the actual action execution
     	// ATTENTION: this is were domain-specific action handling code goes
@@ -253,6 +262,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	for (Character currentChar : presentChars) {
     		// Add annotation to this action perception that allow plot graph post processing to insert cross-character edges
     		actionReport.getAnnotation(currentChar.name).addCrossCharAnnotation(action.toString(), actionReport.eventTime);
+    		// Add annotation about success/failure of this actions
+    		actionReport.getAnnotation(currentChar.name).addAnnotation("success", actionReport.success.toString());
 
     		if(currentChar.getName().equals(agentName)) {
     			// reporting results for acting agent
@@ -280,7 +291,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     		}
     	}
 
-		// logger.info(String.format("%s performed %s", agentName, action.toString()));
+		logger.info(String.format("%s performed %s", agentName, action.toString()));
 
     	// allow model to see if action resulted in state change
     	this.getModel().noteStateChanges(agentName, action.toString());
@@ -373,6 +384,15 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
 		// remove character from story-world model
 		this.model.removeCharacter(agName);
+		if(this.model.getCharacters().isEmpty()) {
+			
+			logger.info("No agents left.");
+
+    		PlotLauncher.runner.pauseExecution();
+    		for(EnvironmentListener l : this.listeners) {
+    			l.onPauseRepeat();
+    		}
+		}
 	}
 
 	/**
@@ -395,7 +415,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
 	@Override
 	protected synchronized void stepStarted(int step) {
-		System.out.println("\n--------------------------- STEP " + (step) + " ---------------------------");
 		if (this.step > 0) {
 			this.step++;
 
@@ -415,8 +434,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 				this.getModel().moodMapper.startTimes.add(getPlotTimeNow());
 			}
 		}
-		
-		this.addStateValue();
 
 	}
 
@@ -427,7 +444,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 			for (Character chara : this.model.getCharacters()) {
 				Object action = this.getActionInSchedule(chara.getName());
 				if(action == null) {
-					this.agentActions.get(chara.getName()).add("--");		// mark inaction by --
+					this.agentActions.get(chara.getName()).add(INACTION_STRING);
 				}
 			}
 		}
@@ -537,6 +554,15 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		return this.perceivedEventsMap.getOrDefault(agentName, new LinkedList<Literal>());
 	}
 
+
+	/**
+	 * Returns the map that contains agentName to (length of repeated sequence, repetition) mapping,
+	 * that was responsible for a narrative equilibrium.
+	 */
+	public HashMap<String,Pair<Integer, Integer>> getRepeatingSequenceMap() {
+		return this.repeatingSequenceMap;
+	}
+
 	/**
 	 * Adds 'percept' to the list of events that need to be added to agentName's perception list this reasoning step.
 	 */
@@ -577,6 +603,13 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * @param perceptions state perceptions
      */
     public void addPercept(Location loc, Literal... perceptions) {
+    	// insert x-chara edge
+    	for (Literal p : perceptions) {
+    		PerceptAnnotation annot = new PerceptAnnotation();
+    		annot.addCrossCharAnnotation(p.toString(), System.nanoTime());
+    		p.addAnnots(annot.toTerms());
+    	}
+
     	loc.getCharacters().forEach(chara -> super.addPercept(chara.name, perceptions));
     }
 
@@ -646,6 +679,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * Wakes up the environment when Launcher exits pause mode.
      */
     synchronized void wake() {
+    	this.repeatingSequenceMap.clear();
+
     	this.notifyAll();
     	logger.info(" Execution continued, switching to Jason GUI output");
     }
@@ -658,7 +693,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 		this.checkPause();
         try {
             while (MASConsoleGUI.get().isPause()) {
-            	logger.info("Execution paused, switching to console output");
+            	logger.info("Environment execution paused, switching to console output");
                 this.wait();
             }
         } catch (Exception e) { }
@@ -681,13 +716,14 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
 	protected void checkPause() {
 		if (this.initialized & !PlotLauncher.getRunner().isDebug()) {
-			// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
+			// same action was repeated MAX_REPEATE_NUM number of times by all agents:
 	    	if (this.narrativeExquilibrium()) {
 	    		// reset counter
 	    		logger.info("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
 	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
 	    		this.resetAllAgentActionCounts();
 	    		PlotLauncher.runner.pauseExecution();
+
 	    		for(EnvironmentListener l : this.listeners) {
 	    			l.onPauseRepeat();
 	    		}
@@ -732,6 +768,15 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
     		if (patRepeats.values().stream().mapToInt(x -> x).max().orElse(0) >= MAX_REPEATE_NUM) {
     			agentsRepeating.put(agent, true);
+
+    			// note down which sequence caused the pause for this agent, so we can remove the repitition from the graph later
+    			Entry<String,Integer> maxEntry = patRepeats.entrySet().stream().max((entry1, entry2) -> entry1.getValue().compareTo(entry2.getValue()))
+    																		   .get();
+    			if (maxEntry.getKey().equals(INACTION_STRING)) {
+    				this.repeatingSequenceMap.put(agent, new Pair<>(0, 0));
+    			} else {
+    				this.repeatingSequenceMap.put(agent, new Pair<>(maxEntry.getKey().split(" ").length, maxEntry.getValue()));
+    			}
     		}
     	}
 
@@ -739,6 +784,8 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	if (agentsRepeating.values().stream().allMatch(bool -> bool)) {
     		return true;
     	}
+
+    	this.repeatingSequenceMap.clear();
     	return false;
     }
 

@@ -116,7 +116,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 			agent.addToInventory(new Bread());
 
 			logger.info(agent.name + ": baked some bread.");
-			res.addPerception(agent.name, new PerceptAnnotation("pride", "joy"));
+			res.addPerception(agent.name, new PerceptAnnotation("pride"));
 			res.success =  true;
 		}
 
@@ -139,7 +139,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		}
 
 		public void updateProduceState(Wheat.STATES state) {
-			this.model.environment.removePerceptsByUnif(this, Literal.parseLiteral("at(wheat[X]," + this.literal() + ")"));
+			this.model.environment.removePerceptsByUnif(this, Literal.parseLiteral("at(wheat[X]," + this.literal() + ")[_]"));
 
 			if (state == null) {
 				this.produce = null;
