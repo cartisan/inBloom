@@ -210,12 +210,16 @@ public class Tellability {
 
 		// compute symmetry and parallelism on either FU or events (use tmp sequence for logging)
 		List<Float> tmp = this.symmetry(agentSeqMap);
-		logger.info("   average symmetry: " + Stats.meanOf(tmp));
-		similarityScores.addAll(tmp);
+		if(!tmp.isEmpty()) {
+			logger.info("   average symmetry: " + Stats.meanOf(tmp));
+			similarityScores.addAll(tmp);
+		}
 
 		tmp = this.parallelism(agentSeqMap);
-		logger.info("   average paralellism: " + Stats.meanOf(tmp));
-		similarityScores.addAll(tmp);
+		if(!tmp.isEmpty()) {
+			logger.info("   average paralellism: " + Stats.meanOf(tmp));
+			similarityScores.addAll(tmp);
+		}
 
 		// overall symmetry is average: over symmetry for each character and parallelism for each character pair
 		this.symmetry = similarityScores.stream().reduce((f1,f2) -> f1 + f2).get() / similarityScores.size();

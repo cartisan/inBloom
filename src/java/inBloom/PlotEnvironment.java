@@ -693,26 +693,28 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
 	protected void checkPause() {
 		if (this.initialized & !PlotLauncher.getRunner().isDebug()) {
-			// same action was repeated MAX_REPEATE_NUM number of times by all agents:
+			// same action was repeated MAX_REPEATE_NUM number of times by all agents, or all agents died
 	    	if (this.narrativeExquilibrium()) {
 	    		// reset counter
 	    		logger.info("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
 	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
 	    		this.resetAllAgentActionCounts();
-	    		PlotLauncher.runner.pauseExecution();
-
-	    		for(EnvironmentListener l : this.listeners) {
-	    			l.onPauseRepeat();
-	    		}
+	    		this.pause();
 	    	}
 	    	if (MAX_STEP_NUM > -1 && this.getStep() % MAX_STEP_NUM == 0) {
 	    		logger.info("Auto-paused execution of simulation, because system ran for MAX_STEP_NUM steps.");
-
-	    		PlotLauncher.runner.pauseExecution();
-	    		for(EnvironmentListener l : this.listeners) {
-	    			l.onPauseRepeat();
-	    		}
+	    		this.pause();
+	    	} else if (this.model.getCharacters().isEmpty()) {
+	    		logger.info("Auto-paused execution of simulation, because all agents died.");
+	    		this.pause();
 	    	}
+		}
+	}
+
+	private void pause() {
+		PlotLauncher.runner.pauseExecution();
+		for(EnvironmentListener l : this.listeners) {
+			l.onPauseRepeat();
 		}
 	}
 
