@@ -196,9 +196,9 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		List<Happening<?>> happenings = this.happeningDirector.getTriggeredHappenings(step);
 
 		for (Happening h : happenings) {
+			h.identifyCause(this.causalityMap);
 			// only execute h if its patient is still alive (otherwise getPatient returns null)
 			if(this.getCharacter(h.getPatient()) != null) {
-				h.identifyCause(this.causalityMap);
 				h.execute(this);
 				this.environment.addEventPercept(h.getPatient(), h.getEventPercept());
 
