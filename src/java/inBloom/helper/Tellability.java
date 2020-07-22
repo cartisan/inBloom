@@ -222,7 +222,7 @@ public class Tellability {
 		}
 
 		// overall symmetry is average: over symmetry for each character and parallelism for each character pair
-		this.symmetry = similarityScores.stream().reduce((f1,f2) -> f1 + f2).get() / similarityScores.size();
+		this.symmetry = Stats.meanOf(similarityScores);
 		return;
 	}
 
@@ -244,7 +244,7 @@ public class Tellability {
 		for (String agent : fuSequences.keySet()) {
 			Collection<Instance> instances = fuSequences.get(agent);
 			agentFuOrderMap.put(agent, instances.stream().sorted(new FunctionalUnit.InstanceSubgraphOrderComparator(agent))
-														  .collect(Collectors.toList()));
+														 .collect(Collectors.toList()));
 		}
 
 		// translate FU sequences to string based representation
