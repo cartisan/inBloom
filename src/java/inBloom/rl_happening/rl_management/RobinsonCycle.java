@@ -11,6 +11,7 @@ import inBloom.PlotLauncher;
 import inBloom.rl_happening.islandWorld.IslandLauncher;
 import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.storyworld.HappeningDirector;
+import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.asSemantics.Personality;
 
 /**
@@ -42,9 +43,71 @@ public class RobinsonCycle extends ReinforcementLearningCycle {
 		cycle.run();
 	}
 	
+	
+	
+	// initial = initial for each run = each episode = each plot
+		@Override
+		protected ReflectResultRL createInitialReflectResult() {
+			
+			this.log("Creating initial Reflect Results");
+			
+			/* 
+			 * RUNNER
+			 * 
+			 * We get the story specific runner
+			 */
+			PlotLauncher<?, ?> runner = new IslandLauncher();
+			// TODO this was in Sven's Code, but it isn't relevant to me now. Maybe later though.
+			runner.setShowGui(false);
+			
+			
+			IslandModel model = new IslandModel(new ArrayList<LauncherAgent>(), new AutomatedHappeningDirector(this.sarsa));
+			
+			
+			/* 
+			 * AGENTS
+			 * 
+			 * A set of functioning LauncherAgents is created from a list of names and a seperate
+			 * list of matching personalities
+			 */
+			List<LauncherAgent> agents = this.createAgs(this.agentNames, this.agentPersonalities);
+
+			for (LauncherAgent ag : agents) {
+				ag.location = model.civilizedWorld.name;
+			}
+			
+			/* 
+			 * MODEL
+			 * 
+			 * We get the story specific model
+			 */
+			// ist bereits
+			// this.plotModel = this.getPlotModel(agents);
+			// this.plotModel = model;
+			// TODO hier HappeningScheduler übergeben -> s. RedhenHappening
+			
+			
+			/*
+			 * We create the ReflectResultRL using the runner, model and LauncherAgents we just got.
+			 * 
+			 * A ReflectResultRL saves the information we need for the next simulation, e.g.
+			 * the PlotLauncher, the Model and the LauncherAgents
+			 */
+			ReflectResultRL ReflectResultRL = new ReflectResultRL(runner, model, agents, sarsa);
+			
+			this.log("Cycle " + currentCycle);
+			
+			return ReflectResultRL;
+		}
+	
+	
+	
+	
 	@Override
 	public PlotLauncher<?, ?> getPlotLauncher() {
-		return new IslandLauncher();
+		this.lastRunner = new IslandLauncher();
+		
+		return this.lastRunner;
 	}
 
 	// TODO possible problem: getPlotModel is also called in reflect and getPlotModel calls
@@ -54,7 +117,9 @@ public class RobinsonCycle extends ReinforcementLearningCycle {
 	public FeaturePlotModel<?> getPlotModel(List<LauncherAgent> agents) {
 		// TODO change the ScheduledHappeningDirector into my own RL one :D
 		//return new IslandModel(agents, new ScheduledHappeningDirector());
-		return new IslandModel(new ArrayList<LauncherAgent>(), this.getHappeningDirector());
+		
+		//return new IslandModel(new ArrayList<LauncherAgent>(), this.getHappeningDirector());
+		return (FeaturePlotModel<?>)this.lastRunner.getUserModel();
 	}
 	
 	public HappeningDirector getHappeningDirector() {

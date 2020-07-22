@@ -1,11 +1,14 @@
 package inBloom.rl_happening.rl_management;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import inBloom.LauncherAgent;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
 import inBloom.ERcycle.ReflectResult;
+import inBloom.storyworld.Happening;
 
 /**
  * Result of the reflect method. Contains PlotLauncher instance
@@ -41,6 +44,7 @@ public class ReflectResultRL extends ReflectResult {
 		return this.shouldContinue;
 	}
 	
+	// TODO DEP
 	public String toString() {
 //		String result = "Agents: ";
 //		for (LauncherAgent ag : this.agents) {
@@ -50,7 +54,18 @@ public class ReflectResultRL extends ReflectResult {
 		String result = "";
 		
 		result += "Happenings:\n";
-		result += this.model.happeningDirector.getAllHappenings().toString();
+		List<Happening<?>> allHappenings = this.model.happeningDirector.getAllHappenings();
+		for(Happening<?> happening: allHappenings) {
+			result += "               " + happening + "\n";
+		}
+		
+		HashMap<String, HashMap<Happening<?>, Double>> weights = this.sarsa.weights;
+		result += "Weights:\n";
+		result += this.sarsa.printWeights();
+		
+		result += "\nEligibility Traces:\n";
+		
+		result += this.sarsa.printEligibilityTraces();
 			
 		return result;
 	}

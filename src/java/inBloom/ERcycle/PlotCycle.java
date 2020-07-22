@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Font;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,6 +25,7 @@ import inBloom.graph.PlotGraphController;
 import inBloom.helper.EnvironmentListener;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
+import inBloom.rl_happening.rl_management.FeaturePlotModel;
 import inBloom.rl_happening.rl_management.SarsaLambda;
 import inBloom.storyworld.HappeningDirector;
 import jason.JasonException;
@@ -81,6 +83,8 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	private void initGui() {
 		cycleFrame = new JFrame("Plot Cycle");
 		cycleFrame.setLayout(new BorderLayout());
+		
+		logTextArea.setFont(new Font("Menlo", Font.PLAIN, 12));
 		
 		// setup text field
 		JScrollPane scroll = new JScrollPane(logTextArea);
@@ -355,12 +359,14 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		private String[] args;
 		private List<LauncherAgent> agents;
 		private String agSrc;
+		private SarsaLambda sarsa;
 		
-		public RLCycle(PlotLauncher<?, ?> runner, PlotModel<?> model, String[] args, List<LauncherAgent> agents, String agSrc, HappeningDirector hapDir) throws Exception {
+		public RLCycle(PlotLauncher<?, ?> runner, PlotModel<?> model, String[] args, List<LauncherAgent> agents, String agSrc, HappeningDirector hapDir, SarsaLambda sarsa) throws Exception {
 			this.runner = runner;
 			this.args = args;
 			this.agents = agents;
 			this.agSrc = agSrc;
+			this.sarsa = sarsa;
 			this.model = (PlotModel<?>) model.getClass().getConstructors()[0].newInstance(agents, model.happeningDirector);
 			
 			for(LauncherAgent ag : agents) {
@@ -377,6 +383,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		public void run() {
 			try {
 				runner.initialize(args, model, agents, agSrc);
+				sarsa.setPlotModel((FeaturePlotModel)model);
 				runner.run();
 			} catch (JasonException e) {
 				e.printStackTrace();

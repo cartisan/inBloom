@@ -23,11 +23,18 @@ import inBloom.storyworld.Character;
  */
 public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> extends PlotModel<EnvType> {
 	
+	
+	/**
+	 * Set these to true in order to activate agent's moods and agent names as features
+	 */
+	private final boolean MOODFEATURES = false;
+	
+	
 	// a list of all possible domain-specific features that are relevant to the model state
 	private LinkedList<String> allPossibleFeatures;
 	// IDEA: Make has HashSet<String, boolean> -> only have one variable
 	// a list of all currently activated features, meaning all features present in the current state of the model
-	private LinkedList<String> presentFeatures;
+	public LinkedList<String> presentFeatures;
 	
 	private Collection<Character> allCharacters;
 	
@@ -39,7 +46,7 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	
 	// TODO so far only one character can have a mood
 	private final String[] moodTypes = {"bored",
-										"disdainfaul",
+										"disdainful",
 										"anxious",
 										"hostile",
 										"docile",
@@ -69,11 +76,18 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 		
 		// Create a list of all domain-specific features
 		this.allPossibleFeatures = this.getDomainDependentFeatures();
-		// Add all domain independent features
-		for(Character character: this.allCharacters) {
-			this.createMoodFeatures(this.allCharacters, this.moodTypes);
-			this.createMoodFeatures(this.allCharacters, this.moodStrength);
+		
+		
+		// If requested: add domain independent mood features
+		if(MOODFEATURES) {
+			for(Character character: this.allCharacters) {
+				this.createMoodFeatures(this.allCharacters, this.moodTypes);
+				this.createMoodFeatures(this.allCharacters, this.moodStrength);
+			}
 		}
+		
+		
+		logger.info("Initialisiere Present Features");
 		
 		// Initializing presentFeature List. At the beginning the List is empty, so no Features are activated
 		// with the exception of whatever getInitiallyActivatedFeatures returns
@@ -111,7 +125,9 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	}
 	
 	public LinkedList<String> getPresentFeatures() {
-		this.updateMoodFeatures();
+		if(MOODFEATURES) {
+			this.updateMoodFeatures();
+		}
 		return this.presentFeatures;
 	}
 	
@@ -141,12 +157,14 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	 */
 	public boolean activateFeature(String featureName) {
 		if(!this.allPossibleFeatures.contains(featureName)) {
+			System.out.println("Feature List:\n" + this.allPossibleFeatures);
+			System.out.println("Feature not found: " + featureName);
 			logger.info("Feature " + featureName + " could not be enabled, because it does not exist "
 					+ "in the list of all possible features.");
 			throw new IllegalArgumentException("No feature with this name could be found.");
 		} else if (this.presentFeatures.contains(featureName)){
 			// the feature is already activated
-			logger.info("Feature " + featureName + " could not be activated because it was already activated.");
+			// logger.info("Feature " + featureName + " could not be activated because it was already activated.");
 			return false;
 		} else {
 			// The feature is valid and hasn't been activated yet
@@ -178,6 +196,7 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 			assert(this.allPossibleFeatures.contains(featureName)): "FeatureName is present in presentFeature "
 																	+ "but not in allPossibleFeatures";
 			this.presentFeatures.remove(featureName);
+			logger.info("Feature " + featureName + " was deleted");
 			return true;
 		}
 	}

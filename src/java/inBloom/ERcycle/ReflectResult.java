@@ -34,7 +34,7 @@ public class ReflectResult {
 	 * simulation and call finish().
 	 * runner and personalities do not matter in this case.
 	 */
-	protected boolean shouldContinue;
+	public boolean shouldContinue;
 	
 	public ReflectResult(PlotLauncher<?, ?> runner, PlotModel<?> model, List<LauncherAgent> agents) {
 		this(runner, model, agents, true);

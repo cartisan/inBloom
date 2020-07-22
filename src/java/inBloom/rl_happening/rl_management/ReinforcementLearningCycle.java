@@ -1,6 +1,3 @@
-/**
- * 
- */
 package inBloom.rl_happening.rl_management;
 
 import java.util.List;
@@ -11,6 +8,7 @@ import inBloom.PlotLauncher;
 import inBloom.PlotModel;
 import inBloom.ERcycle.EngageResult;
 import inBloom.ERcycle.PlotCycle;
+import inBloom.ERcycle.ReflectResult;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
 import inBloom.helper.MoodMapper;
@@ -48,7 +46,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	 * The launcher of the last cycle.
 	 */
 	protected PlotLauncher<?,?> lastRunner;
-	protected FeaturePlotModel<?> plotModel;
+	//protected FeaturePlotModel<?> plotModel;
 	
 	
 	protected SarsaLambda sarsa;
@@ -94,10 +92,14 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		 * - initialize eligibility Traces
 		 */
 		log("Initialising Sarsa(Lambda)");
-		this.sarsa = new SarsaLambda(this.getPlotModel(agents), this); // this is given for SarsaLambda to have access to the log method
+		this.sarsa = new SarsaLambda(null, this); // this is given for SarsaLambda to have access to the log method
 
 	}
 
+	
+	
+	
+	
 	@Override
 	protected ReflectResultRL reflect(EngageResult erOriginal) {
 		EngageResult er = (EngageResult) erOriginal;
@@ -112,6 +114,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		this.log(" Current Tellability: " + currTellability);
 		
 		
+		// 2. If we reached the end, stop
 		if(!shouldContinue()) {
 			return new ReflectResultRL(null, null, null, null, false);
 		}
@@ -122,7 +125,14 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		for (Personality pers : this.lastPersonalities) {
 			this.log("\t" + pers.toString());
 		}*/
-
+		
+		// 3. New parameters
+		// -> give Tellability as a reward to SarsaLambda
+		// let SarsaLambda calculate and update weights
+		sarsa.updateWeightsAtEndOfEpisode(currTellability);
+		
+		
+		// 4. Create and start new run
 		this.lastRunner = this.getPlotLauncher();
 		this.lastRunner.setShowGui(false);
 
@@ -131,63 +141,9 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		PlotModel<?> model = this.getPlotModel(agents);
 		return new ReflectResultRL(this.lastRunner, model, agents, sarsa);
 		
-//		return null;
 	}
 
-	// initial = initial for each run = each episode = each plot
-	@Override
-	protected ReflectResultRL createInitialReflectResult() {
-		
-		this.log("Creating initial Reflect Results");
-		
-		/* 
-		 * RUNNER
-		 * 
-		 * We get the story specific runner
-		 */
-		PlotLauncher<?, ?> runner = this.getPlotLauncher();
-		// TODO this was in Sven's Code, but it isn't relevant to me now. Maybe later though.
-		runner.setShowGui(false);
-		
-		
-		/* 
-		 * AGENTS
-		 * 
-		 * A set of functioning LauncherAgents is created from a list of names and a seperate
-		 * list of matching personalities
-		 */
-		List<LauncherAgent> agents = this.createAgs(this.agentNames, this.agentPersonalities);
 
-		
-		/* 
-		 * MODEL
-		 * 
-		 * We get the story specific model
-		 */
-		this.plotModel = this.getPlotModel(agents);
-		// TODO hier HappeningScheduler übergeben -> s. RedhenHappening
-		
-		
-		/*
-		 * We create the ReflectResultRL using the runner, model and LauncherAgents we just got.
-		 * 
-		 * A ReflectResultRL saves the information we need for the next simulation, e.g.
-		 * the PlotLauncher, the Model and the LauncherAgents
-		 */
-		ReflectResultRL ReflectResultRL = new ReflectResultRL(runner, this.plotModel, agents, sarsa);
-		
-		this.log("Cycle " + currentCycle);
-		
-		return ReflectResultRL;
-	}
-	
-	@Override
-	protected void finish(EngageResult erOriginal) {
-		EngageResult er = (EngageResult) erOriginal;
-		// Print results
-		// flush and close handled by super implementation
-		super.finish(er);
-	}
 
 	/**
 	 * @Override
@@ -197,8 +153,11 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	 * @return EngageResult containing the graph of this simulation and its tellability score.
 	 */
 	protected EngageResult engage(ReflectResultRL rr) {
-		log("  Engaging...");
-		log("    Parameters: " + rr.toString());
+		if(currentCycle != 0) {
+			log("  Engaging...");
+//			log("    Parameters: " + rr.toString());
+		}
+		
 		PlotLauncher<?,?> runner = rr.getRunner();
 
 		try {
@@ -206,7 +165,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 			// create AutomatedHappeningDirector with SarsaLambda
 			AutomatedHappeningDirector hapDir = new AutomatedHappeningDirector(this.sarsa);
 			// create a Thread that also gets the AutomatedHappeningDirector. RLCycle will then attach the AutomatedHappeningDirector to the given PlotLauncher
-			Thread t = new Thread(new RLCycle(runner, rr.getModel(), cycle_args, rr.getAgents(), this.agentSrc, hapDir));
+			Thread t = new Thread(new RLCycle(runner, rr.getModel(), cycle_args, rr.getAgents(), this.agentSrc, hapDir, sarsa));
 			
 			t.start();
 			
@@ -264,6 +223,38 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	}
 	
 	
+	/**
+	 * Starts the cycle.
+	 */
+	@Override
+	public void run() {
+		log("Start running");
+		ReflectResultRL rr = (ReflectResultRL)this.createInitialReflectResult();
+		EngageResult er = null;
+		
+		while(rr.shouldContinue) {
+			++currentCycle;
+			log("\nRunning cycle: " + currentCycle);
+			er = engage(rr);
+			stories.add(er.getPlotGraph());
+			if (SHOW_FULL_GRAPH){
+				stories.add(er.getAuxiliaryGraph());
+			}
+			rr = this.reflect(er);
+		}
+		this.finish(er);
+	}
+	
+	
+	
+	
+	@Override
+	protected void finish(EngageResult erOriginal) {
+		EngageResult er = (EngageResult) erOriginal;
+		// Print results
+		// flush and close handled by super implementation
+		super.finish(er);
+	}
 	
 	/**
 	 *  These methods should be overriden with the specification of the relevant story
