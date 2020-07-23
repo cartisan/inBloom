@@ -88,9 +88,9 @@ public class SarsaLambda {
 		this.featurePlotModel = model;
 		this.daddy = daddy;
 		
-		if(this.featurePlotModel != null) {
-			this.initializeSarsa();
-		}
+//		if(this.featurePlotModel != null) {
+//			this.initializeSarsa();
+//		}
 		
 	}
 	
@@ -123,10 +123,25 @@ public class SarsaLambda {
 		// Initialize previousHappening (null) -> TODO change to when first called later? But first, to make sure no NullPointer when starting or similar, we put it here
 		this.previousAction = null;
 
+		
+		
+		
 		daddy.log("Initialising Weights");
 		this.initializeWeights();
+		
+		daddy.log("Weights:");
+		this.printFeatureActionValues(this.weights);
+		
+		
+		
+		
 		daddy.log("Initialising eligibility traces");
 		this.initializeEligibilityTraces();
+		
+		daddy.log("Eligibility Traces:");
+		this.printFeatureActionValues(this.eligibilityTraces);
+		
+		
 		
 		
 		this.daddy.log(toString());
@@ -166,7 +181,7 @@ public class SarsaLambda {
 			
 			// get the weight of this specific state-action-dependent feature (where states are represented as features?)
 			for(String presentFeature: presentFeatures) {
-				qvalue += this.getWeightOfFeature(presentFeature, action);
+				qvalue += this.getFeatureActionDependentValue(weights, presentFeature, action);
 			}
 			
 
@@ -264,7 +279,7 @@ public class SarsaLambda {
 
 			for(Happening<?> happening: this.eligibilityTraces.get(feature).keySet()) {
 				
-				double eligibilityValue = this.getEligibilityOfFeature(feature, happening);
+				double eligibilityValue = this.getFeatureActionDependentValue(eligibilityTraces, feature, happening);
 				double newEligibilityValue = eligibilityValue * this.gamma * this.lambda;
 				
 				this.eligibilityTraces.get(feature).put(happening, newEligibilityValue);
@@ -278,7 +293,7 @@ public class SarsaLambda {
 
 			for(Happening<?> happening: this.eligibilityTraces.get(previouslyPresentFeature).keySet()) {
 				
-				double eligibilityValue = this.getEligibilityOfFeature(previouslyPresentFeature, happening);
+				double eligibilityValue = this.getFeatureActionDependentValue(eligibilityTraces, previouslyPresentFeature, happening);
 				double newEligibilityValue = eligibilityValue + 1;
 				
 				
@@ -311,7 +326,7 @@ public class SarsaLambda {
 					
 					// calculate new weight
 					double weight = happeningToWeight.get(action);
-					double e = this.getEligibilityOfFeature(feature, action);
+					double e = this.getFeatureActionDependentValue(eligibilityTraces, feature, action);
 					weight += alpha * delta * e;
 					
 					// set new weight
@@ -399,7 +414,7 @@ public class SarsaLambda {
 			}
 
 			// set the initial weight for this feature to the generated value
-			this.weights.put(feature, actionDependentEligibilityTrace);
+			this.eligibilityTraces.put(feature, actionDependentEligibilityTrace);
 
 		}
 	}
@@ -449,20 +464,8 @@ public class SarsaLambda {
 	 * @return
 	 * 			The weight (int) of the given feature
 	 */
-	private double getWeightOfFeature(String feature, Happening<?> action) {
-		return this.weights.get(feature).get(action);
-	}
-	
-	
-	/** Returns the current eligibility value of the given feature
-	 * 
-	 * @param feature
-	 * 			A string representing the feature that we want to know the eligibility value of
-	 * @return
-	 * 			The eligibility value (double) of the given feature
-	 */
-	private double getEligibilityOfFeature(String feature, Happening<?> action) {
-		return this.eligibilityTraces.get(feature).get(action);
+	private double getFeatureActionDependentValue(HashMap<String, HashMap<Happening<?>, Double>> featureActionValues, String feature, Happening<?> action) {
+		return featureActionValues.get(feature).get(action);
 	}
 	
 	
@@ -485,18 +488,19 @@ public class SarsaLambda {
 	 */
 	
 	
-	public String printWeights() {
+	public String printFeatureActionValues(HashMap<String, HashMap<Happening<?>, Double>> featureActionValues) {
 		String formatString = "%25s";
 		String formatNumber = "%25f";
 		String featureFormat = "%21s";
 		
 		String result = "";
-		
-//		HashMap<String, HashMap<Happening<?>, Double>> weights
-		
+				
 		result += String.format(featureFormat, "."); // empty space for feature
 		
-		for(Happening<?> happening: this.weights.get(allFeatures.getFirst()).keySet()) {
+		//daddy.log(featureActionValues.toString());
+		//daddy.log(allFeatures.toString());
+		
+		for(Happening<?> happening: featureActionValues.get(allFeatures.getFirst()).keySet()) {
 			result += String.format(formatString, happening);
 		}
 		
@@ -505,14 +509,14 @@ public class SarsaLambda {
 		for(String feature: this.weights.keySet()) {
 			result += String.format(featureFormat, feature) + ":";
 			
-			for(Happening<?> happening: this.weights.get(feature).keySet()) {
-				//double weight = this.weights.get(feature).get(happening);
-				double weight = this.getWeightOfFeature(feature, happening);
-				double weightRounded = Math.round(weight*1000000);
-				weightRounded = weightRounded /1000000;
+			for(Happening<?> happening: featureActionValues.get(feature).keySet()) {
+				
+				double featureActionValue = this.getFeatureActionDependentValue(featureActionValues, feature, happening);
+				double featureActionValueRounded = Math.round(featureActionValue*1000000);
+				featureActionValueRounded = featureActionValueRounded /1000000;
 				
 //				gerundet = Math.round(deineZahl * 10) / 10;
-				result += String.format(formatNumber, weightRounded);
+				result += String.format(formatNumber, featureActionValueRounded);
 			}
 			result += "\n";
 		}
@@ -544,11 +548,13 @@ public class SarsaLambda {
 		}
 		
 		result += "Weights:\n";
-		result += this.printWeights();
+		//result += this.printWeights();
+		result += printFeatureActionValues(this.weights);
 		
 		result += "\nEligibility Traces:\n";
 		
-		result += this.printEligibilityTraces();
+		//result += this.printEligibilityTraces();
+		result += printFeatureActionValues(this.eligibilityTraces);
 			
 		return result;
 	}

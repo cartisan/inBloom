@@ -383,7 +383,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		public void run() {
 			try {
 				runner.initialize(args, model, agents, agSrc);
-				sarsa.setPlotModel((FeaturePlotModel)model);
+				sarsa.setPlotModel((FeaturePlotModel<?>)model);
 				runner.run();
 			} catch (JasonException e) {
 				e.printStackTrace();

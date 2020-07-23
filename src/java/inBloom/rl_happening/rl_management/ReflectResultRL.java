@@ -46,10 +46,6 @@ public class ReflectResultRL extends ReflectResult {
 	
 	// TODO DEP
 	public String toString() {
-//		String result = "Agents: ";
-//		for (LauncherAgent ag : this.agents) {
-//			result += ag.name + ": " + ag.personality + ", ";
-//		}
 		
 		String result = "";
 		
@@ -59,13 +55,12 @@ public class ReflectResultRL extends ReflectResult {
 			result += "               " + happening + "\n";
 		}
 		
-		HashMap<String, HashMap<Happening<?>, Double>> weights = this.sarsa.weights;
 		result += "Weights:\n";
-		result += this.sarsa.printWeights();
+		result += sarsa.printFeatureActionValues(sarsa.weights);
 		
 		result += "\nEligibility Traces:\n";
 		
-		result += this.sarsa.printEligibilityTraces();
+		result += sarsa.printFeatureActionValues(sarsa.eligibilityTraces);
 			
 		return result;
 	}
