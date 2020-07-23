@@ -49,11 +49,7 @@ public class SarsaLambda {
 	protected HashMap<String, HashMap<Happening<?>, Double>> weights;		/* String = Name of the Feature
 																			 * Happening = Action (incl. empty Happening)
 	 																		 * Integer = Weight */
-//	private HashBasedTable<Integer, Happening<?>, Integer> qValues; /* Rows: States (Integer)
-//	 															  	 * Columns: Actions (Happenings)
-//	 															  	 * Values: Q-Values (State-Action-Utility)*/
-	
-	//private HashMap<StateActionPair, Integer> qValues;
+
 	private HashMap<Happening<?>, Double> qValues;
 	
 	
