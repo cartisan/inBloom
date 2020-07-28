@@ -1,23 +1,16 @@
-/**
- * 
- */
 package inBloom.rl_happening.rl_management;
 
-import java.util.HashSet;
 import java.util.List;
 
 import inBloom.LauncherAgent;
 import inBloom.PlotEnvironment;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
-import inBloom.ERcycle.CounterfactualityEngageResult;
 import inBloom.ERcycle.EngageResult;
 import inBloom.ERcycle.PlotCycle;
 import inBloom.ERcycle.ReflectResult;
-import inBloom.ERcycle.PlotCycle.Cycle;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
-import inBloom.helper.Counterfactuality;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
 import jason.asSemantics.Personality;
@@ -53,9 +46,10 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	 * The launcher of the last cycle.
 	 */
 	protected PlotLauncher<?,?> lastRunner;
+	//protected FeaturePlotModel<?> plotModel;
 	
 	
-	private SarsaLambda rlApplication;
+	protected SarsaLambda sarsa;
 	
 	
 
@@ -74,6 +68,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	 * 			in the same order as the list of the agents' names
 	 */
 	public ReinforcementLearningCycle(String agentSource, String[] agentNames, Personality[] agentPersonalities) {
+		
 		super(agentSource, true);
 		
 		this.agentNames = agentNames;
@@ -81,12 +76,32 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 //		this.originalGraph = originalGraph; // TODO why needed? -> for Tellability or GUI or something? Analysing?
 //		this.originalMood = originalMood; // TODO why needed?
 		
-		this.rlApplication = new SarsaLambda();
-		this.rlApplication.initializeParameters();
+		/* 
+		 * AGENTS -> TODO same (copied) as in in this class: createInitialReflectResultRL
+		 * 
+		 * A set of functioning LauncherAgents is created from a list of names and a seperate
+		 * list of matching personalities
+		 */
+		List<LauncherAgent> agents = this.createAgs(this.agentNames, this.agentPersonalities);
+		
+		
+		/**
+		 * SARSA(LAMBDA) - Initialization
+		 * - create all Happenings
+		 * - initialize Weights
+		 * - initialize eligibility Traces
+		 */
+		log("Initialising Sarsa(Lambda)");
+		this.sarsa = new SarsaLambda(null, this); // this is given for SarsaLambda to have access to the log method
+
 	}
 
+	
+	
+	
+	
 	@Override
-	protected ReflectResult reflect(EngageResult erOriginal) {
+	protected ReflectResultRL reflect(EngageResult erOriginal) {
 		EngageResult er = (EngageResult) erOriginal;
 		this.log("I am reflecting");
 		
@@ -98,35 +113,10 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		double currTellability = tellability.compute();
 		this.log(" Current Tellability: " + currTellability);
 		
-		// Save tellability, graph and agent's personality if it was better than the best before
-		/*if(currTellability > this.bestTellability) {
-			this.bestTellability = currTellability;
-			this.log("New best Tellability: " + this.bestTellability);
-			this.bestPersonalities = this.lastPersonalities;
-			this.bestResult = er;
-
-		}
-		this.log("Best Tellability So Far: " + this.bestTellability);*/
-
-
-		// COUNTERFACTUALITY
-		/*Counterfactuality counterfactuality = er.getCounterfactuality();
-		double currCounterfactuality = counterfactuality.compute();
-		this.log(" Current Counterfactuality: " + currCounterfactuality);
-		if(currCounterfactuality > this.bestCounterfactuality) {
-			this.bestCounterfactuality = currCounterfactuality;
-			this.log("New best counterfactuality: " + this.bestCounterfactuality);
-			this.bestPersonalities = this.lastPersonalities;
-			this.bestResult = er;
-		}
-		this.log("Best Counterfactuality So Far: " + this.bestCounterfactuality);*/
-
-		// Stop cycle if there are no other personality combinations
-		/*if(!this.personalityIterator.hasNext() || currentCycle >= this.endCycle) {
-			return new ReflectResult(null, null, null, false);
-		}*/
+		
+		// 2. If we reached the end, stop
 		if(!shouldContinue()) {
-			return new ReflectResult(null, null, null, false);
+			return new ReflectResultRL(null, null, null, null, false);
 		}
 
 		// Start the next cycle
@@ -135,75 +125,136 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		for (Personality pers : this.lastPersonalities) {
 			this.log("\t" + pers.toString());
 		}*/
-
+		
+		// 3. New parameters
+		// -> give Tellability as a reward to SarsaLambda
+		// let SarsaLambda calculate and update weights
+		sarsa.updateWeightsAtEndOfEpisode(currTellability);
+		
+		
+		// 4. Create and start new run
 		this.lastRunner = this.getPlotLauncher();
 		this.lastRunner.setShowGui(false);
 
 		List<LauncherAgent> agents = this.createAgs(this.agentNames, this.agentPersonalities);
 
 		PlotModel<?> model = this.getPlotModel(agents);
-		return new ReflectResult(this.lastRunner, model, agents);
+		return new ReflectResultRL(this.lastRunner, model, agents, sarsa);
 		
-//		return null;
 	}
 
+
+
+	/**
+	 * @Override
+	 * 
+	 * Runs a single simulation until it is paused (finished by Plotmas or user) or some time has passed.
+	 * @param rr ReflectResultRL containing Personality array with length equal to agent count as well as PlotLauncher instance
+	 * @return EngageResult containing the graph of this simulation and its tellability score.
+	 */
+	protected EngageResult engage(ReflectResultRL rr) {
+		if(currentCycle != 0) {
+			log("  Engaging...");
+//			log("    Parameters: " + rr.toString());
+		}
+		
+		PlotLauncher<?,?> runner = rr.getRunner();
+
+		try {
+			
+			// create AutomatedHappeningDirector with SarsaLambda
+			AutomatedHappeningDirector hapDir = new AutomatedHappeningDirector(this.sarsa);
+			// create a Thread that also gets the AutomatedHappeningDirector. RLCycle will then attach the AutomatedHappeningDirector to the given PlotLauncher
+			Thread t = new Thread(new RLCycle(runner, rr.getModel(), cycle_args, rr.getAgents(), this.agentSrc, hapDir, sarsa));
+			
+			t.start();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		MASConsoleGUI.get().setPause(false);
+		boolean hasAddedListener = false;
+		long startTime = System.currentTimeMillis();
+		while(isRunning) {
+			try {
+				// This is needed in the loop, because the plot environment is null before starting
+				if(!hasAddedListener) {
+					if(runner.getEnvironmentInfraTier() != null) {
+						if(runner.getEnvironmentInfraTier().getUserEnvironment() != null) {
+							runner.getUserEnvironment().addListener(this);
+							hasAddedListener = true;
+						}
+					}
+				}
+				// Handle the timeout if it was set
+				if(TIMEOUT > -1 && (System.currentTimeMillis() - startTime) >= TIMEOUT && PlotEnvironment.getPlotTimeNow() >= TIMEOUT) {
+					log("[PlotCycle] SEVERE: timeout for engagement step triggered, analyzing incomplete story and moving on");
+					isRunning = false;
+				}
+				Thread.sleep(150);
+			} catch (InterruptedException e) {
+			}
+		}
+		while(isPaused) {
+			try {
+				Thread.sleep(150);
+			} catch(InterruptedException e) {
+			}
+		}
+		
+		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
+		Tellability tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
+		analyzedGraph.setName("ER Cycle, engagement step " + currentCycle);
+		log("Tellability" + Double.toString(tel.compute()));
+		
+		MoodMapper moodData = runner.getUserModel().moodMapper;
+		EngageResult er = this.createEngageResult(rr, runner, analyzedGraph, tel, moodData);
+		
+		if (PlotCycle.SHOW_FULL_GRAPH) {
+			PlotDirectedSparseGraph displayGraph = PlotGraphController.getPlotListener().getGraph().clone();
+			displayGraph.setName("ER Cycle (full), step " + currentCycle);
+			er.setAuxiliaryGraph(displayGraph);
+		}
+		
+		runner.reset();
+		isRunning = true;
+		return er;
+	}
+	
+	
+	/**
+	 * Starts the cycle.
+	 */
 	@Override
-	protected ReflectResult createInitialReflectResult() {
+	public void run() {
+		log("Start running");
+		ReflectResultRL rr = (ReflectResultRL)this.createInitialReflectResult();
+		EngageResult er = null;
 		
-		this.log("Creating initial Reflect Results");
-		
-		/* 
-		 * RUNNER
-		 * 
-		 * We get the story specific runner
-		 */
-		PlotLauncher<?, ?> runner = this.getPlotLauncher();
-		// TODO this was in Sven's Code, but it isn't relevant to me now. Maybe later though.
-		runner.setShowGui(false);
-		
-		
-		/* 
-		 * AGENTS
-		 * 
-		 * A set of functioning LauncherAgents is created from a list of names and a seperate
-		 * list of matching personalities
-		 */
-		List<LauncherAgent> agents = this.createAgs(this.agentNames, this.agentPersonalities);
-
-		
-		/* 
-		 * MODEL
-		 * 
-		 * We get the story specific model
-		 */
-		PlotModel<?> model = this.getPlotModel(agents);
-		// TODO hier HappeningScheduler übergeben -> s. RedhenHappening
-		
-		
-		/*
-		 * We create the ReflectResult using the runner, model and LauncherAgents we just got.
-		 * 
-		 * A ReflectResult saves the information we need for the next simulation, e.g.
-		 * the PlotLauncher, the Model and the LauncherAgents
-		 */
-		ReflectResult reflectResult = new ReflectResult(runner, model, agents);
-		
-		this.log("Cycle " + currentCycle);
-		
-		return reflectResult;
+		while(rr.shouldContinue) {
+			++currentCycle;
+			log("\nRunning cycle: " + currentCycle);
+			er = engage(rr);
+			stories.add(er.getPlotGraph());
+			if (SHOW_FULL_GRAPH){
+				stories.add(er.getAuxiliaryGraph());
+			}
+			rr = this.reflect(er);
+		}
+		this.finish(er);
 	}
+	
+	
+	
 	
 	@Override
 	protected void finish(EngageResult erOriginal) {
 		EngageResult er = (EngageResult) erOriginal;
 		// Print results
-		this.log("This is the end.");
 		// flush and close handled by super implementation
 		super.finish(er);
 	}
-
-	
-	
 	
 	/**
 	 *  These methods should be overriden with the specification of the relevant story
@@ -211,7 +262,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	
 	public abstract PlotLauncher<?, ?> getPlotLauncher();
 	
-	public abstract PlotModel<?> getPlotModel(List<LauncherAgent> agents);
+	public abstract FeaturePlotModel<?> getPlotModel(List<LauncherAgent> agents);
 	
 
 	

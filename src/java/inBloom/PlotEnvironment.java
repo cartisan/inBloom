@@ -39,6 +39,7 @@ import inBloom.helper.TermParser;
 import inBloom.jason.PlotAwareAg;
 import inBloom.jason.PlotAwareCentralisedAgArch;
 import inBloom.jason.PlotAwareCentralisedRuntimeServices;
+import inBloom.rl_happening.rl_management.FeaturePlotModel;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Location;
 

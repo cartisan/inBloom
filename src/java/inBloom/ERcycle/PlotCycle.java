@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Font;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +31,9 @@ import inBloom.graph.PlotGraphController;
 import inBloom.helper.EnvironmentListener;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
+import inBloom.rl_happening.rl_management.FeaturePlotModel;
+import inBloom.rl_happening.rl_management.SarsaLambda;
+import inBloom.storyworld.HappeningDirector;
 
 /**
  * Class which facilitates running a cycle of multiple simulations.
@@ -82,6 +86,8 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		this.cycleFrame = new JFrame("Plot Cycle");
 		this.cycleFrame.setLayout(new BorderLayout());
 
+		logTextArea.setFont(new Font("Menlo", Font.PLAIN, 12));
+		
 		// setup text field
 		JScrollPane scroll = new JScrollPane(this.logTextArea);
 		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -274,9 +280,9 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 
 		while(rr.shouldContinue) {
 			++currentCycle;
-			this.log("Running cycle: " + currentCycle);
-			er = this.engage(rr);
-			this.stories.add(er.getPlotGraph());
+			log("\nRunning cycle: " + currentCycle);
+			er = engage(rr);
+			stories.add(er.getPlotGraph());
 			if (SHOW_FULL_GRAPH){
 				this.stories.add(er.getAuxiliaryGraph());
 			}
@@ -297,7 +303,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 * '\n' is appended automatically.
 	 * @param string Message to log
 	 */
-	protected void log(String string) {
+	public void log(String string) {
 		if(this.logTextArea != null) {
 			this.logTextArea.append(string + "\n");
 			this.logTextArea.setCaretPosition(this.logTextArea.getText().length());
@@ -333,6 +339,53 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 			try {
 				this.runner.initialize(this.args, this.model, this.agents, this.agSrc);
 				this.runner.run();
+			} catch (JasonException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	
+	
+	
+	
+	
+	/**
+	 * Runnable for a single (rl) simulation.
+	 */
+	public static class RLCycle implements Runnable {
+		
+		private PlotLauncher<?, ?> runner;
+		private PlotModel<?> model;
+		private String[] args;
+		private List<LauncherAgent> agents;
+		private String agSrc;
+		private SarsaLambda sarsa;
+		
+		public RLCycle(PlotLauncher<?, ?> runner, PlotModel<?> model, String[] args, List<LauncherAgent> agents, String agSrc, HappeningDirector hapDir, SarsaLambda sarsa) throws Exception {
+			this.runner = runner;
+			this.args = args;
+			this.agents = agents;
+			this.agSrc = agSrc;
+			this.sarsa = sarsa;
+			this.model = (PlotModel<?>) model.getClass().getConstructors()[0].newInstance(agents, model.happeningDirector);
+			
+			for(LauncherAgent ag : agents) {
+				model.addCharacter(ag);
+			}
+			
+			// TODO add SarsaLambda to the IslandLauncher, so the IslandLauncher can give it to the AutomatedHappeningDirector
+			// Alternative: Let the ReinforcementLearningCycle create the AUtomatedHappeningDirector (with its known SarsaLambda) and give it to
+			// this cycle, so here we can add the AutomatedHappeningDirector to the Launcher.
+			runner.setHappeningDirector(hapDir);
+		}
+
+		@Override
+		public void run() {
+			try {
+				runner.initialize(args, model, agents, agSrc);
+				sarsa.setPlotModel((FeaturePlotModel<?>)model);
+				runner.run();
 			} catch (JasonException e) {
 				e.printStackTrace();
 			}

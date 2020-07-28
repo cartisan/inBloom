@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import inBloom.graph.PlotGraphController;
 import inBloom.jason.PlotAwareAg;
 import inBloom.jason.PlotAwareCentralisedAgArch;
+import inBloom.storyworld.HappeningDirector;
 import jason.JasonException;
 import jason.asSemantics.Agent;
 import jason.asSyntax.PlanLibrary;
@@ -39,6 +40,15 @@ import jason.mas2j.AgentParameters;
 public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends PlotControlsLauncher {
 	protected static Logger logger = Logger.getLogger(PlotLauncher.class.getName());
 	public static String DEAULT_FILE_NAME = "launcher.mas2j";
+	
+	/**
+	 * The HappeningDirector used for this PlotLaunchers run
+	 * static such that the subclass IslandLauncher can access the happeningDirector in the static main method
+	 * when giving it to the IslandModel that is being initialized in that moment
+	 */
+	protected static HappeningDirector happeningDirector;
+	
+	
 	
     /** 
      * Subclasses need to set ENV_CLASS to the class of their PlotEnvironment implementation, e.g.
@@ -346,4 +356,14 @@ public class PlotLauncher<EnvType extends PlotEnvironment<ModType>, ModType exte
 	public void setDebug(Boolean bool) {
 		PlotLauncher.debug = bool;
 	}
+	
+	
+	public HappeningDirector getHappeningDirector() {
+		return this.happeningDirector;
+	}
+	
+	public void setHappeningDirector(HappeningDirector happeningDirector) {
+		this.happeningDirector = happeningDirector;
+	}
+	
 }

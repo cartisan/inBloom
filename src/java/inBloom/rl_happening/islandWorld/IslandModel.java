@@ -46,12 +46,36 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	
 	
 	/**
-	 * All feature names
+	 * All features as variables -> this way their names can be changed globally without risking errors
 	 */
-	static String[] features = {"isAlive",
-						 "isOnCruise",
-						 "hasAHut",
-						 "hasAtLeastOneFriend"};
+	public static final String alive = "isAlive";
+	public static final String onCruise = "onCruise";
+	public static final String onIsland = "isOnIsland";
+	public static final String hut = "hasHut";
+	public static final String friend = "hasAtLeastOneFriend";
+	public static final String hungry = "isHungry";
+	public static final String hasFood = "ownsFood";
+	public static final String sick = "isSick";
+	public static final String fire = "isBurning";
+	public static final String poisonedFood = "foodIsPoisoned";
+	public static final String homesick = "isHomesick";
+	
+	
+	/**
+	 * All feature names
+	 * Needs to be static in order to create features during initialisation
+	 */
+	static String[] features = {alive,
+								onCruise,
+								onIsland,
+								hut,
+								friend,
+								hungry,
+								hasFood,
+								sick,
+								fire,
+								poisonedFood,
+								homesick};
 	
 	
 	
@@ -97,6 +121,9 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		result.addPerception(agent.name, new PerceptAnnotation("hope"));
 		result.success = true;
 		
+		// activate Feature
+		this.activateFeature(onCruise);
+		
 		this.getStateValue();
 		
 		return result;
@@ -127,6 +154,8 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 
 		result.addPerception(agent.name, new PerceptAnnotation("joy"));
 		result.success = true;
+		
+		this.activateFeature(friend);
 
 		return result;
 	}
@@ -146,6 +175,8 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		result.success = true;
 		
+		this.activateFeature(hasFood);
+		
 		return result;
 	}
 
@@ -161,6 +192,11 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			// save the food for checking it's poisoness later
 			Food food = (Food)agent.get("food");
 			
+			// only if this was the only food that the agent owned, we can deactivate the feature
+			if(!agent.has("food")) {
+				this.deactivateFeature(hasFood);
+			}
+			
 			// In any case, the agent will eat
 			result.success = agent.eat("food").success;
 			logger.info(agent.name + " eats food.");
@@ -170,12 +206,17 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			this.environment.removePercept(agent.name, Literal.parseLiteral("hungry"));
 			logger.info(agent.name + "'s hunger: " + this.hunger.get(agent));
 			
+			this.deactivateFeature(hungry);
+			
 			// the Food may have been poisoned though
 			if(food.isPoisoned()) {
 				// TODO es wäre natürlich schöner, das hier direkt im Agent zu modellieren
 				agent.getPoisoned();
 				this.environment.addPercept(agent.name, Literal.parseLiteral("sick"));
 				logger.info(agent.name + " is sick.");
+				
+				this.deactivateFeature(poisonedFood);
+				this.activateFeature(sick);
 				
 				// hier könnte man result.success = false setzen, aber an sich hat er ja gegessen
 			}
@@ -191,30 +232,50 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		// you can only sleep if you have a safe place to sleep in
 		if(this.island.hasHut()) {
 			
-			this.island.enterSublocation(agent, island.hut.name);
+			/*
+			 * 1. GO TO HUT
+			 */
 			
+			this.island.enterSublocation(agent, island.hut.name);
 			logger.info(agent.name + " is in the hood. Hut I mean. This hut: " + island.hut.name);
 			
+			
+			/*
+			 * 2. SLEEP
+			 */
 			logger.info(agent.name + " is asleep.");
-
 			result.addPerception(agent.name, new PerceptAnnotation("relief"));
 
+			
+			/* 
+			 * 3. HEAL
+			 */
+			
 			// if agent was sick, then now he isn't anymore
 			if(agent.isSick) {
 				agent.heal();
 			}
 			
 			this.environment.removePercept(agent.name, Literal.parseLiteral("sick"));
-
-			this.island.leaveSublocation(agent, island.hut.name);
+			this.deactivateFeature(sick);
 			
+
+			
+			/*
+			 * 4. LEAVE HUT
+			 */
+			
+			this.island.leaveSublocation(agent, island.hut.name);
 			logger.info(agent.name + " has left the hut " + island.hut.name);
 			
+			
 			result.success = true;
+			
 			
 		} else {
 			result.success = false;
 		}
+		
 		
 		return result;
 	}
@@ -230,6 +291,8 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		// all agents on the island get the percept
 		this.environment.addPercept(this.island, Literal.parseLiteral("exists(hut)"));
+		
+		this.activateFeature(hut);
 		
 		result.addPerception(agent.name, new PerceptAnnotation("pride"));
 		
@@ -263,9 +326,12 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		result.addPerception(agent.name, new PerceptAnnotation("pride"));
 		logger.info(agent.name + " has extinguished the fire.");
 		
+		this.deactivateFeature(fire);
+		
 		result.success = true;
 		return result;
 	}
+
 	
 	
 	/**
@@ -291,11 +357,14 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			this.getEnvironment().killAgent(agent.name);
 			logger.info(agent.name + " has died.");
 			
+			this.deactivateFeature("isAlive");
+			
 			// stop story
 			//PlotLauncher.getRunner().pauseExecution();
 			
 		} else if(this.hunger.get(agent) >= 5) {
 			this.environment.addPercept(agent.name, Literal.parseLiteral("hungry"));
+			this.activateFeature(hungry);
 			logger.info(agent.name + " is hungry.");
 		}
 		
@@ -314,6 +383,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		// if the agent had at least 1 friend, delete 1 and show update in the logger
 		if(this.friends.get(agent) > 0) {
 			this.changeIndividualValue(this.friends, agent, -1);
+			this.deactivateFeature(friend);
 			logger.info(agent.name + " has lost a friend.");
 			logger.info(agent.name + " know has " + this.friends.get(agent) + " friends.");
 		}
@@ -361,6 +431,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			this.island.destroyHut();
 			// this is agent independent -> all agents on the island loose the percept
 			this.environment.removePercept(this.island, Literal.parseLiteral("exists(hut)"));
+			this.deactivateFeature(hut);
 		}
 	}
 	
@@ -505,14 +576,22 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 
 
 	@Override
-	public List<String> getAllPossibleFeatures() {
+	public LinkedList<String> getDomainDependentFeatures() {
 		LinkedList<String> allFeatures = new LinkedList<String>();
-		for(String i: this.features) {
+		for(String i: features) {
 			allFeatures.add(i);
 		}
 		return allFeatures;
 	}
 	
+	public LinkedList<String> getInitiallyActivatedFeatures() {
+		
+		LinkedList<String> initiallyActivatedFeatures = new LinkedList<String>();
+		
+		initiallyActivatedFeatures.add(alive);
+		
+		return initiallyActivatedFeatures;
+	}
 
 }
 

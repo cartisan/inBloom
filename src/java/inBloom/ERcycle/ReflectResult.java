@@ -16,19 +16,19 @@ public class ReflectResult {
 	 * Instance of the PlotLauncher for
 	 * the story in question.
 	 */
-	private PlotLauncher<?, ?> runner;
+	protected PlotLauncher<?, ?> runner;
 	/**
 	 * Agents that will be used by the runner 
 	 * to generate characters. Personalities
 	 * should be set appropriately already.
 	 */
-	private List<LauncherAgent> agents;
+	protected List<LauncherAgent> agents;
 	/**
 	 * Instance of PlotModel for the
 	 * next simulation. Will add
 	 * agents automatically.
 	 */
-	private PlotModel<?> model;
+	protected PlotModel<?> model;
 	/**
 	 * If this is false, the cycle will not execute another
 	 * simulation and call finish().

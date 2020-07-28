@@ -5,46 +5,45 @@ package inBloom.rl_happening.happenings;
 
 import java.util.function.Predicate;
 
-import inBloom.helper.PerceptAnnotation;
 import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.storyworld.Character;
-import inBloom.storyworld.Happening;
 
 /**
- * A Happening in which the patient is rescued by a ship
- * 
- * @author  Julia Wippermann
+ * @author juwi
+ *
  */
-public class ShipRescueHappening extends ConditionalHappening<IslandModel> {
-
+public class EmptyHappening extends ConditionalHappening<IslandModel> {
+	
 	/**
 	 * Constructor with trigger, patient and causalProperty
 	 * 
 	 * @see @ConditionalHappening.ConditionalHappening
 	 */
-	public ShipRescueHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
+	public EmptyHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
 		super(trigger, patient, causalProperty);
 	}
 
 	@Override
 	protected boolean hasEffect(IslandModel model, Character chara) {
-		return chara.location.equals(model.island);
+		return false;
 	}
 
 	@Override
 	protected void executeModelEffects(IslandModel model, Character chara) {
-		chara.goTo(model.civilizedWorld);
-		model.deactivateFeature(IslandModel.onIsland);
-		model.getLogger().info(chara.name + " was rescued!");
+		return;
 	}
 
 	@Override
 	protected String getConditionalPercept() {
-		return "rescued";
+		return null;
 	}
 
 	@Override
 	protected String getConditionalEmotion() {
-		return "gratitude";
+		return null;
+	}
+	
+	protected boolean isEmpty() {
+		return true;
 	}
 }

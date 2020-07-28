@@ -4,6 +4,7 @@
 package inBloom.rl_happening.rl_management;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import inBloom.LauncherAgent;
@@ -13,8 +14,8 @@ import inBloom.storyworld.HappeningDirector;
 import inBloom.storyworld.Character;
 
 /**
- * This is special type of PlotModel that creates and manages a set of features that can describe
- * a state of the model
+ * This is special type of PlotModel that additionally creates and manages a set of features that can
+ * describe a state of the model
  * 
  * @author Julia Wippermann
  * @version 3.2.20
@@ -22,11 +23,18 @@ import inBloom.storyworld.Character;
  */
 public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> extends PlotModel<EnvType> {
 	
+	
+	/**
+	 * Set these to true in order to activate agent's moods and agent names as features
+	 */
+	private final boolean MOODFEATURES = false;
+	
+	
 	// a list of all possible domain-specific features that are relevant to the model state
-	public List<String> allPossibleFeatures;
+	private LinkedList<String> allPossibleFeatures;
 	// IDEA: Make has HashSet<String, boolean> -> only have one variable
 	// a list of all currently activated features, meaning all features present in the current state of the model
-	public List<String> presentFeatures;
+	public LinkedList<String> presentFeatures;
 	
 	private Collection<Character> allCharacters;
 	
@@ -38,7 +46,7 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	
 	// TODO so far only one character can have a mood
 	private final String[] moodTypes = {"bored",
-										"disdainfaul",
+										"disdainful",
 										"anxious",
 										"hostile",
 										"docile",
@@ -50,10 +58,14 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 										   "fully"};
 	
 	
-	// reflections.getSubTypesOf(aClazz))
-	
 	// How to get the name of a mood:
 	// character.getMood().getFullName()
+	
+	
+	
+	/**
+	 * CONSTRUCTOR
+	 */
 	
 	public FeaturePlotModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
 		
@@ -62,16 +74,27 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 		// The Character HashMap has been initialized and filled with all Characters in the super Constructor
 		this.allCharacters = this.getCharacters();
 		
-		// Create a list of all possible domain-specific features
-		this.allPossibleFeatures = this.getAllPossibleFeatures();
-		// Add all domain independent features
-		for(Character character: this.allCharacters) {
-			this.createMoodFeatures(this.allCharacters, this.moodTypes);
-			this.createMoodFeatures(this.allCharacters, this.moodStrength);
+		// Create a list of all domain-specific features
+		this.allPossibleFeatures = this.getDomainDependentFeatures();
+		
+		
+		// If requested: add domain independent mood features
+		if(MOODFEATURES) {
+			for(Character character: this.allCharacters) {
+				this.createMoodFeatures(this.allCharacters, this.moodTypes);
+				this.createMoodFeatures(this.allCharacters, this.moodStrength);
+			}
 		}
 		
+		
+		logger.info("Initialisiere Present Features");
+		
+		// Initializing presentFeature List. At the beginning the List is empty, so no Features are activated
+		// with the exception of whatever getInitiallyActivatedFeatures returns
+		this.presentFeatures = new LinkedList<String>();
+		
 		// If possible, activate all features that should be initially activated before the start of the story
-		List<String> initiallyActivatedFeatures = this.getInitiallyActivatedFeatures();
+		LinkedList<String> initiallyActivatedFeatures = this.getInitiallyActivatedFeatures();
 		if(initiallyActivatedFeatures != null) {
 			for(String feature: initiallyActivatedFeatures) {
 				this.activateFeature(feature);
@@ -79,37 +102,42 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 		}
 	}
 	
-	public abstract List<String> getAllPossibleFeatures();
-		
+	
+	
+	
 	/**
-	 * Adds all Features from a given String array to the list opf all possible features, which
-	 * is everything needed to create a feature
-	 * 
-	 * @param featureNames
-	 * 			String Array of all feature names to be added as features
+	 * METHODS FOR GETTING FEATURE LISTS
 	 */
-	public void createMoodFeatures(Collection<Character> characters, String[] featureNames) {
-		for(Character character: characters) {
-			for(String featureName: featureNames) {
-				String feature = this.createCharacterDependentFeature(character, featureName);
-				this.allPossibleFeatures.add(feature);
-			}
-		}
+	
+	public LinkedList<String> getAllPossibleFeatures() {
+		return this.allPossibleFeatures;
 	}
+	
+	public abstract LinkedList<String> getDomainDependentFeatures();
 	
 	/**
 	 * Returns a list of features that should already be activated before the story starts.
 	 * 
 	 * @return A list of features that should already be activated before the story starts
 	 */
-	public List<String> getInitiallyActivatedFeatures() {
+	public LinkedList<String> getInitiallyActivatedFeatures() {
 		return null;
 	}
 	
-	public List<String> getPresentFeatures() {
-		this.updateMoodFeatures();
+	public LinkedList<String> getPresentFeatures() {
+		if(MOODFEATURES) {
+			this.updateMoodFeatures();
+		}
 		return this.presentFeatures;
 	}
+	
+
+	
+	
+	
+	/**
+	 * METHODS TO (DE)ACTIVATE FEATURES
+	 */
 	
 	/**
 	 * Activates a given feature for the PlotModel by adding the feature to the list of present features
@@ -129,13 +157,19 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 	 */
 	public boolean activateFeature(String featureName) {
 		if(!this.allPossibleFeatures.contains(featureName)) {
+			System.out.println("Feature List:\n" + this.allPossibleFeatures);
+			System.out.println("Feature not found: " + featureName);
+			logger.info("Feature " + featureName + " could not be enabled, because it does not exist "
+					+ "in the list of all possible features.");
 			throw new IllegalArgumentException("No feature with this name could be found.");
 		} else if (this.presentFeatures.contains(featureName)){
 			// the feature is already activated
+			// logger.info("Feature " + featureName + " could not be activated because it was already activated.");
 			return false;
 		} else {
 			// The feature is valid and hasn't been activated yet
 			this.presentFeatures.add(featureName);
+			logger.info("Feature " + featureName + " has been activated.");
 			return true;
 		}
 	}
@@ -162,16 +196,9 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 			assert(this.allPossibleFeatures.contains(featureName)): "FeatureName is present in presentFeature "
 																	+ "but not in allPossibleFeatures";
 			this.presentFeatures.remove(featureName);
+			logger.info("Feature " + featureName + " was deleted");
 			return true;
 		}
-	}
-
-	public String getMoodName(Character character) {
-		return character.getMood().getType();
-	}
-	
-	public String getMoodStrength(Character character) {
-		return character.getMood().getStrength();
 	}
 	
 	// TODO when will this be called? Whenever we ask for the presentFeatures
@@ -207,7 +234,45 @@ public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> exten
 		assert(strengthSuccess): "Mood Strength hadn't been activated yet.";
 	}
 	
+	
+	
+	
+	/**
+	 * METHODS TO CREATE (DOMAIN INDEPENDENT) FEATURES
+	 */
+	
 	private String createCharacterDependentFeature(Character character, String featureName) {
 		return character.name + featureName;
+	}
+	
+	/**
+	 * Adds all Features from a given String array to the list opf all possible features, which
+	 * is everything needed to create a feature
+	 * 
+	 * @param featureNames
+	 * 			String Array of all feature names to be added as features
+	 */
+	public void createMoodFeatures(Collection<Character> characters, String[] featureNames) {
+		for(Character character: characters) {
+			for(String featureName: featureNames) {
+				String feature = this.createCharacterDependentFeature(character, featureName);
+				this.allPossibleFeatures.add(feature);
+			}
+		}
+	}
+	
+	
+	
+	
+	/**
+	 * HELPER METHODS FOR BACKGROUND INFORMATION
+	 */
+	
+	public String getMoodName(Character character) {
+		return character.getMood().getType();
+	}
+	
+	public String getMoodStrength(Character character) {
+		return character.getMood().getStrength();
 	}
 }
