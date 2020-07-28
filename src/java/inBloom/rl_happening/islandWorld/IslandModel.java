@@ -144,8 +144,6 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		// new food isn't poisoned yet
 		//this.foodIsOkay = true;
 		
-		eat(agent);
-		
 		result.success = true;
 		
 		return result;
