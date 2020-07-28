@@ -1,4 +1,4 @@
-package inBloom.genetic;
+package inBloom.pso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +21,13 @@ import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.asSemantics.Personality;
 
 @SuppressWarnings("rawtypes")
-public class GeneticIsland extends GeneticEnvironment<IslandEnvironment, IslandModel>{
+public class ParticleIsland extends ParticleEnvironment<IslandEnvironment, IslandModel>{
 
-	public GeneticIsland() {
+	public ParticleIsland() {
 		super(IslandEnvironment.class, "islandAgent", 1, 3, 5, 30);
 	}
-	public GeneticIsland(int pop_size, int number_selections, double crossover_prob, double mutation_prob, int max_steps) {
-		super(IslandEnvironment.class, "islandAgent", 1, 3, 5, max_steps, pop_size, number_selections, crossover_prob, mutation_prob);
+	public ParticleIsland(int particle_count) {
+		super(IslandEnvironment.class, "islandAgent", 1, 3, 5, 30, particle_count);
 	}
 
 	@Override

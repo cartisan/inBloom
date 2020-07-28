@@ -4,8 +4,8 @@ public class GeneticLauncher {
 
 	public static void main(String[] args) { 
 		
-		GeneticIsland island = new GeneticIsland(20,4,0.2,0.1);
-		int time = 600;
+		GeneticIsland island = new GeneticIsland(20,4,0.2,0.1,20);
+		int time = 3600;
 		int max_repetitions = 50;
 		boolean customize = true;
 		
@@ -14,7 +14,7 @@ public class GeneticLauncher {
 			GeneticAlgorithm<?,?> ga = island.get_GA(args);
 			
 			// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
-			ga.setPersInit(true, false, false);
+			ga.setPersInit(true, true, true);
 			// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
 			ga.setHapInit(true, true, true);
 			// randomSelector, rouletteWheelSelection

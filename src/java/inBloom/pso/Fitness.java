@@ -1,4 +1,4 @@
-package inBloom.genetic;
+package inBloom.pso;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ import jason.runtime.MASConsoleGUI;
 @SuppressWarnings("rawtypes")
 public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends PlotLauncher implements EnvironmentListener {
 	
-	public GeneticEnvironment<?, ?> GEN_ENV;
+	public ParticleEnvironment<?, ?> GEN_ENV;
 	private static String[] args = {};
 
 	protected static boolean isRunning = false;
@@ -32,7 +32,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	protected static long TIMEOUT = -1;
 
 	@SuppressWarnings("unchecked")
-	public Fitness(GeneticEnvironment<?, ?> environment){
+	public Fitness(ParticleEnvironment<?, ?> environment){
 	//public Fitness(String[] args, GeneticEnvironment<?, ?> environment){
 		
 		this.GEN_ENV = environment;
@@ -44,16 +44,16 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		
 	}
 	
-	public double evaluate_Candidate(Candidate candidate) throws JasonException {
+	public double evaluate_Particle(Particle particle) throws JasonException {
 		
 		// Initialize Parameters
-		double result = 0;
+		double result = -1;
 		isRunning = true;
-		Integer simulation_length = candidate.get_simLength();
+		Integer simulation_length = particle.get_simLength();
 		
 		// Instantiate Objects with methods of GeneticEnvironment
-		ImmutableList<LauncherAgent> agents = GEN_ENV.init_agents(candidate.get_personality().values);
-		ImmutableList<Happening> happenings = GEN_ENV.init_happenings(agents, candidate.get_happenings().values);
+		ImmutableList<LauncherAgent> agents = GEN_ENV.init_agents(particle.get_personality().values);
+		ImmutableList<Happening> happenings = GEN_ENV.init_happenings(agents, particle.get_happenings().values);
 		
 		// Initialize MAS with a scheduled happening director
 		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
@@ -110,26 +110,24 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 				}
 				Thread.sleep(150);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (NullPointerException e) {
 			}
 		}
 
 		/*
 		 * Get the plot graph and compute corresponding tellability 
 		 */
-		
+
 		GraphAnalyzer analyzer = new GraphAnalyzer(PlotGraphController.getPlotListener().getGraph(), null);
 		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
+		Tellability tel = analyzer.runSynchronously(analyzedGraph);
+		result = tel.compute();
 		
-		try {
-			
-			Tellability tel = analyzer.runSynchronously(analyzedGraph);
-			result = tel.compute();
-			
-		}catch(RuntimeException e) {
-			pauseExecution();
-		}
+		/*
+		 * End simulation and reset runner. Need?
+		 */
+		
+		MASConsoleGUI.get().setPause(true);
+		runner.reset();
 
 		return result;
 	}
@@ -143,7 +141,6 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	
 	@Override
 	public void onPauseRepeat() {
-		
 		isRunning = false;
 	}
 	
@@ -192,7 +189,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			} catch (JasonException e) {
 				e.printStackTrace();
 			} catch (NullPointerException e) {
-				//e.printStackTrace();
+				e.printStackTrace();
 			}
 		}
 	}

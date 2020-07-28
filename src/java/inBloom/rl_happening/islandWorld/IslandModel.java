@@ -144,6 +144,8 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		// new food isn't poisoned yet
 		//this.foodIsOkay = true;
 		
+		eat(agent);
+		
 		result.success = true;
 		
 		return result;
@@ -292,7 +294,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			logger.info(agent.name + " has died.");
 			
 			// stop story
-			PlotLauncher.getRunner().pauseExecution();
+			//PlotLauncher.getRunner().pauseExecution();
 			
 		} else if(this.hunger.get(agent) >= 5) {
 			this.environment.addPercept(agent.name, Literal.parseLiteral("hungry"));

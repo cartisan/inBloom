@@ -10,7 +10,6 @@ import inBloom.PlotControlsLauncher;
 import inBloom.PlotLauncher;
 import inBloom.rl_happening.happenings.*;
 import inBloom.storyworld.ScheduledHappeningDirector;
-import inBloom.storyworld.Character;
 import jason.JasonException;
 import jason.asSemantics.Personality;
 import jason.infra.centralised.BaseCentralisedMAS;

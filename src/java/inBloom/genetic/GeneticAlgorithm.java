@@ -415,7 +415,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				int generation = population_best.size()-1;
 				
 				System.out.println();
-				System.out.println("New Generation: " + generation);
+				System.out.println("Generation: " + generation);
 				System.out.println();
 				System.out.println("Best Individuum: " + population_best.get(generation));
 				System.out.println("Generation Average: " + population_average.get(generation));
