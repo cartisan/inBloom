@@ -332,8 +332,6 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int personality = 0; personality < 5; personality++) {
 					
-
-
 					if(particles[index].get_personality(agents, personality) < min_personality[agents][personality])
 						min_personality[agents][personality] = particles[index].get_personality(agents, personality);
 					
@@ -389,8 +387,6 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	private void evaluate_particles() {
 		
-		Arrays.sort(particles);
-		
 		double average = 0;
 		double best = 0;
 
@@ -401,6 +397,8 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			if(particles[i].best_tellability()>best)
 				best = particles[i].best_tellability();
 		}
+		
+		average /= particle_count;
 		
 		// Determine if there was improvement
 		if(particles_best.size()>0) {
@@ -452,7 +450,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			System.out.println("This is the End!");
 			System.out.println();
 			System.out.println("Iterations: " + particles_best.size());
-			System.out.println("Best so far: " + particles[0].get_tellability() + " , with simulation length: " + particles[0].get_simLength());
+			System.out.println("Best particle found: " + particles[0].best_tellability() + " , with simulation length: " + particles[0].best_simLength());
 			System.exit(0);
 		}
 	}
@@ -474,7 +472,6 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		Fitness<EnvType,ModType> fit = new Fitness<EnvType,ModType>(GEN_ENV);
 		
-		System.out.println("Starting new Simulation: " + steps);
 		return new Particle(pers, velocity_pers, hap, velocity_hap, steps, fit);
 	}
 
@@ -483,7 +480,12 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 
 		particles = new Particle[particle_count];
 		
-		int index = 0;
+		// Initialize arrays for tracking minimum and maximum values
+		min_personality = new double[number_agents][5];
+		max_personality = new double[number_agents][5];
+		
+		min_happenings = new double[number_agents][number_happenings];
+		max_happenings = new double[number_agents][number_happenings];
 
 		// Set used initializers for personality
 		List<Integer> persInitializer = new ArrayList<Integer>();
@@ -520,7 +522,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		}
 		
 		// Initialize population
-		while(index<particle_count) {
+		for(int index=0; index<particle_count; index++) {
 			
 			// Create new personality chromosome
 			ChromosomePersonality personality = new ChromosomePersonality(number_agents);
@@ -810,11 +812,9 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	public void move_particles() {
 		
 		for(int i = 0; i < particle_count; i++) {
-
-			Fitness<EnvType,ModType> fit = new Fitness<EnvType,ModType>(GEN_ENV);
 			
 			particles[i].move();
-			particles[i].update_tellability(fit);
+			particles[i].update_tellability(new Fitness<EnvType,ModType>(GEN_ENV));
 		}
 		
 		Arrays.sort(particles);
@@ -920,12 +920,12 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int j = 0; j < 5; j++) {
 					
-					update_personality[i][j] += force*particles[informants.get(index)].best_personality(i, j) - particles[recipient].get_personality(i, j);
+					update_personality[i][j] += force*(particles[informants.get(index)].best_personality(i, j) - particles[recipient].get_personality(i, j));
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
 					
-					update_happenings[i][j] += force*particles[informants.get(index)].best_happenings(i, j) - particles[recipient].get_happenings(i, j);
+					update_happenings[i][j] += force*(particles[informants.get(index)].best_happenings(i, j) - particles[recipient].get_happenings(i, j));
 				}
 			}
 		}
@@ -967,12 +967,12 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int j = 0; j < 5; j++) {
 					
-					update_personality[i][j] += force*particles[informants.get(index)].best_personality(i, j) - particles[recipient].get_personality(i, j);
+					update_personality[i][j] += force*(particles[informants.get(index)].best_personality(i, j) - particles[recipient].get_personality(i, j));
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
 					
-					update_happenings[i][j] += force*particles[informants.get(index)].best_happenings(i, j) - particles[recipient].get_happenings(i, j);
+					update_happenings[i][j] += force*(particles[informants.get(index)].best_happenings(i, j) - particles[recipient].get_happenings(i, j));
 				}
 			}
 		}

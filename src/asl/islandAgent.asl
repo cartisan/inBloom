@@ -46,8 +46,10 @@
 +!eat <- if(has(food)) {
 			eat;
 			-wish(eat);
+			-has(food);
 		} else {
 			getFood;
+			+has(food);
 		}.
 		
 +!heal <- +wish(sleep);
@@ -71,6 +73,7 @@
 				-wish(complain);
 			  } else {
 				findFriend;
+				+has(friend))
 			  }.
 			  
 +!extinguish_fire <- extinguishFire;

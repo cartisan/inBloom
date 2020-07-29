@@ -24,10 +24,9 @@ public class Particle implements Comparable<Particle> {
 		this.current_happenings = happenings;
 		this.simulation_length = simLength;
 		
-		best_tellability=-1;
+		best_tellability=0;
 		update_tellability(fit);
 		
-		System.out.println("Finish");
 	}
 	
 	
@@ -131,7 +130,7 @@ public class Particle implements Comparable<Particle> {
 				if(current_happenings.values[i][j] < 0)
 					current_happenings.values[i][j] = 0;
 				
-				if(current_happenings.values[i][j] >= length)
+				if(current_happenings.values[i][j] > length)
 					length=current_happenings.values[i][j];
 			}
 		}
@@ -150,12 +149,13 @@ public class Particle implements Comparable<Particle> {
 	public void update_tellability(Fitness<?,?> fit) {
 		
 		try {
+			
+			System.out.println("Starting new Simulation: " + simulation_length);
 			current_tellability = fit.evaluate_Particle(this);
+			
 		} catch (JasonException e) {
 			e.printStackTrace();
-		} catch (NullPointerException e) {
-			e.printStackTrace();
-		}
+		} 
 		
 		if(current_tellability > best_tellability) {
 			best_personality = current_personality;
@@ -163,6 +163,8 @@ public class Particle implements Comparable<Particle> {
 			best_tellability = current_tellability;
 			best_simLength = simulation_length;
 		}
+		
+		System.out.println("Finish");
 	}
 	
 	/*

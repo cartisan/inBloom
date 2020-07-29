@@ -47,7 +47,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	public double evaluate_Particle(Particle particle) throws JasonException {
 		
 		// Initialize Parameters
-		double result = -1;
+		double result = 0;
 		isRunning = true;
 		Integer simulation_length = particle.get_simLength();
 		
@@ -110,6 +110,8 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 				}
 				Thread.sleep(150);
 			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (NullPointerException e) {
 			}
 		}
 
@@ -119,16 +121,16 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 
 		GraphAnalyzer analyzer = new GraphAnalyzer(PlotGraphController.getPlotListener().getGraph(), null);
 		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
-		Tellability tel = analyzer.runSynchronously(analyzedGraph);
-		result = tel.compute();
-		
-		/*
-		 * End simulation and reset runner. Need?
-		 */
-		
-		MASConsoleGUI.get().setPause(true);
-		runner.reset();
 
+		try {
+			
+			Tellability tel = analyzer.runSynchronously(analyzedGraph);
+			result = tel.compute();
+			
+		}catch(RuntimeException e) {
+			pauseExecution();
+		}
+		
 		return result;
 	}
 	
@@ -141,6 +143,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	
 	@Override
 	public void onPauseRepeat() {
+		
 		isRunning = false;
 	}
 	
