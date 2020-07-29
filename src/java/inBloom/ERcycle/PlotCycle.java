@@ -310,7 +310,14 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 			this.logTextArea.repaint();
 		}
 	}
+<<<<<<< HEAD
 
+=======
+	
+	
+	
+	
+>>>>>>> refs/remotes/origin/rl_happening
 	/**
 	 * Runnable for a single simulation.
 	 */

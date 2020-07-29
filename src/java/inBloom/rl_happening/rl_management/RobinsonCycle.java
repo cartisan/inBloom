@@ -114,12 +114,12 @@ public class RobinsonCycle extends ReinforcementLearningCycle {
 	// gethappeningDirector, which CREATES A NEW HappeningDirector and schedules all Happenings
 	// NEWLY
 	@Override
-	public FeaturePlotModel<?> getPlotModel(List<LauncherAgent> agents) {
+	public FeaturePlotModel<?> getPlotModel() {
 		// TODO change the ScheduledHappeningDirector into my own RL one :D
-		//return new IslandModel(agents, new ScheduledHappeningDirector());
+		return new IslandModel(new ArrayList<LauncherAgent>(), new AutomatedHappeningDirector(sarsa));
 		
 		//return new IslandModel(new ArrayList<LauncherAgent>(), this.getHappeningDirector());
-		return (FeaturePlotModel<?>)this.lastRunner.getUserModel();
+		//return (FeaturePlotModel<?>)this.lastRunner.getUserModel();
 	}
 	
 	public HappeningDirector getHappeningDirector() {

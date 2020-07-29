@@ -1,18 +1,18 @@
 package inBloom.rl_happening.rl_management;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import inBloom.LauncherAgent;
-import inBloom.PlotEnvironment;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
 import inBloom.ERcycle.EngageResult;
 import inBloom.ERcycle.PlotCycle;
-import inBloom.ERcycle.ReflectResult;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
+import inBloom.rl_happening.islandWorld.IslandModel;
 import jason.asSemantics.Personality;
 import jason.runtime.MASConsoleGUI;
 
@@ -93,55 +93,14 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		 */
 		log("Initialising Sarsa(Lambda)");
 		this.sarsa = new SarsaLambda(null, this); // this is given for SarsaLambda to have access to the log method
+		
+		IslandModel model = new IslandModel(new ArrayList<LauncherAgent>(), new AutomatedHappeningDirector(this.sarsa));
+		
+		this.sarsa.initializeSarsa(model);
 
 	}
 
 	
-	
-	
-	
-	@Override
-	protected ReflectResultRL reflect(EngageResult erOriginal) {
-		EngageResult er = (EngageResult) erOriginal;
-		this.log("I am reflecting");
-		
-		
-		// TELLABILITY
-		
-		// 1. Get and compute the Tellability after this run
-		Tellability tellability = er.getTellability();
-		double currTellability = tellability.compute();
-		this.log(" Current Tellability: " + currTellability);
-		
-		
-		// 2. If we reached the end, stop
-		if(!shouldContinue()) {
-			return new ReflectResultRL(null, null, null, null, false);
-		}
-
-		// Start the next cycle
-		/*this.lastPersonalities = this.personalityIterator.next();
-		this.log("Next Personalities: ");
-		for (Personality pers : this.lastPersonalities) {
-			this.log("\t" + pers.toString());
-		}*/
-		
-		// 3. New parameters
-		// -> give Tellability as a reward to SarsaLambda
-		// let SarsaLambda calculate and update weights
-		sarsa.updateWeightsAtEndOfEpisode(currTellability);
-		
-		
-		// 4. Create and start new run
-		this.lastRunner = this.getPlotLauncher();
-		this.lastRunner.setShowGui(false);
-
-		List<LauncherAgent> agents = this.createAgs(this.agentNames, this.agentPersonalities);
-
-		PlotModel<?> model = this.getPlotModel(agents);
-		return new ReflectResultRL(this.lastRunner, model, agents, sarsa);
-		
-	}
 
 
 
@@ -163,9 +122,9 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		try {
 			
 			// create AutomatedHappeningDirector with SarsaLambda
-			AutomatedHappeningDirector hapDir = new AutomatedHappeningDirector(this.sarsa);
+//			AutomatedHappeningDirector hapDir = new AutomatedHappeningDirector(this.sarsa);
 			// create a Thread that also gets the AutomatedHappeningDirector. RLCycle will then attach the AutomatedHappeningDirector to the given PlotLauncher
-			Thread t = new Thread(new RLCycle(runner, rr.getModel(), cycle_args, rr.getAgents(), this.agentSrc, hapDir, sarsa));
+			Thread t = new Thread(new RLCycle(runner, rr.getModel(), cycle_args, rr.getAgents(), this.agentSrc, rr.getModel().happeningDirector, sarsa));
 			
 			t.start();
 			
@@ -188,7 +147,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 					}
 				}
 				// Handle the timeout if it was set
-				if(TIMEOUT > -1 && (System.currentTimeMillis() - startTime) >= TIMEOUT && PlotEnvironment.getPlotTimeNow() >= TIMEOUT) {
+				if(TIMEOUT > -1 && (System.currentTimeMillis() - startTime) >= TIMEOUT && RLEnvironment.getPlotTimeNow() >= TIMEOUT) {
 					log("[PlotCycle] SEVERE: timeout for engagement step triggered, analyzing incomplete story and moving on");
 					isRunning = false;
 				}
@@ -222,6 +181,49 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		return er;
 	}
 	
+	@Override
+	protected ReflectResultRL reflect(EngageResult erOriginal) {
+		EngageResult er = (EngageResult) erOriginal;
+		this.log("I am reflecting");
+		
+		
+		// TELLABILITY
+		
+		// 1. Get and compute the Tellability after this run
+		Tellability tellability = er.getTellability();
+		double currTellability = tellability.compute();
+		this.log(" Current Tellability: " + currTellability);
+		
+		
+		// 2. If we reached the end, stop
+		if(!shouldContinue()) {
+			return new ReflectResultRL(null, null, null, null, false);
+		}
+
+		// Start the next cycle
+		/*this.lastPersonalities = this.personalityIterator.next();
+		this.log("Next Personalities: ");
+		for (Personality pers : this.lastPersonalities) {
+			this.log("\t" + pers.toString());
+		}*/
+		
+		// 3. New parameters
+		// -> give Tellability as a reward to SarsaLambda
+		// let SarsaLambda calculate and update weights
+		// auch nach jedem Step!
+		sarsa.updateWeights(currTellability);
+		
+		
+		// 4. Create and start new run
+		this.lastRunner = this.getPlotLauncher();
+		this.lastRunner.setShowGui(false);
+
+		List<LauncherAgent> agents = this.createAgs(this.agentNames, this.agentPersonalities);
+
+		PlotModel<?> model = this.getPlotModel();
+		return new ReflectResultRL(this.lastRunner, model, agents, sarsa);
+		
+	}
 	
 	/**
 	 * Starts the cycle.
@@ -262,7 +264,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	
 	public abstract PlotLauncher<?, ?> getPlotLauncher();
 	
-	public abstract FeaturePlotModel<?> getPlotModel(List<LauncherAgent> agents);
+	public abstract FeaturePlotModel<?> getPlotModel();
 	
 
 	
