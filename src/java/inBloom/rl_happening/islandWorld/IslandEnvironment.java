@@ -18,7 +18,7 @@ import jason.asSyntax.Structure;
  *
  * The Environment defin
  */
-public class IslandEnvironment extends RLEnvironment<IslandModel> {
+public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 	
 	static Logger logger = Logger.getLogger(IslandEnvironment.class.getName());
 	//private int currentStep = 0;

@@ -24,10 +24,10 @@ import jason.asSemantics.Personality;
 public class GeneticIsland extends GeneticEnvironment<IslandEnvironment, IslandModel>{
 
 	public GeneticIsland() {
-		super(IslandEnvironment.class, "islandAgent", 1, 3, 5, 30);
+		super(IslandEnvironment.class, "islandAgent", 1, 1, 7, 30);
 	}
 	public GeneticIsland(int pop_size, int number_selections, double crossover_prob, double mutation_prob, int max_steps) {
-		super(IslandEnvironment.class, "islandAgent", 1, 3, 5, max_steps, pop_size, number_selections, crossover_prob, mutation_prob);
+		super(IslandEnvironment.class, "islandAgent", 1, 1, 7, max_steps, pop_size, number_selections, crossover_prob, mutation_prob);
 	}
 
 	@Override
@@ -64,31 +64,7 @@ public class GeneticIsland extends GeneticEnvironment<IslandEnvironment, IslandM
 				null
 		);
 		
-		FoodPoisoningHappening foodPoisoning = new FoodPoisoningHappening(
-				(IslandModel model) -> {
-					if(model.getCharacter("robinson").has("food")) {
-						return true;
-					}
-					return false;
-				},
-				"robinson",
-				null
-		);
-		
-		StormHappening hutDestroyed = new StormHappening(
-				(IslandModel model) -> {
-					if(model.island.hasHut()) {
-						return true;
-					}
-					return false;
-				},
-				"robinson",
-				null
-		);
-		
 		happeningList.add(shipWrecked);
-		happeningList.add(foodPoisoning);
-		happeningList.add(hutDestroyed);
 		
 		ImmutableList<Happening> immutable = ImmutableList.copyOf(happeningList);
 		
@@ -107,6 +83,21 @@ public class GeneticIsland extends GeneticEnvironment<IslandEnvironment, IslandM
 		
 		case(0):
 			
+			FoodPoisoningHappening foodPoisoning = new FoodPoisoningHappening(
+				
+				(IslandModel model) -> {
+					if(model.getCharacter("robinson").has("food") && model.getStep() > step) {
+						return true;
+					}
+					return false;
+				},
+				"robinson",
+				null
+				);
+			return foodPoisoning;
+		
+		case(1):
+			
 			FoodStolenHappening foodStolen = new FoodStolenHappening(
 					(IslandModel model) -> {
 						if(model.getCharacter(agent.name).has("food") && model.getStep() > step) {
@@ -118,20 +109,6 @@ public class GeneticIsland extends GeneticEnvironment<IslandEnvironment, IslandM
 					null
 			);
 			return foodStolen;
-		
-		case(1):
-			
-			LooseFriendHappening friendIsEaten = new LooseFriendHappening(
-					(IslandModel model) -> {
-						if(model.getNumberOfFriends(agent.name) > 0 && model.getStep() > step) {
-							return true;
-						}
-						return false;
-					},
-					agent.name,
-					null
-			);
-			return friendIsEaten;
 		
 		case(2):
 			
@@ -146,8 +123,37 @@ public class GeneticIsland extends GeneticEnvironment<IslandEnvironment, IslandM
 					null
 			);		
 			return homesick;
-		
+
 		case(3):
+			
+			LooseFriendHappening friendIsEaten = new LooseFriendHappening(
+					(IslandModel model) -> {
+						if(model.getNumberOfFriends(agent.name) > 0 && model.getStep() > step) {
+							return true;
+						}
+						return false;
+					},
+					agent.name,
+					null
+			);
+			return friendIsEaten;
+			
+		case(4):
+		
+		StormHappening hutDestroyed = new StormHappening(
+				
+				(IslandModel model) -> {
+					if(model.island.hasHut() && model.getStep() > step) {
+						return true;
+					}
+					return false;
+				},
+				"robinson",
+				null
+				);
+			return hutDestroyed;
+			
+		case(5):
 			
 			FireHappening fire = new FireHappening(
 					(IslandModel model) -> {
@@ -161,7 +167,7 @@ public class GeneticIsland extends GeneticEnvironment<IslandEnvironment, IslandM
 			);		
 			return fire;
 		
-		case(4):
+		case(6):
 			
 			ShipRescueHappening shipRescue = new ShipRescueHappening(
 					(IslandModel model) -> {

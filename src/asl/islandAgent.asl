@@ -73,7 +73,6 @@
 				-wish(complain);
 			  } else {
 				findFriend;
-				+has(friend))
 			  }.
 			  
 +!extinguish_fire <- extinguishFire;

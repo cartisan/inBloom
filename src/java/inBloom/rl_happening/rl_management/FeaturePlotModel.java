@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import inBloom.LauncherAgent;
+import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
 import inBloom.storyworld.HappeningDirector;
 import inBloom.storyworld.Character;
@@ -20,7 +21,7 @@ import inBloom.storyworld.Character;
  * @version 3.2.20
  *
  */
-public abstract class FeaturePlotModel<EnvType extends RLEnvironment<?>> extends PlotModel<EnvType> {
+public abstract class FeaturePlotModel<EnvType extends PlotEnvironment<?>> extends PlotModel<EnvType> {
 	
 	
 	/**

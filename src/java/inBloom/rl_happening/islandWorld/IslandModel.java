@@ -172,6 +172,8 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		agent.addToInventory(new Food());
 		// new food isn't poisoned yet
 		//this.foodIsOkay = true;
+
+		this.environment.addPercept(agent.name, Literal.parseLiteral("has(food)"));
 		
 		result.success = true;
 		
