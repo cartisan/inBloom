@@ -55,7 +55,7 @@ import inBloom.storyworld.Location;
  * @author Leonid Berov
  */
 public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends TimeSteppedEnvironment {
-	static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
+	protected static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
 
 	/** number of times all agents need to repeat an action sequence before system is paused; -1 to switch off */
 	public static final Integer MAX_REPEATE_NUM = 5;
@@ -655,7 +655,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 * Checks if Launcher is in paused state and defers action execution
 	 * until its woken up again.
 	 */
-	synchronized void waitWhilePause() {
+	protected synchronized void waitWhilePause() {
 		this.checkPause();
         try {
             while (MASConsoleGUI.get().isPause()) {

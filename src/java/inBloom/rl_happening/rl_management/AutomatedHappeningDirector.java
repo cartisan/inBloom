@@ -19,7 +19,7 @@ import inBloom.storyworld.HappeningDirector;
  * @author	Julia Wippermann
  * @version 9.6.20
  */
-public class AutomatedHappeningDirector<T extends PlotModel<?>> implements HappeningDirector {
+public class AutomatedHappeningDirector <T extends PlotModel<?>> implements HappeningDirector {
 	
 	@SuppressWarnings("unused")
 	private PlotModel<?> model;
@@ -78,7 +78,7 @@ public class AutomatedHappeningDirector<T extends PlotModel<?>> implements Happe
 	 */
 	@Override
 	public List<Happening<?>> getTriggeredHappenings(int step) {
-		
+						
 		LinkedList<Happening<?>> triggeredHappeningsInThisStep = new LinkedList<Happening<?>>();
 		
 		// call Sarsa(lambda) to decide which Happening will be performed in this step
@@ -144,4 +144,10 @@ public class AutomatedHappeningDirector<T extends PlotModel<?>> implements Happe
 		this.allHappenings.add(happening);
 	}
 
+	
+	
+	public SarsaLambda getSarsa() {
+		return this.sarsa;
+	}
+	
 }

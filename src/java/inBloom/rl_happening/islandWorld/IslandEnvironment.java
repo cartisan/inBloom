@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import inBloom.ActionReport;
 import inBloom.PlotEnvironment;
+import inBloom.rl_happening.rl_management.RLEnvironment;
 import inBloom.storyworld.Character;
 import jason.asSyntax.Structure;
 
@@ -17,7 +18,7 @@ import jason.asSyntax.Structure;
  *
  * The Environment defin
  */
-public class IslandEnvironment extends PlotEnvironment<IslandModel> {
+public class IslandEnvironment extends RLEnvironment<IslandModel> {
 	
 	static Logger logger = Logger.getLogger(IslandEnvironment.class.getName());
 	//private int currentStep = 0;

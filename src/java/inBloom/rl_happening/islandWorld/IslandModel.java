@@ -195,7 +195,6 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			
 			// only if this was the only food that the agent owned, we can deactivate the feature
 			if(!agent.has("food")) {
-				System.out.println("I WILL REMOVE SOME FOOOOOOOOOOOD");
 				this.deactivateFeature(hasFood);
 				this.environment.removePercept(agent.name, Literal.parseLiteral("has(food)"));
 			}

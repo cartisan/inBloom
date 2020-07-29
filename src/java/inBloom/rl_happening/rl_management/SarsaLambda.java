@@ -22,7 +22,7 @@ import inBloom.storyworld.Happening;
  * 
  * Using a two-dimensional hashMap for the weights
  * 
- * @author Julia Wippermann
+ * @author Julia Wippermann die Coole
  * @version 22.7.20
  *
  */
@@ -37,10 +37,10 @@ public class SarsaLambda {
 	/**
 	 * FINE-TUNABLE VARIABLES
 	 */
-	private final double epsilon = 0; // epsilon-soft greedy actio nselection criteria
-	private final double lambda = 0; // or int? // lambda-value
-	private final double gamma = 0; // or int? // discount factor
-	private final double alpha = 0; // or int? // learning rate
+	private final double epsilon = 0.3; // epsilon-soft greedy action selection criteria
+	private final double lambda = 0.8;	// balance btw MC/TD; 1 = MC (high backtracing of reward); 0 = TD (low backtracing of reward)
+	private final double gamma = 0.9;	// discount factor - value?
+	private final double alpha = 0.9;	// learning rate   - value?
 	
 	/**
 	 * DATA STRUCTURES FOR PERFORMING THE ALGORITHM
@@ -49,14 +49,23 @@ public class SarsaLambda {
 	protected HashMap<String, HashMap<Happening<?>, Double>> weights;		/* String = Name of the Feature
 																			 * Happening = Action (incl. empty Happening)
 	 																		 * Integer = Weight */
-
 	private HashMap<Happening<?>, Double> qValues;
+	
+	
+	/**
+	 * BOOLEANS FOR OUTPUTS
+	 */
+	private final boolean PRINTQVALUES = false;
+	private final boolean PRINTFEATURESPERSTEP = true;
+	private final boolean SHOWELIGIBILITYTRACESPERSTEP = false;
+	private final boolean PRINTWEIGHTSAFTERUPDATE = false;
+	private final boolean PRINTCHOSENACTIONPERSTEP = true;
+	private final boolean PRINTUPDATECALCULATIONS = false;
 	
 	
 	/**
 	 * BACKGROUND INFORMATION NEEDED
 	 */
-	// TODO include the empty Happening in this representation
 	private Happening<?>[] allHappenings;
 	private LinkedList<String> allFeatures;
 	
@@ -67,80 +76,79 @@ public class SarsaLambda {
 	
 	// necessary for updating all weights of all features at the end of one episode with regard to the selected Action
 	// since we only receive the reward at the end of one episode (no intermediate rewards)
-	private LinkedList<StepwiseInformation> stepwiseMemory;
+//	private LinkedList<StepwiseInformation> stepwiseMemory;
 	private Happening<?> previousAction;
 	private Double previousQValue;
 	
+	private Happening<?> currentAction;
+	private Double currentQValue;
+	
 	// only for log purposes in testing
-	private ReinforcementLearningCycle daddy;
+	ReinforcementLearningCycle rlCycle;
 	
 	
 	
 	
 
 	
-	public SarsaLambda(FeaturePlotModel<?> model, ReinforcementLearningCycle daddy) {
-		
+	public SarsaLambda(FeaturePlotModel<?> model, ReinforcementLearningCycle rl) {
 		this.featurePlotModel = model;
-		this.daddy = daddy;
-		
-//		if(this.featurePlotModel != null) {
-//			this.initializeSarsa();
-//		}
-		
+		this.rlCycle = rl;
 	}
 	
-	public void initializeSarsa() {
-		// TODO possibel problem: allhappenings are onyl initialized after HappeningManager.scheduleHappenings has been called
-		// -> may change in the future since we won't really schedule Happenings anymore?
-		// TODO change to LinkedList in general, not Array?
+	public void initializeSarsa(FeaturePlotModel model) {
 
 		// Initialize allHappenings
 		LinkedList<Happening<?>> happeningList = HappeningManager.getAllHappenings();
 		this.allHappenings = new Happening<?>[9];
 		happeningList.toArray(this.allHappenings);
 
+		this.featurePlotModel = model;
 
 		// Initialize allFeatures
 		// needed to create the initial weights and eligibility Traces for every feature
-		this.allFeatures = this.featurePlotModel.getAllPossibleFeatures();
+		this.allFeatures = model.getAllPossibleFeatures();
 
 
 		// Initialize allFeaturesOfTheEpisode
-		this.stepwiseMemory = new LinkedList<StepwiseInformation>();
+//		this.stepwiseMemory = new LinkedList<StepwiseInformation>();
 		this.previousAction = null;
 		this.previousQValue = 0.0;
+		this.currentAction = null;
+		this.currentQValue = 0.0;
 
 
 		// initialise qValues
 		this.qValues = new HashMap<Happening<?>, Double>();
 
 
-		// Initialize previousHappening (null) -> TODO change to when first called later? But first, to make sure no NullPointer when starting or similar, we put it here
+		// Initialize previousHappening (null)
 		this.previousAction = null;
+		
+		this.currentlyPresentFeatures = null;
 
 		
 		
 		
-		daddy.log("Initialising Weights");
+		rlCycle.log("Initialising Weights");
 		this.initializeWeights();
 		
-		daddy.log("Weights:");
+		rlCycle.log("Weights:");
 		this.printFeatureActionValues(this.weights);
 		
 		
 		
 		
-		daddy.log("Initialising eligibility traces");
+		rlCycle.log("Initialising eligibility traces");
 		this.initializeEligibilityTraces();
 		
-		daddy.log("Eligibility Traces:");
+		rlCycle.log("Eligibility Traces:");
 		this.printFeatureActionValues(this.eligibilityTraces);
 		
 		
 		
 		
-		this.daddy.log(toString());
+		this.rlCycle.log(toString());
 	}
 	
 
@@ -154,50 +162,49 @@ public class SarsaLambda {
 	 * 			The state we are in right now from which we should choose the next Action
 	 * @return The Happening that will be the next Action
 	 */
-	public Happening<?> chooseNewAction() {
+	public Happening<?> chooseNewAction() {		
+		
+		this.previousAction = this.currentAction;
+		this.previousQValue = this.currentQValue;
+		
+		// features = get the features present in this state
+		// we make this only state-dependent, actions will have their effect when we look into the weights
+		// because those are different depending on which action is chosen
+		LinkedList<String> presentFeatures = this.featurePlotModel.getPresentFeatures();
+		this.currentlyPresentFeatures = presentFeatures;
+		
+		if(PRINTFEATURESPERSTEP) {
+			rlCycle.log("Present features: " + presentFeatures);
+		}
+		
 		
 		// es sind in jedem State alle Actions erlaubt
 		for(Happening<?> action: this.allHappenings) {
 			
-			// features of action = get the features present in this state and action
-			// we make this only state-dependent, actions will have their effect when we look into the weights
-			// because those are different depending on which action is chosen
-			LinkedList<String> presentFeatures = this.getFeatures(action);
-			this.currentlyPresentFeatures = presentFeatures;
-			// TODO wir koennten jetzt weiterhin auf der Instanzvariable arbeiten statt auf der lokalen
-			// Variable, ist aber nicht notwendig
-			
-			
 			// q-value of action = for all features of action get weight and sum it up
-			//		idea: put in in a sorted way already?
 			
 			double qvalue = 0.0;
 			
-			daddy.log("Present features: " + presentFeatures);
 			
-			// get the weight of this specific state-action-dependent feature (where states are represented as features?)
+			// get the weight of this specific state-action-dependent feature (where states are represented using the present features)
 			for(String presentFeature: presentFeatures) {
 				qvalue += this.getFeatureActionDependentValue(weights, presentFeature, action);
 			}
 			
-
-			//int state = this.featurePlotModel.getStateValue();
-			
 			
 			this.qValues.put(action, qvalue);
-//			System.out.println("Q-Value added. Action: " + action.toString() + ". Q-Value: " + qvalue);
 			
-			daddy.log("QValue was added: " + action + ": " + qvalue);
-			
+			if(PRINTQVALUES) {
+				rlCycle.log("QValue was added: " + action + ": " + qvalue);
+			}
 			
 		}
 		
-		daddy.log("\n");
+		if(PRINTQVALUES) {
+			rlCycle.log("\n");
+		}
 		
-		/* find action with the maximum q-value
-		 * if random < epsilon:
-		 *		choose random action
-		 */
+		
 		
 		
 		Happening<?> action;
@@ -215,10 +222,10 @@ public class SarsaLambda {
 		// , since 0.0 is included in Math.random(), but 1.0 is not, so we decided to put epsilon itself in the "right" category (going to 1.0)
 		double max_qValue = 0.0;
 		if(Math.random() >= epsilon) {
+			
 			// choose the action with the highest qvalue
 
 			max_qValue = 0.0;
-
 			
 			for(Happening<?> happening: qValues.keySet()) {
 
@@ -237,11 +244,11 @@ public class SarsaLambda {
 		
 		// save all information necessary for later update of weights at the end of this episode
 		double qValue = this.qValues.get(action);
-		this.stepwiseMemory.add(new StepwiseInformation(this.currentlyPresentFeatures, action, previousAction, max_qValue, this.previousQValue));
+//		this.stepwiseMemory.add(new StepwiseInformation(this.currentlyPresentFeatures, action, previousAction, max_qValue, this.previousQValue));
 		
 		//update previous Action AFTER stepwise Information is saved
-		this.previousAction = action;
-		this.previousQValue = qValue;
+		this.currentAction = action;
+		this.currentQValue = qValue;
 		
 		return action;
 	}
@@ -256,13 +263,24 @@ public class SarsaLambda {
 		
 		// delta = delta + gamma * Q(a) where a ist the last performed action
 		
-		
 		// Update eligibility Traces
-		//this.updateEligibilityTraces();
+		if(this.currentlyPresentFeatures!=null && this.previousAction!=null) {
+			
+			this.updateEligibilityTraces();
+						
+			if(SHOWELIGIBILITYTRACESPERSTEP) {
+				rlCycle.log(printFeatureActionValues(eligibilityTraces));
+			}
+		}
+		
 		
 		// Action selection
 		Happening<?> chosenAction = this.chooseNewAction();
 		
+		if(PRINTCHOSENACTIONPERSTEP) {
+			rlCycle.log("Action: " + chosenAction);
+		}
+
 		
 		return chosenAction;
 	}
@@ -287,15 +305,18 @@ public class SarsaLambda {
 		
 		for(String previouslyPresentFeature: this.currentlyPresentFeatures) {
 
-			for(Happening<?> happening: this.eligibilityTraces.get(previouslyPresentFeature).keySet()) {
+			// TODO nur für das Happening, das auch gewählt worden war
+			//for(Happening<?> happening: this.eligibilityTraces.get(previouslyPresentFeature).keySet()) {
+			
+			
 				
-				double eligibilityValue = this.getFeatureActionDependentValue(eligibilityTraces, previouslyPresentFeature, happening);
+				double eligibilityValue = this.getFeatureActionDependentValue(eligibilityTraces, previouslyPresentFeature, this.currentAction);
 				double newEligibilityValue = eligibilityValue + 1;
 				
 				
-				this.eligibilityTraces.get(previouslyPresentFeature).put(happening, newEligibilityValue);
+				this.eligibilityTraces.get(previouslyPresentFeature).put(this.previousAction, newEligibilityValue);
 				
-			}
+//			}
 
 		}
 		
@@ -303,39 +324,83 @@ public class SarsaLambda {
 	}
 	
 
-	public void updateWeightsAtEndOfEpisode(double reward) {
+	/**
+	 * Updates the weights of each feature after each step of an episode with respect to the following formula:
+	 * 
+	 * for each weight and the corresponding eligibiloty trace:
+	 * weight = weight + alpha * (reward - Qa + gamma * Qa') * e
+	 * 
+	 * 
+	 * This is implemented in the following steps, following the pseudocode by Sutton and Barto ():
+	 * 
+	 * delta = reward - Qa
+	 * [a' is selected]
+	 * delta = delta + gamma * Qa'
+	 * 
+	 * for each weight:
+	 * weight = weight + alpha * delta * corresponding eligibility
+	 * 
+	 * @param reward
+	 * 			The reward received at the current step (this is 0.0 unless the episode is finished)
+	 */
+	public void updateWeights(double reward) {
 		
-		for(StepwiseInformation step: this.stepwiseMemory) {
-			
-			// calculate delta before action selection
-			double delta = reward - step.previousQValue;
-			
-			// calculate lambda after action selection
-			delta += this.lambda * step.selectedQValue;
-			
-			// TODO really all weights updatet?
-			
-			// for each feature
-			for(String feature: weights.keySet()) {
-				HashMap<Happening<?>, Double> happeningToWeight = weights.get(feature);
-				for(Happening<?> action: happeningToWeight.keySet()) {
-					
+		rlCycle.log("\nWEIGHT UPDATE");
+
+		// calculate delta before action selection
+		// d = r - Qa
+		double delta = reward - previousQValue;
+
+		if(PRINTUPDATECALCULATIONS) {
+			rlCycle.log("d = r - Qa: " + reward + " - " + previousQValue + " = " + delta);
+			rlCycle.log("d + (g * Qa'): " + delta + " + " + "(" + gamma + " * " + currentQValue  + ")");
+		}
+
+		// update delta after action selection
+		// d = d + g + Qa'
+		delta += (this.gamma * this.currentQValue);
+
+		if(PRINTUPDATECALCULATIONS) {
+			rlCycle.log("new error: " + delta);
+		}
+
+
+		// update all features with regards to the elgibility traces
+		for(String feature: weights.keySet()) {
+
+			HashMap<Happening<?>, Double> happeningToWeight = weights.get(feature);
+
+			for(Happening<?> action: happeningToWeight.keySet()) {
+
+				double weight = happeningToWeight.get(action);
+				double e = this.getFeatureActionDependentValue(eligibilityTraces, feature, action);
+
+				if(e != 0.0) {
+
 					// calculate new weight
-					double weight = happeningToWeight.get(action);
-					double e = this.getFeatureActionDependentValue(eligibilityTraces, feature, action);
-					weight += alpha * delta * e;
+					// w = w + a * d * e
 					
+					rlCycle.log("Feature: " + feature);
+					rlCycle.log("Action:  " + action);
+					if(PRINTUPDATECALCULATIONS) {
+						rlCycle.log("w = w + (a * d * e): " + weight + " + " + "(" + alpha + " * " + delta + " * " + e + ")");
+					}
+					weight += (alpha * delta * e);
+
+					if(PRINTUPDATECALCULATIONS) {
+						rlCycle.log("new weight: " + weight);
+					}
+
 					// set new weight
 					happeningToWeight.put(action, weight);
 				}
 			}
-			
 		}
 		
-		
-		// empty the episode specific information
-		this.stepwiseMemory = new LinkedList<StepwiseInformation>();
-		
+		if(PRINTWEIGHTSAFTERUPDATE) {
+			rlCycle.log(printFeatureActionValues(weights));
+		}
+
 	}
 	
 	
@@ -439,17 +504,14 @@ public class SarsaLambda {
 	 * 			known instance variable FeaturedPlotModel (since it is on its own in its current state)
 	 * @return
 	 */
-	private LinkedList<String> getFeatures(Happening<?> action) {
-		
-		LinkedList<String> presentFeatures = new LinkedList<String>();
-		
-		// DEBUG this returns an empty list
-		presentFeatures = this.featurePlotModel.getPresentFeatures();
-		
-		// TODO include the features of the action or the combination of state and action
-		
-		return presentFeatures;
-	}
+//	private LinkedList<String> getFeatures() {
+//		
+//		LinkedList<String> presentFeatures = new LinkedList<String>();
+//		
+//		presentFeatures = this.featurePlotModel.getPresentFeatures();
+//				
+//		return presentFeatures;
+//	}
 	
 	
 	/**
@@ -461,7 +523,14 @@ public class SarsaLambda {
 	 * 			The weight (int) of the given feature
 	 */
 	private double getFeatureActionDependentValue(HashMap<String, HashMap<Happening<?>, Double>> featureActionValues, String feature, Happening<?> action) {
-		return featureActionValues.get(feature).get(action);
+		try {
+			return featureActionValues.get(feature).get(action);
+		} catch(NullPointerException e) {
+			System.out.println(featureActionValues);
+			System.out.println(feature);
+			System.out.println(action);
+			throw new NullPointerException();
+		}
 	}
 	
 	
@@ -559,7 +628,6 @@ public class SarsaLambda {
 	
 	public void setPlotModel(FeaturePlotModel<?> model) {
 		this.featurePlotModel = model;
-		this.initializeSarsa();
 	}
 	
 	
