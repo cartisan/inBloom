@@ -193,17 +193,18 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			
 			// save the food for checking it's poisoness later
 			Food food = (Food)agent.get("food");
-			agent.removeFromInventory(food);
+			//agent.removeFromInventory(food);
 			
+			// In any case, the agent will eat
+			result = agent.eat("food");
+			logger.info(result.success + "Success");
+			logger.info(agent.name + " eats food.");
+
 			// only if this was the only food that the agent owned, we can deactivate the feature
 			if(!agent.has("food")) {
 				this.deactivateFeature(hasFood);
 				this.environment.removePercept(agent.name, Literal.parseLiteral("has(food)"));
 			}
-			
-			// In any case, the agent will eat
-			result.success = agent.eat("food").success;
-			logger.info(agent.name + " eats food.");
 			
 			// he is not hungry anymore
 			this.hunger.replace(agent, 0);

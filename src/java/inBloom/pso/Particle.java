@@ -12,6 +12,7 @@ public class Particle implements Comparable<Particle> {
 	private ChromosomeHappenings velocity_happenings;
 	private double current_tellability;
 	private double best_tellability;
+	private double spacetime=1;
 	private Integer simulation_length;
 	private Integer best_simLength;
 	
@@ -75,8 +76,17 @@ public class Particle implements Comparable<Particle> {
 	public double get_tellability() {
 		return current_tellability;
 	}
+	
 	public double best_tellability() {
 		return best_tellability;
+	}
+
+	public void set_spacetime(double time) {
+		this.spacetime = time;
+	}
+
+	public double get_spacetime() {
+		return spacetime;
 	}
 	
 	/*

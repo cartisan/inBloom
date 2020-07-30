@@ -1,0 +1,21 @@
+package inBloom.evo;
+
+
+
+public interface Individual extends Comparable<Individual>{
+	
+	// Functions that get called by the Fitness class in order to start a simulation
+	public ChromosomePersonality get_personality();
+	public ChromosomeHappenings get_happenings();
+	
+	public double get_personality(int x, int y);
+	public int get_happenings(int x, int y);
+
+	public Integer get_simLength();
+	public double get_tellability();
+	
+	
+	// Utility function to sort individuums 
+	public int compareTo(Individual other);
+
+}

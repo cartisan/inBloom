@@ -47,7 +47,8 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	private static boolean[] persInitBool = {true,true,true};
 	// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
 	private static boolean[] hapInitBool = {true,true,true}; 
-	// determine manner of velocity initialization
+	// randomVelocityInit, discreteVelocityInit
+	// false, false -> no velocity initialization. Works as long as particles have different positions
 	private static boolean[] velInitBool = {true,true};
 	
 	// determine manner of updating velocity
@@ -280,12 +281,35 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	}
 	
 	
+	/**
+	 * Difference Measurements
+	 */
+	
+	
+	/*
+	 * Rates the difference between two particles in terms of fitness.
+	 * The difference is based on pythagorean distance.
+	 * 
+	 * @param recipient: Particle that receives velocity update
+	 * @param informant: Particle providing information to recipient
+	 * @return: Double between [0,1] reflecting the difference rating
+	 */
+	
 	public double fitness_rating(int recipient, int informant) {
 		
 		return Math.sqrt(Math.pow(particles[informant].best_tellability(), 2) - Math.pow(particles[recipient].get_tellability(), 2));
 		
 	}
 	
+	
+	/*
+	 * Rates the difference between two particles in terms of distance.
+	 * The difference is based on the normalized pythagorean distance.
+	 * 
+	 * @param recipient: Particle that receives velocity update
+	 * @param informant: Particle providing information to recipient
+	 * @return: Double between [0,1] reflecting the difference rating
+	 */
 	
 	public double distance_rating(int recipient, int informant) {
 		
@@ -312,9 +336,13 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	}
 	
 	
+	/*
+	 * Determines the maximum and minimum values existent in the particles chromosomes.
+	 */
+	
 	public void update_Distances() {
 
-		// Reset memory (?)
+		// Reset memory
 		min_personality = max_personality;
 		max_personality = new double[number_agents][5];
 		
@@ -330,22 +358,41 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(particles[index].get_personality(agents, personality) < min_personality[agents][personality])
 						min_personality[agents][personality] = particles[index].get_personality(agents, personality);
 					
+					if(particles[index].best_personality(agents, personality) < min_personality[agents][personality])
+						min_personality[agents][personality] = particles[index].best_personality(agents, personality);
+					
 					if(particles[index].get_personality(agents, personality) > max_personality[agents][personality])
 						max_personality[agents][personality] = particles[index].get_personality(agents, personality);
+					
+					if(particles[index].best_personality(agents, personality) > max_personality[agents][personality])
+						max_personality[agents][personality] = particles[index].best_personality(agents, personality);
 				}
 				
 				for(int happenings = 0; happenings < number_happenings; happenings++) {
 
 					if(particles[index].get_happenings(agents, happenings) < min_happenings[agents][happenings])
 						min_happenings[agents][happenings] = particles[index].get_happenings(agents, happenings);
+
+					if(particles[index].best_happenings(agents, happenings) < min_happenings[agents][happenings])
+						min_happenings[agents][happenings] = particles[index].best_happenings(agents, happenings);
 					
 					if(particles[index].get_happenings(agents, happenings) > max_happenings[agents][happenings])
 						max_happenings[agents][happenings] = particles[index].get_happenings(agents, happenings);
+					
+					if(particles[index].best_happenings(agents, happenings) > max_happenings[agents][happenings])
+						max_happenings[agents][happenings] = particles[index].best_happenings(agents, happenings);
 				}
 			}
 		}
 	}
 	
+	
+	/*
+	 * Determines how fast a particles moves through space and updates its movement.
+	 * 
+	 * @param index: Current particle id
+	 * @return: Double in the interval [0,1]
+	 */
 	
 	public double determine_spacetime(int index) {
 		
@@ -355,6 +402,13 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		return 1;
 	}
 	
+	
+	/*
+	 * Checks whether parameters are correctly set.
+	 * Corrects parameters if possible.
+	 * 
+	 * @return: False if parameters were put wrong, True otherwise
+	 */
 	
 	public boolean check_parameters() {
 		
@@ -379,6 +433,13 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		return true;
 	}
 	
+
+	/*
+	 * Saves information about particle quality.
+	 * The average fitness of the particle as well as best particle's fitness is saved.
+	 * If there was no improvement compared to the last iteration, termination criterion counter gets incremented.
+	 * If there was an improvement, termination criterion counter is reset.
+	 */
 	
 	private void evaluate_particles() {
 		
@@ -810,6 +871,10 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			
 			particles[i].move();
 			particles[i].update_tellability(new Fitness<EnvType,ModType>(GEN_ENV));
+			
+			if(spacetime) {
+				particles[i].set_spacetime(determine_spacetime(i));
+			}
 		}
 		
 		Arrays.sort(particles);
