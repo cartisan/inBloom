@@ -309,6 +309,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		if(this.friends.get(agent) > 0) {
 			
 			logger.info(agent.name + " complained.");
+			this.deactivateFeature(friend);
 			result.success = true;
 			
 		} else {
