@@ -18,9 +18,9 @@ public class Candidate implements Comparable<Candidate>{
 		try {
 			tellability = fit.evaluate_Candidate(this);
 		} catch (JasonException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		} catch (NullPointerException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 
 		System.out.println("Finish");

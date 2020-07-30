@@ -5,7 +5,7 @@ public class ParticleLauncher {
 	public static void main(String[] args) { 
 		
 		ParticleIsland island = new ParticleIsland(20);
-		int time = 3600;
+		int time = 1800;
 		int max_repetitions = 50;
 		boolean customize = true;
 		

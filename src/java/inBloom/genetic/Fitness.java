@@ -77,11 +77,11 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			Thread t = new Thread(new Cycle(runner, model, args, agents, GEN_ENV.agentSrc));
 			t.start();
 		} catch (JasonException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		} catch (NullPointerException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		} catch (Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 
 		MASConsoleGUI.get().setPause(false);
@@ -190,7 +190,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 				runner.initialize(args, model, agents, agSrc);
 				runner.run();
 			} catch (JasonException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
 			} catch (NullPointerException e) {
 				//e.printStackTrace();
 			}

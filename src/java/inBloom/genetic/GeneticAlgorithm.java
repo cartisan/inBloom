@@ -300,17 +300,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	/*
 	 * Sets the length of simulation of a chromosome according to it's Happenings.
 	 * Determined value will be based on the step number of the last occuring happening plus
-	 * an amount of additional steps between 0 and step number * ratio
+	 * an amount of additional steps between 0 and the square root of max step number increased by 1
 	 * @param happenings: Chromosome encoding steps at which happenings occur
-	 * @param ratio: maximum amount of extra steps after simulation ends
 	 * @return: total amount of simulation steps
 	 */
-	
-	public Integer determineLength(ChromosomeHappenings happenings) {
-		return determineLength(happenings, 0.2);
-	}
 
-	public Integer determineLength(ChromosomeHappenings happenings, double ratio) {
+	public Integer determineLength(ChromosomeHappenings happenings) {
 		
 		Integer length = 0;
 		
@@ -322,7 +317,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 		}
 		// Determine extra length
-		Integer buffer = (int)Math.round(Math.random()*ratio*length);
+		Integer buffer = (int)Math.round(Math.random()*Math.sqrt(length));
 		
 		// Let the simulation run for at least 1 more step than the last happening 
 		return length+buffer+1;

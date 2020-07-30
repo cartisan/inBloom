@@ -43,13 +43,12 @@
 +!start <- stayHome.
 
 @food_plan
+		
 +!eat <- if(has(food)) {
 			eat;
 			-wish(eat);
-			-has(food);
 		} else {
 			getFood;
-			+has(food);
 		}.
 		
 +!heal <- +wish(sleep);

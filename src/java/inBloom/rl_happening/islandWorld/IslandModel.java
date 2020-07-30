@@ -207,6 +207,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			
 			// he is not hungry anymore
 			this.hunger.replace(agent, 0);
+
 			this.environment.removePercept(agent.name, Literal.parseLiteral("hungry"));
 			logger.info(agent.name + "'s hunger: " + this.hunger.get(agent));
 			
@@ -224,8 +225,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 				
 				// hier könnte man result.success = false setzen, aber an sich hat er ja gegessen
 			}
-		}		
-
+		}
 		return result;
 	}
 	
@@ -367,11 +367,12 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			//PlotLauncher.getRunner().pauseExecution();
 			
 		} else if(this.hunger.get(agent) >= 5) {
-			this.environment.addPercept(agent.name, Literal.parseLiteral("hungry"));
-			this.activateFeature(hungry);
-			logger.info(agent.name + " is hungry.");
-		}
-		
+			if(!this.environment.containsPercept(agent.name, Literal.parseLiteral("hungry"))) {
+				this.environment.addPercept(agent.name, Literal.parseLiteral("hungry"));
+				this.activateFeature(hungry);
+				logger.info(agent.name + " is hungry.");
+			}
+		}	
 	}
 
 	/**

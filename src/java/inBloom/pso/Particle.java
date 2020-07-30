@@ -136,7 +136,7 @@ public class Particle implements Comparable<Particle> {
 		}
 		
 		// Determine extra length
-		Integer buffer = (int)Math.round(Math.random()*0.2*length);
+		Integer buffer = (int)Math.round(Math.random()*Math.sqrt(length));
 		
 		// Let the simulation run for at least 1 more step than the last happening 
 		simulation_length = length+buffer+1;
@@ -154,10 +154,12 @@ public class Particle implements Comparable<Particle> {
 			current_tellability = fit.evaluate_Particle(this);
 			
 		} catch (JasonException e) {
-			e.printStackTrace();
-		} 
+			//e.printStackTrace();
+		} catch (NullPointerException e) {
+			//e.printStackTrace();
+		}
 		
-		if(current_tellability > best_tellability) {
+		if(current_tellability >= best_tellability) {
 			best_personality = current_personality;
 			best_happenings = current_happenings;
 			best_tellability = current_tellability;
