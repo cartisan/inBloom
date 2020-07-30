@@ -18,11 +18,20 @@ public abstract class RLEnvironment<ModType extends PlotModel<?>> extends PlotEn
 	@Override
 	protected synchronized void stepStarted(int step) {
 		
-		logger.info("Step STARTED");
 		
-		System.out.println("\n--------------------------- STEP " + (step) + " ---------------------------");
 		if (this.step > 0) {
 			this.step++;
+			
+			
+			System.out.println("\n--------------------------- STEP " + (this.step) + " ---------------------------");
+			
+			if(model!=null) {
+				SarsaLambda sarsa = ((AutomatedHappeningDirector<ModType>)this.model.happeningDirector).getSarsa();
+				sarsa.rlCycle.log("\nStep " + this.step);
+			}
+			
+			
+			
 
 			if(!PlotLauncher.getRunner().isDebug()) {
 				logger.info("Step " + this.step + " started for environment");
@@ -30,6 +39,8 @@ public abstract class RLEnvironment<ModType extends PlotModel<?>> extends PlotEn
 
 			if (this.model != null) {
 				// Give model opportunity to check for and execute happenings
+				
+				
 				this.model.checkHappenings(this.step);
 			} else {
 				logger.warning("field model was not set, but a step " + this.step + " was started");

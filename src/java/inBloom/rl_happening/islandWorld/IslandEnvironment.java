@@ -128,9 +128,9 @@ public class IslandEnvironment extends RLEnvironment<IslandModel> {
 //		
 //	}
 	
-	public boolean shouldPrintAllResults() {
-		return this.currentStep==34;
-	}
+//	public boolean shouldPrintAllResults() {
+//		return this.currentStep==34;
+//	}
 	
 //	private void printAllStateValues() {
 //		for(Integer i: this.stateValues.keySet()) {

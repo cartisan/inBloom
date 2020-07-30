@@ -1,6 +1,7 @@
 package inBloom.rl_happening.rl_management;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 
 import inBloom.LauncherAgent;
@@ -49,6 +50,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	//protected FeaturePlotModel<?> plotModel;
 	
 	
+	public ResultWriter resultWriter;;
 	protected SarsaLambda sarsa;
 	
 	
@@ -97,6 +99,12 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		IslandModel model = new IslandModel(new ArrayList<LauncherAgent>(), new AutomatedHappeningDirector(this.sarsa));
 		
 		this.sarsa.initializeSarsa(model);
+		
+		
+		
+		// Initialize the ResultWriter
+		this.resultWriter = new ResultWriter(this);
+		this.resultWriter.writeTitlesOfEpisodes(sarsa.weights);
 
 	}
 
@@ -164,6 +172,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		
 		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
 		Tellability tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
+
 		analyzedGraph.setName("ER Cycle, engagement step " + currentCycle);
 		log("Tellability" + Double.toString(tel.compute()));
 		
@@ -194,24 +203,26 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		double currTellability = tellability.compute();
 		this.log(" Current Tellability: " + currTellability);
 		
-		
-		// 2. If we reached the end, stop
-		if(!shouldContinue()) {
-			return new ReflectResultRL(null, null, null, null, false);
+		if(sarsa.PRINT_WEIGHTS_AFTER_EPISODE) {
+			sarsa.rlCycle.log(sarsa.printFeatureActionValues(sarsa.weights));
 		}
-
-		// Start the next cycle
-		/*this.lastPersonalities = this.personalityIterator.next();
-		this.log("Next Personalities: ");
-		for (Personality pers : this.lastPersonalities) {
-			this.log("\t" + pers.toString());
-		}*/
+		
 		
 		// 3. New parameters
 		// -> give Tellability as a reward to SarsaLambda
 		// let SarsaLambda calculate and update weights
 		// auch nach jedem Step!
 		sarsa.updateWeights(currTellability);
+
+		resultWriter.writeResultOfEpisode(currTellability, sarsa.weights);
+		
+		
+		// 2. If we reached the end, stop
+		if(!shouldContinue()) {
+			return new ReflectResultRL(null, null, null, null, false);
+		}
+		
+		
 		
 		
 		// 4. Create and start new run
@@ -272,7 +283,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	
 	private boolean shouldContinue() {
 		run++;
-		if(run >= 3) {
+		if(run >= 500) {
 			return false;
 		} else {
 			return true;

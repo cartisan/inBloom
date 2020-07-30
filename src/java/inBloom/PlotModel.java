@@ -16,6 +16,8 @@ import jason.util.Pair;
 
 import inBloom.helper.MoodMapper;
 import inBloom.rl_happening.islandWorld.IslandModel;
+import inBloom.rl_happening.rl_management.AutomatedHappeningDirector;
+import inBloom.rl_happening.rl_management.SarsaLambda;
 import inBloom.stories.little_red_hen.RedHenLauncher;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;
@@ -195,6 +197,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void checkHappenings(int step) {
 		logger.fine("Executing happenings if present");
+				
 		List<Happening<?>> happenings = this.happeningDirector.getTriggeredHappenings(step);
 
 		for (Happening h : happenings) {

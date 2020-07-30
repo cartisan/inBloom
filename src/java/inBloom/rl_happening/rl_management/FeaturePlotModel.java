@@ -123,11 +123,18 @@ public abstract class FeaturePlotModel<EnvType extends RLEnvironment<?>> extends
 		return null;
 	}
 	
-	public LinkedList<String> getPresentFeatures() {
+	public LinkedList<String> getCopyOfPresentFeatures() {
 		if(MOODFEATURES) {
 			this.updateMoodFeatures();
 		}
-		return this.presentFeatures;
+		
+		LinkedList<String> presentFeatures = new LinkedList<String>();
+		
+		for(String feature: this.presentFeatures) {
+			presentFeatures.add(feature);
+		}
+		
+		return presentFeatures;
 	}
 	
 

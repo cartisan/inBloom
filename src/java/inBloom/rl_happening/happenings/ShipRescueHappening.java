@@ -36,6 +36,7 @@ public class ShipRescueHappening extends ConditionalHappening<IslandModel> {
 		chara.goTo(model.civilizedWorld);
 		model.deactivateFeature(IslandModel.onIsland);
 		model.getLogger().info(chara.name + " was rescued!");
+		// environment.pause (s. PlotEnvironment.checkPause)
 	}
 
 	@Override

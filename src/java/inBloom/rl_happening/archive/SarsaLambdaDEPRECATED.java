@@ -299,7 +299,7 @@ public class SarsaLambdaDEPRECATED {
 		LinkedList<String> presentFeatures = new LinkedList<String>();
 		
 		// DEBUG this returns an empty list
-		presentFeatures = this.featurePlotModel.getPresentFeatures();
+		presentFeatures = this.featurePlotModel.getCopyOfPresentFeatures();
 		
 		// TODO include the features of the action or the combination of state and action
 		

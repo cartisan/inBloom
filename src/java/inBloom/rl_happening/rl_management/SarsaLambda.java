@@ -39,8 +39,8 @@ public class SarsaLambda {
 	 */
 	private final double epsilon = 0.3; // epsilon-soft greedy action selection criteria
 	private final double lambda = 0.8;	// balance btw MC/TD; 1 = MC (high backtracing of reward); 0 = TD (low backtracing of reward)
-	private final double gamma = 0.9;	// discount factor - value?
-	private final double alpha = 0.9;	// learning rate   - value?
+	private final double gamma = 1;	// discount factor - 0 = ignoring future rewards, 1 = 100% additive rewards
+	private final double alpha = 0.001;	// learning rate   - 
 	
 	/**
 	 * DATA STRUCTURES FOR PERFORMING THE ALGORITHM
@@ -55,12 +55,14 @@ public class SarsaLambda {
 	/**
 	 * BOOLEANS FOR OUTPUTS
 	 */
-	private final boolean PRINTQVALUES = false;
-	private final boolean PRINTFEATURESPERSTEP = true;
-	private final boolean SHOWELIGIBILITYTRACESPERSTEP = false;
-	private final boolean PRINTWEIGHTSAFTERUPDATE = false;
-	private final boolean PRINTCHOSENACTIONPERSTEP = true;
-	private final boolean PRINTUPDATECALCULATIONS = false;
+	private final boolean PRINT_QVALUES = false;
+	private final boolean PRINT_FEATURES_PER_STEP = true;
+	private final boolean SHOW_ELIGIBILITY_TRACES_PER_STEP = false;
+	private final boolean PRINT_WEIGHTS_AFTER_UPDATE = false;
+	public final boolean PRINT_WEIGHTS_AFTER_EPISODE = true;
+	private final boolean PRINT_CHOSEN_ACTION_PER_STEP = true;
+	private final boolean PRINT_UPDATE_CALCULATIONS = false;
+	private final boolean PRINT_ELIGIBILITY_UPDATES = false;
 	
 	
 	/**
@@ -72,19 +74,23 @@ public class SarsaLambda {
 	// necessary for updating eligibility traces at the beginning of 1 step with regards to the
 	// features that had been present during the last action selection
 	private LinkedList<String> currentlyPresentFeatures;
+	private int stepOfCurrentFeatures;
 	
 	
 	// necessary for updating all weights of all features at the end of one episode with regard to the selected Action
 	// since we only receive the reward at the end of one episode (no intermediate rewards)
 //	private LinkedList<StepwiseInformation> stepwiseMemory;
+	private int step;
 	private Happening<?> previousAction;
+	private int stepOfPreviousAction;
 	private Double previousQValue;
 	
 	private Happening<?> currentAction;
+	private int stepOfCurrentAction;
 	private Double currentQValue;
 	
 	// only for log purposes in testing
-	ReinforcementLearningCycle rlCycle;
+	public ReinforcementLearningCycle rlCycle;
 	
 	
 	
@@ -116,6 +122,7 @@ public class SarsaLambda {
 		this.previousQValue = 0.0;
 		this.currentAction = null;
 		this.currentQValue = 0.0;
+		this.step = 0;
 
 
 		// initialise qValues
@@ -133,19 +140,8 @@ public class SarsaLambda {
 		rlCycle.log("Initialising Weights");
 		this.initializeWeights();
 		
-		rlCycle.log("Weights:");
-		this.printFeatureActionValues(this.weights);
-		
-		
-		
-		
 		rlCycle.log("Initialising eligibility traces");
 		this.initializeEligibilityTraces();
-		
-		rlCycle.log("Eligibility Traces:");
-		this.printFeatureActionValues(this.eligibilityTraces);
-		
-		
 		
 		
 		this.rlCycle.log(toString());
@@ -166,14 +162,16 @@ public class SarsaLambda {
 		
 		this.previousAction = this.currentAction;
 		this.previousQValue = this.currentQValue;
+		this.stepOfPreviousAction = this.stepOfCurrentAction;
 		
 		// features = get the features present in this state
 		// we make this only state-dependent, actions will have their effect when we look into the weights
 		// because those are different depending on which action is chosen
-		LinkedList<String> presentFeatures = this.featurePlotModel.getPresentFeatures();
+		LinkedList<String> presentFeatures = this.featurePlotModel.getCopyOfPresentFeatures();
 		this.currentlyPresentFeatures = presentFeatures;
+		this.stepOfCurrentFeatures = this.step;
 		
-		if(PRINTFEATURESPERSTEP) {
+		if(PRINT_FEATURES_PER_STEP) {
 			rlCycle.log("Present features: " + presentFeatures);
 		}
 		
@@ -194,13 +192,13 @@ public class SarsaLambda {
 			
 			this.qValues.put(action, qvalue);
 			
-			if(PRINTQVALUES) {
+			if(PRINT_QVALUES) {
 				rlCycle.log("QValue was added: " + action + ": " + qvalue);
 			}
 			
 		}
 		
-		if(PRINTQVALUES) {
+		if(PRINT_QVALUES) {
 			rlCycle.log("\n");
 		}
 		
@@ -249,6 +247,7 @@ public class SarsaLambda {
 		//update previous Action AFTER stepwise Information is saved
 		this.currentAction = action;
 		this.currentQValue = qValue;
+		this.stepOfCurrentAction = this.step;
 		
 		return action;
 	}
@@ -264,11 +263,13 @@ public class SarsaLambda {
 		// delta = delta + gamma * Q(a) where a ist the last performed action
 		
 		// Update eligibility Traces
-		if(this.currentlyPresentFeatures!=null && this.previousAction!=null) {
+		this.step = step;
+				
+		if(this.currentlyPresentFeatures!=null && this.currentAction!=null) {
 			
 			this.updateEligibilityTraces();
 						
-			if(SHOWELIGIBILITYTRACESPERSTEP) {
+			if(SHOW_ELIGIBILITY_TRACES_PER_STEP) {
 				rlCycle.log(printFeatureActionValues(eligibilityTraces));
 			}
 		}
@@ -277,8 +278,8 @@ public class SarsaLambda {
 		// Action selection
 		Happening<?> chosenAction = this.chooseNewAction();
 		
-		if(PRINTCHOSENACTIONPERSTEP) {
-			rlCycle.log("Action: " + chosenAction);
+		if(PRINT_CHOSEN_ACTION_PER_STEP) {
+			rlCycle.log("Performed Action: " + chosenAction);
 		}
 
 		
@@ -288,15 +289,22 @@ public class SarsaLambda {
 	
 	private void updateEligibilityTraces() {
 
-		// update ALL eligibility traces with regards to gamma and lambda
+		// decrease ALL (non-null) eligibility traces with regards to gamma and lambda
 		for(String feature: this.eligibilityTraces.keySet()) {
 
 			for(Happening<?> happening: this.eligibilityTraces.get(feature).keySet()) {
 				
 				double eligibilityValue = this.getFeatureActionDependentValue(eligibilityTraces, feature, happening);
-				double newEligibilityValue = eligibilityValue * this.gamma * this.lambda;
 				
-				this.eligibilityTraces.get(feature).put(happening, newEligibilityValue);
+				if(eligibilityValue!=0.0) {
+					
+					if(PRINT_ELIGIBILITY_UPDATES) {
+						rlCycle.log("Decreasing e for feature [" + feature + "], action [" + happening + "]");
+					}
+					
+					double newEligibilityValue = eligibilityValue * this.gamma * this.lambda;
+					this.eligibilityTraces.get(feature).put(happening, newEligibilityValue);
+				}
 				
 			}
 
@@ -308,7 +316,9 @@ public class SarsaLambda {
 			// TODO nur für das Happening, das auch gewählt worden war
 			//for(Happening<?> happening: this.eligibilityTraces.get(previouslyPresentFeature).keySet()) {
 			
-			
+			if(PRINT_ELIGIBILITY_UPDATES) {
+				rlCycle.log("++Increasing e for feature [" + previouslyPresentFeature + "[" + this.stepOfCurrentFeatures + "]], action [" + currentAction + "[" + this.stepOfCurrentAction + "]]");
+			}
 				
 				double eligibilityValue = this.getFeatureActionDependentValue(eligibilityTraces, previouslyPresentFeature, this.currentAction);
 				double newEligibilityValue = eligibilityValue + 1;
@@ -345,13 +355,15 @@ public class SarsaLambda {
 	 */
 	public void updateWeights(double reward) {
 		
-		rlCycle.log("\nWEIGHT UPDATE");
+		if(PRINT_UPDATE_CALCULATIONS) {
+			rlCycle.log("\nWEIGHT UPDATE");
+		}
 
 		// calculate delta before action selection
 		// d = r - Qa
 		double delta = reward - previousQValue;
 
-		if(PRINTUPDATECALCULATIONS) {
+		if(PRINT_UPDATE_CALCULATIONS) {
 			rlCycle.log("d = r - Qa: " + reward + " - " + previousQValue + " = " + delta);
 			rlCycle.log("d + (g * Qa'): " + delta + " + " + "(" + gamma + " * " + currentQValue  + ")");
 		}
@@ -360,7 +372,7 @@ public class SarsaLambda {
 		// d = d + g + Qa'
 		delta += (this.gamma * this.currentQValue);
 
-		if(PRINTUPDATECALCULATIONS) {
+		if(PRINT_UPDATE_CALCULATIONS) {
 			rlCycle.log("new error: " + delta);
 		}
 
@@ -380,14 +392,14 @@ public class SarsaLambda {
 					// calculate new weight
 					// w = w + a * d * e
 					
-					rlCycle.log("Feature: " + feature);
-					rlCycle.log("Action:  " + action);
-					if(PRINTUPDATECALCULATIONS) {
+					if(PRINT_UPDATE_CALCULATIONS) {
+						rlCycle.log("\nFeature: " + feature);
+						rlCycle.log("Action:  " + action);
 						rlCycle.log("w = w + (a * d * e): " + weight + " + " + "(" + alpha + " * " + delta + " * " + e + ")");
 					}
 					weight += (alpha * delta * e);
 
-					if(PRINTUPDATECALCULATIONS) {
+					if(PRINT_UPDATE_CALCULATIONS) {
 						rlCycle.log("new weight: " + weight);
 					}
 
@@ -397,7 +409,7 @@ public class SarsaLambda {
 			}
 		}
 		
-		if(PRINTWEIGHTSAFTERUPDATE) {
+		if(PRINT_WEIGHTS_AFTER_UPDATE) {
 			rlCycle.log(printFeatureActionValues(weights));
 		}
 
