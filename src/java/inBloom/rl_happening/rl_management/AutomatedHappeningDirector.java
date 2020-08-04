@@ -89,8 +89,11 @@ public class AutomatedHappeningDirector <T extends PlotModel<?>> implements Happ
 			triggeredHappeningsInThisStep.add(chosenAction);
 		}
 		
+//		((RLEnvironment)this.model.environment).lastPerformedHappenings = triggeredHappeningsInThisStep;
+		
 		return triggeredHappeningsInThisStep;
 	}
+	
 
 	/**
 	 * Returns a list of all possible Happenings that could be scheduled at any given time point (step)

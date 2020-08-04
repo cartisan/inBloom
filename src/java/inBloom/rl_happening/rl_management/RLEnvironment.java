@@ -3,10 +3,16 @@
  */
 package inBloom.rl_happening.rl_management;
 
+import java.util.LinkedList;
+
 import inBloom.PlotEnvironment;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
+import inBloom.helper.EnvironmentListener;
+import inBloom.rl_happening.happenings.ConditionalHappening;
+import inBloom.rl_happening.happenings.ShipRescueHappening;
 import inBloom.storyworld.Character;
+import inBloom.storyworld.Happening;
 
 /**
  * @author Julia Wippermann
@@ -15,6 +21,11 @@ import inBloom.storyworld.Character;
  */
 public abstract class RLEnvironment<ModType extends PlotModel<?>> extends PlotEnvironment<ModType> {
 
+	// needs to be a list because theoretically there could be more than one Happening triggered per step
+//	public LinkedList<Happening<?>> lastPerformedHappenings = null;
+	
+	
+	
 	@Override
 	protected synchronized void stepStarted(int step) {
 		
@@ -81,4 +92,40 @@ public abstract class RLEnvironment<ModType extends PlotModel<?>> extends PlotEn
 		this.waitWhilePause();
 	}
 	
+	
+	protected void checkPause() {
+		if (this.initialized & !PlotLauncher.getRunner().isDebug()) {
+			// same action was repeated Launcher.MAX_REPEATE_NUM number of times by all agents:
+	    	if (this.narrativeExquilibrium()) {
+	    		// reset counter
+	    		logger.info("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
+	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
+	    		this.resetAllAgentActionCounts();
+	    		PlotLauncher.runner.pauseExecution();
+	    		for(EnvironmentListener l : this.listeners) {
+	    			l.onPauseRepeat();
+	    		}
+	    	}
+	    	if (MAX_STEP_NUM > -1 && this.getStep() % MAX_STEP_NUM == 0) {
+	    		logger.info("Auto-paused execution of simulation, because system ran for MAX_STEP_NUM steps.");
+
+	    		PlotLauncher.runner.pauseExecution();
+	    		for(EnvironmentListener l : this.listeners) {
+	    			l.onPauseRepeat();
+	    		}
+	    	}
+	    	
+//	    	if(this.lastPerformedHappenings!=null) {
+//	    		ConditionalHappening<?> happening = (ConditionalHappening)this.lastPerformedHappenings.getFirst();
+//	    		if((happening instanceof ShipRescueHappening) && (happening.hasHadEffect)) {
+//	    			logger.info("Auto-paused execution of simulation, because the agent was rescued from the island.");
+//
+//	    			PlotLauncher.runner.pauseExecution();
+//	    			for(EnvironmentListener l : this.listeners) {
+//	    				l.onPauseRepeat();
+//	    			}
+//	    		}
+//	    	}
+		}
+	}
 }

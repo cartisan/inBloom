@@ -17,6 +17,8 @@ import inBloom.storyworld.Happening;
  */
 public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happening<T> {
 	
+	public boolean hasHadEffect;
+	
 	/**
 	 * Constructor with trigger, patient and causal property. Creates a percept "happening" for the patient.
 	 * 
@@ -32,6 +34,8 @@ public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happe
 		// der percept, den wir später von hand hinzufügen, kommt jedoch an.
 		super(trigger, causalProperty, "happening");
 		this.patient = patient;
+		
+		this.hasHadEffect = false;
 	}
 	
 	/**
@@ -63,6 +67,7 @@ public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happe
 		Character chara = model.getCharacter(this.getPatient());
 		
 		if(hasEffect(model, chara)) {
+			this.hasHadEffect = true;
 			this.executeModelEffects(model, chara);
 			this.setPercept(this.getConditionalPercept());
 			this.setAnnotation(PerceptAnnotation.fromEmotion(this.getConditionalEmotion()));
