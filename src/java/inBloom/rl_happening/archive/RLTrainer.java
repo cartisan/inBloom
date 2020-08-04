@@ -1,7 +1,7 @@
 /**
  * 
  */
-package inBloom.rl_happening.rl_management;
+package inBloom.rl_happening.archive;
 
 /**
  * Should run 100 or similar versions of the RL algorithm

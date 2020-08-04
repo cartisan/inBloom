@@ -1,4 +1,4 @@
-package inBloom.rl_happening.rl_management;
+package inBloom.rl_happening.archive;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -14,6 +14,11 @@ import inBloom.graph.PlotGraphController;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
 import inBloom.rl_happening.islandWorld.IslandModel;
+import inBloom.rl_happening.rl_management.AutomatedHappeningDirector;
+import inBloom.rl_happening.rl_management.FeaturePlotModel;
+import inBloom.rl_happening.rl_management.RLEnvironment;
+import inBloom.rl_happening.rl_management.ReflectResultRL;
+import inBloom.rl_happening.rl_management.SarsaLambda;
 import jason.asSemantics.Personality;
 import jason.runtime.MASConsoleGUI;
 

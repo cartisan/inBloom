@@ -1,7 +1,7 @@
 /**
  * 
  */
-package inBloom.rl_happening.rl_management;
+package inBloom.rl_happening.archive;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,10 @@ import inBloom.LauncherAgent;
 import inBloom.PlotLauncher;
 import inBloom.rl_happening.islandWorld.IslandLauncher;
 import inBloom.rl_happening.islandWorld.IslandModel;
+import inBloom.rl_happening.rl_management.AutomatedHappeningDirector;
+import inBloom.rl_happening.rl_management.FeaturePlotModel;
+import inBloom.rl_happening.rl_management.HappeningManager;
+import inBloom.rl_happening.rl_management.ReflectResultRL;
 import inBloom.storyworld.HappeningDirector;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.asSemantics.Personality;
