@@ -398,7 +398,8 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		}
 
 	    // clone edges, make sure that incident vertices are translated into their cloned counterparts
-	    synchronized(this.edges) {
+		Collection<Edge> edges = this.getEdges();
+		synchronized(edges){
 		    for (Edge e : this.getEdges()) {
 		    	Collection<Vertex> vClones = this.getIncidentVertices(e).stream().map( v -> cloneMap.get(v)).collect(Collectors.toList());
 		        dest.addEdge(e.clone(), vClones);
