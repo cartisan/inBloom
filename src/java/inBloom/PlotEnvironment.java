@@ -92,7 +92,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * A list of environment listeners which get called on certain events
      * in the environment.
      */
-    private List<EnvironmentListener> listeners = new LinkedList<>();
+    protected List<EnvironmentListener> listeners = new LinkedList<>();
 
     protected ModType model;
 
@@ -150,7 +150,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      */
     protected int step = 0;
 
-    private boolean initialized = false;
+    protected boolean initialized = false;
 
     /**
      * Jason-internal initialization executed by the framwork during

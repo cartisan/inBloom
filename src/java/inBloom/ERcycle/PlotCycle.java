@@ -59,7 +59,8 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	private JFrame cycleFrame;
 	private JTextArea logTextArea = new JTextArea(10, 40);
 	
-	protected static int currentCycle = 0;
+	// Julia: I changed this to non-static such that it will be initialised again with each new instance of the class (as needed for RLTrainer)
+	public int currentCycle = 0;
 	
 	protected boolean isRunning = true;
 	
