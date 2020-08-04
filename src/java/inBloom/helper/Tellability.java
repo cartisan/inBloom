@@ -156,4 +156,5 @@ public class Tellability {
 		logger.info("Overall tellability: " + tellability);
 		return tellability;
 	}
+
 }
