@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 import com.google.common.collect.Sets;
 import com.google.common.math.Stats;
 
+import jason.util.Pair;
+
 import inBloom.framing.ConnectivityGraph;
 import inBloom.graph.CountingVisitor;
 import inBloom.graph.PlotDirectedSparseGraph;
@@ -52,9 +54,11 @@ public class Tellability {
 	public Collection<Instance> fUinstances = new ArrayList<>();
 
 	// Semantic Opposition
+	public double opposition;
 
 	// Suspense
 	public int suspense;
+	public Triple<String, Vertex, Vertex> mostSuspensefulIntention;			 // (agent, intention, action)
 	public int plotLength;
 
 
@@ -69,17 +73,23 @@ public class Tellability {
 	 * {@link VertexMergingPPVisitor} and  {@link EdgeGenerationPPVisitor}.
 	 */
 	public Tellability(PlotDirectedSparseGraph graph) {
+		// Perform quantitative analysis of plot
 		this.counter = new CountingVisitor();
-		this.plotUnitTypes = new LinkedList<>();
+		this.computeSimpleStatistics(graph);
 
 		// find functional units and polyvalent vertices
+		this.plotUnitTypes = new LinkedList<>();
 		this.detectPolyvalence(graph);
 
 		// calculate semantic symmetry and parallelism
-		 this.detectSymmetryAndParallelism(graph);
+		this.detectSymmetryAndParallelism(graph);
 
-		// Perform quantitative analysis of plot
-		this.computeSimpleStatistics(graph);
+		// calculate semantic opposition
+		this.detectOpposition(graph);
+
+		// calculate suspense
+		this.detectSuspense(graph);
+
 	}
 
 	/**
@@ -89,11 +99,9 @@ public class Tellability {
 	private void computeSimpleStatistics(PlotDirectedSparseGraph graph) {
 		this.counter.apply(graph);
 		this.productiveConflicts = this.counter.getProductiveConflictNumber();
-		this.suspense = this.counter.getSuspense();
 		this.plotLength = this.counter.getPlotLength();
 		this.numAllVertices = this.counter.getVertexNum();
-
-		this.charNum = graph.getRoots().size();
+		this.charNum = this.counter.agents.size();
 	}
 
 	/**
@@ -224,6 +232,44 @@ public class Tellability {
 		// overall symmetry is average: over symmetry for each character and parallelism for each character pair
 		this.symmetry = Stats.meanOf(similarityScores);
 		return;
+	}
+
+	private void detectOpposition(PlotDirectedSparseGraph graph) {
+		this.opposition = 0;
+	}
+
+	private void detectSuspense(PlotDirectedSparseGraph graph) {
+		int suspense  = 0;
+		for (String agent : this.counter.agents) {
+			List<Pair<Vertex, Vertex>> confPairs = this.counter.productiveConflicts.get(agent);
+
+			for (Pair<Vertex, Vertex> pair: confPairs) {
+				Vertex intention = pair.getFirst();
+				Vertex resolution = pair.getSecond();		//is an intention in case of t edge, or an action in case of m edge
+
+				if (this.counter.motivationChains.contains(agent, intention)) {
+					List<Vertex> motivations = this.counter.motivationChains.get(agent, intention);
+					intention = motivations.get(motivations.size() - 1);
+				}
+
+				int localSuspense = resolution.getStep() - intention.getStep();
+
+				if (suspense <= localSuspense) { // <= is important, because with == suspense we want the stuff closer to the end
+					suspense = localSuspense;
+					this.mostSuspensefulIntention = new Triple<>(agent, intention, resolution);
+				}
+			}
+		}
+
+		logger.info("Maximal suspense: " + suspense);
+		if(this.mostSuspensefulIntention != null) {
+			logger.info("Most suspensefull intention: " +
+						this.mostSuspensefulIntention.getFirst() + "'s (" +
+						this.mostSuspensefulIntention.getSecond().toString() + ", " +
+						this.mostSuspensefulIntention.getThird().toString() + ")");
+		}
+
+		this.suspense = suspense;
 	}
 
 	private HashMap<String, List<String>> extractOrderedFUSequences(List<String> agentNames) {

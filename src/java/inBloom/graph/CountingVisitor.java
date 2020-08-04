@@ -1,5 +1,6 @@
 package inBloom.graph;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,7 +14,6 @@ import jason.util.Pair;
 import inBloom.graph.Vertex.Type;
 import inBloom.graph.visitor.EdgeVisitResult;
 import inBloom.graph.visitor.PlotGraphVisitor;
-import inBloom.helper.Triple;
 
 /**
  * Performs counting in order to compute plot statistics. Unlike common visitors, this does not modify the graph.
@@ -23,10 +23,10 @@ public class CountingVisitor extends PlotGraphVisitor {
 
 	protected static Logger logger = Logger.getLogger(CountingVisitor.class.getName());
 
+	public List<String> agents;
 	public HashMap<String, Integer> conflictCounter;						 // agentName --> conflictNum
 	public HashMap<String, List<Pair<Vertex, Vertex>>> productiveConflicts;  // agentName --> [(Intention, Resolution), (...), ...]
 	public Table<String, Vertex, List<Vertex>> motivationChains = HashBasedTable.create();
-	public Triple<String, Vertex, Vertex> mostSuspensefulIntention;			 // (agent, intention, action)
 
 	private int lowestStep = Integer.MAX_VALUE;		// lowest environment step encountered in story (= plot start in steps)
 	private int highestStep = Integer.MIN_VALUE;	// highest environment step encountered in story (= plot end in steps)
@@ -36,6 +36,7 @@ public class CountingVisitor extends PlotGraphVisitor {
 
 
 	public CountingVisitor() {
+		this.agents = new ArrayList<>();
 		this.conflictCounter = new HashMap<>();
 		this.productiveConflicts = new HashMap<>();
 	}
@@ -44,6 +45,7 @@ public class CountingVisitor extends PlotGraphVisitor {
 	public void visitRoot(Vertex vertex) {
 		// new character, add it to all counters and note that we are processing it's subtree
 		this.currentRoot = vertex.getLabel();
+		this.agents.add(this.currentRoot);
 
 		this.conflictCounter.put(this.currentRoot, 0);
 		this.productiveConflicts.put(this.currentRoot, new LinkedList<>());
@@ -155,45 +157,6 @@ public class CountingVisitor extends PlotGraphVisitor {
 
 		logger.info("Productive conflicts: " + confNum);
 		return confNum;
-	}
-
-	/**
-	 * Returns the biggest number of environment steps that was necessary to resolve an intention.
-	 * @return
-	 */
-	public int getSuspense(){
-		int suspense  = 0;
-
-		for (String agent : this.productiveConflicts.keySet()) {
-			List<Pair<Vertex, Vertex>> confPairs = this.productiveConflicts.get(agent);
-
-			for (Pair<Vertex, Vertex> pair: confPairs) {
-				Vertex intention = pair.getFirst();
-				Vertex resolution = pair.getSecond();		//is an intention in case of t edge, or an action in case of m edge
-
-				if (this.motivationChains.contains(agent, intention)) {
-					List<Vertex> motivations = this.motivationChains.get(agent, intention);
-					intention = motivations.get(motivations.size() - 1);
-				}
-
-				int localSuspense = resolution.getStep() - intention.getStep();
-
-				if (suspense <= localSuspense) { // <= is important, because with == suspense we want the stuff closer to the end
-					suspense = localSuspense;
-					this.mostSuspensefulIntention = new Triple<>(agent, intention, resolution);
-				}
-			}
-		}
-
-		logger.info("Maximal suspense: " + suspense);
-		if(this.mostSuspensefulIntention != null) {
-			logger.info("Most suspensefull intention: " +
-						this.mostSuspensefulIntention.getFirst() + "'s (" +
-						this.mostSuspensefulIntention.getSecond().toString() + ", " +
-						this.mostSuspensefulIntention.getThird().toString() + ")");
-		}
-
-		return suspense;
 	}
 
 	public int getVertexNum() {
