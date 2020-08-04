@@ -80,7 +80,7 @@ public class SarsaLambda {
 	// necessary for updating all weights of all features at the end of one episode with regard to the selected Action
 	// since we only receive the reward at the end of one episode (no intermediate rewards)
 //	private LinkedList<StepwiseInformation> stepwiseMemory;
-	private int step;
+	protected int step;
 	private Happening<?> previousAction;
 	private int stepOfPreviousAction;
 	private Double previousQValue;
