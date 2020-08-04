@@ -39,6 +39,9 @@ public abstract class RLEnvironment<ModType extends PlotModel<?>> extends PlotEn
 			if(model!=null) {
 				SarsaLambda sarsa = ((AutomatedHappeningDirector<ModType>)this.model.happeningDirector).getSarsa();
 				sarsa.rlCycle.log("\nStep " + this.step);
+				
+				// for FileWriting Data Gathering purposes
+				((FeaturePlotModel)model).addPresentFeatures();
 			}
 			
 			
@@ -69,9 +72,7 @@ public abstract class RLEnvironment<ModType extends PlotModel<?>> extends PlotEn
 	@SuppressWarnings("unchecked")
 	protected void stepFinished(int step, long elapsedTime, boolean byTimeout) {
 		
-		System.out.println("STEP FINISHED");
-		
-		this.logger.info("STEP FINISHED");
+		logger.info("STEP FINISHED");
 		
 		if(this.model != null) {
 			SarsaLambda sarsa = ((AutomatedHappeningDirector<ModType>)this.model.happeningDirector).getSarsa();

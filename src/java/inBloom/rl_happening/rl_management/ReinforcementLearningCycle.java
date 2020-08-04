@@ -58,6 +58,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	public ResultWriter resultWriter;
 //	protected String fileName;
 	protected SarsaLambda sarsa;
+	public FeaturePlotModel model;
 	
 	
 
@@ -85,6 +86,10 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		this.agentPersonalities = agentPersonalities;	
 //		this.fileName = fileName;
 		
+		// Initialize the ResultWriter
+//		this.resultWriter = new ResultWriter(fileName);
+		this.resultWriter = new ResultWriter();
+		
 //		this.originalGraph = originalGraph; // TODO why needed? -> for Tellability or GUI or something? Analysing?
 //		this.originalMood = originalMood; // TODO why needed?
 		
@@ -106,15 +111,12 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		log("Initialising Sarsa(Lambda)");
 		this.sarsa = new SarsaLambda(null, this); // this is given for SarsaLambda to have access to the log method
 		
-		IslandModel model = new IslandModel(new ArrayList<LauncherAgent>(), new AutomatedHappeningDirector(this.sarsa));
+		IslandModel model = new IslandModel(new ArrayList<LauncherAgent>(), new AutomatedHappeningDirector(this.sarsa), this.resultWriter);
+		this.model = model;
 		
 		this.sarsa.initializeSarsa(model);
 		
-		
-		
-		// Initialize the ResultWriter
-//		this.resultWriter = new ResultWriter(fileName);
-		this.resultWriter = new ResultWriter();
+		this.resultWriter.writeTitlesOfPlot();
 		this.resultWriter.writeTitlesOfEpisodes(sarsa.weights);
 
 	}
@@ -233,6 +235,8 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		// auch nach jedem Step!
 		sarsa.updateWeights(currTellability);
 
+		//resultWriter.writePlotStep();
+		resultWriter.writePlotStep(((FeaturePlotModel)er.getLastModel()));
 		resultWriter.writeResultOfEpisode(currTellability, tellability, sarsa);
 		
 		
@@ -250,7 +254,9 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 
 		List<LauncherAgent> agents = this.createAgs(this.agentNames, this.agentPersonalities);
 
-		PlotModel<?> model = this.getPlotModel();
+		// create new model for new run
+		FeaturePlotModel<?> model = this.getPlotModel();
+		this.model = model;
 		return new ReflectResultRL(this.lastRunner, model, agents, sarsa);
 		
 	}

@@ -10,6 +10,7 @@ import inBloom.PlotLauncher;
 import inBloom.PlotModel;
 import inBloom.helper.PerceptAnnotation;
 import inBloom.rl_happening.rl_management.FeaturePlotModel;
+import inBloom.rl_happening.rl_management.ResultWriter;
 import inBloom.storyworld.HappeningDirector;
 import inBloom.storyworld.Item;
 import inBloom.storyworld.Location;
@@ -34,7 +35,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	public HashMap<Character, Integer> hunger;
 	@ModelState
 	public boolean isOnCruise;
-		
+	
 	// TODO alles als @ModelState annotieren, was relevant ist für den current State des Models
 	
 	/**
@@ -83,9 +84,9 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	 * CONSTRUCTOR
 	 */
 	
-	public IslandModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
+	public IslandModel(List<LauncherAgent> agentList, HappeningDirector hapDir, ResultWriter writer) {
 		
-		super(agentList, hapDir);		
+		super(agentList, hapDir, writer);
 		
 		// numberOfFriends: each Character has 0 friends
 		this.friends = new HashMap<Character, Integer>();
@@ -113,10 +114,10 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		ActionReport result = new ActionReport();
 	
 		this.isOnCruise = true;
-		logger.info(agent.name + " went on a cruise.");
+		addPlot(agent.name + " went on a cruise.");
 				
 		agent.goTo(this.ship);
-		logger.info(agent.name + " is on ship " + this.ship.name);
+		addPlot(agent.name + " is on a ship with the name " + this.ship.name + ".");
 		
 		result.addPerception(agent.name, new PerceptAnnotation("hope"));
 		result.success = true;
@@ -132,7 +133,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	public ActionReport stayHome(Character agent) {
 		ActionReport result = new ActionReport();
 	
-		logger.info(agent.name + " stayed home.");
+		addPlot(agent.name + " stayed home.");
 		
 		// result.addPerception(agent.name, new PerceptAnnotation("hope"));
 		result.success = true;
@@ -143,12 +144,12 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	public ActionReport findFriend(Character agent) {
 		ActionReport result = new ActionReport();
 
-		logger.info(agent.name + " has found a friend.");
+		addPlot(agent.name + " has found a friend.");
 
 		// number of friends for this agent increases by one
 		changeIndividualValue(this.friends, agent, 1);
 		
-		logger.info(agent.name + " know has " + this.friends.get(agent) + " friends.");
+		addPlot(agent.name + " now has " + this.friends.get(agent) + " friends.");
 		
 		this.environment.addPercept(agent.name, Literal.parseLiteral("has(friend)"));
 
@@ -163,7 +164,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	public ActionReport getFood(Character agent) {
 		ActionReport result = new ActionReport();
 		
-		logger.info(agent.name + " looked for food.");
+		addPlot(agent.name + " looked for food.");
 		
 		// TODO here a happening could intrude
 		// but for now: if he look for food, he finds food
@@ -201,12 +202,12 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			
 			// In any case, the agent will eat
 			result.success = agent.eat("food").success;
-			logger.info(agent.name + " eats food.");
+			addPlot(agent.name + " eats food.");
 			
 			// he is not hungry anymore
 			this.hunger.replace(agent, 0);
 			this.environment.removePercept(agent.name, Literal.parseLiteral("hungry"));
-			logger.info(agent.name + "'s hunger: " + this.hunger.get(agent));
+			addPlot(agent.name + "'s hunger is " + this.hunger.get(agent) + ".");
 			
 			this.deactivateFeature(hungry);
 			
@@ -215,7 +216,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 				// TODO es wäre natürlich schöner, das hier direkt im Agent zu modellieren
 				agent.getPoisoned();
 				this.environment.addPercept(agent.name, Literal.parseLiteral("sick"));
-				logger.info(agent.name + " is sick.");
+				addPlot(agent.name + " is sick.");
 				
 				this.deactivateFeature(poisonedFood);
 				this.activateFeature(sick);
@@ -239,13 +240,13 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			 */
 			
 			this.island.enterSublocation(agent, island.hut.name);
-			logger.info(agent.name + " is in the hood. Hut I mean. This hut: " + island.hut.name);
+			addPlot(agent.name + " is in the hut with the name " + island.hut.name + ".");
 			
 			
 			/*
 			 * 2. SLEEP
 			 */
-			logger.info(agent.name + " is asleep.");
+			addPlot(agent.name + " is asleep.");
 			result.addPerception(agent.name, new PerceptAnnotation("relief"));
 
 			
@@ -268,7 +269,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			 */
 			
 			this.island.leaveSublocation(agent, island.hut.name);
-			logger.info(agent.name + " has left the hut " + island.hut.name);
+			addPlot(agent.name + " has left the hut with the name " + island.hut.name + ".");
 			
 			
 			result.success = true;
@@ -286,7 +287,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		logger.info(agent.name + " builds a hut.");
+		addPlot(agent.name + " builds a hut.");
 		this.island.buildHut();
 		
 		result.success = true;
@@ -308,7 +309,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		// you can only complain if you have a friend
 		if(this.friends.get(agent) > 0) {
 			
-			logger.info(agent.name + " complained.");
+			addPlot(agent.name + " complained.");
 			this.deactivateFeature(friend);
 			result.success = true;
 			
@@ -327,7 +328,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		this.island.isBurning = false;
 		this.environment.removePercept(agent.name, Literal.parseLiteral("fire"));
 		result.addPerception(agent.name, new PerceptAnnotation("pride"));
-		logger.info(agent.name + " has extinguished the fire.");
+		addPlot(agent.name + " has extinguished the fire.");
 		
 		this.deactivateFeature(fire);
 		
@@ -358,7 +359,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 
 		if(this.hunger.get(agent) >= 10) {
 			this.getEnvironment().killAgent(agent.name);
-			logger.info(agent.name + " has died.");
+			addPlot(agent.name + " has died.");
 			
 			this.deactivateFeature("isAlive");
 			
@@ -368,7 +369,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		} else if(this.hunger.get(agent) >= 5) {
 			this.environment.addPercept(agent.name, Literal.parseLiteral("hungry"));
 			this.activateFeature(hungry);
-			logger.info(agent.name + " is hungry.");
+			addPlot(agent.name + " is hungry.");
 		}
 		
 	}
@@ -387,8 +388,8 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		if(this.friends.get(agent) > 0) {
 			this.changeIndividualValue(this.friends, agent, -1);
 			this.deactivateFeature(friend);
-			logger.info(agent.name + " has lost a friend.");
-			logger.info(agent.name + " know has " + this.friends.get(agent) + " friends.");
+			addPlot(agent.name + " has lost a friend.");
+			addPlot(agent.name + " now has " + this.friends.get(agent) + " friends.");
 		}
 		
 		// if the agent has no friends at all after this, he looses his percept of having a friend
@@ -596,6 +597,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		return initiallyActivatedFeatures;
 	}
 
+	
 }
 
 // Es gibt eine Möglichkeit zu überprüfen, ob ein Agent einen bestimmten percept hat

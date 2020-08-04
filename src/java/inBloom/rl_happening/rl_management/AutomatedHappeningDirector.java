@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import inBloom.PlotModel;
+import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.storyworld.Happening;
 import inBloom.storyworld.HappeningDirector;
 
@@ -90,6 +91,11 @@ public class AutomatedHappeningDirector <T extends PlotModel<?>> implements Happ
 		}
 		
 //		((RLEnvironment)this.model.environment).lastPerformedHappenings = triggeredHappeningsInThisStep;
+		
+		for(Happening<?> h: triggeredHappeningsInThisStep) {
+			((FeaturePlotModel)this.model).addPlot(h.toString());
+			((FeaturePlotModel)this.model).addSelectedHappening(h);
+		}
 		
 		return triggeredHappeningsInThisStep;
 	}

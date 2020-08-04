@@ -11,6 +11,7 @@ import inBloom.LauncherAgent;
 import inBloom.PlotModel;
 import inBloom.storyworld.HappeningDirector;
 import inBloom.storyworld.Character;
+import inBloom.storyworld.Happening;
 
 /**
  * This is special type of PlotModel that additionally creates and manages a set of features that can
@@ -31,7 +32,6 @@ public abstract class FeaturePlotModel<EnvType extends RLEnvironment<?>> extends
 	
 	// a list of all possible domain-specific features that are relevant to the model state
 	private LinkedList<String> allPossibleFeatures;
-	// IDEA: Make has HashSet<String, boolean> -> only have one variable
 	// a list of all currently activated features, meaning all features present in the current state of the model
 	public LinkedList<String> presentFeatures;
 	
@@ -60,15 +60,26 @@ public abstract class FeaturePlotModel<EnvType extends RLEnvironment<?>> extends
 	// How to get the name of a mood:
 	// character.getMood().getFullName()
 	
-	
+	/**
+	 * Save the plot for the ResultWriter
+	 */
+	public ResultWriter resultWriter;
+	public String plotText;
+	public String allFeaturesOfTheEpisode;
+	public String allHappeningsOfTheEpisode;
 	
 	/**
 	 * CONSTRUCTOR
 	 */
 	
-	public FeaturePlotModel(List<LauncherAgent> agentList, HappeningDirector hapDir) {
+	public FeaturePlotModel(List<LauncherAgent> agentList, HappeningDirector hapDir, ResultWriter writer) {
 		
 		super(agentList, hapDir);
+		
+		this.resultWriter = writer;
+		this.plotText = "";
+		this.allFeaturesOfTheEpisode = "";
+		this.allHappeningsOfTheEpisode = "";
 		
 		// The Character HashMap has been initialized and filled with all Characters in the super Constructor
 		this.allCharacters = this.getCharacters();
@@ -281,4 +292,33 @@ public abstract class FeaturePlotModel<EnvType extends RLEnvironment<?>> extends
 	public String getMoodStrength(Character character) {
 		return character.getMood().getStrength();
 	}
+	
+	
+	
+	
+	public void addPlot(String plot) {
+		this.plotText += plot + " ";
+	}
+
+//	public void writePlotToFile() {
+//		this.resultWriter.writePlotStep(this);
+//	}
+	
+	public void addPresentFeatures() {
+		LinkedList<String> features = this.getCopyOfPresentFeatures();
+		
+		String message = "";
+		message += "[";
+		for(String feature: features)
+			message += feature + "-";
+		message = resultWriter.deleteLastChar(message);
+		message += "]";
+
+		this.allFeaturesOfTheEpisode += message;
+	}
+	
+	public void addSelectedHappening(Happening<PlotModel<?>> h) {
+		this.allHappeningsOfTheEpisode += "[" + h.toString() + "]";
+	}
+	
 }

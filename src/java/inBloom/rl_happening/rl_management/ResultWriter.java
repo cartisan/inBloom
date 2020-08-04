@@ -21,8 +21,8 @@ import java.io.FileWriter;
  */
 public class ResultWriter {
 
-	public final String episodesFile = "training8.csv";
-	public final String plotFile = "plotText.csv";
+	public final String episodesFile = "training10.csv";
+	public final String plotFile = "plotText10.csv";
 		
 	private int episode;
 	
@@ -51,7 +51,7 @@ public class ResultWriter {
 
 	public void writeToFile(String filename, String message) {
 		try {
-			FileWriter myWriter = new FileWriter(episodesFile, true);
+			FileWriter myWriter = new FileWriter(filename, true);
 			myWriter.append(message);
 			myWriter.close();
 		} catch (IOException e) {
@@ -137,21 +137,26 @@ public class ResultWriter {
 	
 	public void writeTitlesOfPlot() {
 		String message = "";
-		message += "Episode" + ",";
-		message += "Selected Happenings" + ",";
-		message += "Actived Features" + ",";
-		message += "Plot Text";
-		message += "\n";
+		message += "Episode"				+ ",";
+		message += "Selected Happenings"	+ ",";
+		message += "Activated Features"		+ ",";
+		message += "Plot Text"				+ "\n";
 		
 		writeToFile(plotFile, message);
 	}
 	
-	public void writePlotStep() {
+	public void writePlotStep(FeaturePlotModel model) {
+		String message = "";
+		message += this.episode						+ ",";
+		message += model.allHappeningsOfTheEpisode	+ ",";
+		message += model.allFeaturesOfTheEpisode	+ ",";
+		message += model.plotText					+ "\n";
 		
+		writeToFile(plotFile, message);
 	}
 	
 	
-	private String deleteLastChar(String message) {
+	public String deleteLastChar(String message) {
 		return message.substring(0, message.length()-1);
 	}
 

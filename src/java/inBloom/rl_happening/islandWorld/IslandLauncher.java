@@ -10,6 +10,7 @@ import inBloom.PlotControlsLauncher;
 import inBloom.PlotLauncher;
 import inBloom.rl_happening.happenings.*;
 import inBloom.rl_happening.rl_management.AutomatedHappeningDirector;
+import inBloom.rl_happening.rl_management.ResultWriter;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import inBloom.storyworld.Character;
 import jason.JasonException;
@@ -41,7 +42,7 @@ public class IslandLauncher extends PlotLauncher<IslandEnvironment, IslandModel>
 		ImmutableList<LauncherAgent> agents = ImmutableList.of(robinson);
 		
 		
-		IslandModel model = new IslandModel(agents, happeningDirector);
+		IslandModel model = new IslandModel(agents, happeningDirector, null);
 		
 		robinson.location = model.civilizedWorld.name;
 		

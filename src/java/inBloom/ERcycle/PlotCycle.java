@@ -25,6 +25,7 @@ import inBloom.graph.PlotGraphController;
 import inBloom.helper.EnvironmentListener;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
+import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.rl_happening.rl_management.FeaturePlotModel;
 import inBloom.rl_happening.rl_management.SarsaLambda;
 import inBloom.storyworld.HappeningDirector;
@@ -371,7 +372,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 			this.agents = agents;
 			this.agSrc = agSrc;
 			this.sarsa = sarsa;
-			this.model = (PlotModel<?>) model.getClass().getConstructors()[0].newInstance(agents, model.happeningDirector);
+			this.model = (PlotModel<?>)model.getClass().getConstructors()[0].newInstance(agents, model.happeningDirector, ((IslandModel)model).resultWriter);
 			
 			for(LauncherAgent ag : agents) {
 				model.addCharacter(ag);

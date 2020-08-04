@@ -63,8 +63,8 @@ public class RobinsonCycleOneTraining extends ReinforcementLearningCycle {
 			runner.setShowGui(false);
 			
 			
-			IslandModel model = new IslandModel(new ArrayList<LauncherAgent>(), new AutomatedHappeningDirector(this.sarsa));
-			
+			IslandModel model = new IslandModel(new ArrayList<LauncherAgent>(), new AutomatedHappeningDirector(this.sarsa), this.resultWriter);
+			this.model = model;
 			
 			/* 
 			 * AGENTS
@@ -118,7 +118,7 @@ public class RobinsonCycleOneTraining extends ReinforcementLearningCycle {
 	@Override
 	public FeaturePlotModel<?> getPlotModel() {
 		// TODO change the ScheduledHappeningDirector into my own RL one :D
-		return new IslandModel(new ArrayList<LauncherAgent>(), new AutomatedHappeningDirector(sarsa));
+		return new IslandModel(new ArrayList<LauncherAgent>(), new AutomatedHappeningDirector(sarsa), this.resultWriter);
 		
 		//return new IslandModel(new ArrayList<LauncherAgent>(), this.getHappeningDirector());
 		//return (FeaturePlotModel<?>)this.lastRunner.getUserModel();
