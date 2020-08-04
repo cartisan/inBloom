@@ -3,6 +3,7 @@ package inBloom.rl_happening.rl_management;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Map;
 
 import inBloom.LauncherAgent;
 import inBloom.PlotLauncher;
@@ -11,6 +12,7 @@ import inBloom.ERcycle.EngageResult;
 import inBloom.ERcycle.PlotCycle;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
+import inBloom.graph.isomorphism.FunctionalUnit;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
 import inBloom.rl_happening.islandWorld.IslandModel;
@@ -34,10 +36,13 @@ import jason.runtime.MASConsoleGUI;
  */
 public abstract class ReinforcementLearningCycle extends PlotCycle {
 
+	private static final int numberOfEpisodes = 10;
+	
 	private Personality[] agentPersonalities;
 	private String[] agentNames;
 	
-	private static int run = 0;
+	// I changed this to non-static such that it will be initialised with 0 whenever a new instance of the class is created (as needed for RLTrainer)
+	private int run = 0;
 	
 	/**
 	 * The personalities of the last cycle.
@@ -50,7 +55,8 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	//protected FeaturePlotModel<?> plotModel;
 	
 	
-	public ResultWriter resultWriter;;
+	public ResultWriter resultWriter;
+//	protected String fileName;
 	protected SarsaLambda sarsa;
 	
 	
@@ -69,12 +75,16 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	 * 			A list of all agents' personalities that should be part of the story
 	 * 			in the same order as the list of the agents' names
 	 */
+	// Constructor for RLTraining with RobinsonCycleMultipleTrainings
+//	public ReinforcementLearningCycle(String agentSource, String[] agentNames, Personality[] agentPersonalities, String fileName)
 	public ReinforcementLearningCycle(String agentSource, String[] agentNames, Personality[] agentPersonalities) {
 		
 		super(agentSource, true);
 		
 		this.agentNames = agentNames;
 		this.agentPersonalities = agentPersonalities;	
+//		this.fileName = fileName;
+		
 //		this.originalGraph = originalGraph; // TODO why needed? -> for Tellability or GUI or something? Analysing?
 //		this.originalMood = originalMood; // TODO why needed?
 		
@@ -103,7 +113,8 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		
 		
 		// Initialize the ResultWriter
-		this.resultWriter = new ResultWriter(this);
+//		this.resultWriter = new ResultWriter(fileName);
+		this.resultWriter = new ResultWriter();
 		this.resultWriter.writeTitlesOfEpisodes(sarsa.weights);
 
 	}
@@ -129,12 +140,9 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 
 		try {
 			
-			// create AutomatedHappeningDirector with SarsaLambda
-//			AutomatedHappeningDirector hapDir = new AutomatedHappeningDirector(this.sarsa);
-			// create a Thread that also gets the AutomatedHappeningDirector. RLCycle will then attach the AutomatedHappeningDirector to the given PlotLauncher
 			Thread t = new Thread(new RLCycle(runner, rr.getModel(), cycle_args, rr.getAgents(), this.agentSrc, rr.getModel().happeningDirector, sarsa));
 			
-			t.start();
+ 			t.start();
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -171,10 +179,21 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		}
 		
 		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
-		Tellability tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
-
+		
+		//Without catching the ConcurrentModificationException
+		//Tellability tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
+		Tellability tel = null;
+		try {
+			tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
+		} catch(ConcurrentModificationException e) {
+		}
+		
 		analyzedGraph.setName("ER Cycle, engagement step " + currentCycle);
-		log("Tellability" + Double.toString(tel.compute()));
+		if(tel!=null)
+			log("Tellability" + Double.toString(tel.compute()));
+		else {
+			log("Tellability" + 0);
+		}
 		
 		MoodMapper moodData = runner.getUserModel().moodMapper;
 		EngageResult er = this.createEngageResult(rr, runner, analyzedGraph, tel, moodData);
@@ -214,7 +233,7 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		// auch nach jedem Step!
 		sarsa.updateWeights(currTellability);
 
-		resultWriter.writeResultOfEpisode(currTellability, sarsa.weights);
+		resultWriter.writeResultOfEpisode(currTellability, tellability, sarsa);
 		
 		
 		// 2. If we reached the end, stop
@@ -283,7 +302,8 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 	
 	private boolean shouldContinue() {
 		run++;
-		if(run >= 500) {
+		log("RUN: " + run);
+		if(run >= numberOfEpisodes) {
 			return false;
 		} else {
 			return true;
