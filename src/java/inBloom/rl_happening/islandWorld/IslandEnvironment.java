@@ -20,14 +20,9 @@ import jason.asSyntax.Structure;
  */
 public class IslandEnvironment extends RLEnvironment<IslandModel> {
 	
-	static Logger logger = Logger.getLogger(IslandEnvironment.class.getName());
-	//private int currentStep = 0;
+	static Logger logger = Logger.getLogger(IslandEnvironment.class.getName());	
 	
-	private boolean printAllStateValuesAtEnd = true;
 	
-	private HashMap<Integer, Integer> stateValues = new HashMap<Integer, Integer>();
-	//private HashMap<Integer, HashMap<String, Object>> detailedHashCodes = new HashMap<Integer, HashMap<String, Object>>();
-
 	protected ActionReport doExecuteAction(String agentName, Structure action) {
 		
 		ActionReport result = null;
@@ -69,10 +64,6 @@ public class IslandEnvironment extends RLEnvironment<IslandModel> {
 			result = getModel().extinguishFire(agent);
 		}
 		
-		// TODO: idea: implement the functors as enums to iterate over
-		// -> more control in default? -> looks nicer, though not that much less code
-		
-		// String function = action.getFunctor();
 		
 		return result;
 	}
@@ -91,10 +82,6 @@ public class IslandEnvironment extends RLEnvironment<IslandModel> {
 		}
 	}
 	
-	/*protected synchronized void stepStarted(int step) {
-		super.stepStarted(step);
-		addStateValue();
-	}*/
 	
 	@Override
 	protected void stepFinished(int step, long elapsedTime, boolean byTimeout) {
@@ -103,73 +90,6 @@ public class IslandEnvironment extends RLEnvironment<IslandModel> {
 		increaseHunger();
 	}
 
-//	private void addStateValue() {
-//		
-//		if(this.stateValues == null) {
-//			System.out.println("hashCodes is null");
-//			return;
-//		}
-//		
-//		if(model == null) {
-//			System.out.println("model is null");
-//			return;
-//		}
-//		
-//		// Add the current state value as calculated in PlotModel.getStateValue()
-//		this.stateValues.put(this.currentStep, this.model.getStateValue());
-//		
-//		// If we reached the end of the story, we will stop and print our state values
-//		// TODO not hard code the end
-//		// CHECK outsource the printing
-//		// TODO outsource these things in PlotEnvironment?
-//		if(this.determineIfStoryHasEnded() && this.printAllStateValuesAtEnd) {
-//			printAllStateValues();
-//		}
-//		
-//	}
-	
-//	public boolean shouldPrintAllResults() {
-//		return this.currentStep==34;
-//	}
-	
-//	private void printAllStateValues() {
-//		for(Integer i: this.stateValues.keySet()) {
-//			System.out.println("Step " + i + ": ");
-//		}
-//		
-//		for(Integer i: this.stateValues.keySet()) {
-//			//System.out.println("Step " + i + ": " + this.hashCodes.get(i));
-//			if(this.stateValues.get(i) == null) {
-//				System.out.println("0");
-//			} else {
-//				System.out.println(this.stateValues.get(i));
-//			}
-//		}
-//	}
-	
-	/*private void printDetailedStateValue() {
-		if(this.detailedHashCodes == null || model == null) {
-			return;
-		}
-		
-		this.detailedHashCodes.put(this.currentStep, this.model.getDetailedState());
 
-		if(this.currentStep==34) {
-			for(Integer i: this.detailedHashCodes.keySet()) {
-
-				//System.out.println("Step " + i);
-
-				HashMap<String, Object> currentValues = this.detailedHashCodes.get(i);
-
-				for(String feature: currentValues.keySet()) {
-					// System.out.println("Step " + i + ": " + feature + ": " + this.detailedHashCodes.get(i));
-					//if(feature.equals("Mood")) {
-					System.out.println("Step " + i + ": " + feature + ": " + currentValues.get(feature));
-					//}
-				}
-
-			}
-		}
-	}*/
 	
 }
