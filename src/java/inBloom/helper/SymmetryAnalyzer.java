@@ -52,6 +52,10 @@ public class SymmetryAnalyzer {
      */
     public static Float computeSymmetry(List<String> sequence) {
     	logger.fine("\nSequence: " + sequence);
+    	if(sequence.size() == 0) {
+    		return 0f;
+    	}
+
     	Map<List<String>, Integer> translational = computeTranslational(sequence);
     	Map<List<String>, Integer> reflectional = computeReflectional(sequence);
 

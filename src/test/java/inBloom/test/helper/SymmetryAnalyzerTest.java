@@ -24,7 +24,8 @@ public class SymmetryAnalyzerTest {
 	// [A,B,A,B], [A,A,B,B], [A,A,A,B]
 	private ArrayList<List<String>> blockSequences = new ArrayList<>();
 
-    private void fillAscendingSequences(int maxLength) {
+    @SuppressWarnings("unused")
+	private void fillAscendingSequences(int maxLength) {
     	List<String> sequence = new ArrayList<>();
 
         // create maxLength sequences
