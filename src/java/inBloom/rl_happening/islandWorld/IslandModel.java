@@ -201,7 +201,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			}
 			
 			// In any case, the agent will eat
-			result.success = agent.eat("food").success;
+			result = agent.eat("food");
 			addPlot(agent.name + " eats food.");
 			
 			// he is not hungry anymore
