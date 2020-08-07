@@ -40,7 +40,6 @@ public class HappeningManager {
 		FoodStolenHappening foodStolen = new FoodStolenHappening(null,"robinson", null);
 		FoodPoisoningHappening foodPoisoning = new FoodPoisoningHappening(null,"robinson", null);
 		LooseFriendHappening friendIsEaten = new LooseFriendHappening(null,"robinson", null);
-		StormHappening hutDestroyed = new StormHappening(null,"robinson", null);
 		HomesickHappening homesick = new HomesickHappening(null,"robinson", null);
 		FireHappening fire = new FireHappening(null,"robinson", null);
 		ShipRescueHappening shipRescue = new ShipRescueHappening(null,"robinson", null);
@@ -54,7 +53,6 @@ public class HappeningManager {
 		allHappenings.add(foodStolen);
 		allHappenings.add(foodPoisoning);
 		allHappenings.add(friendIsEaten);
-		allHappenings.add(hutDestroyed);
 		allHappenings.add(homesick);
 		allHappenings.add(fire);
 		allHappenings.add(shipRescue);
