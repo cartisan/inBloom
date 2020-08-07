@@ -21,8 +21,8 @@ import java.io.FileWriter;
  */
 public class ResultWriter {
 
-	public final String episodesFile = "training10.csv";
-	public final String plotFile = "plotText10.csv";
+	public final String episodesFile = "training1.csv";
+	public final String plotFile = "plotText1.csv";
 		
 	private int episode;
 	
@@ -109,7 +109,7 @@ public class ResultWriter {
 		message += suspense			+ ",";
 		
 		// Print Values of all functional Units
-		for(FunctionalUnit unit: fuCount.keySet()) {
+		for(FunctionalUnit unit: FunctionalUnits.ALL) {
 			message += fuCount.get(unit) + ",";
 		}
 	    

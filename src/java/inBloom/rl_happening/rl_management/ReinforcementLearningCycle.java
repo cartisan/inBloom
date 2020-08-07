@@ -36,7 +36,7 @@ import jason.runtime.MASConsoleGUI;
  */
 public abstract class ReinforcementLearningCycle extends PlotCycle {
 
-	private static final int numberOfEpisodes = 10;
+	private static final int numberOfEpisodes = 500;
 	
 	private Personality[] agentPersonalities;
 	private String[] agentNames;
