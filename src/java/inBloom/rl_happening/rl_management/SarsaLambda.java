@@ -23,7 +23,7 @@ import inBloom.storyworld.Happening;
  * Using a two-dimensional hashMap for the weights
  * 
  * @author Julia Wippermann die Coole
- * @version 22.7.20
+ * @version 7.8.20
  *
  */
 @SuppressWarnings("unused")

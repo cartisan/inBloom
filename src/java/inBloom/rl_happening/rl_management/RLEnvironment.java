@@ -16,7 +16,7 @@ import inBloom.storyworld.Happening;
 
 /**
  * @author Julia Wippermann
- * @version 24.07.2020
+ * @version 7.8.20
  *
  */
 public abstract class RLEnvironment<ModType extends PlotModel<?>> extends PlotEnvironment<ModType> {

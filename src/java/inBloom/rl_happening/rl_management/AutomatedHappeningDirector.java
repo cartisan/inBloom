@@ -18,7 +18,7 @@ import inBloom.storyworld.HappeningDirector;
  * of the algorithm that are needed in each step in order to select a new action.
  * 
  * @author	Julia Wippermann
- * @version 9.6.20
+ * @version 7.8.20
  */
 public class AutomatedHappeningDirector <T extends PlotModel<?>> implements HappeningDirector {
 	

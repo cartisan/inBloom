@@ -14,7 +14,7 @@ import jason.asSyntax.Structure;
 
 /**
  * @author Julia Wippermann
- * @version 29.10.19
+ * @version 7.8.20
  *
  * The Environment defin
  */

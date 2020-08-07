@@ -16,7 +16,7 @@ import jason.asSemantics.Personality;
 
 /**
  * @author Julia Wippermann
- * @version 31.1.20
+ * @version 7.8.20
  *
  */
 public class RobinsonCycleOneTraining extends ReinforcementLearningCycle {

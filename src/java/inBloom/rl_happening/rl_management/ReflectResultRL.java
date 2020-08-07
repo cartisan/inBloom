@@ -14,6 +14,10 @@ import inBloom.storyworld.Happening;
  * Result of the reflect method. Contains PlotLauncher instance
  * and personalities for the next simulation.
  * Can be extended to allow further parameters.
+ * 
+ * @author Julia Wippermann
+ * @version 7.8.20
+ * 
  */
 public class ReflectResultRL extends ReflectResult {
 	

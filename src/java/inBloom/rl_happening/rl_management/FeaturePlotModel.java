@@ -18,7 +18,7 @@ import inBloom.storyworld.Happening;
  * describe a state of the model
  * 
  * @author Julia Wippermann
- * @version 3.2.20
+ * @version 7.8.20
  *
  */
 public abstract class FeaturePlotModel<EnvType extends RLEnvironment<?>> extends PlotModel<EnvType> {

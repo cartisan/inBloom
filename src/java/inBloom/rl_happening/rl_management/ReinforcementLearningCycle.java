@@ -31,7 +31,7 @@ import jason.runtime.MASConsoleGUI;
  * RobinsonCycle gegeben
  * 
  * @author Julia Wippermann
- * @version 6.1.20
+ * @version 7.8.20
  *
  */
 public abstract class ReinforcementLearningCycle extends PlotCycle {

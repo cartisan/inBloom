@@ -16,7 +16,7 @@ import java.io.FileWriter;
  * 
  * 
  * @author Julia Wippermann
- * @version 03.08.20
+ * @version 7.8.20
  *
  */
 public class ResultWriter {

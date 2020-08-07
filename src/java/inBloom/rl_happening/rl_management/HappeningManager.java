@@ -11,7 +11,7 @@ import inBloom.storyworld.Happening;
 
 /**
  * @author Julia Wippermann
- * @version 9.1.20
+ * @version 7.8.20
  *
  */
 public class HappeningManager {
