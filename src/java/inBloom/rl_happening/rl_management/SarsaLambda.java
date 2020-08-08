@@ -106,7 +106,8 @@ public class SarsaLambda {
 
 		// Initialize allHappenings
 		LinkedList<Happening<?>> happeningList = HappeningManager.getAllHappenings();
-		this.allHappenings = new Happening<?>[9];
+		this.allHappenings = new Happening<?>[8];
+		this.allHappenings = new Happening<?>[HappeningManager.getAllHappenings().size()];
 		happeningList.toArray(this.allHappenings);
 
 		this.featurePlotModel = model;
