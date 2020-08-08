@@ -183,19 +183,19 @@ public abstract class ReinforcementLearningCycle extends PlotCycle {
 		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
 		
 		//Without catching the ConcurrentModificationException
-		//Tellability tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
-		Tellability tel = null;
-		try {
-			tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
-		} catch(ConcurrentModificationException e) {
-		}
+		Tellability tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
+//		Tellability tel = null;
+//		try {
+//			tel = PlotGraphController.getPlotListener().analyze(analyzedGraph);
+//		} catch(ConcurrentModificationException e) {
+//		}
 		
 		analyzedGraph.setName("ER Cycle, engagement step " + currentCycle);
-		if(tel!=null)
+//		if(tel!=null)
 			log("Tellability" + Double.toString(tel.compute()));
-		else {
-			log("Tellability" + 0);
-		}
+//		else {
+//			log("Tellability" + 0);
+//		}
 		
 		MoodMapper moodData = runner.getUserModel().moodMapper;
 		EngageResult er = this.createEngageResult(rr, runner, analyzedGraph, tel, moodData);
