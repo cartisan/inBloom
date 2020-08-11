@@ -44,7 +44,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		
 	}
 	
-	public double evaluate_Candidate(Individual individual) throws JasonException {
+	public double evaluate_individual(Individual individual) throws JasonException {
 		
 		// Initialize Parameters
 		double result = 0;

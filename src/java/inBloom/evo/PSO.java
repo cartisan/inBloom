@@ -1,4 +1,4 @@
-package inBloom.pso;
+package inBloom.evo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,18 +7,8 @@ import java.util.List;
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
 
-public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
+public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends EvolutionaryAlgorithm<EnvType,ModType> {
 
-	// Parameter for PlotLauncher
-	public String[] args;
-	public ParticleEnvironment<?,?> GEN_ENV;
-	
-	// Standard parameters for a genetic algorithm
-	public int number_agents;
-	public int number_happenings;
-	public int max_steps;
-	public int particle_count;
-	
 	// Particle container
 	public Particle[] particles;
 	private double[][] max_happenings;
@@ -30,11 +20,6 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	private static List<Double> particles_best = new ArrayList<Double>();
 	private static List<Double> particles_average = new ArrayList<Double>();
 	
-	// Termination criteria
-	private static int no_improvement=0;
-	private static int termination=50;
-	private static long start_time;
-	private static long max_runtime=-1;
 	
 	// Discrete values to choose from for personality initialization
 	private static double[] discretePersValues = {-1,-0.9,-0.75,-0.5,-0.25,-0.1,0,0.1,0.25,0.5,0.75,0.9,1};
@@ -65,14 +50,9 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	// exploration is used in the spacetime formula 
 	private static double exploration = 1;
 	
-	public PSO(String[] args, ParticleEnvironment<?,?> GEN_ENV, int number_agents, int number_happenings, int max_steps, int particle_count) {
+	public PSO(String[] args, EvolutionaryEnvironment <?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
 		
-		this.args = args;
-		this.GEN_ENV = GEN_ENV;
-		this.number_agents = number_agents;
-		this.max_steps = max_steps;
-		this.number_happenings = number_happenings;
-		this.particle_count = particle_count;
+		super(args,EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
 		max_happenings = new double[number_agents][number_happenings];
 		
 	}
@@ -81,22 +61,6 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	/**
 	 * Get & Set Methods
 	 */
-	
-	// Set termination criterion
-	public void setTermination(int end) {
-		
-		if(end>0)
-			termination = end;
-	}
-	
-	// Set maximum runtime in seconds.
-	public void setMaxRuntime(long time) {
-		
-		if(time>0)
-			max_runtime = time*1000;
-		else
-			max_runtime = -1;
-	}
 	
 	// Discrete values for personality initialization
 	public void setPersonalityValues(double[] discreteValues) {
@@ -237,49 +201,6 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		spacetime = time;
 	}
 	
-	/**
-	 * Utility Functions
-	 */
-
-	
-	/*
-	 * Rounds personality values in order to discretize the search space.
-	 * @param personality value
-	 * @return rounded value
-	 */
-	
-	public double round(double value) {
-		
-		return Math.round(value*100-0.5)/100;
-	}
-	
-	
-	/*
-	 * Sets the length of simulation of a chromosome according to it's Happenings.
-	 * Determined value will be based on the step number of the last occuring happening plus
-	 * an amount of additional steps between 0 and the square root of max step number increased by 1
-	 * @param happenings: Chromosome encoding steps at which happenings occur
-	 * @return: total amount of simulation steps
-	 */
-
-	public Integer determineLength(ChromosomeHappenings happenings) {
-		
-		Integer length = 0;
-		
-		for(int i = 0; i < number_agents;i++) {
-			for(int j = 0; j < number_happenings; j++) {
-				if(happenings.values[i][j] >= length) {
-					length=happenings.values[i][j];
-				}
-			}
-		}
-		// Determine extra length
-		Integer buffer = (int)Math.round(Math.random()*Math.sqrt(length));
-		
-		// Let the simulation run for at least 1 more step than the last happening 
-		return length+buffer+1;
-	}
-	
 	
 	/**
 	 * Difference Measurements
@@ -350,7 +271,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		max_happenings = new double[number_agents][number_happenings];
 		
 		// Find maximum values
-		for(int index = 0; index < particle_count; index++) {
+		for(int index = 0; index < individual_count; index++) {
 			for(int agents = 0; agents < number_agents; agents++) {
 				
 				for(int personality = 0; personality < 5; personality++) {
@@ -424,7 +345,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		}
 		
 		// number_informants must be smaller than pop_size
-		while(number_informants>=particle_count) {
+		while(number_informants>=individual_count) {
 			number_informants/=2;
 			System.out.println("number_informants reduced to: " + number_informants);
 		}
@@ -446,7 +367,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		double average = 0;
 		double best = 0;
 
-		for(int i = 0; i < particle_count; i++) {
+		for(int i = 0; i < individual_count; i++) {
 			
 			average += particles[i].best_tellability();
 			
@@ -454,7 +375,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				best = particles[i].best_tellability();
 		}
 		
-		average /= particle_count;
+		average /= individual_count;
 		
 		// Determine if there was improvement
 		if(particles_best.size()>0) {
@@ -526,7 +447,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public Particle new_particle(ChromosomePersonality pers,ChromosomePersonality velocity_pers,ChromosomeHappenings hap, ChromosomeHappenings velocity_hap, Integer steps) {
 		
-		Fitness<EnvType,ModType> fit = new Fitness<EnvType,ModType>(GEN_ENV);
+		Fitness<EnvType,ModType> fit = new Fitness<EnvType,ModType>(EVO_ENV);
 		
 		return new Particle(pers, velocity_pers, hap, velocity_hap, steps, fit);
 	}
@@ -534,7 +455,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 
 	private void initialize_particles() {
 
-		particles = new Particle[particle_count];
+		particles = new Particle[individual_count];
 		
 		// Initialize arrays for tracking minimum and maximum values
 		min_personality = new double[number_agents][5];
@@ -578,7 +499,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		}
 		
 		// Initialize population
-		for(int index=0; index<particle_count; index++) {
+		for(int index=0; index<individual_count; index++) {
 			
 			// Create new personality chromosome
 			ChromosomePersonality personality = new ChromosomePersonality(number_agents);
@@ -867,10 +788,10 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public void move_particles() {
 		
-		for(int i = 0; i < particle_count; i++) {
+		for(int i = 0; i < individual_count; i++) {
 			
 			particles[i].move();
-			particles[i].update_tellability(new Fitness<EnvType,ModType>(GEN_ENV));
+			particles[i].update_tellability(new Fitness<EnvType,ModType>(EVO_ENV));
 			
 			if(spacetime) {
 				particles[i].set_spacetime(determine_spacetime(i));
@@ -884,7 +805,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public void update_movement() {
 
-		for(int index = 0; index < particle_count; index++) {
+		for(int index = 0; index < individual_count; index++) {
 			
 			List<Integer> informants = select_particles(index);
 				
@@ -931,9 +852,9 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		// Construct roulette wheel
 		double total_fitness = 0;
-		double[] rouletteWheel = new double[particle_count];
+		double[] rouletteWheel = new double[individual_count];
 		
-		for(int i = 0; i < particle_count; i++) {
+		for(int i = 0; i < individual_count; i++) {
 			total_fitness += particles[i].get_tellability();
 			rouletteWheel[i] = total_fitness;
 		}

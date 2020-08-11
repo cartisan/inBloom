@@ -1,8 +1,8 @@
-package inBloom.genetic;
+package inBloom.evo;
 
 import jason.JasonException;
 
-public class Candidate implements Comparable<Candidate>{
+public class Candidate implements Comparable<Candidate>, Individual{
 	
 	private ChromosomePersonality chromosome_personality;
 	private ChromosomeHappenings chromosome_happenings;
@@ -16,7 +16,7 @@ public class Candidate implements Comparable<Candidate>{
 		this.simulation_length = simLength;
 		
 		try {
-			tellability = fit.evaluate_Candidate(this);
+			tellability = fit.evaluate_individual(this);
 		} catch (JasonException e) {
 			//e.printStackTrace();
 		} catch (NullPointerException e) {

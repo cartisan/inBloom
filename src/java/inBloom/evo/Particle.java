@@ -1,8 +1,8 @@
-package inBloom.pso;
+package inBloom.evo;
 
 import jason.JasonException;
 
-public class Particle implements Comparable<Particle> {
+public class Particle implements Comparable<Particle>,Individual {
 	
 	private ChromosomePersonality current_personality;
 	private ChromosomeHappenings current_happenings;
@@ -66,7 +66,7 @@ public class Particle implements Comparable<Particle> {
 	}
 	
 	public ChromosomeHappenings best_happenings() {
-		return current_happenings;
+		return best_happenings;
 	}
 	
 	public int best_happenings(int x, int y) {
@@ -161,7 +161,7 @@ public class Particle implements Comparable<Particle> {
 		try {
 			
 			System.out.println("Starting new Simulation: " + simulation_length);
-			current_tellability = fit.evaluate_Particle(this);
+			current_tellability = fit.evaluate_individual(this);
 			
 		} catch (JasonException e) {
 			//e.printStackTrace();

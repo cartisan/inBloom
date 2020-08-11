@@ -1,4 +1,4 @@
-package inBloom.pso;
+package inBloom.evo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,13 +20,12 @@ import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.asSemantics.Personality;
 
-@SuppressWarnings("rawtypes")
-public class ParticleIsland extends ParticleEnvironment<IslandEnvironment, IslandModel>{
-
-	public ParticleIsland() {
+public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, IslandModel>{
+	
+	public EvoIsland() {
 		super(IslandEnvironment.class, "islandAgent", 1, 1, 7, 30);
 	}
-	public ParticleIsland(int particle_count) {
+	public EvoIsland(int particle_count) {
 		super(IslandEnvironment.class, "islandAgent", 1, 1, 7, 30, particle_count);
 	}
 

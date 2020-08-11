@@ -1,4 +1,4 @@
-package inBloom.genetic;
+package inBloom.evo;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -7,17 +7,8 @@ import java.util.List;
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
 
-public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
+public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends EvolutionaryAlgorithm<EnvType,ModType>{
 	
-	// Parameter for PlotLauncher
-	public String[] args;
-	public GeneticEnvironment<?,?> GEN_ENV;
-	
-	// Standard parameters for a genetic algorithm
-	public int number_agents;
-	public int number_happenings;
-	public int max_steps;
-	public int pop_size;
 	public int selection_size;
 	public double crossover_prob;
 	public double mutation_prob;
@@ -31,12 +22,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	private static List<Double> population_best = new ArrayList<Double>();
 	private static List<Double> population_bestHalf = new ArrayList<Double>();
 	private static List<Double> population_average = new ArrayList<Double>();
-	
-	// Termination criteria
-	private static int no_improvement=0;
-	private static int termination=50;
-	private static long start_time;
-	private static long max_runtime=-1;
 	
 	// Discrete values to choose from for personality initialization
 	private static double[] discretePersValues = {-1,-0.9,-0.75,-0.5,-0.25,-0.1,0,0.1,0.25,0.5,0.75,0.9,1};
@@ -61,14 +46,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * Constructors for GA
 	 */
 	
-	public GeneticAlgorithm (String[] args, GeneticEnvironment<?,?> GEN_ENV, int number_agents, int number_happenings, int max_steps, int pop_size, int number_selections, double crossover_prob, double mutation_prob) {
+	public GeneticAlgorithm (String[] args, EvolutionaryEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections, double crossover_prob, double mutation_prob) {
 		
-		this.args = args;
-		this.GEN_ENV = GEN_ENV;
-		this.number_agents = number_agents;
-		this.max_steps = max_steps;
-		this.number_happenings = number_happenings;
-		this.pop_size = pop_size;
+		super(args, EVO_ENV, number_agents, max_steps, number_happenings, individual_count);
 		this.selection_size = number_selections*2;
 		this.crossover_prob = crossover_prob;
 		this.mutation_prob = mutation_prob;
@@ -79,22 +59,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	/**
 	 * Get & Set Methods
 	 */
-	
-	// Set termination criterion
-	public void setTermination(int end) {
-		
-		if(end>0)
-			termination = end;
-	}
-	
-	// Set maximum runtime in seconds.
-	public void setMaxRuntime(long time) {
-		
-		if(time>0)
-			max_runtime = time*1000;
-		else
-			max_runtime = -1;
-	}
 	
 	
 	// Discrete values for personality initialization
@@ -230,23 +194,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		steadyReplace = mode;
 	}
-
-	
-	/**
-	 * Utility Functions
-	 */
-
-	
-	/*
-	 * Rounds personality values in order to discretize the search space.
-	 * @param personality value
-	 * @return rounded value
-	 */
-	
-	public double round(double value) {
-		
-		return Math.round(value*100-0.5)/100;
-	}
 	
 	
 	/*
@@ -259,9 +206,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		// Ensure correctness of parameters
 		
 		// Minimum Population size
-		if(pop_size<4) {
+		if(individual_count<4) {
 			System.out.println("Size of population defaulted to 4!");
-			this.pop_size = 4;
+			this.individual_count = 4;
 		}
 		
 		// Selection size must be positive
@@ -270,8 +217,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			selection_size = 2;
 		}
 		
-		// Selection size must be an even number smaller pop_size
-		while(selection_size>=pop_size) {
+		// Selection size must be an even number smaller individual_count
+		while(selection_size>=individual_count) {
 			selection_size/=2;
 			selection_size%=2;
 			System.out.println("Selection_size reduced to: " + selection_size);
@@ -298,33 +245,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	
 	/*
-	 * Sets the length of simulation of a chromosome according to it's Happenings.
-	 * Determined value will be based on the step number of the last occuring happening plus
-	 * an amount of additional steps between 0 and the square root of max step number increased by 1
-	 * @param happenings: Chromosome encoding steps at which happenings occur
-	 * @return: total amount of simulation steps
-	 */
-
-	public Integer determineLength(ChromosomeHappenings happenings) {
-		
-		Integer length = 0;
-		
-		for(int i = 0; i < number_agents;i++) {
-			for(int j = 0; j < number_happenings; j++) {
-				if(happenings.values[i][j] >= length) {
-					length=happenings.values[i][j];
-				}
-			}
-		}
-		// Determine extra length
-		Integer buffer = (int)Math.round(Math.random()*Math.sqrt(length));
-		
-		// Let the simulation run for at least 1 more step than the last happening 
-		return length+buffer+1;
-	}
-	
-	
-	/*
 	 * Instantiates new fitness object and hands it over to the Candidate to be instantiated.
 	 * @param pers: Chromosome containing personality information
 	 * @param hap: Chromosome containing happening information
@@ -338,7 +258,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	public Candidate new_Candidate(ChromosomePersonality pers,ChromosomeHappenings hap, Integer steps) {
 		
-		Fitness<EnvType,ModType> fit = new Fitness<EnvType,ModType>(GEN_ENV);
+		Fitness<EnvType,ModType> fit = new Fitness<EnvType,ModType>(EVO_ENV);
 		
 		System.out.println("Starting new Simulation: " + steps);
 		return new Candidate(pers, hap, steps, fit);
@@ -358,7 +278,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		Double best = gen_pool[0].get_tellability();
 		Double average = 0.0;
 		
-		int relevant_size = pop_size/2;
+		int relevant_size = individual_count/2;
 		
 		for(int i = 0; i < relevant_size; i++)
 			
@@ -366,11 +286,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		double halfAverage = average/relevant_size;
 		
-		for(int i = relevant_size; i < pop_size; i++)
+		for(int i = relevant_size; i < individual_count; i++)
 			
 			average += gen_pool[i].get_tellability();
 		
-		average /= pop_size;
+		average /= individual_count;
 		
 		
 		// Determine if there was improvement
@@ -444,7 +364,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	public void initialize_pop() {
 		
-		gen_pool = new Candidate[pop_size];
+		gen_pool = new Candidate[individual_count];
 		offspring = new Candidate[selection_size];
 		mutated_offspring = new Candidate[selection_size];
 		
@@ -477,7 +397,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}
 		
 		// Initialize population
-		while(index<pop_size) {
+		while(index<individual_count) {
 			
 			// Create new personality chromosome
 			ChromosomePersonality personality = new ChromosomePersonality(number_agents);
@@ -751,7 +671,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		while(selectedIndividuums.size() < selection_size) {
 			
-			int position = (int)Math.round(Math.random()*pop_size-0.5);
+			int position = (int)Math.round(Math.random()*individual_count-0.5);
 			if(!selectedIndividuums.contains(position)) {
 				selectedIndividuums.add(position);
 			}	
@@ -771,9 +691,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		// Construct roulette wheel
 		double total_fitness = 0.0;
-		double[] rouletteWheel = new double[pop_size];
+		double[] rouletteWheel = new double[individual_count];
 		
-		for(int i = 0; i < pop_size; i++) {
+		for(int i = 0; i < individual_count; i++) {
 			total_fitness += gen_pool[i].get_tellability();
 			rouletteWheel[i] = total_fitness;
 		}
@@ -860,13 +780,13 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				// Initialize list containing additional possible voters
 				List<Integer> possibleVoters = new ArrayList<Integer>();
 				
-				for(int v = 0; v < pop_size; v++) {
+				for(int v = 0; v < individual_count; v++) {
 					if(v != one && v != two) 
 						possibleVoters.add(v);
 				}
 				
 				// Add additional Votes
-				int additionalVotes = (int)Math.round(Math.random()*(pop_size-2)-0.5);
+				int additionalVotes = (int)Math.round(Math.random()*(individual_count-2)-0.5);
 				
 				while(additionalVotes > 0) {
 					
@@ -1469,9 +1389,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	public Candidate[] steadyNoDuplicatesReplacer() {
 		
-		Candidate[] next_gen = new Candidate[pop_size];
+		Candidate[] next_gen = new Candidate[individual_count];
 		
-		int steady = pop_size/2;
+		int steady = individual_count/2;
 		
 		// Create List of all newly generated Candidates sorted by fitness descending (rest of old population is at end)
 		List<Candidate> total_offspring = new ArrayList<Candidate>();
@@ -1479,7 +1399,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		int posOff = 0;
 		int posMut = 0;
 		
-		for(int i = 0; i < (pop_size-steady)+selection_size*2; i++) {
+		for(int i = 0; i < (individual_count-steady)+selection_size*2; i++) {
 			
 			int best = 0;
 			double bestTellability = -1;
@@ -1531,7 +1451,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}
 		
 		// Add best candidates from total_offspring to next_gen avoiding duplicates
-		for(int i = steady; i<pop_size; i++) {
+		for(int i = steady; i<individual_count; i++) {
 			
 			boolean done = false;
 			
@@ -1547,7 +1467,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	}
 
 	/*
-	 * Keep best n Candidates with n = pop_size/2
+	 * Keep best n Candidates with n = individual_count/2
 	 * Fill up other half random individuals from the population
 	 * 
 	 * @return: Array containing candidates chosen to remain in the population
@@ -1555,7 +1475,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	public Candidate[] partiallyRandomNoDuplicatesReplacer() {
 		
-		Candidate[] next_gen = new Candidate[pop_size];
+		Candidate[] next_gen = new Candidate[individual_count];
 		
 		// Initialize a List with all Candidates sorted by fitness descending
 		List<Candidate> allCandidates = new ArrayList<Candidate>();
@@ -1564,12 +1484,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		int posOff = 0;
 		int posMut = 0;
 		
-		for(int i = 0; i < pop_size+selection_size*2; i++) {
+		for(int i = 0; i < individual_count+selection_size*2; i++) {
 			
 			int best = 0;
 			double bestTellability = -1;
 			
-			if(posPop < pop_size) {
+			if(posPop < individual_count) {
 				if(gen_pool[posPop].get_tellability()>bestTellability) {
 					best = 1;
 					bestTellability = gen_pool[posPop].get_tellability();
@@ -1618,7 +1538,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}
 		
 		// Keep best performing candidates of current Population
-		int steady = pop_size/2;
+		int steady = individual_count/2;
 		
 		for(int i = 0; i < steady; i++) {
 			
@@ -1634,7 +1554,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}
 		
 		// Fill rest with random candidates but avoid adding duplicates
-		for(int i = steady; i<pop_size; i++) {
+		for(int i = steady; i<individual_count; i++) {
 			
 			boolean done = false;
 			

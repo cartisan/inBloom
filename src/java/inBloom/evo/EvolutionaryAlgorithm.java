@@ -1,8 +1,9 @@
 package inBloom.evo;
 
-import inBloom.pso.ChromosomeHappenings;
+import inBloom.PlotEnvironment;
+import inBloom.PlotModel;
 
-public abstract class EvolutionaryAlgorithm {
+public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
 	
 	// Parameter for PlotLauncher
 	public String[] args;
@@ -15,10 +16,10 @@ public abstract class EvolutionaryAlgorithm {
 	public int individual_count;
 	
 	// Termination criteria
-	private static int no_improvement=0;
-	private static int termination=50;
-	private static long start_time;
-	private static long max_runtime=-1;
+	protected static int no_improvement=0;
+	protected static int termination=50;
+	protected static long start_time;
+	protected static long max_runtime=-1;
 	
 	public EvolutionaryAlgorithm(String[] args, EvolutionaryEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
 		

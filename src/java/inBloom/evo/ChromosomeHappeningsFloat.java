@@ -1,6 +1,6 @@
-package inBloom.pso;
+package inBloom.evo;
 
-public class ChromosomeHappenings {
+public class ChromosomeHappeningsFloat extends ChromosomeHappenings {
 	
 	/*
 	 * values contains Information at what time step a Happening occurs
@@ -9,11 +9,12 @@ public class ChromosomeHappenings {
 	 * The Integer at a certain position reflects the time step a Happening shall take place
 	 * If the number is negative or zero (work in progress) the Happening will not take place
 	 */
-	public int[][] values;
+	public float[][] values;
 	
-	public ChromosomeHappenings(int agentCount, int happeningCount) {
+	public ChromosomeHappeningsFloat(int agentCount, int happeningCount) {
 		
-		values = new int[agentCount][happeningCount];
+		super(agentCount, happeningCount);
+		values = new float[agentCount][happeningCount];
 		
 	}
 	
@@ -24,17 +25,18 @@ public class ChromosomeHappenings {
 	 * @return:
 	 * 		boolean: True if Values are exactly the same. False otherwise
 	 */
+	
+	@Override
 	public boolean equals(ChromosomeHappenings other) {
 		boolean equality = true;
 
 		for(int i = 0;i< other.values.length;i++) {
 			for(int j = 0; j<other.values[i].length;j++) {
-				if(this.values[i][j] != other.values[i][j]) {
+				if(Math.round(this.values[i][j]) != Math.round(other.values[i][j])) {
 					equality = false;
 				}
 			}
 		}
 		return equality;
 	}
-
 }

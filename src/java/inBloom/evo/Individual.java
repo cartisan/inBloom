@@ -2,7 +2,7 @@ package inBloom.evo;
 
 
 
-public interface Individual extends Comparable<Individual>{
+public interface Individual {
 	
 	// Functions that get called by the Fitness class in order to start a simulation
 	public ChromosomePersonality get_personality();
@@ -13,9 +13,5 @@ public interface Individual extends Comparable<Individual>{
 
 	public Integer get_simLength();
 	public double get_tellability();
-	
-	
-	// Utility function to sort individuums 
-	public int compareTo(Individual other);
 
 }
