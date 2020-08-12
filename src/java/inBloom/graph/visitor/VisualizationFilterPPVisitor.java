@@ -38,6 +38,7 @@ public class VisualizationFilterPPVisitor extends PlotGraphVisitor {
 		return this.graph;
 	}
 
+
 	@Override
 	public void visitRoot(Vertex vertex) {
 		this.currentRoot = vertex;
@@ -163,11 +164,11 @@ public class VisualizationFilterPPVisitor extends PlotGraphVisitor {
 	private void postProcessing() {
 		// Remove repeating pattern at end, if pause in execution was caused by a narrative equilibrium
 		HashMap<String, Pair<Integer, Integer>> seqMap = PlotLauncher.getRunner().getUserEnvironment().getRepeatingSequenceMap();
+		int repLength = seqMap.values().stream().mapToInt(pair -> pair.getFirst() * pair.getSecond()).min().orElse(0);
 
 		if (!seqMap.isEmpty()) {
 			for(String agent : seqMap.keySet()) {
 				// the length of the whole repeating sequence that cause the pause is len(chain) * num_rep
-				int repLength = seqMap.get(agent).getFirst() * seqMap.get(agent).getSecond();
 				if(repLength == 0) {
 					continue;
 				}
