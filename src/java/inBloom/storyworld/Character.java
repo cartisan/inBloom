@@ -29,13 +29,13 @@ import inBloom.jason.PlotAwareAg;
 public class Character extends Existent {
     static Logger logger = Logger.getLogger(Character.class.getName());
 
-    private PlotAwareAg plotAgentPendant;
     private PlotModel<?> model;
 
 	@ModelState
     public LinkedList<Item> inventory = new LinkedList<>();
     public String name = null;
     public Location location = null;
+    public PlotAwareAg plotAgentPendant;
 
 	public Character() {
 	}

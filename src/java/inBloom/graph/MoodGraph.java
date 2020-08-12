@@ -1,9 +1,12 @@
 package inBloom.graph;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.swing.JComboBox;
@@ -14,13 +17,14 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.plot.Marker;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.RectangleInsets;
 import org.jfree.ui.RefineryUtilities;
-
-import com.google.common.collect.ImmutableMap;
 
 import jason.asSemantics.Mood;
 
@@ -42,13 +46,9 @@ import inBloom.storyworld.Character;
 @SuppressWarnings("serial")
 public class MoodGraph extends JFrame implements PlotmasGraph {
 
-	public static final Map<Boolean, String> X_LABEL_IS_TIME = ImmutableMap.of(
-		    true, "plot time in ms",
-		    false, "plot time in environment steps"
-	);
 	protected static Logger logger = Logger.getLogger(MoodGraph.class.getName());
 	public static String[] MOOD_DIMS = new String[] {"pleasure", "arousal", "dominance"};
-	public static int SAMPLING_STEP = 10;
+	public static int SAMPLING_STEP = 1;
 
 	private static MoodGraph moodListener = null;
 
@@ -56,6 +56,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 	private String selectedMoodDimension = null;
 	private String selectedAgent = null;
 	private JFreeChart chart = null;
+	private Map<Integer, Long> stepReasoningcycleNumMap = new HashMap<>();
 
 	public static MoodGraph getMoodListener() {
 		if (MoodGraph.moodListener==null) {
@@ -81,13 +82,17 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 	}
 
 	public void createData(int samplingStep, MoodMapper mapper) {
-		MoodGraph.SAMPLING_STEP = samplingStep;
 		this.deleteGraphData();
 
+		this.stepReasoningcycleNumMap = mapper.stepReasoningcycleNumMap;
+
 		logger.fine("Using following mood data to create mood graph:\n" + mapper.toString());
-		Long startTime = mapper.latestStartTime();
-		Long endTime = mapper.latestEndTime();
-		startTime = startTime - startTime % 10 + 10;		// round up start time to next multiple of 10
+		Long startTime = this.stepReasoningcycleNumMap.get(0);
+		Long endTime = Math.max(mapper.latestEndTime(), this.stepReasoningcycleNumMap.entrySet().stream()
+																								.max((e1, e2) -> e1.getKey().compareTo(e2.getKey()))
+																								.map(e -> e.getValue())
+																								.get()
+								);
 
 		if(this.selectedMoodDimension != null) {
 			for(String agName: mapper.mappedAgents()) {
@@ -122,11 +127,25 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 
 		JFreeChart lineChart = ChartFactory.createXYLineChart(
 				title,
-				X_LABEL_IS_TIME.get(PlotModel.X_AXIS_IS_TIME),
+				"reasoning cycle number",
 				"value",
 				data,
 				PlotOrientation.VERTICAL,
 				true,true,false);
+
+		lineChart.getXYPlot().getRenderer().setSeriesPaint(0, new Color(220, 0, 0));
+		lineChart.getXYPlot().getRenderer().setSeriesPaint(1, new Color(0, 0, 220));
+		lineChart.getXYPlot().getRenderer().setSeriesPaint(2, new Color(0, 220, 0));
+		lineChart.getXYPlot().getRenderer().setSeriesPaint(3, Color.black);
+
+		for(Entry<Integer,Long> stepReasCycPair : this.stepReasoningcycleNumMap.entrySet()) {
+			Marker marker = new ValueMarker(stepReasCycPair.getValue());
+			marker.setPaint(Color.black);
+			marker.setLabelPaint(Color.black);
+			marker.setLabel(stepReasCycPair.getKey().toString());
+			marker.setLabelOffset(new RectangleInsets(5, 6, 15, 15));
+			lineChart.getXYPlot().addDomainMarker(marker);
+		}
 
 		this.chart = lineChart;
 	}

@@ -1,6 +1,7 @@
 package inBloom.helper;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ public class MoodMapper {
 
 	private Table<String, Long, List<Mood>> timedMoodMap = Tables.synchronizedTable(HashBasedTable.create());
 	public List<Long> startTimes = Collections.synchronizedList(new LinkedList<>());
+	public Map<Integer, Long> stepReasoningcycleNumMap = new HashMap<>();	// maps from env steps to agent reasoning cycle num at that step
 
 	public Map<Long, List<Mood>> getMoodByAgent(String agName) {
 		Map<Long, List<Mood>> timeMoodMap = this.timedMoodMap.row(agName);

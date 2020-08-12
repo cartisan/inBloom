@@ -162,6 +162,10 @@ public class PlotAwareAg extends AffectiveAgent {
         		if (PlotLauncher.getRunner().getUserEnvironment().getStep() == 0) {
         			// Initialize step counting with first intention
         			PlotLauncher.getRunner().getUserEnvironment().setStep(1);
+
+        			// set correct step number for the reasoning cycle num of the first intention that triggered env step 1
+        			Integer cycNum = this.getAffectiveTS().getUserAgArch().getCycleNumber();
+        			PlotLauncher.getRunner().getUserEnvironment().getModel().moodMapper.stepReasoningcycleNumMap.put(1, cycNum.longValue());
         		}
 
         		PlotGraphController.getPlotListener().addEvent(
@@ -226,10 +230,11 @@ public class PlotAwareAg extends AffectiveAgent {
 
 	@Override
 	public void updateMoodValue(Mood newMood) {
-		PlotLauncher.runner.getUserModel().mapMood(this.name, newMood);
+		int reasoningCycleNum = this.getAffectiveTS().getUserAgArch().getCycleNumber();
+		PlotLauncher.runner.getUserModel().mapMood(this.name, newMood, reasoningCycleNum);
 	}
 
 	public void initializeMoodMapper() {
-		PlotLauncher.runner.getUserModel().mapMood(this.name, this.getPersonality().getDefaultMood());
+		PlotLauncher.runner.getUserModel().mapMood(this.name, this.getPersonality().getDefaultMood(), 0);
 	}
 }

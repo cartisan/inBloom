@@ -392,26 +392,28 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
 	@Override
 	protected synchronized void stepStarted(int step) {
-		if (this.step > 0) {
-			this.step++;
+		if (this.model != null) {
+			if (this.step > 0) {
+				this.step++;
 
-			if(!PlotLauncher.getRunner().isDebug()) {
-				logger.info("Step " + this.step + " started for environment");
+				if(!PlotLauncher.getRunner().isDebug()) {
+					logger.info("Step " + this.step + " started for environment");
+				}
+
+				if (this.model != null) {
+					// Give model opportunity to check for and execute happenings
+					this.model.checkHappenings(this.step);
+				} else {
+					logger.warning("field model was not set, but a step " + this.step + " was started");
+				}
 			}
 
-			if (this.model != null) {
-				// Give model opportunity to check for and execute happenings
-				this.model.checkHappenings(this.step);
-			} else {
-				logger.warning("field model was not set, but a step " + this.step + " was started");
-			}
-		} else {
-			// ignore mood data before environment step 1 started
-			if (this.model != null) {
-				this.getModel().moodMapper.startTimes.add(getPlotTimeNow());
-			}
+			// save reasoning cycle num corresponding to the start of this step
+			// operating in synch mode, so all characters have same reasoning cycle num --> get any character
+			Character chara = new ArrayList<>(this.model.characters.values()).get(0);
+			Integer cycNum = chara.plotAgentPendant.getAffectiveTS().getUserAgArch().getCycleNumber();
+			this.getModel().moodMapper.stepReasoningcycleNumMap.put(this.step, cycNum.longValue());
 		}
-
 	}
 
 	@Override

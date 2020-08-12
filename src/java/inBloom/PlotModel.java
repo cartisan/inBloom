@@ -44,8 +44,6 @@ import inBloom.storyworld.ScheduledHappeningDirector;
 public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	static protected Logger logger = Logger.getLogger(PlotModel.class.getName());
 
-	public static final boolean X_AXIS_IS_TIME = true;		// defines whether moods will be mapped based on plotTim or timeStep
-															// in latter case, average mood will be calculated over all cycles in a timeStep
 	public static final String DEFAULT_LOCATION_NAME = "farFarAway";
 
 	protected HashMap<String, Character> characters = null;
@@ -222,18 +220,9 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		}
 	}
 
-	public void mapMood(String name, Mood mood) {
-		if (X_AXIS_IS_TIME) {
-			// time in ms based mood log
-			Long plotTime = PlotEnvironment.getPlotTimeNow();
-			this.moodMapper.addMood(name, plotTime, mood);
-			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
-		} else {
-			// time-step based mood log
-			Integer timeStep = PlotLauncher.runner.getUserEnvironment().getStep();
-			this.moodMapper.addMood(name, new Long(timeStep), mood);
-			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + timeStep.toString());
-		}
+	public void mapMood(String name, Mood mood, Integer reasoningCycleNum) {
+			this.moodMapper.addMood(name, reasoningCycleNum.longValue(), mood);
+			logger.fine("mapping " + name + "'s mood: " + mood.toString() + " at reasoning cycle: " + reasoningCycleNum.toString());
 	}
 
 	/**
