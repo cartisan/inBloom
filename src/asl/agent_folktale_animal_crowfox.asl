@@ -103,9 +103,6 @@
 +!collect(Thing) <-
 	collect(Thing).
 
-+!sing <-
-	sing.
-
 @share_2[affect(personality(agreeableness,low))]
 +!share(Item, Agent) <- 
 	.print("I'm not sharing with anyone!");

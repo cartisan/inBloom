@@ -105,7 +105,8 @@ wish(relax).
 	-wish(punish).
 	
 +mood(relaxed) <-
-	-wish(relax).
+	-wish(relax);
+	+wish(relief_boredom).
 	
 +mood(anxious) <-
 	+wish(relax).
@@ -193,11 +194,15 @@ wish(relax).
 @relax[affect(personality(extraversion,positive))]
 +!relax <-
 	relax;
-	-wish(relax).
+	-wish(relax);
+	+wish(relief_boredom).
 
 // while negative extraversion means relaxing remains a desire
 +!relax <-
 	relax.
+	
++!relief_boredom <-
+	sing.
 	
 +!farm_work <-
 	farm_work.
@@ -225,8 +230,6 @@ wish(relax).
 	!eat(Item);
 	-wish(eat).
 
-//share what you eat if you are nice
-// TODO: Also when you are happy?!
 @eat2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +!eat(Food) : not wish(punish) <-
 	?present(Others);
@@ -248,5 +251,8 @@ wish(relax).
 +!share(Item, Agent) <-
 	.print("Sharing: ", Item, " with", Agent);
 	share(Item, Agent).
+
++!sing <-
+	sing.
 
 {include("agent_folktale_animal_crowfox.asl")}	
