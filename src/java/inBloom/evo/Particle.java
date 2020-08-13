@@ -2,7 +2,7 @@ package inBloom.evo;
 
 import jason.JasonException;
 
-public class Particle implements Comparable<Particle>,Individual {
+public class Particle implements Individual,Comparable<Particle> {
 	
 	private ChromosomePersonality current_personality;
 	private ChromosomeHappenings current_happenings;
@@ -28,6 +28,22 @@ public class Particle implements Comparable<Particle>,Individual {
 		best_tellability=0;
 		update_tellability(fit);
 		
+	}
+	
+	public Particle(Candidate candidate, ChromosomePersonality velocity_personality, ChromosomeHappenings velocity_happenings) {
+		
+		this.current_personality = candidate.get_personality();
+		this.current_happenings = candidate.get_happenings();
+		this.simulation_length = candidate.get_simLength();
+		this.current_tellability = candidate.get_tellability();
+
+		this.velocity_personality = velocity_personality;
+		this.velocity_happenings = velocity_happenings;
+		
+		best_personality = current_personality;
+		best_happenings = current_happenings;
+		best_tellability = current_tellability;
+		best_simLength = simulation_length;
 	}
 	
 	
@@ -72,7 +88,7 @@ public class Particle implements Comparable<Particle>,Individual {
 	public int best_happenings(int x, int y) {
 		return best_happenings.values[x][y];
 	}
-
+	
 	public double get_tellability() {
 		return current_tellability;
 	}
@@ -95,24 +111,24 @@ public class Particle implements Comparable<Particle>,Individual {
 	
 	public void update_persVelocity(int x, int y, double update) {
 		
-		velocity_personality.values[x][y] += update; 
+		velocity_personality.values[x][y] += update*spacetime; 
 	}
 	
 	public void update_persVelocity(int x, int y, double update, double factor) {
 
 		velocity_personality.values[x][y] *= 1-factor; 
-		velocity_personality.values[x][y] += update; 
+		velocity_personality.values[x][y] += update*spacetime; 
 	}
 	
 	public void update_hapVelocity(int x, int y, int update) {
 		
-		velocity_happenings.values[x][y] += update; 
+		velocity_happenings.values[x][y] += update*spacetime; 
 	}
 	
 	public void update_hapVelocity(int x, int y, int update, double factor) {
 
 		velocity_happenings.values[x][y] *= 1-factor; 
-		velocity_happenings.values[x][y] += update; 
+		velocity_happenings.values[x][y] += update*spacetime; 
 	}
 	
 	/*
@@ -127,7 +143,7 @@ public class Particle implements Comparable<Particle>,Individual {
 			
 			for(int j = 0; j < current_personality.values[i].length; j++) {
 				
-				current_personality.values[i][j] += velocity_personality.values[i][j];
+				current_personality.values[i][j] += velocity_personality.values[i][j]*spacetime;
 				
 				if(Math.abs(current_personality.values[i][j]) > 1)
 					current_personality.values[i][j] /= Math.abs(current_personality.values[i][j]);
@@ -135,7 +151,7 @@ public class Particle implements Comparable<Particle>,Individual {
 			
 			for(int j = 0; j < current_happenings.values[i].length; j++) {
 				
-				current_happenings.values[i][j] += velocity_happenings.values[i][j];
+				current_happenings.values[i][j] += velocity_happenings.values[i][j]*spacetime;
 				
 				if(current_happenings.values[i][j] < 0)
 					current_happenings.values[i][j] = 0;
@@ -183,12 +199,44 @@ public class Particle implements Comparable<Particle>,Individual {
 	 * compareTo gets called by Arrays.sort()
 	 */
 	
-	@Override
 	public int compareTo(Particle other) {
 		
 		// smaller operator returns array in descending order
 		if(best_tellability < other.best_tellability())
 			return 1;
 		return -1;
+	}
+	
+	/*
+	 * to_String is used for persistence
+	 */
+	
+	public String to_String() {
+		
+		int number_agents = best_personality.values.length;
+		int number_happenings = best_happenings.values[0].length;
+		
+		String string = String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(best_simLength) + "\n";
+		
+		
+		for(int i = 0; i < number_agents; i++) {
+			for(int j = 0; j < 5; j++) {
+				string += String.valueOf(best_personality.values[i][j]);
+				if(j<4)
+					string +=  " ";
+			}
+			string += "\n";
+		}
+		
+		for(int i = 0; i < number_agents; i++) {	
+			for(int j = 0; j < number_happenings; j++) {
+				string += String.valueOf(best_happenings.values[i][j]);	
+				if(j<number_happenings-1)
+					string +=  " ";	
+			}
+			string += "\n";
+		}
+		
+		return string;
 	}
 }

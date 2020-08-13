@@ -19,9 +19,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	private Candidate[] mutated_offspring;
 	
 	// Performance measurement
-	private static List<Double> population_best = new ArrayList<Double>();
-	private static List<Double> population_bestHalf = new ArrayList<Double>();
-	private static List<Double> population_average = new ArrayList<Double>();
+	private List<Double> population_bestHalf = new ArrayList<Double>();
 	
 	// Discrete values to choose from for personality initialization
 	private static double[] discretePersValues = {-1,-0.9,-0.75,-0.5,-0.25,-0.1,0,0.1,0.25,0.5,0.75,0.9,1};
@@ -48,7 +46,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	public GeneticAlgorithm (String[] args, EvolutionaryEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections, double crossover_prob, double mutation_prob) {
 		
-		super(args, EVO_ENV, number_agents, max_steps, number_happenings, individual_count);
+		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
 		this.selection_size = number_selections*2;
 		this.crossover_prob = crossover_prob;
 		this.mutation_prob = mutation_prob;
@@ -60,6 +58,10 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * Get & Set Methods
 	 */
 	
+	public Candidate[] get_genPool() {
+		
+		return gen_pool;
+	}
 	
 	// Discrete values for personality initialization
 	public void setPersonalityValues(double[] discreteValues) {
@@ -273,7 +275,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * Average will only take the best half of population into account to ensure termination.
 	 */
 	
-	public void evaluatePopulation() {
+	protected void evaluate_population() {
 		
 		Double best = gen_pool[0].get_tellability();
 		Double average = 0.0;
@@ -321,7 +323,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			
 			// Generate and evaluate initial population 
 			initialize_pop();
-			evaluatePopulation();
+			evaluate_population();
 			
 			// Repeat until termination (no improvements found or time criterion -if set- is met):
 			while(no_improvement<termination && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0)) {
@@ -344,7 +346,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				crossover(select());
 				mutate();
 				recombine();
-				evaluatePopulation();
+				evaluate_population();
 			}
 			
 			System.out.println();
@@ -352,7 +354,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			System.out.println();
 			System.out.println("Generations: " + population_best.size());
 			System.out.println("Best so far: " + gen_pool[0].get_tellability() + " , with simulation length: " + gen_pool[0].get_simLength());
-			System.exit(0);
+			
+			to_file(gen_pool[0]);
+			
+			if(system_exit)
+				System.exit(0);
 		}
 	}
 	
@@ -471,7 +477,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			
 			// First candidate cannot have duplicates
 			if(index==0 || !isDuplicate) {
-				//gen_pool[index] = new_Candidate(personality,happenings,max_steps);
+
 				gen_pool[index] = new_Candidate(personality,happenings);
 				index++;
 			}

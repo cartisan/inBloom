@@ -16,16 +16,13 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	private double[][] max_personality;
 	private double[][] min_personality;
 	
-	// Performance measurement
-	private static List<Double> particles_best = new ArrayList<Double>();
-	private static List<Double> particles_average = new ArrayList<Double>();
-	
 	
 	// Discrete values to choose from for personality initialization
 	private static double[] discretePersValues = {-1,-0.9,-0.75,-0.5,-0.25,-0.1,0,0.1,0.25,0.5,0.75,0.9,1};
 	private static double[] discretePersVelocity = {-0.1,-0.05,0,0.05,0.1};
 	private static int[] discreteHapVelocity = {-2,-1,0,1,2};
 
+	
 	// Boolean arrays are used to manage genetic operators. True enables usage.
 
 	// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
@@ -35,6 +32,13 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	// randomVelocityInit, discreteVelocityInit
 	// false, false -> no velocity initialization. Works as long as particles have different positions
 	private static boolean[] velInitBool = {true,true};
+	
+	// This is used for combining the genetic algorithm with pso.
+	// Data field for the gen_pool of the genetic algorithm.
+	private Candidate[] gen_pool;
+	// Number of Individuals from the gen_pool.
+	private static int geneticInit = 0;
+	
 	
 	// determine manner of updating velocity
 	// number of informants for a particle
@@ -49,6 +53,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	private static boolean spacetime = false;
 	// exploration is used in the spacetime formula 
 	private static double exploration = 1;
+	
 	
 	public PSO(String[] args, EvolutionaryEnvironment <?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
 		
@@ -158,6 +163,28 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		velInitBool[0] = random;
 		velInitBool[1] = discrete;
+	}
+	
+	public int getGenInit() {
+		
+		return geneticInit;
+	}
+	
+	public void setGenInit(int count, Candidate[] gen_pool) {
+		
+		if(count>0) {
+			
+			while(count > gen_pool.length) {
+				count /= 2;
+				System.out.println("Count was fixed to: " + count + " !");
+			}
+			
+			geneticInit = count;
+			this.gen_pool = gen_pool;
+			
+		}else {
+			System.out.println("count must be > 0!");
+		}
 	}
 
 	// velocity update
@@ -362,7 +389,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	 * If there was an improvement, termination criterion counter is reset.
 	 */
 	
-	private void evaluate_particles() {
+	protected void evaluate_population() {
 		
 		double average = 0;
 		double best = 0;
@@ -378,14 +405,23 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		average /= individual_count;
 		
 		// Determine if there was improvement
-		if(particles_best.size()>0) {
-			if(particles_best.get(particles_best.size()-1)==best && particles_average.get(particles_average.size()-1)==average)
+		if(population_best.size()>0) {
+			if(population_best.get(population_best.size()-1)==best && population_average.get(population_average.size()-1)==average)
 				no_improvement++;
 			else
 				no_improvement=0;
 		}
-		particles_best.add(best);
-		particles_average.add(average);
+		
+		population_best.add(best);
+		population_average.add(average);
+		
+		if(spacetime) {
+			exploration = 1-(no_improvement/termination);
+			if(max_runtime>0) {
+				exploration *= System.currentTimeMillis()/(start_time+max_runtime);
+				exploration = Math.sqrt(exploration);
+			}
+		}
 	}
 	
 	
@@ -397,19 +433,19 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			
 			// Generate and evaluate initial particles
 			initialize_particles();
-			evaluate_particles();
+			evaluate_population();
 			
 			// Repeat until termination (no improvements found or time criterion -if set- is met):
 			while(no_improvement<termination && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0)) {
 				
 				// Verbose
-				int generation = particles_best.size()-1;
+				int generation = population_best.size()-1;
 				
 				System.out.println();
 				System.out.println("Iteration: " + generation);
 				System.out.println();
-				System.out.println("Best Particle: " + particles_best.get(generation));
-				System.out.println("Iteration Average: " + particles_average.get(generation));
+				System.out.println("Best Particle: " + population_best.get(generation));
+				System.out.println("Iteration Average: " + population_average.get(generation));
 				System.out.println();
 				
 				if(no_improvement>0) {
@@ -419,16 +455,19 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 				move_particles();
 				update_movement();
-				evaluate_particles();
+				evaluate_population();
 				
 			}
 			
 			System.out.println();
 			System.out.println("This is the End!");
 			System.out.println();
-			System.out.println("Iterations: " + particles_best.size());
+			System.out.println("Iterations: " + population_best.size());
 			System.out.println("Best particle found: " + particles[0].best_tellability() + " , with simulation length: " + particles[0].best_simLength());
-			System.exit(0);
+			
+			to_file(particles[0]);
+			if(system_exit)
+				System.exit(0);
 		}
 	}
 	
@@ -498,72 +537,15 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				velInitializer.add(i);
 		}
 		
+		
+		
 		// Initialize population
 		for(int index=0; index<individual_count; index++) {
 			
-			// Create new personality chromosome
-			ChromosomePersonality personality = new ChromosomePersonality(number_agents);
-
-			int persType = persInitializer.get((int)Math.round(Math.random()*persInitializer.size()-0.5));
-			
-			switch(persType) {	
-
-			case(2):
-				
-				if(discretePersValues.length>4) {
-					personality = steadyDiscretePersonalityInitializer();
-					break;
-				}
-
-			case(1):
-				
-				if(discretePersValues.length>0) {
-					personality = discretePersonalityInitializer();
-					break;
-				}
-					
-			case(0):
-
-				personality = randomPersonalityInitializer();
-				break;
-				
-			default:
-				
-				System.out.println("Fatal Error @ Personality Initialization Selection!");
-				break;
-			}
-			
-			// Create new happening chromosome
-			ChromosomeHappenings happenings = new ChromosomeHappenings(number_agents,number_happenings);
-			
-			int hapType = hapInitializer.get((int)Math.round(Math.random()*hapInitializer.size()-0.5));
-
-			switch(hapType) {	
-
-			case(0):	
-				
-				happenings = randomHappeningsInitializer();
-				break;
-
-			case(1):
-	
-				happenings = probabilisticHappeningsInitializer();
-				break;
-				
-			case(2):
-				
-				happenings = steadyHappeningsInitializer();
-				break;
-				
-			default:
-				
-				System.out.println("Fatal Error @ Happening Initialization Selection!");
-				break;
-			}
-
+			// Create new chromosomes
 			ChromosomePersonality pers_velocity = new ChromosomePersonality(number_agents);
 			ChromosomeHappenings hap_velocity = new ChromosomeHappenings(number_agents,number_happenings);
-			
+
 			if(!velInitializer.isEmpty()) {
 				
 				int velType = velInitializer.get((int)Math.round(Math.random()*velInitializer.size()-0.5));
@@ -572,14 +554,14 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				case(0):	
 
-					pers_velocity = randomPersonalityVelocityInitializer(personality);
-					hap_velocity = randomHappeningsVelocityInitializer(happenings);
+					pers_velocity = randomPersonalityVelocityInitializer();
+					hap_velocity = randomHappeningsVelocityInitializer();
 					break;
 
 				case(1):
 					
-					pers_velocity = discretePersonalityVelocityInitializer(personality);
-					hap_velocity = discreteHappeningsVelocityInitializer(happenings);
+					pers_velocity = discretePersonalityVelocityInitializer();
+					hap_velocity = discreteHappeningsVelocityInitializer();
 					break;
 					
 				default:
@@ -589,10 +571,76 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				}
 			}
 			
-			
-			particles[index] = new_particle(personality,pers_velocity,happenings,hap_velocity,max_steps);
+			// Initialize particles based on findings of the genetic algorithm
+			if(index < geneticInit) {
 				
+				particles[index] = new Particle(gen_pool[index],pers_velocity,hap_velocity);
+				
+			// Otherwise use classic initialization
+			}else {
+				
+				ChromosomePersonality personality = new ChromosomePersonality(number_agents);
+	
+				int persType = persInitializer.get((int)Math.round(Math.random()*persInitializer.size()-0.5));
+				
+				switch(persType) {	
+	
+				case(2):
+					
+					if(discretePersValues.length>4) {
+						personality = steadyDiscretePersonalityInitializer();
+						break;
+					}
+	
+				case(1):
+					
+					if(discretePersValues.length>0) {
+						personality = discretePersonalityInitializer();
+						break;
+					}
+						
+				case(0):
+	
+					personality = randomPersonalityInitializer();
+					break;
+					
+				default:
+					
+					System.out.println("Fatal Error @ Personality Initialization Selection!");
+					break;
+				}
+				
+				ChromosomeHappenings happenings = new ChromosomeHappenings(number_agents,number_happenings);
+				
+				int hapType = hapInitializer.get((int)Math.round(Math.random()*hapInitializer.size()-0.5));
+	
+				switch(hapType) {	
+	
+				case(0):	
+					
+					happenings = randomHappeningsInitializer();
+					break;
+	
+				case(1):
+		
+					happenings = probabilisticHappeningsInitializer();
+					break;
+					
+				case(2):
+					
+					happenings = steadyHappeningsInitializer();
+					break;
+					
+				default:
+					
+					System.out.println("Fatal Error @ Happening Initialization Selection!");
+					break;
+				}
+				
+				particles[index] = new_particle(personality,pers_velocity,happenings,hap_velocity,max_steps);
+			}
 		}
+		
 		Arrays.sort(particles);
 		// Update max distances
 		update_Distances();
@@ -730,35 +778,35 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	}
 
 	
-	public ChromosomePersonality randomPersonalityVelocityInitializer(ChromosomePersonality personality) {
+	public ChromosomePersonality randomPersonalityVelocityInitializer() {
 		
 		ChromosomePersonality pers_velocity = new ChromosomePersonality(number_agents);
 		
 		for(int i = 0; i < number_agents;i++) {
 			for(int j = 0; j < 5; j++) {
 				
-				pers_velocity.values[i][j] = round((Math.random()*2-1)*personality.values[i][j]);
+				pers_velocity.values[i][j] = round(Math.random()*2-1);
 			}
 		}
 		return pers_velocity;
 	}
 	
 	
-	public ChromosomeHappenings randomHappeningsVelocityInitializer(ChromosomeHappenings happenings) {
+	public ChromosomeHappenings randomHappeningsVelocityInitializer() {
 		
 		ChromosomeHappenings hap_velocity = new ChromosomeHappenings(number_agents,number_happenings);
 		
 		for(int i = 0; i < number_agents;i++) {
 			for(int j = 0; j < number_happenings; j++) {
 				
-				hap_velocity.values[i][j] = (int)Math.round((Math.random()*2-1)*(number_happenings/max_steps)*hap_velocity.values[i][j]);
+				hap_velocity.values[i][j] = (int)Math.round((Math.random()*2-1)*max_steps/number_happenings);
 			}
 		}
 		return hap_velocity;	
 	}
 	
 	
-	public ChromosomePersonality discretePersonalityVelocityInitializer(ChromosomePersonality personality) {
+	public ChromosomePersonality discretePersonalityVelocityInitializer() {
 		
 		ChromosomePersonality pers_velocity = new ChromosomePersonality(number_agents);
 		
@@ -773,7 +821,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	}
 	
 	
-	public ChromosomeHappenings discreteHappeningsVelocityInitializer(ChromosomeHappenings happenings) {
+	public ChromosomeHappenings discreteHappeningsVelocityInitializer() {
 		
 		ChromosomeHappenings hap_velocity = new ChromosomeHappenings(number_agents,number_happenings);
 		
@@ -806,6 +854,9 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	public void update_movement() {
 
 		for(int index = 0; index < individual_count; index++) {
+			
+			if(spacetime)
+				particles[index].set_spacetime(determine_spacetime(index));
 			
 			List<Integer> informants = select_particles(index);
 				

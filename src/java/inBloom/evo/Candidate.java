@@ -2,7 +2,7 @@ package inBloom.evo;
 
 import jason.JasonException;
 
-public class Candidate implements Comparable<Candidate>, Individual{
+public class Candidate implements Individual,Comparable<Candidate>{
 	
 	private ChromosomePersonality chromosome_personality;
 	private ChromosomeHappenings chromosome_happenings;
@@ -114,5 +114,39 @@ public class Candidate implements Comparable<Candidate>, Individual{
 		if(tellability < other.get_tellability())
 			return 1;
 		return -1;
+	}
+	
+	/*
+	 * to_String converts all information of a candidate into a string.
+	 * The result will be used to save a candidate into a file.
+	 */
+	
+	public String to_String() {
+		
+		int number_agents = chromosome_personality.values.length;
+		int number_happenings = chromosome_happenings.values[0].length;
+		
+		String string = String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(simulation_length) + "\n";
+		
+		
+		for(int i = 0; i < number_agents; i++) {
+			for(int j = 0; j < 5; j++) {
+				string += String.valueOf(chromosome_personality.values[i][j]);
+				if(j<4)
+					string +=  " ";
+			}
+			string += "\n";
+		}
+		
+		for(int i = 0; i < number_agents; i++) {	
+			for(int j = 0; j < number_happenings; j++) {
+				string += String.valueOf(chromosome_happenings.values[i][j]);	
+				if(j<number_happenings-1)
+					string +=  " ";	
+			}
+			string += "\n";
+		}
+		
+		return string;
 	}
 }

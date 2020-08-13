@@ -33,7 +33,6 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 
 	@SuppressWarnings("unchecked")
 	public Fitness(EvolutionaryEnvironment<?, ?> environment){
-	//public Fitness(String[] args, GeneticEnvironment<?, ?> environment){
 		
 		this.EVO_ENV = environment;
 		this.ENV_CLASS = environment.ENV_CLASS;
@@ -41,6 +40,18 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		PlotControlsLauncher.runner = this;
 		BaseCentralisedMAS.runner = this;
 		this.setShowGui(false);
+		
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Fitness(EvolutionaryEnvironment<?, ?> environment, boolean showGui){
+		
+		this.EVO_ENV = environment;
+		this.ENV_CLASS = environment.ENV_CLASS;
+		//this.args = args;
+		PlotControlsLauncher.runner = this;
+		BaseCentralisedMAS.runner = this;
+		this.setShowGui(showGui);
 		
 	}
 	
@@ -130,15 +141,20 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		}catch(RuntimeException e) {
 			pauseExecution();
 		}
+		
+		// Ensure Termination
+		//reset();
 
 		return result;
 	}
 	
 	@Override
 	public void pauseExecution() {
-
-		MASConsoleGUI.get().setPause(true);
-		runner.reset();
+		
+		if(!showGui) {
+			MASConsoleGUI.get().setPause(true);
+			runner.reset();
+		}
 	}
 	
 	@Override
@@ -150,13 +166,17 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	// Reset() without NullPointerException
 	@Override
 	public void reset() {
-    	if (control != null) {
+		
+		if(!showGui) {
+			
+			if (control != null) {
     		control.stop();
-    	}
-    	if (env != null) {
-    		env.stop();
-    	}
-    	stopAgs();
+	    	}
+	    	if (env != null) {
+	    		env.stop();
+	    	}
+	    	stopAgs();
+		}
     }
 	
 	

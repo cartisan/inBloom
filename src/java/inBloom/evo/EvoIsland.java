@@ -23,12 +23,9 @@ import jason.asSemantics.Personality;
 public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, IslandModel>{
 	
 	public EvoIsland() {
-		super(IslandEnvironment.class, "islandAgent", 1, 1, 7, 30);
+		super(IslandEnvironment.class, "islandAgent", 1, 1, 7);
 	}
-	public EvoIsland(int particle_count) {
-		super(IslandEnvironment.class, "islandAgent", 1, 1, 7, 30, particle_count);
-	}
-
+	
 	@Override
 	public ImmutableList<LauncherAgent> init_agents(double[][] personality) {
 		

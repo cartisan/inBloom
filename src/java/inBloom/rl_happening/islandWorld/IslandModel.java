@@ -8,6 +8,7 @@ import inBloom.ActionReport;
 import inBloom.LauncherAgent;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
+import inBloom.helper.EnvironmentListener;
 import inBloom.helper.PerceptAnnotation;
 import inBloom.rl_happening.rl_management.FeaturePlotModel;
 import inBloom.storyworld.HappeningDirector;
@@ -141,7 +142,10 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	}
 
 	public ActionReport findFriend(Character agent) {
+		
 		ActionReport result = new ActionReport();
+
+		if(agent.location==this.island) {
 
 		logger.info(agent.name + " has found a friend.");
 
@@ -156,75 +160,83 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		result.success = true;
 		
 		this.activateFeature(friend);
+		
+		}
 
 		return result;
 	}
 
 	public ActionReport getFood(Character agent) {
+		
 		ActionReport result = new ActionReport();
 		
-		logger.info(agent.name + " looked for food.");
-		
-		// TODO here a happening could intrude
-		// but for now: if he look for food, he finds food
-		// and immediately eats it
-		
-		agent.addToInventory(new Food());
-		// new food isn't poisoned yet
-		//this.foodIsOkay = true;
-
-		this.environment.addPercept(agent.name, Literal.parseLiteral("has(food)"));
-		
-		result.success = true;
-		
-		this.activateFeature(hasFood);
-		
+		if(agent.location==this.island) {
+			
+			logger.info(agent.name + " looked for food.");
+			
+			// TODO here a happening could intrude
+			// but for now: if he look for food, he finds food
+			// and immediately eats it
+			
+			agent.addToInventory(new Food());
+			// new food isn't poisoned yet
+			//this.foodIsOkay = true;
+	
+			this.environment.addPercept(agent.name, Literal.parseLiteral("has(food)"));
+			
+			result.success = true;
+			
+			this.activateFeature(hasFood);
+		}
 		return result;
 	}
 
 	public ActionReport eat(Character agent) {
 		
 		ActionReport result = new ActionReport();
-		
-		// TODO könnte man auch in Character fast alles auslagern -> z.B. Hunger,
-		// wobei die percepts eigentlich eher hier gesteucert werden sollten
-		
-		if(agent.has("food")) {
-			
-			// save the food for checking it's poisoness later
-			Food food = (Food)agent.get("food");
-			//agent.removeFromInventory(food);
-			
-			// In any case, the agent will eat
-			result = agent.eat("food");
-			logger.info(result.success + "Success");
-			logger.info(agent.name + " eats food.");
 
-			// only if this was the only food that the agent owned, we can deactivate the feature
-			if(!agent.has("food")) {
-				this.deactivateFeature(hasFood);
-				this.environment.removePercept(agent.name, Literal.parseLiteral("has(food)"));
-			}
+		if(agent.location==this.island) {
 			
-			// he is not hungry anymore
-			this.hunger.replace(agent, 0);
-
-			this.environment.removePercept(agent.name, Literal.parseLiteral("hungry"));
-			logger.info(agent.name + "'s hunger: " + this.hunger.get(agent));
+			// TODO könnte man auch in Character fast alles auslagern -> z.B. Hunger,
+			// wobei die percepts eigentlich eher hier gesteucert werden sollten
 			
-			this.deactivateFeature(hungry);
-			
-			// the Food may have been poisoned though
-			if(food.isPoisoned()) {
-				// TODO es wäre natürlich schöner, das hier direkt im Agent zu modellieren
-				agent.getPoisoned();
-				this.environment.addPercept(agent.name, Literal.parseLiteral("sick"));
-				logger.info(agent.name + " is sick.");
+			if(agent.has("food")) {
 				
-				this.deactivateFeature(poisonedFood);
-				this.activateFeature(sick);
+				// save the food for checking it's poisoness later
+				Food food = (Food)agent.get("food");
+				//agent.removeFromInventory(food);
 				
-				// hier könnte man result.success = false setzen, aber an sich hat er ja gegessen
+				// In any case, the agent will eat
+				result = agent.eat("food");
+				logger.info(result.success + "Success");
+				logger.info(agent.name + " eats food.");
+	
+				// only if this was the only food that the agent owned, we can deactivate the feature
+				if(!agent.has("food")) {
+					this.deactivateFeature(hasFood);
+					this.environment.removePercept(agent.name, Literal.parseLiteral("has(food)"));
+				}
+				
+				// he is not hungry anymore
+				this.hunger.replace(agent, 0);
+	
+				this.environment.removePercept(agent.name, Literal.parseLiteral("hungry"));
+				logger.info(agent.name + "'s hunger: " + this.hunger.get(agent));
+				
+				this.deactivateFeature(hungry);
+				
+				// the Food may have been poisoned though
+				if(food.isPoisoned()) {
+					// TODO es wäre natürlich schöner, das hier direkt im Agent zu modellieren
+					agent.getPoisoned();
+					this.environment.addPercept(agent.name, Literal.parseLiteral("sick"));
+					logger.info(agent.name + " is sick.");
+					
+					this.deactivateFeature(poisonedFood);
+					this.activateFeature(sick);
+					
+					// hier könnte man result.success = false setzen, aber an sich hat er ja gegessen
+				}
 			}
 		}
 		return result;
@@ -234,53 +246,59 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		// you can only sleep if you have a safe place to sleep in
-		if(this.island.hasHut()) {
+		if(agent.location==this.island) {
 			
-			/*
-			 * 1. GO TO HUT
-			 */
-			
-			this.island.enterSublocation(agent, island.hut.name);
-			logger.info(agent.name + " is in the hood. Hut I mean. This hut: " + island.hut.name);
-			
-			
-			/*
-			 * 2. SLEEP
-			 */
-			logger.info(agent.name + " is asleep.");
-			result.addPerception(agent.name, new PerceptAnnotation("relief"));
-
-			
-			/* 
-			 * 3. HEAL
-			 */
-			
-			// if agent was sick, then now he isn't anymore
-			if(agent.isSick) {
-				agent.heal();
+			// you can only sleep if you have a safe place to sleep in
+			if(this.island.hasHut()) {
+				
+				/*
+				 * 1. GO TO HUT
+				 */
+				
+				this.island.enterSublocation(agent, island.hut.name);
+				logger.info(agent.name + " is in the hood. Hut I mean. This hut: " + island.hut.name);
+				
+				
+				/*
+				 * 2. SLEEP
+				 */
+				logger.info(agent.name + " is asleep.");
+				result.addPerception(agent.name, new PerceptAnnotation("relief"));
+	
+				
+				/* 
+				 * 3. HEAL
+				 */
+				
+				// if agent was sick, then now he isn't anymore
+				if(agent.isSick) {
+					agent.heal();
+				}
+				
+				this.environment.removePercept(agent.name, Literal.parseLiteral("sick"));
+				this.deactivateFeature(sick);
+				
+	
+				
+				/*
+				 * 4. LEAVE HUT
+				 */
+				
+				this.island.leaveSublocation(agent, island.hut.name);
+				logger.info(agent.name + " has left the hut " + island.hut.name);
+				
+				
+				result.success = true;
+				
+				
+			} else {
+				
+				result.success = false;
+				// Robinson feels distress since his already build hut was destroyed.
+				result.addPerception(agent.name, new PerceptAnnotation("distress"));
+				ActionReport bandaid = buildHut(agent);
 			}
-			
-			this.environment.removePercept(agent.name, Literal.parseLiteral("sick"));
-			this.deactivateFeature(sick);
-			
-
-			
-			/*
-			 * 4. LEAVE HUT
-			 */
-			
-			this.island.leaveSublocation(agent, island.hut.name);
-			logger.info(agent.name + " has left the hut " + island.hut.name);
-			
-			
-			result.success = true;
-			
-			
-		} else {
-			result.success = false;
-		}
-		
+		}	
 		
 		return result;
 	}
@@ -289,17 +307,20 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		logger.info(agent.name + " builds a hut.");
-		this.island.buildHut();
+		if(agent.location==this.island) {
 		
-		result.success = true;
-		
-		// all agents on the island get the percept
-		this.environment.addPercept(this.island, Literal.parseLiteral("exists(hut)"));
-		
-		this.activateFeature(hut);
-		
-		result.addPerception(agent.name, new PerceptAnnotation("pride"));
+			logger.info(agent.name + " builds a hut.");
+			this.island.buildHut();
+			
+			result.success = true;
+			
+			// all agents on the island get the percept
+			this.environment.addPercept(this.island, Literal.parseLiteral("exists(hut)"));
+			
+			this.activateFeature(hut);
+			
+			result.addPerception(agent.name, new PerceptAnnotation("pride"));
+		}
 		
 		return result;
 	}
@@ -308,16 +329,18 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		// you can only complain if you have a friend
-		if(this.friends.get(agent) > 0) {
+		if(agent.location==this.island) {
 			
-			logger.info(agent.name + " complained.");
-			result.success = true;
-			
-		} else {
-			result.success = false;
+			// you can only complain if you have a friend
+			if(this.friends.get(agent) > 0) {
+				
+				logger.info(agent.name + " complained.");
+				result.success = true;
+				
+			} else {
+				result.success = false;
+			}
 		}
-		
 		return result;
 		
 	}
@@ -326,14 +349,17 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		this.island.isBurning = false;
-		this.environment.removePercept(agent.name, Literal.parseLiteral("fire"));
-		result.addPerception(agent.name, new PerceptAnnotation("pride"));
-		logger.info(agent.name + " has extinguished the fire.");
+		if(agent.location==this.island) {
 		
-		this.deactivateFeature(fire);
-		
-		result.success = true;
+			this.island.isBurning = false;
+			this.environment.removePercept(agent.name, Literal.parseLiteral("fire"));
+			result.addPerception(agent.name, new PerceptAnnotation("pride"));
+			logger.info(agent.name + " has extinguished the fire.");
+			
+			this.deactivateFeature(fire);
+			
+			result.success = true;
+		}
 		return result;
 	}
 
@@ -439,6 +465,24 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			this.environment.removePercept(this.island, Literal.parseLiteral("exists(hut)"));
 			this.deactivateFeature(hut);
 		}
+	}
+	
+	/**
+	 * Removes agent from the Island and ends simulation if there are no agents left. Similar to "KillAgent" but without death Vertice
+	 * @param agent: Rescued agent
+	 */
+	public void removeAgent(Character agent) {
+		// remove character from story-world model
+		removeCharacter(agent.name);
+		if(getCharacters().isEmpty()) {
+			
+			logger.info("No agents left.");
+
+    		PlotLauncher.runner.pauseExecution();
+    		for(EnvironmentListener l : getEnvironment().getListeners()) {
+    			l.onPauseRepeat();
+    		}
+		}		
 	}
 	
 	

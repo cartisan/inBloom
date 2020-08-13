@@ -4,17 +4,44 @@ public class EvolutionaryLauncher {
 	
 	public static void main(String[] args) { 
 		
-		EvoIsland island = new EvoIsland(20);
-		int time = 600;
+		// init location
+		EvoIsland island = new EvoIsland();
+		// simulation length at initialization
+		int init_stepnumber = 50;
+		// number individuals
+		int individual_count = 20;
+		
+		// maximum time in seconds (0 = no time limit)
+		int time = 60;
+		// number of iterations without improvement till shutdown
 		int max_repetitions = 50;
+		
+		// path and name of file
+		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\";
+		String filename = "";
+		
+		/**
+		 * Choose 1 Mode:
+		 */
+		
 		//String algorithm = "Evolutionary";
-		String algorithm = "PSO";
+		//String algorithm = "PSO";
+		String algorithm = "Coupled";
+		
+		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,4,0.2,0.1);
 		
 		switch(algorithm) {
 		
+		case("Coupled"):
+		
 		case("Evolutionary"):
-			
-			GeneticAlgorithm<?,?> ga = island.get_GA(args,4,0.2,0.1);
+		
+			ga.setFileName(path+"Evolutionary"+filename);
+		
+			if(algorithm=="Coupled") {
+				
+				ga.setExit(false);
+			}
 			
 			// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
 			ga.setPersInit(true, true, true);
@@ -37,12 +64,19 @@ public class EvolutionaryLauncher {
 			
 			ga.run();
 			
-			break;
+			if(algorithm=="Evolutionary")
+				break;
 		
 		case("PSO"):
-
 			
-			PSO<?,?> pso = island.get_PSO(args);
+			PSO<?,?> pso = island.get_PSO(args,init_stepnumber, individual_count);
+			
+			pso.setFileName(path+"PSO"+filename);
+			
+			if(algorithm=="Coupled") {
+
+				pso.setGenInit(10, ga.get_genPool());
+			}
 			
 			// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
 			pso.setPersInit(true, false, false);
@@ -66,6 +100,6 @@ public class EvolutionaryLauncher {
 			pso.run();
 			
 			break;
-		}
+		}			
 	}
 }

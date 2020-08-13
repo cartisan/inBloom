@@ -1,7 +1,5 @@
 package inBloom.evo;
 
-
-
 public interface Individual {
 	
 	// Functions that get called by the Fitness class in order to start a simulation
@@ -13,5 +11,7 @@ public interface Individual {
 
 	public Integer get_simLength();
 	public double get_tellability();
+	
+	public String to_String();
 
 }
