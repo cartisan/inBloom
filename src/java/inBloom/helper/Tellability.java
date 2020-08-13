@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 import com.google.common.collect.Sets;
 import com.google.common.math.Stats;
 
+import jason.asSemantics.Mood;
 import jason.util.Pair;
 
 import inBloom.framing.ConnectivityGraph;
@@ -72,7 +74,7 @@ public class Tellability {
 	 * @param graph whose tellability needs to be determined and that has been been processed by
 	 * {@link VertexMergingPPVisitor} and  {@link EdgeGenerationPPVisitor}.
 	 */
-	public Tellability(PlotDirectedSparseGraph graph) {
+	public Tellability(PlotDirectedSparseGraph graph, MoodMapper moodData) {
 		// Perform quantitative analysis of plot
 		this.counter = new CountingVisitor();
 		this.computeSimpleStatistics(graph);
@@ -85,7 +87,7 @@ public class Tellability {
 		this.detectSymmetryAndParallelism(graph);
 
 		// calculate semantic opposition
-		this.detectOpposition(graph);
+		this.detectOpposition(graph, moodData);
 
 		// calculate suspense
 		this.detectSuspense(graph);
@@ -234,8 +236,93 @@ public class Tellability {
 		return;
 	}
 
-	private void detectOpposition(PlotDirectedSparseGraph graph) {
-		this.opposition = 0;
+	private void detectOpposition(PlotDirectedSparseGraph graph, MoodMapper moodData) {
+		logger.info("Start analysing opposition");
+		List<Float> oppositionScores = new LinkedList<>();
+
+		for (String agent : this.counter.agents) {
+			logger.info("processing agent: " + agent);
+
+			// find violated expectations
+			logger.info("  computing violated expectation score");
+			int violationIndicators = this.counter.violatedExpectationEvents.get(agent).size() + this.counter.terminatedPercepts.get(agent).size();
+			int relevantEvents = this.counter.emotionalEvents.get(agent).size() + this.counter.overallPerceptNum.get(agent);
+			float normalizedExpecttaionViolationScore = (float) violationIndicators / relevantEvents;
+			logger.fine("     violationIndicators: " + violationIndicators);
+			logger.fine("     relevantEvents: " + relevantEvents);
+			logger.fine("     --> normalized  score: " + normalizedExpecttaionViolationScore);
+
+			// find reversals in fortunes
+			logger.fine("  computing reversals in fortunes score");
+			Map<Long, List<Mood>> cycleMoodMap = moodData.getMoodByAgent(agent);
+			List<Long> reasoningCycleNums = cycleMoodMap.keySet().stream().sorted().collect(Collectors.toList());
+			ArrayList<MoodInterval> reversals = new ArrayList<>();
+			for(Long cycleNum : reasoningCycleNums) {
+				Mood m = moodData.sampleMood(agent, cycleNum);
+
+				for(long i = cycleNum - 10; i < cycleNum; ++i) {
+					boolean intervalDetected = false;
+					Mood m_i = moodData.sampleMood(agent, i);
+					if (m_i == null) {
+						continue;
+					}
+
+					for(String dim : Mood.DIMENSIONS) {
+						if (0.5 < Math.abs(m_i.get(dim) - m.get(dim)) & Math.signum(m_i.get(dim)) != Math.signum(m.get(dim))) {
+							reversals.add(new MoodInterval(i, m_i, cycleNum, m));
+							intervalDetected = true;
+							break;
+						}
+					}
+
+					if (intervalDetected) {
+						break;
+					}
+				}
+			}
+			logger.fine("     fortuneIntervals: " + reversals);
+			logger.fine("     number of entries: " + reversals.size());
+
+			List<MoodInterval> reversalsNoOverlap = new ArrayList<>();
+			List<MoodInterval> tmpList = new ArrayList<>();
+			if(!reversals.isEmpty()) {
+				tmpList.add(reversals.remove(0));
+			}
+			while(tmpList.size() > 0) {
+				MoodInterval interval = tmpList.remove(0);
+
+				// search over all starting positions that have not been removed yet as overlaps
+				Iterator<MoodInterval> it = reversals.listIterator();
+				while(it.hasNext()) {
+					MoodInterval nextInt = it.next();
+					// if starting position p is located before the end of the currently used position, remove p
+					// otherwise, transfer p into list of positions to be used to remove overlaps and abort
+					// that way, we find the first p that is not to be removed, and instantly switch to using it
+					if(interval.contains(nextInt)) {
+						it.remove();
+					} else {
+						it.remove();
+						tmpList.add(nextInt);
+						break;
+					}
+				}
+				// since we removed everything that overlapped with current position, we can safe it as overlap free
+				reversalsNoOverlap.add(interval);
+			}
+			logger.fine("     fortuneIntervalsNoOverlap: " + reversalsNoOverlap);
+			logger.fine("     number of entries: " + reversalsNoOverlap.size());
+
+			long possibleIntervalNum = (moodData.latestEndTime() - moodData.latestStartTime() ) / 10;
+			logger.fine("     number of possible intervals: " + possibleIntervalNum);
+			float normalizedFortuneChangeScore = (float)reversalsNoOverlap.size() / possibleIntervalNum;
+			logger.fine("     --> normalized score: " + normalizedFortuneChangeScore);
+
+			// opposition score for this agent is the higher of both scores
+			oppositionScores.add(Math.max(normalizedExpecttaionViolationScore, normalizedFortuneChangeScore));
+		}
+
+		// focus on opposition for main characters, here: one character i.e. protagonist
+		this.opposition = oppositionScores.stream().mapToDouble(f -> f).max().orElse(0);
 	}
 
 	private void detectSuspense(PlotDirectedSparseGraph graph) {
@@ -355,11 +442,13 @@ public class Tellability {
 		logger.info("normalized polyvalence: " + (double) this.numPolyvalentVertices / this.numAllVertices);
 		logger.info("normalized suspense: " + (double) this.suspense / this.plotLength);
 		logger.info("normalized symmetry: " + this.symmetry);
+		logger.info("normalized opposition: " + this.opposition);
 
 		double tellability = (double) this.numPolyvalentVertices / this.numAllVertices +
 							 (double) this.suspense / this.plotLength +
-							 this.symmetry;
-		tellability /= 3;
+							 this.symmetry +
+							 this.opposition;
+		tellability /= 4;
 
 		logger.info("Overall tellability: " + tellability);
 		return tellability;
@@ -436,5 +525,27 @@ public class Tellability {
 		}
 
 		return eventSyms;
+	}
+
+	private class MoodInterval {
+		public long startCycle;
+		public long endCycle;
+		public Mood startMood;
+		public Mood endMood;
+
+		public MoodInterval(long startCycle, Mood startMood, long endCycle, Mood endMood) {
+			this.startCycle = startCycle;
+			this.startMood =  startMood;
+			this.endCycle = endCycle;
+			this.endMood = endMood;
+		}
+
+		public String toString() {
+			return this.startCycle + "|" + this.startMood + "|" + this.endCycle + "|" + this.endMood + "|||";
+		}
+
+		public boolean contains(MoodInterval other) {
+			return this.startCycle <= other.startCycle & this.endCycle > other.startCycle;
+		}
 	}
 }

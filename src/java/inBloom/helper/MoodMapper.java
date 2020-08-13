@@ -96,10 +96,15 @@ public class MoodMapper {
 	 * Identifies the mood for the given agent at the given time by interpolating between the mapped changes
 	 * @param agName
 	 * @param time
-	 * @return mood value in the interval [-1.0, 1.0]
+	 * @return mood value in the interval [-1.0, 1.0], or null if time lies outside of mapped interval
 	 */
 	public Mood sampleMood(String agName, Long time) {
 		Map<Long, List<Mood>> timeMoodMap = this.timedMoodMap.row(agName);
+
+		Long min = timeMoodMap.keySet().stream().mapToLong(l -> l).min().orElse(Integer.MAX_VALUE);
+		if (time < min) {
+			return null;
+		}
 
 		// find the last (time, mood) pair before sampling time
 		Long sampleTime = timeMoodMap.keySet().stream().filter(x -> x <= time) //get all pairs before sampling time

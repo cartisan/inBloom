@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import jason.util.Pair;
 
+import inBloom.PlotLauncher;
 import inBloom.graph.visitor.EdgeGenerationPPVisitor;
 import inBloom.graph.visitor.EdgeLayoutVisitor;
 import inBloom.graph.visitor.VertexMergingPPVisitor;
@@ -73,7 +74,7 @@ public class GraphAnalyzer extends Thread {
 		PlotDirectedSparseGraph g3 = new VisualizationFilterPPVisitor().apply(g2);
 
 		logger.info("Starting tellability computation");
-		Tellability analysisResult = new Tellability(g3);
+		Tellability analysisResult = new Tellability(g3, PlotLauncher.getRunner().getUserModel().moodMapper);
 		logger.info( "Analyze time in ms:" + Duration.between(start, Instant.now()).toMillis());
 
 		g3 = new EdgeLayoutVisitor(9).apply(g3);

@@ -26,6 +26,10 @@ public class CountingVisitor extends PlotGraphVisitor {
 	public List<String> agents;
 	public HashMap<String, Integer> conflictCounter;						 // agentName --> conflictNum
 	public HashMap<String, List<Pair<Vertex, Vertex>>> productiveConflicts;  // agentName --> [(Intention, Resolution), (...), ...]
+	public HashMap<String, List<Vertex>> terminatedPercepts;				 // agentName --> [vertex1, vertex2, ...]
+	public HashMap<String, List<Vertex>> violatedExpectationEvents;		 // agentName --> [vertex1, vertex2, ...]
+	public HashMap<String, List<Vertex>> emotionalEvents;					 // agentName --> [vertex1, vertex2, ...]
+	public HashMap<String, Integer> overallPerceptNum;						 // agentName --> int
 	public Table<String, Vertex, List<Vertex>> motivationChains = HashBasedTable.create();
 
 	private int lowestStep = Integer.MAX_VALUE;		// lowest environment step encountered in story (= plot start in steps)
@@ -35,10 +39,17 @@ public class CountingVisitor extends PlotGraphVisitor {
 	private String currentRoot;
 
 
+
+
+
 	public CountingVisitor() {
 		this.agents = new ArrayList<>();
 		this.conflictCounter = new HashMap<>();
 		this.productiveConflicts = new HashMap<>();
+		this.terminatedPercepts = new HashMap<>();
+		this.violatedExpectationEvents = new HashMap<>();
+		this.emotionalEvents = new HashMap<>();
+		this.overallPerceptNum = new HashMap<>();
 	}
 
 	@Override
@@ -48,7 +59,11 @@ public class CountingVisitor extends PlotGraphVisitor {
 		this.agents.add(this.currentRoot);
 
 		this.conflictCounter.put(this.currentRoot, 0);
-		this.productiveConflicts.put(this.currentRoot, new LinkedList<>());
+		this.productiveConflicts.put(this.currentRoot, new ArrayList<>());
+		this.terminatedPercepts.put(this.currentRoot, new ArrayList<>());
+		this.violatedExpectationEvents.put(this.currentRoot, new ArrayList<>());
+		this.emotionalEvents.put(this.currentRoot, new ArrayList<>());
+		this.overallPerceptNum.put(this.currentRoot, 0);
 	}
 
 	@Override
@@ -62,7 +77,7 @@ public class CountingVisitor extends PlotGraphVisitor {
 
 	@Override
 	public void visitEvent(Vertex vertex) {
-		logger.severe("No EVENT vertices should be left by this stage of preprocessing: " + vertex.getLabel());
+		logger.severe("No EVENT vertices should be left by this stage of preprocessing, found: " + vertex.getLabel());
 		logger.severe("Count of vertices might be not rliable anymore");
 	}
 
@@ -74,6 +89,9 @@ public class CountingVisitor extends PlotGraphVisitor {
 	@Override
 	public void visitPercept(Vertex vertex) {
 		this.updateSimpleVertexCounts(vertex);
+
+		int newCount = this.overallPerceptNum.get(this.currentRoot) + 1;
+		this.overallPerceptNum.put(this.currentRoot, newCount);
 	}
 
 	@Override
@@ -88,7 +106,7 @@ public class CountingVisitor extends PlotGraphVisitor {
 
 	@Override
 	public void visitEmotion(Vertex vertex) {
-		// Nothing to do here, war emotions should not be found in analyzed graphs
+		logger.severe("No EMOTION vertices should be left by this stage of preprocessing, found: " + vertex.getLabel());
 	}
 
 	@Override
@@ -103,8 +121,13 @@ public class CountingVisitor extends PlotGraphVisitor {
 		}
 
 		else if(type == Edge.Type.TERMINATION) {	// [I] <-t- [I]
-			if(this.graph.getDest(edge).getType() == Type.INTENTION) {
-				this.productiveConflicts.get(this.currentRoot).add(new Pair<>(this.graph.getDest(edge), this.graph.getSource(edge)));
+			Vertex destination = this.graph.getDest(edge);
+			if(destination.getType() == Type.INTENTION) {
+				this.productiveConflicts.get(this.currentRoot).add(new Pair<>(destination, this.graph.getSource(edge)));
+			}
+
+			else if(destination.getType() == Type.PERCEPT) { 	// [P] <-t- [*]
+				this.terminatedPercepts.get(this.currentRoot).add(destination);
 			}
 		}
 
@@ -180,6 +203,14 @@ public class CountingVisitor extends PlotGraphVisitor {
 
 		if (vertex.getStep() < this.lowestStep) {
 			this.lowestStep = vertex.getStep();
+		}
+
+		if(vertex.hasEmotion("disappointment") || vertex.hasEmotion("relief")) {
+			this.violatedExpectationEvents.get(this.currentRoot).add(vertex);
+		}
+
+		if(vertex.hasEmotion()) {
+			this.emotionalEvents.get(this.currentRoot).add(vertex);
 		}
 	}
 
