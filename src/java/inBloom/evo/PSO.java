@@ -245,6 +245,11 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public double fitness_rating(int recipient, int informant) {
 		
+		// If both particles have a best tellability of 0 they shall get a high rating
+		// Therefore they will get propelled away from another and ensure exploration.
+		if(particles[informant].best_tellability()==0 && particles[recipient].best_tellability()==0)
+			return -1;
+		
 		return Math.sqrt(Math.pow(particles[informant].best_tellability(), 2) - Math.pow(particles[recipient].get_tellability(), 2));
 		
 	}
@@ -458,6 +463,8 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				evaluate_population();
 				
 			}
+			
+			Arrays.sort(particles);
 			
 			System.out.println();
 			System.out.println("This is the End!");
@@ -905,9 +912,20 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		double total_fitness = 0;
 		double[] rouletteWheel = new double[individual_count];
 		
+		// Control parameters
+		boolean control = true;
+		int filler = 0;
+		
 		for(int i = 0; i < individual_count; i++) {
 			total_fitness += particles[i].get_tellability();
 			rouletteWheel[i] = total_fitness;
+			
+			// Check if we have enough individuals with fitness
+			if(control && gen_pool[i].get_tellability()==0) {
+				
+				filler = number_informants-i;
+				control = false;
+			}
 		}
 		
 		// Pick Particles
@@ -917,7 +935,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		selected_particles.add(individuum);
 		
 		// Select other Informants
-		while(selected_particles.size() < number_informants) {
+		while(selected_particles.size() < number_informants-filler) {
 			
 			int position = 0;
 			double value = Math.random()*total_fitness;
@@ -928,6 +946,15 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			if(!selected_particles.contains(position)) {
 				selected_particles.add(position);
 			}	
+		}
+		
+		// Start adding particles from the end of the list
+		// -> Those will not be in the list already and since all particles 
+		// have a fitness value == 0 it doesn't matter which one we choose
+		while(filler>0) {
+
+			selected_particles.add(individual_count-1-filler);
+			filler-=1;
 		}
 		
 		return selected_particles;
@@ -944,7 +971,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			double force = update_rate;
 			
 			// determine if force is pulling towards or pushing away
-			if(particles[informants.get(index)].best_tellability() < particles[recipient].get_tellability())
+			if(particles[informants.get(index)].best_tellability() <= particles[recipient].get_tellability())
 				force*=-1;
 			
 			// copy information

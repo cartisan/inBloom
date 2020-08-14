@@ -225,10 +225,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	this.listeners.remove(l);
     }
     
-    public List<EnvironmentListener> getListeners(){
-    	return this.listeners;
-    }
-
 	/**
 	 * This method is called by the Jason framework in order to determine, which result an agent's action has, and
 	 * to compute potentially effects on the model.<br>

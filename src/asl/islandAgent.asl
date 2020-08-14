@@ -76,6 +76,9 @@
 			  
 +!extinguish_fire <- extinguishFire;
 					 -wish(extinguish_fire).
+					 
++!happyEnd <- 	happyEnd;
+				-wish(happyEnd).
 
 
 
@@ -85,6 +88,8 @@
 +hungry[source(Name)] <- +wish(eat).
 
 +sick[source(Name)] <- +wish(heal).
+
++endStory[source(Name)] <- +wish(happyEnd).
 
 // not used so far
 +stolen(food)[source(Name)] <- +hate(monkey).

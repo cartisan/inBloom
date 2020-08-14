@@ -47,7 +47,6 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 		
 		fit = new Fitness<EnvType,ModType>(EVO_ENV,showGui);
 		
-		
 	}
 	
 	public void readFile() {
@@ -143,9 +142,11 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	
 	public static void main(String[] args) {
 		
-		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\Coupled\\";
-		String name = "Evolutionary1";
-		
+		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\";
+		//String name = "PSO";
+		String name = "Evolutionary";
+
+		//FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, true);
 		FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, false);
 		
 		fi.readFile();

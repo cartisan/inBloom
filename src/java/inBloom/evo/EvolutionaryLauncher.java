@@ -7,12 +7,12 @@ public class EvolutionaryLauncher {
 		// init location
 		EvoIsland island = new EvoIsland();
 		// simulation length at initialization
-		int init_stepnumber = 50;
+		int init_stepnumber = 30;
 		// number individuals
 		int individual_count = 20;
 		
 		// maximum time in seconds (0 = no time limit)
-		int time = 60;
+		int time = 3600;
 		// number of iterations without improvement till shutdown
 		int max_repetitions = 50;
 		
@@ -24,9 +24,9 @@ public class EvolutionaryLauncher {
 		 * Choose 1 Mode:
 		 */
 		
-		//String algorithm = "Evolutionary";
+		String algorithm = "Evolutionary";
 		//String algorithm = "PSO";
-		String algorithm = "Coupled";
+		//String algorithm = "Coupled";
 		
 		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,4,0.2,0.1);
 		
@@ -48,7 +48,7 @@ public class EvolutionaryLauncher {
 			// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
 			ga.setHapInit(true, true, true);
 			// randomSelector, rouletteWheelSelection
-			ga.setSelection(true, true);
+			ga.setSelection(false, true);
 			// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
 			ga.setCrossover(true, true, true, true);
 			// randomMutator,toggleMutator,orientedMutator,guidedMutator
@@ -82,13 +82,13 @@ public class EvolutionaryLauncher {
 			pso.setPersInit(true, false, false);
 			// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
 			pso.setHapInit(true, true, true);
-			// 
+			// randomVelocityInitializer, discreteVelocityInitializer
 			pso.setVelInit(true, true);
-			//
+			// The number of informants (other particles) a particle makes use of additionally to itself to update its velocity
 			pso.setVelocityInformants(7);
-			// randomSelector, rouletteWheelSelection
+			// bestSelector, rouletteWheelSelection
 			pso.setSelectionManner(false);
-			//
+			// true activates the spacetime feature
 			pso.setSpacetime(false);
 			
 			// Termination Criteria

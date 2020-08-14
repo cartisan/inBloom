@@ -348,6 +348,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				recombine();
 				evaluate_population();
 			}
+
+			Arrays.sort(gen_pool);
 			
 			System.out.println();
 			System.out.println("This is the End!");
@@ -699,26 +701,48 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		double total_fitness = 0.0;
 		double[] rouletteWheel = new double[individual_count];
 		
+		// Control parameters
+		boolean control = true;
+		int filler = 0;
+		
 		for(int i = 0; i < individual_count; i++) {
+			
 			total_fitness += gen_pool[i].get_tellability();
 			rouletteWheel[i] = total_fitness;
+			
+			// Check if we have enough individuals with fitness
+			if(control && gen_pool[i].get_tellability()==0) {
+				
+				filler = selection_size-i;
+				control = false;
+			}
 		}
 		
 		// Pick Candidates
 		List<Integer> selectedIndividuums = new ArrayList<Integer>();
 		
-		while(selectedIndividuums.size() < selection_size) {
+		while(selectedIndividuums.size() < selection_size-filler) {
 			
 			int position = 0;
+			int repetition = 0;
 			double value = Math.random()*total_fitness;
 			
 			while(value > rouletteWheel[position]) {
 				position++;
 			}
-			if(!selectedIndividuums.contains(position)) {
+			if(!selectedIndividuums.contains(position))
 				selectedIndividuums.add(position);
-			}	
 		}
+
+		// Start adding candidates from the end of the list
+		// -> Those will not be in the list already and since all candidates
+		// have a fitness value == 0 it doesn't matter which one we choose
+		while(filler>0) {
+
+			selectedIndividuums.add(individual_count-1-filler);
+			filler-=1;
+		}
+		
 		return selectedIndividuums;
 	}
 	

@@ -135,7 +135,8 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	
 		logger.info(agent.name + " stayed home.");
 		
-		// result.addPerception(agent.name, new PerceptAnnotation("hope"));
+		this.environment.addPercept(agent.name, Literal.parseLiteral("endStory"));
+		
 		result.success = true;
 		
 		return result;
@@ -362,8 +363,30 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		}
 		return result;
 	}
-
 	
+	public ActionReport happyEnd(Character agent) {
+		
+		ActionReport result = new ActionReport();
+		
+		logger.info("And Robinson lived happily ever after!");
+		
+		result.addPerception(agent.name, new PerceptAnnotation("joy"));
+		
+		getEnvironment().MAX_STEP_NUM =	getEnvironment().getStep()+1;
+		
+		result.success=true;
+		
+		return result;
+		
+	}
+		
+	public void happyRescueEnd(Character agent) {
+		
+		logger.info("And Robinson lived happily ever after!");
+		
+		this.environment.addPercept(agent.name, Literal.parseLiteral("endStory"));
+		
+	}	
 	
 	/**
 	 * PUBLIC HELPER METHODS TO CHANGE MODEL
@@ -389,7 +412,6 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			logger.info(agent.name + " has died.");
 			
 			this.deactivateFeature("isAlive");
-			
 			// stop story
 			//PlotLauncher.getRunner().pauseExecution();
 			
@@ -398,6 +420,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 				this.environment.addPercept(agent.name, Literal.parseLiteral("hungry"));
 				this.activateFeature(hungry);
 				logger.info(agent.name + " is hungry.");
+		
 			}
 		}	
 	}
@@ -465,24 +488,6 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			this.environment.removePercept(this.island, Literal.parseLiteral("exists(hut)"));
 			this.deactivateFeature(hut);
 		}
-	}
-	
-	/**
-	 * Removes agent from the Island and ends simulation if there are no agents left. Similar to "KillAgent" but without death Vertice
-	 * @param agent: Rescued agent
-	 */
-	public void removeAgent(Character agent) {
-		// remove character from story-world model
-		removeCharacter(agent.name);
-		if(getCharacters().isEmpty()) {
-			
-			logger.info("No agents left.");
-
-    		PlotLauncher.runner.pauseExecution();
-    		for(EnvironmentListener l : getEnvironment().getListeners()) {
-    			l.onPauseRepeat();
-    		}
-		}		
 	}
 	
 	
