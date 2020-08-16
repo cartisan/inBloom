@@ -875,28 +875,28 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	}
 	
 	
-	public List<Integer> select_particles(int individuum) {
+	public List<Integer> select_particles(int individual) {
 		
 		if(fitnessBasedSelection)
-			return rouletteWheel_selector(individuum);
+			return rouletteWheel_selector(individual);
 		
-		return best_selector(individuum);
+		return best_selector(individual);
 	}
 	
 	
-	public List<Integer> best_selector(int individuum) {
+	public List<Integer> best_selector(int individual) {
 		
 		List<Integer> selected_particles = new ArrayList<Integer>();
 		
 		// Every particle is an informant to himself
-		selected_particles.add(individuum);
+		selected_particles.add(individual);
 		
 		// increment in order to avoid adding self to the selection
 		int increment = 0;
 		
 		for(int i = 0; i < number_informants; i++) {
 			
-			if(i == individuum)
+			if(i == individual)
 				increment = 1;
 			
 			selected_particles.add(i + increment);
@@ -906,7 +906,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	}
 	
 	
-	public List<Integer> rouletteWheel_selector(int individuum) {
+	public List<Integer> rouletteWheel_selector(int individual) {
 		
 		// Construct roulette wheel
 		double total_fitness = 0;
@@ -914,7 +914,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		// Control parameters
 		boolean control = true;
-		int filler = 0;
+		int validParticles = 0;
 		
 		for(int i = 0; i < individual_count; i++) {
 			total_fitness += particles[i].get_tellability();
@@ -923,7 +923,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			// Check if we have enough individuals with fitness
 			if(control && gen_pool[i].get_tellability()==0) {
 				
-				filler = number_informants-i;
+				validParticles = number_informants-i;
 				control = false;
 			}
 		}
@@ -932,31 +932,37 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		List<Integer> selected_particles = new ArrayList<Integer>();
 		
 		// Every particle is an informant to himself
-		selected_particles.add(individuum);
-		
-		// Select other Informants
-		while(selected_particles.size() < number_informants-filler) {
-			
-			int position = 0;
-			double value = Math.random()*total_fitness;
-			
-			while(value > rouletteWheel[position]) {
-				position++;
-			}
-			if(!selected_particles.contains(position)) {
-				selected_particles.add(position);
-			}	
-		}
-		
-		// Start adding particles from the end of the list
-		// -> Those will not be in the list already and since all particles 
-		// have a fitness value == 0 it doesn't matter which one we choose
-		while(filler>0) {
+		selected_particles.add(individual);
 
-			selected_particles.add(individual_count-1-filler);
-			filler-=1;
+		if(validParticles > number_informants) {
+				
+			// Select other Informants
+			while(selected_particles.size() < number_informants) {
+				
+				int position = 0;
+				double value = Math.random()*total_fitness;
+				
+				while(value > rouletteWheel[position]) {
+					position++;
+				}
+				if(!selected_particles.contains(position)) {
+					selected_particles.add(position);
+				}	
+			}
+		}else {
+
+			// Just fill selection with the first n individuals
+			int buffer = 0;
+			
+			for(int i = 0; i < number_informants; i++) {
+				
+				// exclude self
+				if(i == individual)
+					buffer +=1;
+				
+				selected_particles.add(i+buffer);
+			}
 		}
-		
 		return selected_particles;
 	}
 	

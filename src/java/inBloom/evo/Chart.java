@@ -25,7 +25,7 @@ public class Chart extends ApplicationFrame{
 		this.width = width;
 		this.height = height;
 		
-		JFreeChart lineChart = ChartFactory.createXYLineChart(name, "Tellability", "Generation", set, PlotOrientation.VERTICAL,true,true,false);
+		JFreeChart lineChart = ChartFactory.createXYLineChart(name, "Generation", "Tellability", set, PlotOrientation.VERTICAL,true,true,false);
 		
 		//chart = lineChart;
 		
