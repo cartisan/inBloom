@@ -63,7 +63,11 @@ wish(relax).
 /******************************************************************************/
 
 +rejected_request(help_with(Helpee,Req))[source(Name)] <-
+	if (not(mood(hostile))) {
+		.appraise_emotion(disappointment, "rejected_request(help_with(Helpee,Req))", Name);
+	} else {
 	.appraise_emotion(anger, "rejected_request(help_with(Helpee,Req))", Name);
+	}
 	.abolish(rejected_request(help_with(Helpee,Req)));
 	-asking(help_with(Req), Name).
 	
@@ -119,12 +123,12 @@ wish(relax).
 @general_help_acquisition_plan[affect(and(personality(extraversion,positive),not(mood(dominance,low))))]
 +!X[_] : is_work(X) & not complex_plan(X) & not already_asked(X) <-
 	.my_name(Me);
-	?present(Animals);
+	?present(Agents);
 	+already_asked(X);
-	for (.member(Animal, Animals)) {
-		.print("Asking ", Animal, " to help with ", X)
-		.send(Animal, achieve, help_with(Me,X));
-		+asking(help_with(X), Animal);
+	for (.member(Agent, Agents)) {
+		.print("Asking ", Agent, " to help with ", X)
+		.send(Agent, achieve, help_with(Me,X));
+		+asking(help_with(X), Agent);
 	}
 	.wait(not asking(help_with(X), _), 500);
 	!X;

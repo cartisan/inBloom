@@ -33,8 +33,10 @@ import inBloom.graph.visitor.VertexMergingPPVisitor;
 import inBloom.graph.visitor.VisualizationFilterPPVisitor;
 
 public class Tellability {
+	public static final Long FORTUNE_CHANGE_INTERVAL_LENGTH = 10l;
+	public static final double FORTUNE_CHANGE_DELTA_MOOD_THRESHOLD = 0.5;
 	public static int GRAPH_MATCHING_TOLERANCE = 1;
-	public static int SIMILARITY_FU_THRESHOLD = 5;
+	public static final int SIMILARITY_FU_THRESHOLD = 5;
 
 	protected static Logger logger = Logger.getLogger(Tellability.class.getName());
 
@@ -247,10 +249,10 @@ public class Tellability {
 			logger.info("  computing violated expectation score");
 			int violationIndicators = this.counter.violatedExpectationEvents.get(agent).size() + this.counter.terminatedPercepts.get(agent).size();
 			int relevantEvents = this.counter.emotionalEvents.get(agent).size() + this.counter.overallPerceptNum.get(agent);
-			float normalizedExpecttaionViolationScore = (float) violationIndicators / relevantEvents;
+			float normalizedExpectationViolationScore = (float) violationIndicators / relevantEvents;
 			logger.fine("     violationIndicators: " + violationIndicators);
 			logger.fine("     relevantEvents: " + relevantEvents);
-			logger.fine("     --> normalized  score: " + normalizedExpecttaionViolationScore);
+			logger.fine("     --> normalized  score: " + normalizedExpectationViolationScore);
 
 			// find reversals in fortunes
 			logger.fine("  computing reversals in fortunes score");
@@ -260,7 +262,7 @@ public class Tellability {
 			for(Long cycleNum : reasoningCycleNums) {
 				Mood m = moodData.sampleMood(agent, cycleNum);
 
-				for(long i = cycleNum - 10; i < cycleNum; ++i) {
+				for(long i = cycleNum - FORTUNE_CHANGE_INTERVAL_LENGTH; i < cycleNum; ++i) {
 					boolean intervalDetected = false;
 					Mood m_i = moodData.sampleMood(agent, i);
 					if (m_i == null) {
@@ -268,7 +270,7 @@ public class Tellability {
 					}
 
 					for(String dim : Mood.DIMENSIONS) {
-						if (0.5 < Math.abs(m_i.get(dim) - m.get(dim)) & Math.signum(m_i.get(dim)) != Math.signum(m.get(dim))) {
+						if (FORTUNE_CHANGE_DELTA_MOOD_THRESHOLD < Math.abs(m_i.get(dim) - m.get(dim)) & Math.signum(m_i.get(dim)) != Math.signum(m.get(dim))) {
 							reversals.add(new MoodInterval(i, m_i, cycleNum, m));
 							intervalDetected = true;
 							break;
@@ -318,7 +320,7 @@ public class Tellability {
 			logger.fine("     --> normalized score: " + normalizedFortuneChangeScore);
 
 			// opposition score for this agent is the higher of both scores
-			oppositionScores.add(Math.max(normalizedExpecttaionViolationScore, normalizedFortuneChangeScore));
+			oppositionScores.add(Math.max(normalizedExpectationViolationScore, normalizedFortuneChangeScore));
 		}
 
 		// focus on opposition for main characters, here: one character i.e. protagonist

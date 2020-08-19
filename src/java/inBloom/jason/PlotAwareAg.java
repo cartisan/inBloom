@@ -223,8 +223,8 @@ public class PlotAwareAg extends AffectiveAgent {
     }
 
 	@Override
-	public void updateMoodType() throws JasonException {
-		super.updateMoodType();
+	public void updateMoodType(Mood oldMood) throws JasonException {
+		super.updateMoodType(oldMood);
 		logger.info(this.name + "'s new mood: " + this.getMood().getType());
 	}
 
