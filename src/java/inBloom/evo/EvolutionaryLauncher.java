@@ -24,8 +24,8 @@ public class EvolutionaryLauncher {
 		 * Choose 1 Mode:
 		 */
 		
-		String algorithm = "Evolutionary";
-		//String algorithm = "PSO";
+		//String algorithm = "Evolutionary";
+		String algorithm = "PSO";
 		//String algorithm = "Coupled";
 		
 		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,4,0.2,0.1);
@@ -79,7 +79,7 @@ public class EvolutionaryLauncher {
 			}
 			
 			// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
-			pso.setPersInit(true, false, false);
+			pso.setPersInit(true, true, true);
 			// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
 			pso.setHapInit(true, true, true);
 			// randomVelocityInitializer, discreteVelocityInitializer
@@ -87,7 +87,7 @@ public class EvolutionaryLauncher {
 			// The number of informants (other particles) a particle makes use of additionally to itself to update its velocity
 			pso.setVelocityInformants(7);
 			// bestSelector, rouletteWheelSelection
-			pso.setSelectionManner(false);
+			pso.setSelectionManner(true);
 			// true activates the spacetime feature
 			pso.setSpacetime(false);
 			

@@ -921,7 +921,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			rouletteWheel[i] = total_fitness;
 			
 			// Check if we have enough individuals with fitness
-			if(control && gen_pool[i].get_tellability()==0) {
+			if(control && particles[i].get_tellability()==0) {
 				
 				validParticles = number_informants-i;
 				control = false;
