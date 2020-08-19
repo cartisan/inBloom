@@ -10,7 +10,7 @@ import inBloom.PlotModel;
 public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends EvolutionaryAlgorithm<EnvType,ModType> {
 
 	// Particle container
-	public Particle[] particles;
+	private Particle[] particles;
 	private double[][] max_happenings;
 	private double[][] min_happenings;
 	private double[][] max_personality;
@@ -66,6 +66,18 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	/**
 	 * Get & Set Methods
 	 */
+	
+	// Get all particles
+	public Particle[] getParticles() {
+		
+		return particles;
+	}
+	
+	// Get specified particle particles
+	public Particle getParticle(int position) {
+		
+		return particles[position];
+	}
 	
 	// Discrete values for personality initialization
 	public void setPersonalityValues(double[] discreteValues) {
@@ -396,15 +408,12 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	protected void evaluate_population() {
 		
+		double best = particles[0].best_tellability();
 		double average = 0;
-		double best = 0;
 
 		for(int i = 0; i < individual_count; i++) {
 			
 			average += particles[i].best_tellability();
-			
-			if(particles[i].best_tellability()>best)
-				best = particles[i].best_tellability();
 		}
 		
 		average /= individual_count;
@@ -923,8 +932,12 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			// Check if we have enough individuals with fitness
 			if(control && particles[i].get_tellability()==0) {
 				
-				validParticles = number_informants-i;
+				validParticles = i;
 				control = false;
+				
+				// Check if current particle is one of the particles with fitness
+				if(individual < i)
+					validParticles-=1;
 			}
 		}
 		
@@ -933,7 +946,8 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		// Every particle is an informant to himself
 		selected_particles.add(individual);
-
+		
+		// If there are more than n particles with fitness (n=number_informants)
 		if(validParticles > number_informants) {
 				
 			// Select other Informants
@@ -949,9 +963,10 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					selected_particles.add(position);
 				}	
 			}
+
+		// If we don't have enough particles with fitness, selection with the first n individuals except self
 		}else {
 
-			// Just fill selection with the first n individuals
 			int buffer = 0;
 			
 			for(int i = 0; i < number_informants; i++) {

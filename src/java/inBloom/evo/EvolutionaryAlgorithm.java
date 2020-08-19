@@ -3,14 +3,10 @@ package inBloom.evo;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.omg.CORBA.portable.OutputStream;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 
 import inBloom.PlotEnvironment;

@@ -92,6 +92,9 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	public static PlotGraphController getPlotListener() {
 		return plotListener;
 	}
+	public static void resetPlotListener() {
+		plotListener=null;
+	}
 
 	/**
 	 * Initializes the mapping of plot events using this class by creating an instance and setting up

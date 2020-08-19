@@ -24,7 +24,6 @@ import jason.runtime.MASConsoleGUI;
 public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends PlotLauncher implements EnvironmentListener {
 	
 	public EvolutionaryEnvironment<?, ?> EVO_ENV;
-	private static String[] args = {};
 
 	protected static boolean isRunning = false;
 
@@ -36,7 +35,6 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		
 		this.EVO_ENV = environment;
 		this.ENV_CLASS = environment.ENV_CLASS;
-		//this.args = args;
 		PlotControlsLauncher.runner = this;
 		BaseCentralisedMAS.runner = this;
 		this.setShowGui(false);
@@ -48,7 +46,6 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		
 		this.EVO_ENV = environment;
 		this.ENV_CLASS = environment.ENV_CLASS;
-		//this.args = args;
 		PlotControlsLauncher.runner = this;
 		BaseCentralisedMAS.runner = this;
 		this.setShowGui(showGui);
@@ -79,20 +76,23 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		PlotModel model = EVO_ENV.init_model(agents, hapDir);
 		
 		EVO_ENV.init_location(agents, model);
-		
+			
 		/*
 		 * From PlotCycle.java :
 		 */
 		
 		try {
-			Thread t = new Thread(new Cycle(runner, model, args, agents, EVO_ENV.agentSrc));
+			Thread t = new Thread(new Cycle(runner, model, agents, EVO_ENV.agentSrc));
 			t.start();
 		} catch (JasonException e) {
 			//e.printStackTrace();
+			pauseExecution();
 		} catch (NullPointerException e) {
 			//e.printStackTrace();
+			pauseExecution();
 		} catch (Exception e) {
 			//e.printStackTrace();
+			pauseExecution();
 		}
 
 		MASConsoleGUI.get().setPause(false);
@@ -121,8 +121,11 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 				}
 				Thread.sleep(150);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
+				pauseExecution();
 			} catch (NullPointerException e) {
+				//e.printStackTrace();
+				pauseExecution();
 			}
 		}
 
@@ -143,8 +146,9 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		}
 		
 		// Ensure Termination
-		//reset();
-
+		PlotGraphController.resetPlotListener();
+		super.reset();
+			
 		return result;
 	}
 	
@@ -168,7 +172,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	public void reset() {
 		
 		if(!showGui) {
-			
+		
 			if (control != null) {
     		control.stop();
 	    	}
@@ -188,13 +192,12 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		
 		private PlotLauncher<?, ?> runner;
 		private PlotModel<?> model;
-		private String[] args;
+		private String[] args = new String[0];
 		private List<LauncherAgent> agents;
 		private String agSrc;
 		
-		public Cycle(PlotLauncher<?, ?> runner, PlotModel<?> model, String[] args, List<LauncherAgent> agents, String agSrc) throws Exception {
+		public Cycle(PlotLauncher<?, ?> runner, PlotModel<?> model, List<LauncherAgent> agents, String agSrc) throws Exception {
 			this.runner = runner;
-			this.args = args;
 			this.agents = agents;
 			this.agSrc = agSrc;
 			this.model = (PlotModel<?>) model.getClass().getConstructors()[0].newInstance(agents, model.happeningDirector);

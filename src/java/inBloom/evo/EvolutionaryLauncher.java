@@ -12,7 +12,7 @@ public class EvolutionaryLauncher {
 		int individual_count = 20;
 		
 		// maximum time in seconds (0 = no time limit)
-		int time = 3600;
+		int time = 600;
 		// number of iterations without improvement till shutdown
 		int max_repetitions = 50;
 		
@@ -88,6 +88,8 @@ public class EvolutionaryLauncher {
 			pso.setVelocityInformants(7);
 			// bestSelector, rouletteWheelSelection
 			pso.setSelectionManner(true);
+			// true activates the floating parameters feature
+			pso.setFloatingParameters(false);
 			// true activates the spacetime feature
 			pso.setSpacetime(false);
 			
