@@ -452,8 +452,54 @@ public class Tellability {
 							 this.opposition;
 		tellability /= 4;
 
-		logger.info("Overall tellability: " + tellability);
-		return tellability;
+		double harmonizedTellability = this.harmonizeButSuspense();
+
+		return harmonizedTellability;
+	}
+
+	@SuppressWarnings("unused")
+	private double harmonizeAll() {
+		double harmFP =  1 - 2 * Math.abs(0.5 - this.functionalPolyvalence);
+		double harmSYM =  1 - 2 * Math.abs(0.5 - this.symmetry);
+		double harmOPO =  1 - 2 * Math.abs(0.5 - this.opposition);
+		double harmSUS = 1 - 2 * Math.abs(0.5 - this.suspense);
+
+		logger.info("Harmonize all");
+		logger.info("   Harmonized FP: " + harmFP);
+		logger.info("   Harmonized SYM: " + harmSYM);
+		logger.info("   Harmonized OPO: " + harmOPO);
+		logger.info("   Harmonized SUS: " + harmSUS);
+
+		double harmonizedTellability = (harmFP + harmSYM + harmOPO + harmSUS) / 4;
+		logger.info("   Harmonized tellability: " + harmonizedTellability);
+		return harmonizedTellability;
+	}
+
+	@SuppressWarnings("unused")
+	private double harmonizeAve() {
+		logger.info("Harmonize ave");
+		double ave_tellability = (this.functionalPolyvalence + this.suspense + this.symmetry + this.opposition) / 4;
+		logger.info("   Average tellability: " + ave_tellability);
+
+		double harmonizedTellability = 1 - 2 * Math.abs(0.5 - ave_tellability);
+		logger.info("   Harmonized tellability: " + harmonizedTellability);
+		return harmonizedTellability;
+	}
+
+	private double harmonizeButSuspense() {
+		double harmFP =  1 - 2 * Math.abs(0.5 - this.functionalPolyvalence);
+		double harmSYM =  1 - 2 * Math.abs(0.5 - this.symmetry);
+		double harmOPO =  1 - 2 * Math.abs(0.5 - this.opposition);
+
+		logger.info("Harmonize all but suspense");
+		logger.info("   Harmonized FP: " + harmFP);
+		logger.info("   Harmonized SYM: " + harmSYM);
+		logger.info("   Harmonized OPO: " + harmOPO);
+		logger.info("   Unharmonized SUS: " + this.suspense);
+
+		double harmonizedTellability = (harmFP + harmSYM + harmOPO + this.suspense) / 4;
+		logger.info("   Harmonized tellability: " + harmonizedTellability);
+		return harmonizedTellability;
 	}
 
 	@SuppressWarnings("unused")		// left to be able to determine symmetry statistics  of split into event types, should the need arise
