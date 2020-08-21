@@ -473,13 +473,12 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 			}
 			
-			Arrays.sort(particles);
-			
 			System.out.println();
 			System.out.println("This is the End!");
 			System.out.println();
 			System.out.println("Iterations: " + population_best.size());
 			System.out.println("Best particle found: " + particles[0].best_tellability() + " , with simulation length: " + particles[0].best_simLength());
+			System.out.println("Control: " + population_best.get(population_best.size()-1));
 			
 			to_file(particles[0]);
 			if(system_exit)

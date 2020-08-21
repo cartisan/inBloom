@@ -348,8 +348,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				recombine();
 				evaluate_population();
 			}
-
-			Arrays.sort(gen_pool);
 			
 			System.out.println();
 			System.out.println("This is the End!");

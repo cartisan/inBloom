@@ -1,6 +1,7 @@
 package inBloom.evo;
 
 import java.util.List;
+import java.util.logging.Level;
 
 import com.google.common.collect.ImmutableList;
 
@@ -25,7 +26,9 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	
 	public EvolutionaryEnvironment<?, ?> EVO_ENV;
 
-	protected static boolean isRunning = false;
+	protected boolean isRunning = false;
+	protected boolean set = false;
+	protected boolean cleanup = true;
 
 	/** Timeout in ms before a single simulation is forcibly stopped. A value of -1 means no timeout.  */
 	protected static long TIMEOUT = -1;
@@ -38,6 +41,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		PlotControlsLauncher.runner = this;
 		BaseCentralisedMAS.runner = this;
 		this.setShowGui(false);
+		cleanup = true;
 		
 	}
 	
@@ -49,6 +53,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		PlotControlsLauncher.runner = this;
 		BaseCentralisedMAS.runner = this;
 		this.setShowGui(showGui);
+		cleanup = false;
 		
 	}
 	
@@ -57,6 +62,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		// Initialize Parameters
 		double result = 0;
 		isRunning = true;
+		set = false;
 		Integer simulation_length = individual.get_simLength();
 		
 		// Instantiate Objects with methods of GeneticEnvironment
@@ -94,7 +100,8 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			//e.printStackTrace();
 			pauseExecution();
 		}
-
+		
+		
 		MASConsoleGUI.get().setPause(false);
 		boolean hasAddedListener = false;
 		long startTime = System.currentTimeMillis();
@@ -105,12 +112,14 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 				if(!hasAddedListener) {
 					if(runner.getEnvironmentInfraTier() != null) {
 						if(runner.getEnvironmentInfraTier().getUserEnvironment() != null) {
-					    	
-							PlotEnvironment.MAX_REPEATE_NUM = -1;
-							PlotEnvironment.MAX_STEP_NUM = simulation_length;
-							
-							runner.getUserEnvironment().addListener(this);
-							hasAddedListener = true;
+					    	if(!set) {
+								PlotEnvironment.MAX_REPEATE_NUM = -1;
+								PlotEnvironment.MAX_STEP_NUM = simulation_length;
+								
+								runner.getUserEnvironment().addListener(this);
+								hasAddedListener = true;
+								set=true;
+					    	}
 						}
 					}
 				}
@@ -118,6 +127,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 				if(TIMEOUT > -1 && (System.currentTimeMillis() - startTime) >= TIMEOUT && PlotEnvironment.getPlotTimeNow() >= TIMEOUT) {
 					//log("[PlotCycle] SEVERE: timeout for engagement step triggered, analyzing incomplete story and moving on");
 					isRunning = false;
+					pauseExecution();
 				}
 				Thread.sleep(150);
 			} catch (InterruptedException e) {
@@ -145,20 +155,26 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			pauseExecution();
 		}
 		
-		// Ensure Termination
-		PlotGraphController.resetPlotListener();
-		super.reset();
-			
+		// Cleanup to avoid Fragments
+		if(cleanup) {
+			PlotGraphController.resetPlotListener();
+			analyzer = null;
+			analyzedGraph = null;
+			super.reset();
+		}
+		
 		return result;
 	}
 	
+	// pauseExecution() with added functionality for showGUI=true
 	@Override
 	public void pauseExecution() {
-		
+
 		if(!showGui) {
 			MASConsoleGUI.get().setPause(true);
 			runner.reset();
-		}
+		}else
+			env.stop();
 	}
 	
 	@Override
@@ -171,16 +187,21 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	@Override
 	public void reset() {
 		
-		if(!showGui) {
+		//if(!showGui) {
 		
 			if (control != null) {
     		control.stop();
+    		control = null;
+
 	    	}
 	    	if (env != null) {
 	    		env.stop();
+	    		//env = null;
 	    	}
 	    	stopAgs();
-		}
+	    	//runner = null;
+	    	ags.clear();
+		//}
     }
 	
 	
