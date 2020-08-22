@@ -12,7 +12,7 @@ public class EvolutionaryLauncher {
 		int individual_count = 20;
 		
 		// maximum time in seconds (0 = no time limit)
-		int time = 1800;
+		int time = 3600;
 		// number of iterations without improvement till shutdown
 		int max_repetitions = 50;
 		
@@ -24,8 +24,8 @@ public class EvolutionaryLauncher {
 		 * Choose 1 Mode:
 		 */
 		
-		String algorithm = "Evolutionary";
-		//String algorithm = "PSO";
+		//String algorithm = "GEN";
+		String algorithm = "PSO";
 		//String algorithm = "Coupled";
 		
 		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,4,0.2,0.1);
@@ -34,7 +34,7 @@ public class EvolutionaryLauncher {
 		
 		case("Coupled"):
 		
-		case("Evolutionary"):
+		case("GEN"):
 		
 			ga.setFileName(path+"GEN"+filename);
 		

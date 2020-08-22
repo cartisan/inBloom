@@ -192,6 +192,7 @@ public class Particle implements Individual,Comparable<Particle> {
 			//e.printStackTrace();
 		}
 		
+		fit = null;
 		System.out.println("Finish");
 	}
 	

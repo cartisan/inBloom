@@ -90,7 +90,7 @@ public class Candidate implements Individual,Comparable<Candidate>{
 	
 	public boolean isContainedIn(Candidate[] others) {
 		
-		for(int i = 0; i < others.length; i++) {
+		for(int i = others.length-1; i >= 0; i--) {
 			if(others[i]!=null) {
 				if(this.equals(others[i])) {
 					if(tellability>others[i].get_tellability())

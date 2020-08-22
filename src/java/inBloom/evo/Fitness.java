@@ -2,6 +2,7 @@ package inBloom.evo;
 
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.common.collect.ImmutableList;
 
@@ -92,16 +93,18 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			t.start();
 		} catch (JasonException e) {
 			//e.printStackTrace();
-			pauseExecution();
+			onPauseRepeat();
 		} catch (NullPointerException e) {
 			//e.printStackTrace();
-			pauseExecution();
+			onPauseRepeat();
 		} catch (Exception e) {
 			//e.printStackTrace();
-			pauseExecution();
+			onPauseRepeat();
 		}
 		
-		
+		// Logging lvl
+        Logger.getLogger("").setLevel(Level.FINE);
+        
 		MASConsoleGUI.get().setPause(false);
 		boolean hasAddedListener = false;
 		long startTime = System.currentTimeMillis();
@@ -113,8 +116,15 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 					if(runner.getEnvironmentInfraTier() != null) {
 						if(runner.getEnvironmentInfraTier().getUserEnvironment() != null) {
 					    	if(!set) {
+					    		
+					    		// Deactivate Max_Repeate feature
 								PlotEnvironment.MAX_REPEATE_NUM = -1;
-								PlotEnvironment.MAX_STEP_NUM = simulation_length;
+								
+								// Upper Limit
+								if(simulation_length< 100)
+									PlotEnvironment.MAX_STEP_NUM = simulation_length;
+								else
+									PlotEnvironment.MAX_STEP_NUM = 100;
 								
 								runner.getUserEnvironment().addListener(this);
 								hasAddedListener = true;
@@ -132,10 +142,10 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 				Thread.sleep(150);
 			} catch (InterruptedException e) {
 				//e.printStackTrace();
-				pauseExecution();
+				onPauseRepeat();
 			} catch (NullPointerException e) {
 				//e.printStackTrace();
-				pauseExecution();
+				onPauseRepeat();
 			}
 		}
 
@@ -154,7 +164,6 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		}catch(RuntimeException e) {
 			pauseExecution();
 		}
-		
 		// Cleanup to avoid Fragments
 		if(cleanup) {
 			PlotGraphController.resetPlotListener();
@@ -173,8 +182,10 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		if(!showGui) {
 			MASConsoleGUI.get().setPause(true);
 			runner.reset();
-		}else
+		}else {
 			env.stop();
+			reset();
+		}
 	}
 	
 	@Override
@@ -188,15 +199,13 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	public void reset() {
 		
 		//if(!showGui) {
-		
+			if(env != null) {
+				env.stop();
+				//env = null;
+			}
 			if (control != null) {
-    		control.stop();
-    		control = null;
-
-	    	}
-	    	if (env != null) {
-	    		env.stop();
-	    		//env = null;
+	    		control.stop();
+	    		//control = null;
 	    	}
 	    	stopAgs();
 	    	//runner = null;

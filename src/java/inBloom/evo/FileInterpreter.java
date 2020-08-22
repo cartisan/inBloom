@@ -29,8 +29,8 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	public String filename;
 	public String filepath;
 	
-	public static List<Double> population_best = new ArrayList<Double>();
-	public static List<Double> population_average = new ArrayList<Double>();
+	public List<Double> population_best = new ArrayList<Double>();
+	public List<Double> population_average = new ArrayList<Double>();
 	private Candidate best_individual;
 	
 	private int number_agents;
@@ -144,8 +144,8 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	public static void main(String[] args) {
 		
 		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\";
-		//String name = "PSO";
-		String name = "GEN";
+		String name = "PSO";
+		//String name = "GEN";
 
 		@SuppressWarnings("unchecked")
 		FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, true);
