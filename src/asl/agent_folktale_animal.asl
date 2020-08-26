@@ -58,15 +58,15 @@ wish(relax).
 +eat(Food)[success(true)] <-
 	-hungry;
 	-has(Food).
-	
+		
 /***** request answer management **********************************************/
 /******************************************************************************/
 
 +rejected_request(help_with(Helpee,Req))[source(Name)] <-
 	if (not(mood(hostile))) {
-		.appraise_emotion(disappointment, "rejected_request(help_with(Helpee,Req))", Name);
+		.appraise_emotion(disappointment, "rejected_request(help_with(Helpee,Req))[source(Name)]", Name);
 	} else {
-	.appraise_emotion(anger, "rejected_request(help_with(Helpee,Req))", Name);
+		.appraise_emotion(anger, "rejected_request(help_with(Helpee,Req))[source(Name)]", Name);
 	}
 	.abolish(rejected_request(help_with(Helpee,Req)));
 	-asking(help_with(Req), Name).
@@ -204,7 +204,7 @@ wish(relax).
 // while negative extraversion means relaxing remains a desire
 +!relax <-
 	relax.
-	
+
 +!relief_boredom <-
 	sing.
 	
@@ -225,9 +225,9 @@ wish(relax).
 
 @bake[atomic]
 +!bake(bread) <-
-	bake(bread);
 	-has(wheat[_]);
-	+has(bread). // TODO: get env to give this information?
+	bake(bread);
+	+has(bread).
 
 //@eat1[atomic]
 +!eat : has(Item) & edible(Item) <-
@@ -247,7 +247,8 @@ wish(relax).
 	eat(Food).
 
 +!eat(Food) <- 
-	eat(Food).
+	eat(Food);
+	.wait(eat(Food)).
 
 +!eat(X) : not has(X)<- 
 	.appraise_emotion(disappointment, "eat(X)").

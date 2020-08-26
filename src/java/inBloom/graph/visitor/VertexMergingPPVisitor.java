@@ -1,6 +1,8 @@
 package inBloom.graph.visitor;
 
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import jason.asSemantics.Emotion;
@@ -45,7 +47,6 @@ public class VertexMergingPPVisitor extends PlotGraphVisitor {
 		// Create emotion from toString() representation of emotion
 		// (instead of previously used literal representation)
 		Emotion emotion = TermParser.emotionFromString(vertex.getLabel());
-
 		if(emotion == null) {
 			logger.severe("Emotion in PP was invalid. " + vertex.toString());
 			return;
@@ -58,16 +59,26 @@ public class VertexMergingPPVisitor extends PlotGraphVisitor {
 				continue;
 			}
 
-			String targetString = targetEvent.getWithoutAnnotation();
+			String targetString = targetEvent.getLabel();
 
-			// Needs to match with and without '+'
-			// with for percepts, without for actions
-			if((targetString.equals(cause) || targetString.equals("+" + cause))
-					& !targetEvent.hasEmotion(emotion.getName())) {
-
-				targetEvent.addEmotion(emotion.getName());
-				this.removeVertex(vertex);
-				break;
+			// Needs to match with or without '+'; with for percepts and without for actions
+			if((TermParser.removeAnnots(targetString).equals(cause) ||
+					TermParser.removeAnnots(targetString).equals("+" + cause)) &&
+						!targetEvent.hasEmotion(emotion.getName())) {
+				// all annotations in cause should be present in target (but not the other way around!)
+				boolean annotationMismatch = false;
+				Map<String, String> causeAnnotMap= TermParser.getAnnotationsMap(emotion.getCause());
+				for (Entry<String, String> entry : causeAnnotMap.entrySet()) {
+					String targetTerm = TermParser.getAnnotation(targetString, entry.getKey());
+					if(targetTerm.equals("") | !targetTerm.equals(entry.getValue())) {
+						annotationMismatch = true;
+					}
+				}
+				if(!annotationMismatch) {
+					targetEvent.addEmotion(emotion.getName());
+					this.removeVertex(vertex);
+					break;
+				}
 			}
 		}
 	}
