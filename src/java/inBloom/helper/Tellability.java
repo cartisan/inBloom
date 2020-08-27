@@ -454,54 +454,54 @@ public class Tellability {
 		double aveTellability = (this.functionalPolyvalence + this.suspense + this.symmetry + this.opposition) / 4;
 		logger.info("Average tellability: " + aveTellability);
 
-		double harmonizedTellability = this.harmonizeButSuspense();
+		double balancedTellability = this.balanceButSuspense();
 
-		return harmonizedTellability;
+		return balancedTellability;
 	}
 
 	@SuppressWarnings("unused")
-	private double harmonizeAll() {
+	private double balanceAll() {
 		double harmFP =  1 - 2 * Math.abs(0.5 - this.functionalPolyvalence);
 		double harmSYM =  1 - 2 * Math.abs(0.5 - this.symmetry);
 		double harmOPO =  1 - 2 * Math.abs(0.5 - this.opposition);
 		double harmSUS = 1 - 2 * Math.abs(0.5 - this.suspense);
 
-		logger.info("Harmonize all");
-		logger.info("   Harmonized FP: " + harmFP);
-		logger.info("   Harmonized SYM: " + harmSYM);
-		logger.info("   Harmonized OPO: " + harmOPO);
-		logger.info("   Harmonized SUS: " + harmSUS);
+		logger.info("Balance all");
+		logger.info("   Balanced FP: " + harmFP);
+		logger.info("   Balanced SYM: " + harmSYM);
+		logger.info("   Balanced OPO: " + harmOPO);
+		logger.info("   Balanced SUS: " + harmSUS);
 
-		double harmonizedTellability = (harmFP + harmSYM + harmOPO + harmSUS) / 4;
-		logger.info("   Harmonized tellability: " + harmonizedTellability);
-		return harmonizedTellability;
+		double balancedTellability = (harmFP + harmSYM + harmOPO + harmSUS) / 4;
+		logger.info("   Balanced tellability: " + balancedTellability);
+		return balancedTellability;
 	}
 
 	@SuppressWarnings("unused")
-	private double harmonizeAve() {
-		logger.info("Harmonize ave");
+	private double balanceAve() {
+		logger.info("Balance ave");
 		double ave_tellability = (this.functionalPolyvalence + this.suspense + this.symmetry + this.opposition) / 4;
 		logger.info("   Average tellability: " + ave_tellability);
 
-		double harmonizedTellability = 1 - 2 * Math.abs(0.5 - ave_tellability);
-		logger.info("   Harmonized tellability: " + harmonizedTellability);
-		return harmonizedTellability;
+		double balancedTellability = 1 - 2 * Math.abs(0.5 - ave_tellability);
+		logger.info("   Balanced tellability: " + balancedTellability);
+		return balancedTellability;
 	}
 
-	private double harmonizeButSuspense() {
+	private double balanceButSuspense() {
 		double harmFP =  1 - 2 * Math.abs(0.5 - this.functionalPolyvalence);
 		double harmSYM =  1 - 2 * Math.abs(0.5 - this.symmetry);
 		double harmOPO =  1 - 2 * Math.abs(0.5 - this.opposition);
 
-		logger.info("Harmonize all but suspense");
-		logger.info("   Harmonized FP: " + harmFP);
-		logger.info("   Harmonized SYM: " + harmSYM);
-		logger.info("   Harmonized OPO: " + harmOPO);
-		logger.info("   Unharmonized SUS: " + this.suspense);
+		logger.info("Balance all but suspense");
+		logger.info("   Balanced FP: " + harmFP);
+		logger.info("   Balanced SYM: " + harmSYM);
+		logger.info("   Balanced OPO: " + harmOPO);
+		logger.info("   Unbalanced SUS: " + this.suspense);
 
-		double harmonizedTellability = (harmFP + harmSYM + harmOPO + this.suspense) / 4;
-		logger.info("   Harmonized tellability: " + harmonizedTellability);
-		return harmonizedTellability;
+		double balancedTellability = (harmFP + harmSYM + harmOPO + this.suspense) / 4;
+		logger.info("   Balanced tellability: " + balancedTellability);
+		return balancedTellability;
 	}
 
 	@SuppressWarnings("unused")		// left to be able to determine symmetry statistics  of split into event types, should the need arise
