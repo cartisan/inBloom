@@ -251,7 +251,11 @@ public class Tellability {
 			logger.info("   computing violated expectation score");
 			int violationIndicators = this.counter.violatedExpectationEvents.get(agent).size() + this.counter.terminatedPercepts.get(agent).size();
 			int relevantEvents = this.counter.emotionalEvents.get(agent).size() + this.counter.overallPerceptNum.get(agent);
-			float normalizedExpectationViolationScore = (float) violationIndicators / relevantEvents;
+			float normalizedExpectationViolationScore = 0;
+			if (relevantEvents != 0) {
+				normalizedExpectationViolationScore = (float) violationIndicators / relevantEvents;
+			}
+
 			logger.fine("      violated expectations: " + this.counter.violatedExpectationEvents.get(agent));
 			logger.fine("      terminated beliefs: " + this.counter.terminatedPercepts.get(agent));
 			logger.info("      number of violation indicators: " + violationIndicators);
@@ -320,7 +324,11 @@ public class Tellability {
 
 			long possibleIntervalNum = (moodData.latestEndTime() - moodData.latestStartTime() ) / 10;
 			logger.info("      number of possible intervals: " + possibleIntervalNum);
-			float normalizedFortuneChangeScore = (float)reversalsNoOverlap.size() / possibleIntervalNum;
+
+			float normalizedFortuneChangeScore = 0;
+			if (possibleIntervalNum != 0 & reversalsNoOverlap.size() != 0) {
+				normalizedFortuneChangeScore = (float)reversalsNoOverlap.size() / possibleIntervalNum;
+			}
 			logger.info("   --> normalized score: " + normalizedFortuneChangeScore);
 
 			// opposition score for this agent is the higher of both scores
