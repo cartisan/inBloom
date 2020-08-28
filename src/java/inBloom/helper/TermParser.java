@@ -38,7 +38,7 @@ public class TermParser {
 
 	private static final Pattern EMOTION_PATTERN = Pattern.compile("(?<emotion>\\w*)\\["+ Edge.Type.CAUSALITY.toString() +"\\((?<cause>.*)\\)\\]\\(.\\)");
 	public static final Pattern CROSSCHAR_PATTERN = Pattern.compile(Edge.Type.CROSSCHARACTER + "\\((<?id>.+)\\)");
-	public static final Pattern ANNOT_PATTERN = Pattern.compile(".+(\\(.*\\))?\\[(?<annot>.+?)\\]$");
+	public static final Pattern ANNOT_PATTERN = Pattern.compile("\\w+(\\(.*\\))?\\[(?<annot>.+?)\\]$");
 	public static final Pattern ANNOT_ENTRY_PATTERN = Pattern.compile("(?<functor>\\w+)\\((?<term>\\w+)\\)");
 	public static final String PERSO_PATTERN = "personality\\((?<trait>.+?),(?<scope>.+?)\\)";
 	public static final String AFFECT_PATTERN = "affect\\((?<trait>.+?),(?<scope>.+?)\\)";
@@ -156,7 +156,7 @@ public class TermParser {
 	}
 
 	/**
-	 * Returns the annotations of an ASL literal in String format, ignoring any embedded annotations. 
+	 * Returns the annotations of an ASL literal in String format, ignoring any embedded annotations.
 	 * @param literal ASL literal in string form
 	 * @return the annotations as a map of the form: functor -> term
 	 */
