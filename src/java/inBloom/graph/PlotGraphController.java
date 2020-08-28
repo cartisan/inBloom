@@ -458,8 +458,10 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 		this.addInformation("Highlight Units:");
 		this.infoPanel.add(this.unitComboBox);
 		this.addInformation("#Polyvalent Vertices: " + this.analysisResult.numPolyvalentVertices);
-		this.addInformation("Suspense: " + this.analysisResult.suspense);
-		this.addInformation("Tellability: " + this.analysisResult.compute());
+		this.addInformation("Abs Symmetry: " + String.format("%.2f", this.analysisResult.absoluteSymmetry));
+		this.addInformation("Abs Opposition: " + String.format("%.2f", this.analysisResult.absoluteOpposition));
+		this.addInformation("Abs Suspense: " + String.format("%.2f", this.analysisResult.absoluteSuspense));
+		this.addInformation("Balanced Tellability: " + String.format("%.2f", this.analysisResult.compute()));
 
 		//counterfactuality Button
 		this.createCounterfactButton();

@@ -281,7 +281,7 @@ public abstract class CounterfactualityCycle extends PlotCycle {
 		graphViewer.addInformation("#Functional Units: " + er.getTellability().numFunctionalUnits);
 		graphViewer.addInformation("Highlight Units:", graphViewer.getUnitComboBox());
 		graphViewer.addInformation("#Polyvalent Vertices: " + er.getTellability().numPolyvalentVertices);
-		graphViewer.addInformation("Suspense: " + er.getTellability().suspense);
+		graphViewer.addInformation("Suspense: " + er.getTellability().absoluteSuspense);
 		graphViewer.addInformation("Tellability: " + er.getTellability().compute());
 
 		graphViewer.visualizeGraph();

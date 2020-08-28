@@ -36,7 +36,7 @@ public class DetectNarrativeEquilibrium extends ProblemDetectionState {
 	 */
 	private Vertex detectPotentialProtagonist(EngageResult er) {
 		String protagonist = er.getLastAgents().get(0).name;
-		if (er.getTellability().suspense > 0) {
+		if (er.getTellability().absoluteSuspense > 0) {
 			// the protagonist should be the character with the most suspensfull intention
 			protagonist = er.getTellability().mostSuspensefulIntention.getFirst();
 		}
