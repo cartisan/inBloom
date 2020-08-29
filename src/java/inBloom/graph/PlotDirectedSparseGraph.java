@@ -547,9 +547,9 @@ public class PlotDirectedSparseGraph extends DirectedSparseMultigraph<Vertex, Ed
 		Vertex lastV = root;
 		Vertex currentV = root;
 		while(currentV != toRemove) {
-			Vertex v = lastV;
+//			Vertex v = lastV;
 			lastV = currentV;
-			currentV = this.getCharSuccessor(v);
+			currentV = this.getCharSuccessor(currentV);
 		}
 
 		this.removeVertexAndPatchGraph(toRemove, lastV);

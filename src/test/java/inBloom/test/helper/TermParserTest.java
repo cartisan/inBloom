@@ -81,28 +81,28 @@ public class TermParserTest extends TestCase {
 
 	public void testGetAnnots() {
 		String noAnnot = "farmwork";
-		assertEquals("", TermParser.getAnnots(noAnnot));
+		assertEquals("", TermParser.getAnnotationsString(noAnnot));
 
 		String atom = "farmwork[source(self)]";
-		assertEquals("[source(self)]", TermParser.getAnnots(atom));
+		assertEquals("[source(self)]", TermParser.getAnnotationsString(atom));
 
 		String multi = "farmwork[source(self),cause(life)]";
-		assertEquals("[source(self),cause(life)]", TermParser.getAnnots(multi));
+		assertEquals("[source(self),cause(life)]", TermParser.getAnnotationsString(multi));
 
 		String embedd = "farmwork[source(self), cause(life[location(universe)])]";
-		assertEquals("[source(self), cause(life[location(universe)])]", TermParser.getAnnots(embedd));
+		assertEquals("[source(self), cause(life[location(universe)])]", TermParser.getAnnotationsString(embedd));
 
 		String predicate = "plant(wheat)[source(self),cause(life[location(universe)])]";
-		assertEquals("[source(self),cause(life[location(universe)])]", TermParser.getAnnots(predicate));
+		assertEquals("[source(self),cause(life[location(universe)])]", TermParser.getAnnotationsString(predicate));
 
 		String predicate_embedd = "plant(wheat[state(great)])[source(self),cause(life[location(universe)])]";
-		assertEquals("[source(self),cause(life[location(universe)])]", TermParser.getAnnots(predicate_embedd));
+		assertEquals("[source(self),cause(life[location(universe)])]", TermParser.getAnnotationsString(predicate_embedd));
 
 		String rec_embedd = "at(loc(tree)[level(top)])[source(self),cause(life[location(universe)])]";
-		assertEquals("[source(self),cause(life[location(universe)])]", TermParser.getAnnots(rec_embedd));
+		assertEquals("[source(self),cause(life[location(universe)])]", TermParser.getAnnotationsString(rec_embedd));
 
 		String rec_embedd_no_brack = "at(loc(tree)[level(top)])[source(self),cause(life[location(universe)])]";
-		assertEquals("source(self),cause(life[location(universe)])", TermParser.getAnnots(rec_embedd_no_brack, true));
+		assertEquals("source(self),cause(life[location(universe)])", TermParser.getAnnotationsString(rec_embedd_no_brack, true));
 	}
 
 	public void testMergeAnnots() {

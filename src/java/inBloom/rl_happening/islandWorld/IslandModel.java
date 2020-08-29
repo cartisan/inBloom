@@ -350,9 +350,9 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		if(agent.location==this.island) {
+		if(agent.location==this.island && island.isBurning()) {
 		
-			this.island.isBurning = false;
+			island.extinguishFire();
 			this.environment.removePercept(agent.name, Literal.parseLiteral("fire"));
 			result.addPerception(agent.name, new PerceptAnnotation("pride"));
 			logger.info(agent.name + " has extinguished the fire.");
@@ -559,7 +559,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	public static class Island extends Location {
 
 		//public boolean hasHut;
-		public boolean isBurning;
+		private boolean isBurning;
 		private Hut hut;
 		
 		public Island() {
@@ -589,6 +589,18 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		public boolean hasHut() {
 			return hasSublocation(hut);
+		}
+		
+		public void startFire() {
+			isBurning = true;
+		}
+		
+		public void extinguishFire() {
+			isBurning = false;
+		}
+		
+		public boolean isBurning() {
+			return this.isBurning;
 		}
 		
 		private class Hut extends Location {

@@ -12,7 +12,7 @@ public class EvolutionaryLauncher {
 		int individual_count = 20;
 		
 		// maximum time in seconds (0 = no time limit)
-		int time = 3600;
+		int time = 600;
 		// number of iterations without improvement till shutdown
 		int max_repetitions = 50;
 		

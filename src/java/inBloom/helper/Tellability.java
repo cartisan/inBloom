@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,9 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
 import com.google.common.math.Stats;
+
+import jason.asSemantics.Mood;
+import jason.util.Pair;
 
 import inBloom.framing.ConnectivityGraph;
 import inBloom.graph.CountingVisitor;
@@ -29,8 +33,10 @@ import inBloom.graph.visitor.VertexMergingPPVisitor;
 import inBloom.graph.visitor.VisualizationFilterPPVisitor;
 
 public class Tellability {
+	public static final Long FORTUNE_CHANGE_INTERVAL_LENGTH = 10l;
+	public static final double FORTUNE_CHANGE_DELTA_MOOD_THRESHOLD = 0.5;
 	public static int GRAPH_MATCHING_TOLERANCE = 1;
-	public static int SIMILARITY_FU_THRESHOLD = 5;
+	public static final int SIMILARITY_FU_THRESHOLD = 5;
 
 	protected static Logger logger = Logger.getLogger(Tellability.class.getName());
 
@@ -43,6 +49,7 @@ public class Tellability {
 	public int numFunctionalUnits;
 	public int numPolyvalentVertices;
 	public int numAllVertices;
+	public double functionalPolyvalence;
 	public Map<FunctionalUnit, Integer> functionalUnitCount = new HashMap<>();
 	public ConnectivityGraph connectivityGraph;
 
@@ -52,15 +59,12 @@ public class Tellability {
 	public Collection<Instance> fUinstances = new ArrayList<>();
 
 	// Semantic Opposition
+	public double opposition;
 
 	// Suspense
-	public int suspense;
+	public double suspense;
+	public Triple<String, Vertex, Vertex> mostSuspensefulIntention;			 // (agent, intention, action)
 	public int plotLength;
-
-
-
-	// Dynamic Points
-
 
 
 	/**
@@ -68,18 +72,25 @@ public class Tellability {
 	 * @param graph whose tellability needs to be determined and that has been been processed by
 	 * {@link VertexMergingPPVisitor} and  {@link EdgeGenerationPPVisitor}.
 	 */
-	public Tellability(PlotDirectedSparseGraph graph) {
+	public Tellability(PlotDirectedSparseGraph graph, MoodMapper moodData) {
+//		logger.setLevel(Level.FINE);
+		// Perform quantitative analysis of plot
 		this.counter = new CountingVisitor();
-		this.plotUnitTypes = new LinkedList<>();
+		this.computeSimpleStatistics(graph);
 
 		// find functional units and polyvalent vertices
+		this.plotUnitTypes = new LinkedList<>();
 		this.detectPolyvalence(graph);
 
 		// calculate semantic symmetry and parallelism
-		 this.detectSymmetryAndParallelism(graph);
+		this.detectSymmetryAndParallelism(graph);
 
-		// Perform quantitative analysis of plot
-		this.computeSimpleStatistics(graph);
+		// calculate semantic opposition
+		this.detectOpposition(graph, moodData);
+
+		// calculate suspense
+		this.detectSuspense(graph);
+
 	}
 
 	/**
@@ -89,11 +100,9 @@ public class Tellability {
 	private void computeSimpleStatistics(PlotDirectedSparseGraph graph) {
 		this.counter.apply(graph);
 		this.productiveConflicts = this.counter.getProductiveConflictNumber();
-		this.suspense = this.counter.getSuspense();
 		this.plotLength = this.counter.getPlotLength();
 		this.numAllVertices = this.counter.getVertexNum();
-
-		this.charNum = graph.getRoots().size();
+		this.charNum = this.counter.agents.size();
 	}
 
 	/**
@@ -103,6 +112,7 @@ public class Tellability {
 	 *              {@linkplain EdgeGenerationPPVisitor}, and {@linkplain VisualizationFilterPPVisitor} visitors.
 	 */
 	private void detectPolyvalence(PlotDirectedSparseGraph graph) {
+		logger.info("Start analysing polyvalence");
 		Map<Vertex, Integer> vertexUnitCount = new HashMap<>();
 
 		UnitFinder finder = new UnitFinder();
@@ -113,7 +123,7 @@ public class Tellability {
 		this.connectivityGraph = new ConnectivityGraph(graph);
 
 		for(FunctionalUnit unit : FunctionalUnits.ALL) {
-			logger.info("Finding units of type: '" + unit.getName() + "'...");
+			logger.info("      Finding units of type: '" + unit.getName() + "'...");
 			Set<Map<Vertex, Vertex>> mappings = finder.findUnits(unit.getGraph(), graph, GRAPH_MATCHING_TOLERANCE);
 			unitInstances += mappings.size();
 			this.functionalUnitCount.put(unit, mappings.size());
@@ -154,10 +164,13 @@ public class Tellability {
 													.sorted()
 													.reduce( (a,b) -> a = a + ", " + b)
 													.orElse("<none>");
-		logger.info("-> Found units: " + foundUnits);
+		logger.info("   --> Found units: " + foundUnits);
 
 		this.numPolyvalentVertices = polyvalentVertices;
-		logger.info("Number of polyvalent vertices: " + this.numPolyvalentVertices);
+		logger.info("   Number of polyvalent vertices: " + this.numPolyvalentVertices);
+		logger.info("   Number of all vertices: " + this.numAllVertices);
+		this.functionalPolyvalence = (double) this.numPolyvalentVertices / this.numAllVertices;
+		logger.info("   --> Functional Polyvalence: " + this.functionalPolyvalence);
 
 		// Mark polyvalent vertices with asterisk
 		for(Vertex v : polyvalentVertexSet) {
@@ -181,6 +194,7 @@ public class Tellability {
 	 *              {@linkplain EdgeGenerationPPVisitor}, and {@linkplain VisualizationFilterPPVisitor} visitors.
 	 */
 	private void detectSymmetryAndParallelism(PlotDirectedSparseGraph graph) {
+		logger.info("Start analysing p and s");
 		HashMap<String, List<String>> agentFuSeqMap = this.extractOrderedFUSequences(graph.getRoots().stream().map(v -> v.toString()).collect(Collectors.toList()));
 		boolean sufficientFUPresent = agentFuSeqMap.entrySet().stream().map( entry -> entry.getValue().size() )
 																	   .mapToInt(size -> size)
@@ -189,10 +203,10 @@ public class Tellability {
 		HashMap<String, List<String>> agentSeqMap;
 		List<Float> similarityScores =  new ArrayList<>();
 		if (sufficientFUPresent) {
-			logger.info("Perform FU based symmetry and parallelism analysis");
+			logger.info("   Perform FU based symmetry and parallelism analysis");
 			agentSeqMap = agentFuSeqMap;
 		} else {
-			logger.info("Not sufficient number of FU present in any of the sub graphs, fall back on event based symmetry and parallelism analysis");
+			logger.info("   Not sufficient number of FU present in any of the sub graphs, fall back on event based symmetry and parallelism analysis");
 
 			// extract event sequence
 			HashMap<String, List<String>> agentEventSeqMap = new HashMap<>();
@@ -209,23 +223,157 @@ public class Tellability {
 		}
 		
 		// compute symmetry and parallelism on either FU or events (use tmp sequence for logging)
-		List<Float> tmp = this.symmetry(agentSeqMap);
-		
+		List<Float> tmp = this.symmetry(agentSeqMap);	
 		if(!tmp.isEmpty()) {
 			logger.info("   average symmetry: " + Stats.meanOf(tmp));
 			similarityScores.addAll(tmp);
 		}
 		
 		tmp = this.parallelism(agentSeqMap);
-		
 		if(!tmp.isEmpty()) {
 			logger.info("   average paralellism: " + Stats.meanOf(tmp));
 			similarityScores.addAll(tmp);
 		}
 		
 		// overall symmetry is average: over symmetry for each character and parallelism for each character pair
-		this.symmetry = similarityScores.stream().reduce((f1,f2) -> f1 + f2).get() / similarityScores.size();
+		this.symmetry = Stats.meanOf(similarityScores);
 		return;
+	}
+
+	private void detectOpposition(PlotDirectedSparseGraph graph, MoodMapper moodData) {
+		logger.info("Start analysing opposition");
+		List<Float> oppositionScores = new LinkedList<>();
+
+		for (String agent : this.counter.agents) {
+			logger.info("   Processing agent: " + agent);
+
+			// find violated expectations
+			logger.info("   computing violated expectation score");
+			int violationIndicators = this.counter.violatedExpectationEvents.get(agent).size() + this.counter.terminatedPercepts.get(agent).size();
+			int relevantEvents = this.counter.emotionalEvents.get(agent).size() + this.counter.overallPerceptNum.get(agent);
+
+			float normalizedExpectationViolationScore = 0;
+			
+			if(relevantEvents>0)
+				normalizedExpectationViolationScore = (float) violationIndicators / relevantEvents;
+			
+			logger.fine("      violated expectations: " + this.counter.violatedExpectationEvents.get(agent));
+			logger.fine("      terminated beliefs: " + this.counter.terminatedPercepts.get(agent));
+			logger.info("      number of violation indicators: " + violationIndicators);
+			logger.info("      relevantEvents: " + relevantEvents);
+			logger.info("   --> normalized  score: " + normalizedExpectationViolationScore);
+
+			// find reversals in fortunes
+			logger.info("   computing reversals in fortunes score");
+			Map<Long, List<Mood>> cycleMoodMap = moodData.getMoodByAgent(agent);
+			List<Long> reasoningCycleNums = cycleMoodMap.keySet().stream().sorted().collect(Collectors.toList());
+			ArrayList<MoodInterval> reversals = new ArrayList<>();
+			for(Long cycleNum : reasoningCycleNums) {
+				Mood m = moodData.sampleMood(agent, cycleNum);
+
+				for(long i = cycleNum - FORTUNE_CHANGE_INTERVAL_LENGTH; i < cycleNum; ++i) {
+					boolean intervalDetected = false;
+					Mood m_i = moodData.sampleMood(agent, i);
+					if (m_i == null) {
+						continue;
+					}
+
+					for(String dim : Mood.DIMENSIONS) {
+						if (FORTUNE_CHANGE_DELTA_MOOD_THRESHOLD < Math.abs(m_i.get(dim) - m.get(dim)) & Math.signum(m_i.get(dim)) != Math.signum(m.get(dim))) {
+							reversals.add(new MoodInterval(i, m_i, cycleNum, m));
+							intervalDetected = true;
+							break;
+						}
+					}
+
+					if (intervalDetected) {
+						break;
+					}
+				}
+			}
+			logger.fine("      fortuneIntervals: " + reversals);
+			logger.fine("      number of entries: " + reversals.size());
+
+			List<MoodInterval> reversalsNoOverlap = new ArrayList<>();
+			List<MoodInterval> tmpList = new ArrayList<>();
+			if(!reversals.isEmpty()) {
+				tmpList.add(reversals.remove(0));
+			}
+			while(tmpList.size() > 0) {
+				MoodInterval interval = tmpList.remove(0);
+
+				// search over all starting positions that have not been removed yet as overlaps
+				Iterator<MoodInterval> it = reversals.listIterator();
+				while(it.hasNext()) {
+					MoodInterval nextInt = it.next();
+					// if starting position p is located before the end of the currently used position, remove p
+					// otherwise, transfer p into list of positions to be used to remove overlaps and abort
+					// that way, we find the first p that is not to be removed, and instantly switch to using it
+					if(interval.contains(nextInt)) {
+						it.remove();
+					} else {
+						it.remove();
+						tmpList.add(nextInt);
+						break;
+					}
+				}
+				// since we removed everything that overlapped with current position, we can safe it as overlap free
+				reversalsNoOverlap.add(interval);
+			}
+			logger.fine("      fortuneIntervalsNoOverlap: " + reversalsNoOverlap);
+			logger.info("      number of entries: " + reversalsNoOverlap.size());
+
+			long possibleIntervalNum = (moodData.latestEndTime() - moodData.latestStartTime() ) / 10;
+			logger.info("      number of possible intervals: " + possibleIntervalNum);
+			
+
+			float normalizedFortuneChangeScore = 0;
+			if(reversalsNoOverlap.size()!=0 && possibleIntervalNum != 0)
+				normalizedFortuneChangeScore = (float)reversalsNoOverlap.size() / possibleIntervalNum;
+			logger.info("   --> normalized score: " + normalizedFortuneChangeScore);
+
+			// opposition score for this agent is the higher of both scores
+			oppositionScores.add(Math.max(normalizedExpectationViolationScore, normalizedFortuneChangeScore));
+		}
+
+		// focus on opposition for main characters, here: one character i.e. protagonist
+		this.opposition = oppositionScores.stream().mapToDouble(f -> f).max().orElse(0);
+	}
+
+	private void detectSuspense(PlotDirectedSparseGraph graph) {
+		logger.info("Start analysing suspense");
+		int suspense  = 0;
+		for (String agent : this.counter.agents) {
+			List<Pair<Vertex, Vertex>> confPairs = this.counter.productiveConflicts.get(agent);
+
+			for (Pair<Vertex, Vertex> pair: confPairs) {
+				Vertex intention = pair.getFirst();
+				Vertex resolution = pair.getSecond();		//is an intention in case of t edge, or an action in case of m edge
+
+				if (this.counter.motivationChains.contains(agent, intention)) {
+					List<Vertex> motivations = this.counter.motivationChains.get(agent, intention);
+					intention = motivations.get(motivations.size() - 1);
+				}
+
+				int localSuspense = resolution.getStep() - intention.getStep();
+
+				if (suspense <= localSuspense) { // <= is important, because with == suspense we want the stuff closer to the end
+					suspense = localSuspense;
+					this.mostSuspensefulIntention = new Triple<>(agent, intention, resolution);
+				}
+			}
+		}
+
+		logger.info("   maximal suspense: " + suspense);
+		if(this.mostSuspensefulIntention != null) {
+			logger.info("   most suspensefull intention: " +
+						this.mostSuspensefulIntention.getFirst() + "'s (" +
+						this.mostSuspensefulIntention.getSecond().toString() + ", " +
+						this.mostSuspensefulIntention.getThird().toString() + ")");
+		}
+
+		logger.info("   plot length: " + this.plotLength);
+		this.suspense = (double) suspense / this.plotLength;
 	}
 
 	private HashMap<String, List<String>> extractOrderedFUSequences(List<String> agentNames) {
@@ -246,7 +394,7 @@ public class Tellability {
 		for (String agent : fuSequences.keySet()) {
 			Collection<Instance> instances = fuSequences.get(agent);
 			agentFuOrderMap.put(agent, instances.stream().sorted(new FunctionalUnit.InstanceSubgraphOrderComparator(agent))
-														  .collect(Collectors.toList()));
+														 .collect(Collectors.toList()));
 		}
 
 		// translate FU sequences to string based representation
@@ -258,9 +406,8 @@ public class Tellability {
 								  );
 
 		for(String agent: agentFuStringMap.keySet()) {
-			logger.fine("FU order (" + agent + "): " + agentFuStringMap.get(agent));
+			logger.fine("   FU order (" + agent + "): " + agentFuStringMap.get(agent));
 		}
-		logger.fine("\n");
 
 		return agentFuStringMap;
 	}
@@ -280,7 +427,7 @@ public class Tellability {
 			String agent1 = pair.get(0);
 			String agent2 = pair.get(1);
 			Float fuPara = SymmetryAnalyzer.computeParallelism(agentSequenceMap.get(agent1), agentSequenceMap.get(agent2));
-			logger.info("     normalized parallelism (" + agent1 + ", " + agent2 +  "): " + fuPara);
+			logger.info("      normalized parallelism (" + agent1 + ", " + agent2 +  "): " + fuPara);
 			parallelismScores.add(fuPara);
 		}
 
@@ -308,17 +455,62 @@ public class Tellability {
 			return 0;
 		}
 
-		logger.info("normalized polyvalence: " + (double) this.numPolyvalentVertices / this.numAllVertices);
-		logger.info("normalized suspense: " + (double) this.suspense / this.plotLength);
+		logger.info("normalized polyvalence: " + this.functionalPolyvalence);
 		logger.info("normalized symmetry: " + this.symmetry);
+		logger.info("normalized opposition: " + this.opposition);
+		logger.info("normalized suspense: " + this.suspense);
 
-		double tellability = (double) this.numPolyvalentVertices / this.numAllVertices +
-							 (double) this.suspense / this.plotLength +
-							 this.symmetry;
-		tellability /= 3;
+		double aveTellability = (this.functionalPolyvalence + this.suspense + this.symmetry + this.opposition) / 4;
+		logger.info("Average tellability: " + aveTellability);
 
-		logger.info("Overall tellability: " + tellability);
-		return tellability;
+		double balancedTellability = this.balanceButSuspense();
+
+		return balancedTellability;
+	}
+
+	@SuppressWarnings("unused")
+	private double balanceAll() {
+		double harmFP =  1 - 2 * Math.abs(0.5 - this.functionalPolyvalence);
+		double harmSYM =  1 - 2 * Math.abs(0.5 - this.symmetry);
+		double harmOPO =  1 - 2 * Math.abs(0.5 - this.opposition);
+		double harmSUS = 1 - 2 * Math.abs(0.5 - this.suspense);
+
+		logger.info("Balance all");
+		logger.info("   Balanced FP: " + harmFP);
+		logger.info("   Balanced SYM: " + harmSYM);
+		logger.info("   Balanced OPO: " + harmOPO);
+		logger.info("   Balanced SUS: " + harmSUS);
+
+		double balancedTellability = (harmFP + harmSYM + harmOPO + harmSUS) / 4;
+		logger.info("   Balanced tellability: " + balancedTellability);
+		return balancedTellability;
+	}
+
+	@SuppressWarnings("unused")
+	private double balanceAve() {
+		logger.info("Balance ave");
+		double ave_tellability = (this.functionalPolyvalence + this.suspense + this.symmetry + this.opposition) / 4;
+		logger.info("   Average tellability: " + ave_tellability);
+
+		double balancedTellability = 1 - 2 * Math.abs(0.5 - ave_tellability);
+		logger.info("   Balanced tellability: " + balancedTellability);
+		return balancedTellability;
+	}
+
+	private double balanceButSuspense() {
+		double harmFP =  1 - 2 * Math.abs(0.5 - this.functionalPolyvalence);
+		double harmSYM =  1 - 2 * Math.abs(0.5 - this.symmetry);
+		double harmOPO =  1 - 2 * Math.abs(0.5 - this.opposition);
+
+		logger.info("Balance all but suspense");
+		logger.info("   Balanced FP: " + harmFP);
+		logger.info("   Balanced SYM: " + harmSYM);
+		logger.info("   Balanced OPO: " + harmOPO);
+		logger.info("   Unbalanced SUS: " + this.suspense);
+
+		double balancedTellability = (harmFP + harmSYM + harmOPO + this.suspense) / 4;
+		logger.info("   Balanced tellability: " + balancedTellability);
+		return balancedTellability;
 	}
 
 	@SuppressWarnings("unused")		// left to be able to determine symmetry statistics  of split into event types, should the need arise
@@ -392,5 +584,27 @@ public class Tellability {
 		}
 
 		return eventSyms;
+	}
+
+	private class MoodInterval {
+		public long startCycle;
+		public long endCycle;
+		public Mood startMood;
+		public Mood endMood;
+
+		public MoodInterval(long startCycle, Mood startMood, long endCycle, Mood endMood) {
+			this.startCycle = startCycle;
+			this.startMood =  startMood;
+			this.endCycle = endCycle;
+			this.endMood = endMood;
+		}
+
+		public String toString() {
+			return this.startCycle + "|" + this.startMood + "|" + this.endCycle + "|" + this.endMood + "|||";
+		}
+
+		public boolean contains(MoodInterval other) {
+			return this.startCycle <= other.startCycle & this.endCycle > other.startCycle;
+		}
 	}
 }

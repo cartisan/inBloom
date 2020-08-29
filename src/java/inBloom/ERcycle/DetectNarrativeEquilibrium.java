@@ -8,12 +8,12 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import jason.util.Pair;
+
 import inBloom.PlotEnvironment;
-import inBloom.ERcycle.EngageResult;
 import inBloom.graph.Vertex;
 import inBloom.helper.PlotpatternAnalyzer;
 import inBloom.stories.little_red_hen.RedHenHappeningCycle;
-import jason.util.Pair;
 
 /**
  * Detects narrative equilibria, i.e. states where the same sequence of events repeats a {@link PlotEnvironment.MAX_REPEATE_NUM}
@@ -27,19 +27,20 @@ public class DetectNarrativeEquilibrium extends ProblemDetectionState {
 	protected DetectNarrativeEquilibrium(RedHenHappeningCycle controller) {
 		super(controller);
 	}
-	
+
 	/**
 	 * Identifies the character that is the most likely protagonist.
-	 * At the moment this is the character with the most suspensfull, resolved conflict 
+	 * At the moment this is the character with the most suspensfull, resolved conflict
 	 * @param er the EngagementResult instance of a successful ER-Cycle run
 	 * @return the root vertex of the protagonist's subbgraph
 	 */
 	private Vertex detectPotentialProtagonist(EngageResult er) {
 		String protagonist = er.getLastAgents().get(0).name;
-		if (er.getTellability().suspense > 0)
+		if (er.getTellability().suspense > 0) {
 			// the protagonist should be the character with the most suspensfull intention
-			protagonist = er.getTellability().counter.mostSuspensefulIntention.getFirst();
-		
+			protagonist = er.getTellability().mostSuspensefulIntention.getFirst();
+		}
+
 		Vertex root = null;
 		for (Vertex v : er.getPlotGraph().getRoots()) {
 			if (v.getLabel().equals(protagonist)) {
@@ -50,11 +51,11 @@ public class DetectNarrativeEquilibrium extends ProblemDetectionState {
 		}
 		return root;
 	}
-	
+
 	@Override
 	public ProblemFixCommand performDetect(EngageResult er) {
-		Vertex protagonist = detectPotentialProtagonist(er);
-		
+		Vertex protagonist = this.detectPotentialProtagonist(er);
+
 		// construct list of events for protagonist
 		List<String> events = new LinkedList<>();					// list of all events of char
 		Map<Integer,Integer> positionStepMap = new HashMap<>();		// maps position of events in story-string to step when they occurred
@@ -62,11 +63,11 @@ public class DetectNarrativeEquilibrium extends ProblemDetectionState {
 			// add event
 			events.add(v.getLabel());
 			// identify at which position in event string this event is found, that is which positions correspond to which plot step
-			int startPos = events.stream().collect(Collectors.joining(PlotpatternAnalyzer.EVENT_SEP)).length() - v.getLabel().length(); 
+			int startPos = events.stream().collect(Collectors.joining(PlotpatternAnalyzer.EVENT_SEP)).length() - v.getLabel().length();
 			positionStepMap.put(startPos, v.getStep());
 		}
-		
-		// detect all repeating event patterns , check if they repeat often enough to count as equilibrium state 
+
+		// detect all repeating event patterns , check if they repeat often enough to count as equilibrium state
 		HashMap<String, Integer> patternCounts = PlotpatternAnalyzer.countAllPatterns(events);
 		for (Entry<String,Integer> patternCount : patternCounts.entrySet()) {
 			if (patternCount.getValue() >= PlotEnvironment.MAX_REPEATE_NUM) {
@@ -75,18 +76,18 @@ public class DetectNarrativeEquilibrium extends ProblemDetectionState {
 						"(" + Pattern.quote(patternCount.getKey() + PlotpatternAnalyzer.EVENT_SEP) + "){" + patternCount.getValue() +"}"
 						);
 				Pair<Integer,Integer> location = PlotpatternAnalyzer.patternLocation(events, pattern);
-				
+
 				// schedule happening to occur one step after start of previous equilibrium state
 				Integer startStep = positionStepMap.get(location.getFirst()) + 1;
-				
+
 				// we are scheduling happenings, so next problem detection step should always be to check if the
 				// unresolved happenings are present. If no unresolved happenings are detected, defaultNextState
 				// will be changed to its previous value by the responsible class
 				this.nextReflectionState = this.getInstanceFor(DetectUnresolvedHappenings.class);
-				return ScheduleHappening.scheduleRandomHappening(startStep, protagonist.getLabel(), controller);
+				return ScheduleHappening.scheduleRandomHappening(startStep, protagonist.getLabel(), this.controller);
 			}
 		}
-		
+
 		// no narrative equilibria identified
 		return null;
 	}

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -50,6 +51,11 @@ public class SymmetryAnalyzer {
      * @return the combined, normalized symmetry score of sequence
      */
     public static Float computeSymmetry(List<String> sequence) {
+    	logger.fine("\nSequence: " + sequence);
+    	if(sequence.size() == 0) {
+    		return 0f;
+    	}
+
     	Map<List<String>, Integer> translational = computeTranslational(sequence);
     	Map<List<String>, Integer> reflectional = computeReflectional(sequence);
 
@@ -70,12 +76,92 @@ public class SymmetryAnalyzer {
     }
 
     /**
+     * Calculates reflectional symmetry for sequence, where for a chain a reverse chain exists somewhere in the sequence.
+     * A chain has to be of at least two elements, includes only the part that will be reflected, and overlap between
+     * the chain and its reflection can be at most one element.
+     * The symmetry value of chains is computed based on how many elements in the sequence take part in all possible
+     * chain|reflection pairs for that chain.
+     * @param sequence a list of strings encoding the sequence to be analyzed
+     * @return a map of chains and their respective reflective symmetry value
+     */
+	public static Map<List<String>, Integer> computeReflectional(List<String> sequence) {
+    	logger.fine("Analyzing sequence for reflectional sym: " + sequence);
+
+		// maps sequences to the list of starting positions
+		Map<List<String>, ArrayList<Integer>> sequenceStartposMap = new HashMap<>();
+
+		// loop over the sequence and find all subsequences and their starting position
+		for (int start = 0; start < sequence.size(); start++) {
+			for (int end = sequence.size(); end > start+1; end--) {
+				List<String> currentSeq = new ArrayList<>(sequence.subList(start, end));
+
+				// if new sequence, create empty list of starting positions
+				if (!sequenceStartposMap.containsKey(currentSeq)) {
+					sequenceStartposMap.put(currentSeq, new ArrayList<Integer>());
+				}
+				// add current starting position to map
+				List<Integer> startingPositions = sequenceStartposMap.get(currentSeq);
+				startingPositions.add(start);
+			}
+    	}
+		logger.fine("   chain-startposition map: " + sequenceStartposMap);
+
+		// maps chains to the list of starting position pairs, indicating where each original and reflection start
+		// e.g. ABABBA -> {AB -> [(0,4),(2,4)], ...} indicating AB**BA and **ABBA
+		Map<List<String>, ArrayList<Pair<Integer,Integer>>> reflectionStartposMap = new HashMap<>();
+
+		for (Entry<List<String>, ArrayList<Integer>> entry1 : sequenceStartposMap.entrySet()) {
+			for (Entry<List<String>, ArrayList<Integer>> entry2 : sequenceStartposMap.entrySet()) {
+				if (entry1.getKey().equals(reverse(entry2.getKey()))) {
+					List<Integer> startPos1 = entry1.getValue();
+					for (Integer pos1 : startPos1) {
+						List<Integer> startPos2 = entry2.getValue().stream().filter(pos -> pos > pos1).collect(Collectors.toList());
+						for (Integer pos2 : startPos2) {
+							List<String> chain = new ArrayList<>(entry1.getKey());
+							// only allow overlap of maximally 1
+							if(pos1 + chain.size() <= pos2 + 1) {
+								// if new sequence, create empty list of starting positions
+								if (!reflectionStartposMap.containsKey(chain)) {
+									reflectionStartposMap.put(chain, new ArrayList<Pair<Integer,Integer>>());
+								}
+								// add current starting positions to map
+								List<Pair<Integer,Integer>> startingPositions = reflectionStartposMap.get(chain);
+								startingPositions.add(new Pair<>(pos1, pos2));
+							}
+						}
+					}
+				}
+			}
+		}
+		logger.fine("   reflection-startposition map: " + reflectionStartposMap);
+
+		// check how much of sequence is covered by vertices that are part of this chain's symmetry
+		Map<List<String>, Integer> sequenceSymmetryPairs = new HashMap<>();
+		for (Entry<List<String>, ArrayList<Pair<Integer, Integer>>> entry : reflectionStartposMap.entrySet()) {
+			List<String> chain = entry.getKey();
+			ArrayList<Pair<Integer, Integer>> positions = entry.getValue();
+
+			List<String> coveredSequence = sequence.stream().map( string -> "*").collect(Collectors.toList());
+			for (Pair<Integer, Integer> pos : positions) {
+				coveredSequence.subList(pos.getFirst(), pos.getFirst() + chain.size()).clear();
+				coveredSequence.addAll(pos.getFirst(), chain);
+				coveredSequence.subList(pos.getSecond(), pos.getSecond() + chain.size()).clear();
+				coveredSequence.addAll(pos.getSecond(), reverse(chain));
+			}
+			sequenceSymmetryPairs.put(chain, (int) coveredSequence.stream().filter(string -> !string.equals("*")).count());
+		}
+
+		return sequenceSymmetryPairs;
+    }
+
+    /**
      * Calculates reflectional symmetry for sequence, where a subsequence (i.e. chain) is palindromic.
      * A chain has to be of at least two elements, and includes the whole palindrome instead of just the reflected part.
      * @param sequence a list of strings encoding the sequence to be analyzed
      * @return a map of chains and their respective reflective symmetry value
      */
-	public static Map<List<String>, Integer> computeReflectional(List<String> sequence) {
+	@SuppressWarnings("unused")
+	private static Map<List<String>, Integer> computeReflectionalPalindrome(List<String> sequence) {
     	logger.fine("Analyzing sequence for reflectional sym: " + sequence);
 
 		// maps sequences to the list of starting positions
@@ -116,10 +202,10 @@ public class SymmetryAnalyzer {
 	public static Map<List<String>, Integer> computeTranslational(List<String> sequence) {
     	logger.fine("Analyzing sequence for translational sym: " + sequence);
 
-		// maps sequences to the list of starting positions
+		// maps chains to the list of starting positions
 		Map<List<String>, ArrayList<Integer>> sequenceStartposMap = new HashMap<>();
 
-		// loop over the sequence and find all subsequences and their starting position
+		// loop over the sequence and find all chains and their starting position
 		for (int start = 0; start < sequence.size(); start++) {
 			for (int end = sequence.size(); end > start+1; end--) {
 				List<String> currentSeq = new ArrayList<>(sequence.subList(start, end));

@@ -954,7 +954,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				int position = 0;
 				double value = Math.random()*total_fitness;
 				
-				while(value > rouletteWheel[position]) {
+				while(value > rouletteWheel[position] && position < rouletteWheel.length) {
 					position++;
 				}
 				if(!selected_particles.contains(position)) {

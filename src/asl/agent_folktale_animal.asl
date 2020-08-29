@@ -58,12 +58,16 @@ wish(relax).
 +eat(Food)[success(true)] <-
 	-hungry;
 	-has(Food).
-	
+		
 /***** request answer management **********************************************/
 /******************************************************************************/
 
 +rejected_request(help_with(Helpee,Req))[source(Name)] <-
-	.appraise_emotion(anger, "rejected_request(help_with(Helpee,Req))", Name);
+	if (not(mood(hostile))) {
+		.appraise_emotion(disappointment, "rejected_request(help_with(Helpee,Req))[source(Name)]", Name);
+	} else {
+		.appraise_emotion(anger, "rejected_request(help_with(Helpee,Req))[source(Name)]", Name);
+	}
 	.abolish(rejected_request(help_with(Helpee,Req)));
 	-asking(help_with(Req), Name).
 	
@@ -105,7 +109,8 @@ wish(relax).
 	-wish(punish).
 	
 +mood(relaxed) <-
-	-wish(relax).
+	-wish(relax);
+	+wish(relief_boredom).
 	
 +mood(anxious) <-
 	+wish(relax).
@@ -118,12 +123,12 @@ wish(relax).
 @general_help_acquisition_plan[affect(and(personality(extraversion,positive),not(mood(dominance,low))))]
 +!X[_] : is_work(X) & not complex_plan(X) & not already_asked(X) <-
 	.my_name(Me);
-	?present(Animals);
+	?present(Agents);
 	+already_asked(X);
-	for (.member(Animal, Animals)) {
-		.print("Asking ", Animal, " to help with ", X)
-		.send(Animal, achieve, help_with(Me,X));
-		+asking(help_with(X), Animal);
+	for (.member(Agent, Agents)) {
+		.print("Asking ", Agent, " to help with ", X)
+		.send(Agent, achieve, help_with(Me,X));
+		+asking(help_with(X), Agent);
 	}
 	.wait(not asking(help_with(X), _), 500);
 	!X;
@@ -193,11 +198,15 @@ wish(relax).
 @relax[affect(personality(extraversion,positive))]
 +!relax <-
 	relax;
-	-wish(relax).
+	-wish(relax);
+	+wish(relief_boredom).
 
 // while negative extraversion means relaxing remains a desire
 +!relax <-
 	relax.
+
++!relief_boredom <-
+	sing.
 	
 +!farm_work <-
 	farm_work.
@@ -216,17 +225,15 @@ wish(relax).
 
 @bake[atomic]
 +!bake(bread) <-
-	bake(bread);
 	-has(wheat[_]);
-	+has(bread). // TODO: get env to give this information?
+	bake(bread);
+	+has(bread).
 
 //@eat1[atomic]
 +!eat : has(Item) & edible(Item) <-
 	!eat(Item);
 	-wish(eat).
 
-//share what you eat if you are nice
-// TODO: Also when you are happy?!
 @eat2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +!eat(Food) : not wish(punish) <-
 	?present(Others);
@@ -240,7 +247,8 @@ wish(relax).
 	eat(Food).
 
 +!eat(Food) <- 
-	eat(Food).
+	eat(Food);
+	.wait(eat(Food)).
 
 +!eat(X) : not has(X)<- 
 	.appraise_emotion(disappointment, "eat(X)").
@@ -248,5 +256,8 @@ wish(relax).
 +!share(Item, Agent) <-
 	.print("Sharing: ", Item, " with", Agent);
 	share(Item, Agent).
+
++!sing <-
+	sing.
 
 {include("agent_folktale_animal_crowfox.asl")}	

@@ -24,7 +24,8 @@ public class SymmetryAnalyzerTest {
 	// [A,B,A,B], [A,A,B,B], [A,A,A,B]
 	private ArrayList<List<String>> blockSequences = new ArrayList<>();
 
-    private void fillAscendingSequences(int maxLength) {
+    @SuppressWarnings("unused")
+	private void fillAscendingSequences(int maxLength) {
     	List<String> sequence = new ArrayList<>();
 
         // create maxLength sequences
@@ -130,45 +131,64 @@ public class SymmetryAnalyzerTest {
 		sequence.add("A");
 		assertEquals(new HashMap<List<String>, Integer>(), SymmetryAnalyzer.computeReflectional(sequence));
 
-		// AA is reflective
+		// AA is not reflective
 		sequence.add("A");
 		Map<List<String>, Integer> res = SymmetryAnalyzer.computeReflectional(sequence);
-		List<String> key = Arrays.asList("A", "A");
-		assertTrue(res.containsKey(key));
-		assertEquals(2, (int)res.get(key));
+		assertEquals(new HashMap<List<String>, Integer>(), SymmetryAnalyzer.computeReflectional(sequence));
 
 		// AAA is reflective, too!
 		sequence.add("A");
 		res = SymmetryAnalyzer.computeReflectional(sequence);
-		key = Arrays.asList("A", "A", "A");
+		List<String> key = Arrays.asList("A", "A");
 		assertTrue(res.containsKey(key));
 		assertEquals(3, (int)res.get(key));
 
 		// ABA is reflective, too!
 		sequence.remove(1);
 		sequence.add(1, "B");
-		key = Arrays.asList("A", "B", "A");
+		key = Arrays.asList("A", "B");
 		res = SymmetryAnalyzer.computeReflectional(sequence);
 		assertTrue(res.containsKey(key));
 		assertEquals(3, (int)res.get(key));
 
 		// ABAZ, adding unrelated stuff doesn't hurt
 		sequence.add("Z");
-		key = Arrays.asList("A", "B", "A");
+		key = Arrays.asList("A", "B");
 		res = SymmetryAnalyzer.computeReflectional(sequence);
 		assertTrue(res.containsKey(key));
 		assertEquals(3, (int)res.get(key));
 
-		// ABAZZ, has two sequences
+		// ABAZZZ, has two sequences
 		sequence.add("Z");
-		key = Arrays.asList("A", "B", "A");
+		sequence.add("Z");
+		key = Arrays.asList("A", "B");
 		res = SymmetryAnalyzer.computeReflectional(sequence);
 		assertTrue(res.containsKey(key));
 		assertEquals(3, (int)res.get(key));
 
 		key = Arrays.asList("Z", "Z");
 		assertTrue(res.containsKey(key));
-		assertEquals(2, (int)res.get(key));
+		assertEquals(3, (int)res.get(key));
+
+		// ABABBA, sequences can also be interspersed
+		sequence = Arrays.asList("A", "B", "A", "B", "B", "A");
+		res = SymmetryAnalyzer.computeReflectional(sequence);
+		key = Arrays.asList("A", "B");
+		assertTrue(res.containsKey(key));
+		assertEquals(6, (int)res.get(key));
+
+		// ABABBAAB, second BA also finds AB in the end
+		sequence = Arrays.asList("A", "B", "A", "B", "B", "A","A", "B");
+		res = SymmetryAnalyzer.computeReflectional(sequence);
+		key = Arrays.asList("B", "A");
+		assertTrue(res.containsKey(key));
+		assertEquals(7, (int)res.get(key));
+
+		// ABBA does not have ABB chain, since that would be overlap of 2
+		sequence = Arrays.asList("A", "B", "B","A");
+		res = SymmetryAnalyzer.computeReflectional(sequence);
+		key = Arrays.asList("A", "B", "B");
+		assertFalse(res.containsKey(key));
 	}
 
 	@Test

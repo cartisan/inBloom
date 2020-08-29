@@ -39,7 +39,6 @@ import inBloom.helper.TermParser;
 import inBloom.jason.PlotAwareAg;
 import inBloom.jason.PlotAwareCentralisedAgArch;
 import inBloom.jason.PlotAwareCentralisedRuntimeServices;
-import inBloom.rl_happening.rl_management.FeaturePlotModel;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Location;
 
@@ -57,14 +56,14 @@ import inBloom.storyworld.Location;
  * @author Leonid Berov
  */
 public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends TimeSteppedEnvironment {
-	protected static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
+	static Logger logger = Logger.getLogger(PlotEnvironment.class.getName());
 
 	/** number of times all agents need to repeat an action sequence before system is paused; -1 to switch off */
 	public static Integer MAX_REPEATE_NUM = 5;
 	/** number of environment steps, before system automatically pauses; -1 to switch off */
 	public static Integer MAX_STEP_NUM = -1;
 	/** time in ms that {@link TimeSteppedEnvironment} affords agents to propose an action, before each step times out */
-	static final String STEP_TIMEOUT = "500";
+	public static String STEP_TIMEOUT = "500";
 	/** string used to represent that an agent took no action, used in agentActions map */
 	private static final String INACTION_STRING = "--";
 
@@ -174,6 +173,11 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	if (args.length > 0) {
 			logger.warning("Initilization arguments provided but usage unclear, ignoring. Args: " + Arrays.toString(args));
 		}
+
+    	// in eclipse debug mode the timeout is set higher because execution seems to be slowed down significantly
+    	if(java.lang.management.ManagementFactory.getRuntimeMXBean(). getInputArguments().toString().contains("-agentlib:jdwp")){
+    		PlotEnvironment.STEP_TIMEOUT = String.valueOf(3 * Integer.parseInt(PlotEnvironment.STEP_TIMEOUT));
+    	}
 
     	String[] env_args = {STEP_TIMEOUT};
     	super.init(env_args);
@@ -416,26 +420,28 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
 	@Override
 	protected synchronized void stepStarted(int step) {
-		if (this.step > 0) {
-			this.step++;
+		if (this.model != null) {
+			if (this.step > 0) {
+				this.step++;
 
-			if(!PlotLauncher.getRunner().isDebug()) {
-				logger.info("Step " + this.step + " started for environment");
+				if(!PlotLauncher.getRunner().isDebug()) {
+					logger.info("Step " + this.step + " started for environment");
+				}
+
+				if (this.model != null) {
+					// Give model opportunity to check for and execute happenings
+					this.model.checkHappenings(this.step);
+				} else {
+					logger.warning("field model was not set, but a step " + this.step + " was started");
+				}
 			}
 
-			if (this.model != null) {
-				// Give model opportunity to check for and execute happenings
-				this.model.checkHappenings(this.step);
-			} else {
-				logger.warning("field model was not set, but a step " + this.step + " was started");
-			}
-		} else {
-			// ignore mood data before environment step 1 started
-			if (this.model != null) {
-				this.getModel().moodMapper.startTimes.add(getPlotTimeNow());
-			}
+			// save reasoning cycle num corresponding to the start of this step
+			// operating in synch mode, so all characters have same reasoning cycle num --> get any character
+			Character chara = new ArrayList<>(this.model.characters.values()).get(0);
+			Integer cycNum = chara.plotAgentPendant.getAffectiveTS().getUserAgArch().getCycleNumber();
+			this.getModel().moodMapper.stepReasoningcycleNumMap.put(this.step, cycNum.longValue());
 		}
-
 	}
 
 	@Override
@@ -717,26 +723,28 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
 	protected void checkPause() {
 		if (this.initialized & !PlotLauncher.getRunner().isDebug()) {
-			// same action was repeated MAX_REPEATE_NUM number of times by all agents:
+			// same action was repeated MAX_REPEATE_NUM number of times by all agents, or all agents died
 	    	if (this.narrativeExquilibrium()) {
 	    		// reset counter
 	    		logger.info("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
 	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
 	    		this.resetAllAgentActionCounts();
-	    		PlotLauncher.runner.pauseExecution();
-
-	    		for(EnvironmentListener l : this.listeners) {
-	    			l.onPauseRepeat();
-	    		}
+	    		this.pause();
 	    	}
 	    	if (MAX_STEP_NUM > -1 && this.getStep() >= MAX_STEP_NUM) {
 	    		logger.info("Auto-paused execution of simulation, because system ran for MAX_STEP_NUM steps.");
-
-	    		PlotLauncher.runner.pauseExecution();
-	    		for(EnvironmentListener l : this.listeners) {
-	    			l.onPauseRepeat();
-	    		}
+	    		this.pause();
+	    	} else if (this.model.getCharacters().isEmpty()) {
+	    		logger.info("Auto-paused execution of simulation, because all agents died.");
+	    		this.pause();
 	    	}
+		}
+	}
+
+	private void pause() {
+		PlotLauncher.runner.pauseExecution();
+		for(EnvironmentListener l : this.listeners) {
+			l.onPauseRepeat();
 		}
 	}
 

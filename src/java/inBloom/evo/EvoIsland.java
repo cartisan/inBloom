@@ -153,7 +153,7 @@ public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, Island
 			
 			FireHappening fire = new FireHappening(
 					(IslandModel model) -> {
-						if(model.getStep() > step) {
+						if(!model.island.isBurning() && model.getStep() > step) {
 							return true;
 						}
 						return false;

@@ -39,6 +39,7 @@ public class TermParser {
 	private static final Pattern EMOTION_PATTERN = Pattern.compile("(?<emotion>\\w*)\\["+ Edge.Type.CAUSALITY.toString() +"\\((?<cause>.*)\\)\\]\\(.\\)");
 	public static final Pattern CROSSCHAR_PATTERN = Pattern.compile(Edge.Type.CROSSCHARACTER + "\\((<?id>.+)\\)");
 	public static final Pattern ANNOT_PATTERN = Pattern.compile(".+(\\(.*\\))?\\[(?<annot>.+?)\\]$");
+	public static final Pattern ANNOT_ENTRY_PATTERN = Pattern.compile("(?<functor>\\w+)\\((?<term>\\w+)\\)");
 	public static final String PERSO_PATTERN = "personality\\((?<trait>.+?),(?<scope>.+?)\\)";
 	public static final String AFFECT_PATTERN = "affect\\((?<trait>.+?),(?<scope>.+?)\\)";
 	public static final String FUNCTOR_PATTERN = "\\((?<content>(?:(?!\\)\\,).)+)\\)"; // crazy regex to deal with cases like: cause(+is_dropped(bread)),emotion(hope),source(percept)
@@ -56,7 +57,7 @@ public class TermParser {
 		Matcher matcher = EMOTION_PATTERN.matcher(emo);
 		if(matcher.find()) {
 			Emotion emotion = Emotion.getEmotion(matcher.group(Emotion.ANNOTATION_FUNCTOR).toLowerCase());
-			emotion.setCause(TermParser.removeAnnots(matcher.group(Edge.Type.CAUSALITY.toString())));
+			emotion.setCause(matcher.group(Edge.Type.CAUSALITY.toString()));
 			return emotion;
 		}
 		return null;
@@ -107,7 +108,7 @@ public class TermParser {
 	}
 
 	/**
-	 * Merges the annotation from sourceLiteral into the annotations of targetLiteral. Returns not only annotation, but 
+	 * Merges the annotation from sourceLiteral into the annotations of targetLiteral. Returns not only annotation, but
 	 * whole literal.
 	 * @param targetLiteral String representation of the label of targetLiteral
 	 * @param sourceLiteral String representation of the label of targetLiteral
@@ -115,7 +116,7 @@ public class TermParser {
 	 */
 	public static String mergeAnnotations(String targetLiteral, String sourceLiteral) {
 		// TODO: What if source and target contain same annotation (w/ different value?) --> replace!
-		String newAnnots = Stream.of(TermParser.getAnnots(targetLiteral, true), TermParser.getAnnots(sourceLiteral, true))
+		String newAnnots = Stream.of(TermParser.getAnnotationsString(targetLiteral, true), TermParser.getAnnotationsString(sourceLiteral, true))
 								 .filter(s -> s != null && !s.isEmpty())
 								 .collect(Collectors.joining(","));
 
@@ -133,8 +134,8 @@ public class TermParser {
 	 * @param s ASL term in string form
 	 * @return the annotations in string form
 	 */
-	public static String getAnnots(String s) {
-		return TermParser.getAnnots(s, false);
+	public static String getAnnotationsString(String s) {
+		return TermParser.getAnnotationsString(s, false);
 	}
 
 	/**
@@ -144,7 +145,7 @@ public class TermParser {
 	 * @param s ASL term in string form
 	 * @return the annotations in string form
 	 */
-	public static String getAnnots(String s, boolean removeOuterBrackets) {
+	public static String getAnnotationsString(String s, boolean removeOuterBrackets) {
 		String termNoAnnots = TermParser.removeAnnots(s);
 		String annots =  s.substring(termNoAnnots.length());
 
@@ -154,7 +155,23 @@ public class TermParser {
 		return annots;
 	}
 
+	/**
+	 * Returns the annotations of an ASL literal in String format, ignoring any embedded annotations. 
+	 * @param literal ASL literal in string form
+	 * @return the annotations as a map of the form: functor -> term
+	 */
+	public static Map<String, String> getAnnotationsMap(String literal) {
+		HashMap<String, String> annots = new HashMap<>();
 
+		String annotString= getAnnotationsString(literal, true);
+		Matcher m = ANNOT_ENTRY_PATTERN.matcher(annotString);
+
+		while (m.find()) {
+			annots.put(m.group("functor"), m.group("term"));
+		}
+
+		return annots;
+	}
 
 	/**
 	 * Quick and dirty heuristic to extract personality preconditios from a plan annotation. Matches all instances of

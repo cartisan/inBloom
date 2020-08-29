@@ -1,6 +1,7 @@
 package inBloom.helper;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ public class MoodMapper {
 
 	private Table<String, Long, List<Mood>> timedMoodMap = Tables.synchronizedTable(HashBasedTable.create());
 	public List<Long> startTimes = Collections.synchronizedList(new LinkedList<>());
+	public Map<Integer, Long> stepReasoningcycleNumMap = new HashMap<>();	// maps from env steps to agent reasoning cycle num at that step
 
 	public Map<Long, List<Mood>> getMoodByAgent(String agName) {
 		Map<Long, List<Mood>> timeMoodMap = this.timedMoodMap.row(agName);
@@ -94,10 +96,15 @@ public class MoodMapper {
 	 * Identifies the mood for the given agent at the given time by interpolating between the mapped changes
 	 * @param agName
 	 * @param time
-	 * @return mood value in the interval [-1.0, 1.0]
+	 * @return mood value in the interval [-1.0, 1.0], or null if time lies outside of mapped interval
 	 */
 	public Mood sampleMood(String agName, Long time) {
 		Map<Long, List<Mood>> timeMoodMap = this.timedMoodMap.row(agName);
+
+		Long min = timeMoodMap.keySet().stream().mapToLong(l -> l).min().orElse(Integer.MAX_VALUE);
+		if (time < min) {
+			return null;
+		}
 
 		// find the last (time, mood) pair before sampling time
 		Long sampleTime = timeMoodMap.keySet().stream().filter(x -> x <= time) //get all pairs before sampling time
