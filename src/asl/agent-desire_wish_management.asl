@@ -55,9 +55,9 @@
 @wish_rem[atomic]
 -wish(Plan) <-
 	.drop_desire(wish(Plan));
-//	.succeed_goal(wish(Plan));
-	.drop_desire(Plan).
-//	.succeed_goal(Plan).
+	.succeed_goal(wish(Plan));
+	.drop_desire(Plan);
+	.succeed_goal(Plan).
 
 // if conscientious do not follow (non-coping) wishes when an obligation is desired --> coping wishes, like !punish, don't fall under this
 @wish1[affect(personality(conscientiousness,high))]
