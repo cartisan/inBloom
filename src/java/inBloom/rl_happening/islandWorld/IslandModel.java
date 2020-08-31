@@ -352,8 +352,8 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		if(agent.location==this.island && island.isBurning()) {
 		
-			island.extinguishFire();
-			this.environment.removePercept(agent.name, Literal.parseLiteral("fire"));
+			this.island.extinguishFire();
+			this.environment.removePercept(this.island, Literal.parseLiteral("fire"));
 			result.addPerception(agent.name, new PerceptAnnotation("pride"));
 			logger.info(agent.name + " has extinguished the fire.");
 			
