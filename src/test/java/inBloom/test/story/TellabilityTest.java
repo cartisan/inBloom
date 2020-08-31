@@ -37,7 +37,7 @@ public class TellabilityTest extends AbstractPlotTest {
 
 	@Test
 	public void testSuspense() {
-		assertTrue(2 < analysis.suspense);		// actual suspense varies between 4 and 5
+		assertTrue(2 < analysis.absoluteSuspense);		// actual absoluteSuspense varies between 4 and 5
 
 		// test that its the right intention that is most suspensefull
 		assertEquals("!intrinsic_motivation", analysis.mostSuspensefulIntention.getSecond().getLabel());

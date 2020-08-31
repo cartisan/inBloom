@@ -49,9 +49,11 @@ wish(relax).
 /******************************************************************************/
 
 +share(Other, Item, Me)[success(true)] : .my_name(Me) <-
+	+received(Item);
 	+has(Item).
 	
 +share(Other, Item, List)[success(true)] : .my_name(Me) & .list(List) & .member(Me,List) <-
+	+received(Item);
 	+has(Item).
 
 @eatP[atomic]
@@ -186,10 +188,10 @@ wish(relax).
 	!eat(X);
 	-wish(punish).
 
-+!share_food(Food, Others) <-
-	!share(Food, Others);
-	!eat(Food);
-	-wish(share_food(X, Anims)).
+//+!share_food(Food, Others) <-
+//	!share(Food, Others);
+//	!eat(Food);
+//	-wish(share_food(X, Anims)).
 	
 /******************************************************************************/
 /*****      Action Execution Goals ********************************************/
@@ -235,13 +237,13 @@ wish(relax).
 	-wish(eat).
 
 @eat2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
-+!eat(Food) : not wish(punish) <-
++!eat(Food) : not wish(punish) & not received(Food) <-
 	?present(Others);
 	!share(Food, Others);
 	eat(Food).
 	
 @eat4[atomic, affect(and(personality(agreeableness,medium), mood(pleasure,high)))]
-+!eat(Food) : not wish(punish) <-
++!eat(Food) : not wish(punish) & not received(Food) <-
 	?present(Others);
 	!share(Food, Others);
 	eat(Food).

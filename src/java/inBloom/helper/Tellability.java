@@ -49,22 +49,29 @@ public class Tellability {
 	public int numFunctionalUnits;
 	public int numPolyvalentVertices;
 	public int numAllVertices;
-	public double functionalPolyvalence;
 	public Map<FunctionalUnit, Integer> functionalUnitCount = new HashMap<>();
 	public ConnectivityGraph connectivityGraph;
+	public double absoluteFunctionalPolyvalence;
+	public double balancedFunctionalPolyvalence;
 
 	// Semantic Symmetry
-	public double symmetry;
 	public int charNum;
 	public Collection<Instance> fUinstances = new ArrayList<>();
+	public double absoluteSymmetry;
+	public double balancedSymmetry;
 
 	// Semantic Opposition
-	public double opposition;
+	public double absoluteOpposition;
+	public double balancedOpposition;
 
 	// Suspense
-	public double suspense;
 	public Triple<String, Vertex, Vertex> mostSuspensefulIntention;			 // (agent, intention, action)
 	public int plotLength;
+	public double absoluteSuspense;
+	public double balancedSuspense;
+
+	// Overall
+	public double value;
 
 
 	/**
@@ -91,6 +98,10 @@ public class Tellability {
 		// calculate suspense
 		this.detectSuspense(graph);
 
+		logger.info("normalized polyvalence: " + this.absoluteFunctionalPolyvalence);
+		logger.info("normalized absoluteSymmetry: " + this.absoluteSymmetry);
+		logger.info("normalized absoluteOpposition: " + this.absoluteOpposition);
+		logger.info("normalized absoluteSuspense: " + this.absoluteSuspense);
 	}
 
 	/**
@@ -169,8 +180,8 @@ public class Tellability {
 		this.numPolyvalentVertices = polyvalentVertices;
 		logger.info("   Number of polyvalent vertices: " + this.numPolyvalentVertices);
 		logger.info("   Number of all vertices: " + this.numAllVertices);
-		this.functionalPolyvalence = (double) this.numPolyvalentVertices / this.numAllVertices;
-		logger.info("   --> Functional Polyvalence: " + this.functionalPolyvalence);
+		this.absoluteFunctionalPolyvalence = (double) this.numPolyvalentVertices / this.numAllVertices;
+		logger.info("   --> Functional Polyvalence: " + this.absoluteFunctionalPolyvalence);
 
 		// Mark polyvalent vertices with asterisk
 		for(Vertex v : polyvalentVertexSet) {
@@ -206,7 +217,7 @@ public class Tellability {
 			logger.info("   Perform FU based symmetry and parallelism analysis");
 			agentSeqMap = agentFuSeqMap;
 		} else {
-			logger.info("   Not sufficient number of FU present in any of the sub graphs, fall back on event based symmetry and parallelism analysis");
+			logger.info("   Not sufficient number of FU present in any of the sub graphs, fall back on event based absoluteSymmetry and parallelism analysis");
 
 			// extract event sequence
 			HashMap<String, List<String>> agentEventSeqMap = new HashMap<>();
@@ -236,7 +247,7 @@ public class Tellability {
 		}
 		
 		// overall symmetry is average: over symmetry for each character and parallelism for each character pair
-		this.symmetry = Stats.meanOf(similarityScores);
+		this.absoluteSymmetry = Stats.meanOf(similarityScores);
 		return;
 	}
 
@@ -251,12 +262,11 @@ public class Tellability {
 			logger.info("   computing violated expectation score");
 			int violationIndicators = this.counter.violatedExpectationEvents.get(agent).size() + this.counter.terminatedPercepts.get(agent).size();
 			int relevantEvents = this.counter.emotionalEvents.get(agent).size() + this.counter.overallPerceptNum.get(agent);
-
 			float normalizedExpectationViolationScore = 0;
-			
-			if(relevantEvents>0)
+			if (relevantEvents != 0) {
 				normalizedExpectationViolationScore = (float) violationIndicators / relevantEvents;
-			
+			}
+		
 			logger.fine("      violated expectations: " + this.counter.violatedExpectationEvents.get(agent));
 			logger.fine("      terminated beliefs: " + this.counter.terminatedPercepts.get(agent));
 			logger.info("      number of violation indicators: " + violationIndicators);
@@ -325,11 +335,11 @@ public class Tellability {
 
 			long possibleIntervalNum = (moodData.latestEndTime() - moodData.latestStartTime() ) / 10;
 			logger.info("      number of possible intervals: " + possibleIntervalNum);
-			
 
 			float normalizedFortuneChangeScore = 0;
-			if(reversalsNoOverlap.size()!=0 && possibleIntervalNum != 0)
+			if (possibleIntervalNum != 0 & reversalsNoOverlap.size() != 0) {
 				normalizedFortuneChangeScore = (float)reversalsNoOverlap.size() / possibleIntervalNum;
+			}
 			logger.info("   --> normalized score: " + normalizedFortuneChangeScore);
 
 			// opposition score for this agent is the higher of both scores
@@ -337,7 +347,7 @@ public class Tellability {
 		}
 
 		// focus on opposition for main characters, here: one character i.e. protagonist
-		this.opposition = oppositionScores.stream().mapToDouble(f -> f).max().orElse(0);
+		this.absoluteOpposition = oppositionScores.stream().mapToDouble(f -> f).max().orElse(0);
 	}
 
 	private void detectSuspense(PlotDirectedSparseGraph graph) {
@@ -373,7 +383,7 @@ public class Tellability {
 		}
 
 		logger.info("   plot length: " + this.plotLength);
-		this.suspense = (double) suspense / this.plotLength;
+		this.absoluteSuspense = (double) suspense / this.plotLength;
 	}
 
 	private HashMap<String, List<String>> extractOrderedFUSequences(List<String> agentNames) {
@@ -445,8 +455,7 @@ public class Tellability {
 	}
 
 	/**
-	 * Computes the overall tellability score, by normalizing all features into a range of (0,1) and adding them,
-	 * which amounts to assigning each feature equal weight.
+	 * Computes the overall tellability score, by balancing and averaging the respective tellability principles.
 	 * @return
 	 */
 	public double compute() {
@@ -455,65 +464,56 @@ public class Tellability {
 			return 0;
 		}
 
-		logger.info("normalized polyvalence: " + this.functionalPolyvalence);
-		logger.info("normalized symmetry: " + this.symmetry);
-		logger.info("normalized opposition: " + this.opposition);
-		logger.info("normalized suspense: " + this.suspense);
+		double aveTellability = (this.absoluteFunctionalPolyvalence + this.absoluteSuspense + this.absoluteSymmetry + this.absoluteOpposition) / 4;
+		logger.info("(Average tellability: " + aveTellability + ")");
 
-		double aveTellability = (this.functionalPolyvalence + this.suspense + this.symmetry + this.opposition) / 4;
-		logger.info("Average tellability: " + aveTellability);
+		this.value = this.balanceButSuspense();
+		logger.info("Balanced tellability: " + this.value);
 
-		double balancedTellability = this.balanceButSuspense();
-
-		return balancedTellability;
+		return this.value;
 	}
 
 	@SuppressWarnings("unused")
 	private double balanceAll() {
-		double harmFP =  1 - 2 * Math.abs(0.5 - this.functionalPolyvalence);
-		double harmSYM =  1 - 2 * Math.abs(0.5 - this.symmetry);
-		double harmOPO =  1 - 2 * Math.abs(0.5 - this.opposition);
-		double harmSUS = 1 - 2 * Math.abs(0.5 - this.suspense);
+		this.balancedFunctionalPolyvalence =  1 - 2 * Math.abs(0.5 - this.absoluteFunctionalPolyvalence);
+		this.balancedSymmetry =  1 - 2 * Math.abs(0.5 - this.absoluteSymmetry);
+		this.balancedOpposition =  1 - 2 * Math.abs(0.5 - this.absoluteOpposition);
+		this.balancedSuspense = 1 - 2 * Math.abs(0.5 - this.absoluteSuspense);
 
 		logger.info("Balance all");
-		logger.info("   Balanced FP: " + harmFP);
-		logger.info("   Balanced SYM: " + harmSYM);
-		logger.info("   Balanced OPO: " + harmOPO);
-		logger.info("   Balanced SUS: " + harmSUS);
+		logger.info("   Balanced FP: " + this.balancedFunctionalPolyvalence);
+		logger.info("   Balanced SYM: " + this.balancedSymmetry);
+		logger.info("   Balanced OPO: " + this.balancedOpposition);
+		logger.info("   Balanced SUS: " + this.balancedSuspense);
 
-		double balancedTellability = (harmFP + harmSYM + harmOPO + harmSUS) / 4;
-		logger.info("   Balanced tellability: " + balancedTellability);
-		return balancedTellability;
+		return (this.balancedFunctionalPolyvalence + this.balancedSymmetry + this.balancedOpposition + this.balancedSuspense) / 4;
 	}
 
 	@SuppressWarnings("unused")
 	private double balanceAve() {
 		logger.info("Balance ave");
-		double ave_tellability = (this.functionalPolyvalence + this.suspense + this.symmetry + this.opposition) / 4;
+		double ave_tellability = (this.absoluteFunctionalPolyvalence + this.absoluteSuspense + this.absoluteSymmetry + this.absoluteOpposition) / 4;
 		logger.info("   Average tellability: " + ave_tellability);
 
-		double balancedTellability = 1 - 2 * Math.abs(0.5 - ave_tellability);
-		logger.info("   Balanced tellability: " + balancedTellability);
-		return balancedTellability;
+		return 1 - 2 * Math.abs(0.5 - ave_tellability);
 	}
 
 	private double balanceButSuspense() {
-		double harmFP =  1 - 2 * Math.abs(0.5 - this.functionalPolyvalence);
-		double harmSYM =  1 - 2 * Math.abs(0.5 - this.symmetry);
-		double harmOPO =  1 - 2 * Math.abs(0.5 - this.opposition);
+		this.balancedFunctionalPolyvalence =  1 - 2 * Math.abs(0.5 - this.absoluteFunctionalPolyvalence);
+		this.balancedSymmetry =  1 - 2 * Math.abs(0.5 - this.absoluteSymmetry);
+		this.balancedOpposition =  1 - 2 * Math.abs(0.5 - this.absoluteOpposition);
+		this.balancedSuspense = this.absoluteSuspense;
 
-		logger.info("Balance all but suspense");
-		logger.info("   Balanced FP: " + harmFP);
-		logger.info("   Balanced SYM: " + harmSYM);
-		logger.info("   Balanced OPO: " + harmOPO);
-		logger.info("   Unbalanced SUS: " + this.suspense);
+		logger.info("Balance all but absoluteSuspense");
+		logger.info("   Balanced FP: " + this.balancedFunctionalPolyvalence);
+		logger.info("   Balanced SYM: " + this.balancedSymmetry);
+		logger.info("   Balanced OPO: " + this.balancedOpposition);
+		logger.info("   Unbalanced SUS: " + this.balancedSuspense);
 
-		double balancedTellability = (harmFP + harmSYM + harmOPO + this.suspense) / 4;
-		logger.info("   Balanced tellability: " + balancedTellability);
-		return balancedTellability;
+		return (this.balancedFunctionalPolyvalence + this.balancedSymmetry + this.balancedOpposition + this.balancedSuspense) / 4;
 	}
 
-	@SuppressWarnings("unused")		// left to be able to determine symmetry statistics  of split into event types, should the need arise
+	@SuppressWarnings("unused")		// left to be able to determine absoluteSymmetry statistics  of split into event types, should the need arise
 	private List<Float> eventBasedSymmetry(HashMap<String, List<String>> agentEventMap, PlotDirectedSparseGraph graph) {
 		List<Float> eventSyms =  new ArrayList<>();
 
@@ -574,10 +574,10 @@ public class Tellability {
 						+ intentionSym + "(Intentions),\n "
 						+ beliefSym + "(Beliefs),\n "
 						+ actionSym + "(Actions), \n "
-						+ "----> Average 4-part vertex symmetry: "+ (emotionSym + intentionSym + beliefSym + actionSym) / 4f + "\n "
+						+ "----> Average 4-part vertex absoluteSymmetry: "+ (emotionSym + intentionSym + beliefSym + actionSym) / 4f + "\n "
 						+ mentalSym + "(all mental), \n "
 						+ actionSym + "(Actions), \n "
-						+ "----> Average 2-part vertex symmetry: " + (mentalSym + actionSym) / 2f + "\n "
+						+ "----> Average 2-part vertex absoluteSymmetry: " + (mentalSym + actionSym) / 2f + "\n "
 						+ allSym + "(all events)"
 					);
 			eventSyms.add(allSym);
