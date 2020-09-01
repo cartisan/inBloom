@@ -4,6 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,6 +17,7 @@ import javax.swing.JFrame;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.NumberTickUnit;
@@ -56,6 +60,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 	private String selectedMoodDimension = null;
 	private String selectedAgent = null;
 	private JFreeChart chart = null;
+	private ChartPanel chartPanel = null;
 	private Map<Integer, Long> stepReasoningcycleNumMap = new HashMap<>();
 
 	public static MoodGraph getMoodListener() {
@@ -119,7 +124,27 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 		}
 	}
 
-	private void createChart(XYSeriesCollection data) {
+	/**
+	 * Sets the initially selected dimension to be visualized to the given agent, and removes
+	 * any previous selection on mood domain.
+	 * @param agentName
+	 */
+	public void setSelectedAgent(String agentName) {
+		this.selectedMoodDimension = null;
+		this.selectedAgent = agentName;
+	}
+
+	/**
+	 * Sets the initially selected dimension to be visualized to the given dimension, and removes
+	 * any previous selection on agent domain.
+	 * @param agentName
+	 */
+	public void setSelectedDimension(String dimension) {
+		this.selectedAgent = null;
+		this.selectedMoodDimension = dimension;
+	}
+
+	public void createChart(XYSeriesCollection data) {
 		String title = "Mood Development Over Time";
 		if (data.getSeries().isEmpty()) {
 			title = "No mood points have been reported to MoodGraph";
@@ -147,7 +172,37 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 			lineChart.getXYPlot().addDomainMarker(marker);
 		}
 
+        // setup chart
 		this.chart = lineChart;
+		this.chartPanel = new ChartPanel(this.chart);
+		this.chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ));
+	}
+
+
+	/**
+	 * Instead saves the mood graph of the initial dimension to disc, instead of visualizing it.
+	 * The file will be located in the projects root directory.
+	 * Use like: </br>
+	 * <code>
+	 * MoodGraph.getMoodListener().setSelectedAgent("hen");
+	 * MoodGraph.getMoodListener().saveGraph(er.getLastModel().moodMapper, String.valueOf(currentCycle));
+	 * </code>
+	 * @param moodMapper
+	 * @param suffix
+	 */
+	public void saveGraph(MoodMapper moodMapper, String suffix) {
+		this.createData(moodMapper);
+		this.createChart(this.getData());
+		this.setupChart(this.getData());
+
+		try {
+			String selection = this.selectedMoodDimension == null ? this.selectedAgent : this.selectedMoodDimension;
+			OutputStream out = new FileOutputStream("mood_" + selection + "_" + suffix + ".png");
+		    ChartUtilities.writeChartAsPNG(out,this.chart, this.chartPanel.getPreferredSize().width, this.chartPanel.getPreferredSize().height);
+		    out.close();
+		} catch (IOException ex) {
+			logger.warning(ex.getMessage());
+		}
 	}
 
 	public void deleteGraphData() {
@@ -159,23 +214,10 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 	}
 
 	public MoodGraph visualizeGraph(XYSeriesCollection data) {
-		// create chart
+		// transform data into line graphs
 		this.createChart(data);
-
-		// set up axes for good readability
-        NumberAxis xAxis = (NumberAxis) ((XYPlot)this.chart.getPlot()).getDomainAxis();
-        xAxis.setRange(data.getDomainLowerBound(false), data.getDomainUpperBound(false));
-        // choose step distance so we always have around 15 values on xAxis, and round it to the deca level
-        long tickDistance = Math.round((data.getDomainUpperBound(false) - data.getDomainLowerBound(false)) / 15 ) / 10 * 10;
-        xAxis.setTickUnit(new NumberTickUnit(tickDistance));
-
-        NumberAxis yAxis = (NumberAxis) ((XYPlot) this.chart.getPlot()).getRangeAxis();
-        yAxis.setRange(-1.1, 1.1);
-        yAxis.setTickUnit(new NumberTickUnit(0.2));
-
-        // setup chart
-		ChartPanel chartPanel = new ChartPanel(this.chart);
-		chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ));
+		// setup details of chart visualization
+		this.setupChart(data);
 
 		// create dropdown to select mood dimension
 		JComboBox<String> moodDimensionList = new JComboBox<>(MOOD_DIMS);
@@ -206,7 +248,7 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 			}
 		});
 
-		this.add(chartPanel, BorderLayout.CENTER);
+		this.add(this.chartPanel, BorderLayout.CENTER);
 		this.add(moodDimensionList, BorderLayout.NORTH);
 
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -222,6 +264,19 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 		this.setVisible(true);
 
 		return this;
+	}
+
+	public void setupChart(XYSeriesCollection data) {
+		// set up axes for good readability
+        NumberAxis xAxis = (NumberAxis) ((XYPlot)this.chart.getPlot()).getDomainAxis();
+        xAxis.setRange(data.getDomainLowerBound(false), data.getDomainUpperBound(false));
+        // choose step distance so we always have around 15 values on xAxis, and round it to the deca level
+        long tickDistance = Math.round((data.getDomainUpperBound(false) - data.getDomainLowerBound(false)) / 15 ) / 10 * 10;
+        xAxis.setTickUnit(new NumberTickUnit(tickDistance));
+
+        NumberAxis yAxis = (NumberAxis) ((XYPlot) this.chart.getPlot()).getRangeAxis();
+        yAxis.setRange(-1.1, 1.1);
+        yAxis.setTickUnit(new NumberTickUnit(0.2));
 	}
 
 
