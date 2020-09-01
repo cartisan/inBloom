@@ -49,6 +49,10 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 			result = getModel().findFriend(agent);
 		}
 		
+		else if(action.getFunctor().equals("complain")) {
+			result = getModel().complain(agent);
+		}
+		
 		else if(action.getFunctor().equals("getFood")) {
 			result = getModel().getFood(agent);
 		}
@@ -65,8 +69,8 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 			result = getModel().buildHut(agent);
 		}
 		
-		else if(action.getFunctor().equals("complain")) {
-			result = getModel().complain(agent);
+		else if(action.getFunctor().equals("findHealingPlants")) {
+			result = getModel().findHealingPlants(agent);
 		}
 		
 		else if(action.getFunctor().equals("extinguishFire")) {
@@ -81,7 +85,7 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 		return result;
 	}
 	
-	private void increaseHunger() {
+	private void timedActivities() {
 		// Only increase hunger if the simulation has started and a new time step has started
 		if(getModel() != null && currentStep != this.step) {
 
@@ -91,7 +95,11 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 			// for each agent hunger is increased
 			for(Character agent: this.getModel().getCharacters()) {
 				getModel().increaseHunger(agent);
+				getModel().increaseFatigue(agent);
+				if(agent.isSick)
+					getModel().increasePoison(agent);
 			}
+			getModel().island.growPlants();
 		}
 	}
 	
@@ -104,7 +112,7 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 	protected void stepFinished(int step, long elapsedTime, boolean byTimeout) {
 		super.stepFinished(step, elapsedTime, byTimeout);
 		
-		increaseHunger();
+		timedActivities();
 	}
 
 //	private void addStateValue() {

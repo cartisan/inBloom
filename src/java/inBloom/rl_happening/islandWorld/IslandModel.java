@@ -33,6 +33,10 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 	public HashMap<Character, Integer> friends;
 	// Each agent has a hunger value
 	public HashMap<Character, Integer> hunger;
+	// Each agent has a fatigue value
+	public HashMap<Character, Integer> fatigue;
+	// Each agent has a poison value
+	public HashMap<Character, Integer> poison;
 	@ModelState
 	public boolean isOnCruise;
 		
@@ -95,6 +99,12 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		// hunger: each Character isn't hungry yet
 		this.hunger = new HashMap<Character, Integer>();
 		changeAllValues(this.hunger, 0);
+		
+		this.fatigue = new HashMap<Character, Integer>();
+		changeAllValues(this.fatigue, 0);
+		
+		this.poison = new HashMap<Character, Integer>();
+		changeAllValues(this.poison, 0);
 		
 		this.isOnCruise = false;
 		
@@ -243,6 +253,27 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		return result;
 	}
 	
+	public ActionReport findHealingPlants(Character agent) {
+		
+		ActionReport result = new ActionReport();
+
+		// if agent was sick, then now he isn't anymore
+		if(agent.location==this.island && this.island.hasHealingPlants && agent.isSick) {
+			
+			agent.heal();
+			this.poison.replace(agent, 0);
+
+			logger.info(agent.name + "was cured!");
+			this.environment.removePercept(agent.name, Literal.parseLiteral("sick"));
+			this.deactivateFeature(sick);
+
+			result.addPerception(agent.name, new PerceptAnnotation("relief"));
+			result.success = true;
+		}
+		
+		return result;
+	}
+	
 	public ActionReport sleep(Character agent) {
 		
 		ActionReport result = new ActionReport();
@@ -269,7 +300,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 				
 				/* 
 				 * 3. HEAL
-				 */
+				 *
 				
 				// if agent was sick, then now he isn't anymore
 				if(agent.isSick) {
@@ -372,7 +403,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		result.addPerception(agent.name, new PerceptAnnotation("joy"));
 		
-		getEnvironment().MAX_STEP_NUM =	getEnvironment().getStep()+1;
+		getEnvironment().MAX_STEP_NUM =	getEnvironment().getStep();
 		
 		result.success=true;
 		
@@ -384,7 +415,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		logger.info("And Robinson lived happily ever after!");
 		
-		getEnvironment().MAX_STEP_NUM =	getEnvironment().getStep()+1;
+		getEnvironment().MAX_STEP_NUM =	getEnvironment().getStep();
 		
 		this.environment.addPercept(agent.name, Literal.parseLiteral("endStory"));
 		
@@ -424,6 +455,64 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 				logger.info(agent.name + " is hungry.");
 		
 			}
+		}	
+	}
+
+	/**
+	 * Increases the sleep value of one agent by 1 and checks if the sleep value surpassed
+	 * the thresholds of being actively sleepy (10) or dying of fatigue (20) and reacts to these
+	 * changes by either making the agent sleepy or die.
+	 * 
+	 * @param agent
+	 * 			The character whose hunger is to be increased
+	 */
+	public void increaseFatigue(Character agent) {
+		
+		// increase hunger by 1
+		changeIndividualValue(this.fatigue, agent, 1);
+
+		// check if hunger has become critical
+
+		if(this.hunger.get(agent) >= 20) {
+			this.getEnvironment().killAgent(agent.name);
+			logger.info(agent.name + " has died.");
+			
+			this.deactivateFeature("isAlive");
+			// stop story
+			//PlotLauncher.getRunner().pauseExecution();
+			
+		} else if(this.hunger.get(agent) >= 10) {
+			if(!this.environment.containsPercept(agent.name, Literal.parseLiteral("fatigue"))) {
+				this.environment.addPercept(agent.name, Literal.parseLiteral("fatigue"));
+				//this.activateFeature(fatigue);
+				logger.info(agent.name + " is sleepy.");
+		
+			}
+		}		
+	}
+
+	/**
+	 * Increases the poison value of one agent by 1 and checks if the hunger value surpassed
+	 * the threshold of dying of poison (10) and reacts to these change making the agent die.
+	 * 
+	 * @param agent
+	 * 			The character whose poison is to be increased
+	 */
+	public void increasePoison(Character agent) {
+		
+		// increase hunger by 1
+		changeIndividualValue(this.poison, agent, 1);
+
+		// check if hunger has become critical
+
+		if(this.hunger.get(agent) >= 5) {
+			this.getEnvironment().killAgent(agent.name);
+			logger.info(agent.name + " has died.");
+			
+			this.deactivateFeature("isAlive");
+			// stop story
+			//PlotLauncher.getRunner().pauseExecution();
+			
 		}	
 	}
 
@@ -561,11 +650,15 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		//public boolean hasHut;
 		private boolean isBurning;
 		private Hut hut;
+		private boolean hasHealingPlants;
+		private int growTime;
+		private static int healingPlantGrowTime = 5;
 		
 		public Island() {
 			super("lonelyIsland");
 			this.isBurning = false;
 			this.hut = null;
+			this.hasHealingPlants = true;
 		}
 		
 		/**
@@ -597,6 +690,26 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		public void extinguishFire() {
 			isBurning = false;
+		}
+		
+		public boolean hasPlants() {
+			
+			return hasHealingPlants;
+		}
+		
+		public void killHealingPlants() {
+			
+			hasHealingPlants = false;
+			growTime = healingPlantGrowTime;
+		}
+		
+		public void growPlants() {
+			
+			if(growTime>0) {
+				growTime -= 1;
+			}else {
+				hasHealingPlants = true;
+			}
 		}
 		
 		public boolean isBurning() {

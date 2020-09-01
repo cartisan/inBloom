@@ -51,7 +51,7 @@
 			getFood;
 		}.
 		
-+!heal <- +wish(sleep);
++!heal <- findHealingPlants;
 		  -wish(heal).
 		  
 +!sleep <- if(exists(hut)) {
@@ -62,7 +62,7 @@
 				// 2. how do I do knowledge abfrage?
 				// find out object of belief:    ?belief(X)
 				// find out existence of belief: if(belief)
-				-wish(heal);
+				//-wish(heal);
 		   } else {
 		   		buildHut;
 		   }.
@@ -86,6 +86,8 @@
 // Name of source is f.e. "percept"
 
 +hungry[source(Name)] <- +wish(eat).
+
++fatigue[source(Name)] <- +wish(sleep).
 
 +sick[source(Name)] <- +wish(heal).
 

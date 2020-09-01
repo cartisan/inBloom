@@ -183,7 +183,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			MASConsoleGUI.get().setPause(true);
 			runner.reset();
 		}else {
-			env.stop();
+			//env.stop();
 			reset();
 		}
 	}

@@ -21,14 +21,14 @@ public class EvolutionaryLauncher {
 		String filename = "";
 		
 		/**
-		 * Choose 1 Mode:
+		 * Choose 1 Mode:1
 		 */
 		
-		String algorithm = "GEN";
-		//String algorithm = "PSO";
+		//String algorithm = "GEN";
+		String algorithm = "PSO";
 		//String algorithm = "Coupled";
 		
-		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,4,0.2,0.1);
+		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,4,0.3,0.2);
 		
 		switch(algorithm) {
 		
