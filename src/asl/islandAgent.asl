@@ -89,13 +89,13 @@
 /* React to new Belifes / Percepts */
 // Name of source is f.e. "percept"
 
-+hungry[source(Name)] <- +wish(eat).
-
-+fatigue[source(Name)] <- +wish(sleep).
++endStory[source(Name)] <- +wish(happyEnd).
 
 +sick[source(Name)] <- +wish(heal).
 
-+endStory[source(Name)] <- +wish(happyEnd).
++hungry[source(Name)] <- +wish(eat).
+
++fatigue[source(Name)] <- +wish(sleep).
 
 // not used so far
 +stolen(food)[source(Name)] <- +hate(monkey).

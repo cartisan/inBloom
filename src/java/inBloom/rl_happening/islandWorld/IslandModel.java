@@ -441,9 +441,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		logger.info("And Robinson lived happily ever after!");
 		
 		getEnvironment().MAX_STEP_NUM =	getEnvironment().getStep();
-		
-		this.environment.addPercept(agent.name, Literal.parseLiteral("endStory"));
-		
+
 	}	
 	
 	/**
