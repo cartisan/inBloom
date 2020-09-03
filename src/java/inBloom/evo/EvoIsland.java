@@ -15,6 +15,7 @@ import inBloom.rl_happening.happenings.LooseFriendHappening;
 import inBloom.rl_happening.happenings.PlantDiseaseHappening;
 import inBloom.rl_happening.happenings.ShipRescueHappening;
 import inBloom.rl_happening.happenings.StormHappening;
+import inBloom.rl_happening.happenings.TorrentialRainHappening;
 import inBloom.rl_happening.islandWorld.IslandEnvironment;
 import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.storyworld.Happening;
@@ -24,7 +25,7 @@ import jason.asSemantics.Personality;
 public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, IslandModel>{
 	
 	public EvoIsland() {
-		super(IslandEnvironment.class, "islandAgent", 1, 1, 8);
+		super(IslandEnvironment.class, "islandAgent", 1, 1, 9);
 	}
 	
 	@Override
@@ -149,8 +150,22 @@ public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, Island
 				null
 				);
 			return hutDestroyed;
-			
+
 		case(5):
+			
+			TorrentialRainHappening rain = new TorrentialRainHappening(
+					(IslandModel model) -> {
+						if(!model.island.isRaining() && model.getStep() > step) {
+							return true;
+						}
+						return false;
+					},
+					agent.name,
+					null
+			);		
+			return rain;
+			
+		case(6):
 			
 			FireHappening fire = new FireHappening(
 					(IslandModel model) -> {
@@ -164,11 +179,11 @@ public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, Island
 			);		
 			return fire;
 		
-		case(6):
+		case(7):
 			
 			PlantDiseaseHappening plantDisease = new PlantDiseaseHappening(
 					(IslandModel model) -> {
-						if(model.island.hasPlants() && model.getStep() > step) {
+						if(model.island.hasHealingPlants() && model.getStep() > step) {
 							return true;
 						}
 						return false;
@@ -178,7 +193,7 @@ public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, Island
 			);		
 			return plantDisease;
 			
-		case(7):
+		case(8):
 			
 			ShipRescueHappening shipRescue = new ShipRescueHappening(
 					(IslandModel model) -> {

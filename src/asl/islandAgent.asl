@@ -51,8 +51,12 @@
 			getFood;
 		}.
 		
-+!heal <- findHealingPlants;
-		  -wish(heal).
++!heal <- if(has(healingPlant)) {
+			useHealingPlants;
+			-wish(heal);
+		} else {
+			findHealingPlants;
+		}.
 		  
 +!sleep <- if(exists(hut)) {
 				sleep;

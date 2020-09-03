@@ -61,16 +61,20 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 			result = getModel().eat(agent);
 		}
 		
+		else if(action.getFunctor().equals("findHealingPlants")) {
+			result = getModel().findHealingPlants(agent);
+		}
+		
+		else if(action.getFunctor().equals("useHealingPlants")) {
+			result = getModel().useHealingPlants(agent);
+		}
+		
 		else if(action.getFunctor().equals("sleep")) {
 			result = getModel().sleep(agent);
 		}
 		
 		else if(action.getFunctor().equals("buildHut")) {
 			result = getModel().buildHut(agent);
-		}
-		
-		else if(action.getFunctor().equals("findHealingPlants")) {
-			result = getModel().findHealingPlants(agent);
 		}
 		
 		else if(action.getFunctor().equals("extinguishFire")) {
@@ -92,14 +96,19 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 			// to make sure we don't increase mutliple times in 1 time step
 			currentStep = this.step;
 
-			// for each agent hunger is increased
+			// Agent specific timed activities
 			for(Character agent: this.getModel().getCharacters()) {
 				getModel().increaseHunger(agent);
 				getModel().increaseFatigue(agent);
 				if(agent.isSick)
 					getModel().increasePoison(agent);
 			}
-			getModel().island.growPlants();
+			
+			// Island specific timed activities
+			if(!getModel().island.hasHealingPlants())
+				getModel().island.growPlants();
+			if(getModel().island.isRaining())
+				getModel().island.continueRain();
 		}
 	}
 	

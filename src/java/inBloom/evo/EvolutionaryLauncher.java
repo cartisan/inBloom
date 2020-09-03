@@ -21,7 +21,7 @@ public class EvolutionaryLauncher {
 		String filename = "";
 		
 		/**
-		 * Choose 1 Mode:1
+		 * Choose a Mode:
 		 */
 		
 		//String algorithm = "GEN";
@@ -85,9 +85,9 @@ public class EvolutionaryLauncher {
 			// randomVelocityInitializer, discreteVelocityInitializer
 			pso.setVelInit(true, true);
 			// The number of informants (other particles) a particle makes use of additionally to itself to update its velocity
-			pso.setVelocityInformants(7);
-			// bestSelector, rouletteWheelSelection
-			pso.setSelectionManner(true);
+			pso.setVelocityInformants(19);
+			// true -> Roulette Wheel, false -> choose best
+			pso.setSelectionManner(false);
 			// true activates the floating parameters feature
 			pso.setFloatingParameters(false);
 			// true activates the spacetime feature

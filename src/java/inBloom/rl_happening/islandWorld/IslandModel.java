@@ -156,7 +156,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 
-		if(agent.location==this.island) {
+		if(agent.location==this.island && !this.island.isRaining()) {
 
 		logger.info(agent.name + " has found a friend.");
 
@@ -181,7 +181,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		if(agent.location==this.island) {
+		if(agent.location==this.island && !this.island.isRaining()) {
 			
 			logger.info(agent.name + " looked for food.");
 			
@@ -206,7 +206,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 
-		if(agent.location==this.island) {
+		if(agent.location==this.island && !this.island.isRaining()) {
 			
 			// TODO könnte man auch in Character fast alles auslagern -> z.B. Hunger,
 			// wobei die percepts eigentlich eher hier gesteucert werden sollten
@@ -252,22 +252,47 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		}
 		return result;
 	}
-	
+
 	public ActionReport findHealingPlants(Character agent) {
+		
+		ActionReport result = new ActionReport();
+		
+		// if agent was sick, then now he isn't anymore
+		if(agent.location==this.island && this.island.hasHealingPlants() && !this.island.isRaining()) {
+					
+			logger.info(agent.name + " has found a healing plants.");
+			
+			agent.addToInventory(new HealingPlant());
+	
+			this.environment.addPercept(agent.name, Literal.parseLiteral("has(healingPlant)"));
+			
+			result.success = true;
+			
+			//this.activateFeature(hasHealingPlant);
+		}
+		return result;
+	}
+	
+	public ActionReport useHealingPlants(Character agent) {
 		
 		ActionReport result = new ActionReport();
 
 		// if agent was sick, then now he isn't anymore
-		if(agent.location==this.island && this.island.hasHealingPlants && agent.isSick) {
+		if(agent.location==this.island && agent.isSick && agent.has("healingPlant")) {
 			
+			// Remove Item
+			agent.removeFromInventory("healingPlant");
+			this.environment.removePercept(agent.name, Literal.parseLiteral("has(healingPlant)"));
+			
+			// Heal agent
 			agent.heal();
 			this.poison.replace(agent, 0);
+			result.addPerception(agent.name, new PerceptAnnotation("relief"));
 
-			logger.info(agent.name + "was cured!");
 			this.environment.removePercept(agent.name, Literal.parseLiteral("sick"));
 			this.deactivateFeature(sick);
-
-			result.addPerception(agent.name, new PerceptAnnotation("relief"));
+			logger.info(agent.name + " cured himself with a healing plant!");
+			
 			result.success = true;
 		}
 		
@@ -278,7 +303,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		if(agent.location==this.island) {
+		if(agent.location==this.island && !this.island.isRaining()) {
 			
 			// you can only sleep if you have a safe place to sleep in
 			if(this.island.hasHut()) {
@@ -339,7 +364,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		if(agent.location==this.island) {
+		if(agent.location==this.island && !this.island.isRaining()) {
 		
 			logger.info(agent.name + " builds a hut.");
 			this.island.buildHut();
@@ -361,7 +386,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		if(agent.location==this.island) {
+		if(agent.location==this.island && !this.island.isRaining()) {
 			
 			// you can only complain if you have a friend
 			if(this.friends.get(agent) > 0) {
@@ -381,7 +406,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 		
-		if(agent.location==this.island && island.isBurning()) {
+		if(agent.location==this.island && island.isBurning() && !this.island.isRaining()) {
 		
 			this.island.extinguishFire();
 			this.environment.removePercept(this.island, Literal.parseLiteral("fire"));
@@ -473,7 +498,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 
 		// check if hunger has become critical
 
-		if(this.hunger.get(agent) >= 20) {
+		if(this.fatigue.get(agent) >= 20) {
 			this.getEnvironment().killAgent(agent.name);
 			logger.info(agent.name + " has died.");
 			
@@ -481,7 +506,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			// stop story
 			//PlotLauncher.getRunner().pauseExecution();
 			
-		} else if(this.hunger.get(agent) >= 10) {
+		} else if(this.fatigue.get(agent) >= 10) {
 			if(!this.environment.containsPercept(agent.name, Literal.parseLiteral("fatigue"))) {
 				this.environment.addPercept(agent.name, Literal.parseLiteral("fatigue"));
 				//this.activateFeature(fatigue);
@@ -505,7 +530,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 
 		// check if hunger has become critical
 
-		if(this.hunger.get(agent) >= 5) {
+		if(this.poison.get(agent) >= 5) {
 			this.getEnvironment().killAgent(agent.name);
 			logger.info(agent.name + " has died.");
 			
@@ -650,15 +675,18 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		//public boolean hasHut;
 		private boolean isBurning;
 		private Hut hut;
-		private boolean hasHealingPlants;
 		private int growTime;
 		private static int healingPlantGrowTime = 5;
+		private int torrentialRain;
+		private static int rainDuration = 5;
+		
 		
 		public Island() {
 			super("lonelyIsland");
 			this.isBurning = false;
 			this.hut = null;
-			this.hasHealingPlants = true;
+			torrentialRain=0;	
+			growTime=0;
 		}
 		
 		/**
@@ -692,24 +720,39 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			isBurning = false;
 		}
 		
-		public boolean hasPlants() {
+		public boolean hasHealingPlants() {
 			
-			return hasHealingPlants;
+			if(growTime == 0)
+				return true;
+						
+			return false;
 		}
 		
-		public void killHealingPlants() {
+		public void removeHealingPlants() {
 			
-			hasHealingPlants = false;
 			growTime = healingPlantGrowTime;
 		}
 		
 		public void growPlants() {
 			
-			if(growTime>0) {
+			if(growTime > 0)
 				growTime -= 1;
-			}else {
-				hasHealingPlants = true;
-			}
+		}
+		
+		public boolean isRaining() {
+			
+			if(torrentialRain > 0)
+				return true;
+			return false;
+		}
+		
+		public void startRain() {
+			torrentialRain = rainDuration;
+		}
+		
+		public void continueRain() {
+			if(torrentialRain > 0)
+				torrentialRain -= 1;
 		}
 		
 		public boolean isBurning() {
@@ -753,8 +796,15 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 			this.poisoned = true;
 		}
 	}
-
-
+	
+	public static class HealingPlant extends Item {
+		
+		static final String itemName = "healingPlant";
+		
+		public String getItemName() {
+			return HealingPlant.itemName;
+		}
+	}
 
 
 	@Override
