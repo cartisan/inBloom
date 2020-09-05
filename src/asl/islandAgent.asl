@@ -42,6 +42,10 @@
 @go_on_cruise_default
 +!start <- stayHome.
 
++!rescueSelf <- stranded;
+				-wish(rescueSelf).
+				
+
 @food_plan
 		
 +!eat <- if(has(food)) {
@@ -88,6 +92,8 @@
 
 /* React to new Belifes / Percepts */
 // Name of source is f.e. "percept"
+
++shipWrecked[source(Name)] <- +wish(rescueSelf).
 
 +endStory[source(Name)] <- +wish(happyEnd).
 

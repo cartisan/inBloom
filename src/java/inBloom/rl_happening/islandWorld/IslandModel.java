@@ -140,7 +140,36 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		return result;
 	}
 	
+	public ActionReport shipWrecked(Character agent) {
+
+		ActionReport result = new ActionReport();
+
+		if(agent.location == this.ship) {
+			
+			this.environment.addPercept(agent.name, Literal.parseLiteral("shipWrecked"));		
+			
+		}
+		
+		return result;
+	}
+	
+	public ActionReport stranded(Character agent) {
+		
+		ActionReport result = new ActionReport();
+		
+		if(agent.location != this.island) {
+			
+			result = agent.goTo(island);
+			deactivateFeature(IslandModel.onCruise);
+			activateFeature(IslandModel.onIsland);
+			getLogger().info(agent + " stranded on island " + island.name);
+
+		}
+		return result;
+	}
+	
 	public ActionReport stayHome(Character agent) {
+		
 		ActionReport result = new ActionReport();
 	
 		logger.info(agent.name + " stayed home.");
@@ -206,7 +235,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 		ActionReport result = new ActionReport();
 
-		if(agent.location==this.island && !this.island.isRaining()) {
+		if(agent.location==this.island) {
 			
 			// TODO könnte man auch in Character fast alles auslagern -> z.B. Hunger,
 			// wobei die percepts eigentlich eher hier gesteucert werden sollten
@@ -319,26 +348,13 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 				/*
 				 * 2. SLEEP
 				 */
+				
 				logger.info(agent.name + " is asleep.");
 				result.addPerception(agent.name, new PerceptAnnotation("relief"));
-	
 				
-				/* 
-				 * 3. HEAL
-				 *
-				
-				// if agent was sick, then now he isn't anymore
-				if(agent.isSick) {
-					agent.heal();
-				}
-				
-				this.environment.removePercept(agent.name, Literal.parseLiteral("sick"));
-				this.deactivateFeature(sick);
-				
-	
 				
 				/*
-				 * 4. LEAVE HUT
+				 * 3. LEAVE HUT
 				 */
 				
 				this.island.leaveSublocation(agent, island.hut.name);
@@ -462,21 +478,18 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		changeIndividualValue(this.hunger, agent, 1);
 
 		// check if hunger has become critical
-
 		if(this.hunger.get(agent) >= 10) {
 			this.getEnvironment().killAgent(agent.name);
 			logger.info(agent.name + " has died.");
 			
 			this.deactivateFeature("isAlive");
-			// stop story
-			//PlotLauncher.getRunner().pauseExecution();
 			
+		// Add hungry percept
 		} else if(this.hunger.get(agent) >= 5) {
 			if(!this.environment.containsPercept(agent.name, Literal.parseLiteral("hungry"))) {
 				this.environment.addPercept(agent.name, Literal.parseLiteral("hungry"));
 				this.activateFeature(hungry);
-				logger.info(agent.name + " is hungry.");
-		
+				logger.info(agent.name + " is hungry.");		
 			}
 		}	
 	}
@@ -494,22 +507,19 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		// increase hunger by 1
 		changeIndividualValue(this.fatigue, agent, 1);
 
-		// check if hunger has become critical
-
+		// check if fatigue has become critical
 		if(this.fatigue.get(agent) >= 20) {
 			this.getEnvironment().killAgent(agent.name);
 			logger.info(agent.name + " has died.");
 			
 			this.deactivateFeature("isAlive");
-			// stop story
-			//PlotLauncher.getRunner().pauseExecution();
-			
+
+		// Add fatigue percept
 		} else if(this.fatigue.get(agent) >= 10) {
 			if(!this.environment.containsPercept(agent.name, Literal.parseLiteral("fatigue"))) {
 				this.environment.addPercept(agent.name, Literal.parseLiteral("fatigue"));
 				//this.activateFeature(fatigue);
-				logger.info(agent.name + " is sleepy.");
-		
+				logger.info(agent.name + " is sleepy.");		
 			}
 		}		
 	}
@@ -526,16 +536,12 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		// increase hunger by 1
 		changeIndividualValue(this.poison, agent, 1);
 
-		// check if hunger has become critical
-
+		// check if poison has become critical
 		if(this.poison.get(agent) >= 5) {
 			this.getEnvironment().killAgent(agent.name);
 			logger.info(agent.name + " has died.");
 			
-			this.deactivateFeature("isAlive");
-			// stop story
-			//PlotLauncher.getRunner().pauseExecution();
-			
+			this.deactivateFeature("isAlive");			
 		}	
 	}
 

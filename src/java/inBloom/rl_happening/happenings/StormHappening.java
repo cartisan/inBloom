@@ -14,6 +14,7 @@ import inBloom.storyworld.Character;
  */
 public class StormHappening extends ConditionalHappening<IslandModel>{
 
+
 	/**
 	 * Constructor with trigger, patient and causalProperty
 	 * 
@@ -35,10 +36,7 @@ public class StormHappening extends ConditionalHappening<IslandModel>{
 
 		// Shipwrecked
 		if(chara.location.equals(model.ship)) {
-			chara.goTo(model.island);
-			model.deactivateFeature(IslandModel.onCruise);
-			model.activateFeature(IslandModel.onIsland);
-			model.getLogger().info(this.getPatient() + " stranded on island " + model.island.name);
+			model.shipWrecked(chara);
 		}
 
 		// Destroy Hut
