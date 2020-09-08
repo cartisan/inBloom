@@ -41,6 +41,9 @@
 
 @go_on_cruise_default
 +!start <- stayHome.
+					 
++!happyEnd <- 	happyEnd;
+				-wish(happyEnd).
 
 +!rescueSelf <- stranded;
 				-wish(rescueSelf).
@@ -84,9 +87,6 @@
 			  
 +!extinguish_fire <- extinguishFire;
 					 -wish(extinguish_fire).
-					 
-+!happyEnd <- 	happyEnd;
-				-wish(happyEnd).
 
 
 

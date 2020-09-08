@@ -360,7 +360,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 				this.island.leaveSublocation(agent, island.hut.name);
 				logger.info(agent.name + " has left the hut " + island.hut.name);
 				
-				
+				this.fatigue.replace(agent, 0);
 				result.success = true;
 				
 				
