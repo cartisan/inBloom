@@ -153,7 +153,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		return result;
 	}
 	
-	public ActionReport stranded(Character agent) {
+	public ActionReport swimToIsland(Character agent) {
 		
 		ActionReport result = new ActionReport();
 		
@@ -456,12 +456,20 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		
 	}
 		
-	public void happyRescueEnd(Character agent) {
+	public ActionReport goOnShip(Character agent) {
 		
-		logger.info("And Robinson lived happily ever after!");
+		ActionReport result = new ActionReport();
+		
+		logger.info("Robinson got rescued and lived happily ever after!");
+		
+		result.addPerception(agent.name, new PerceptAnnotation("relief"));
 		
 		getEnvironment().MAX_STEP_NUM =	getEnvironment().getStep();
-
+		
+		result.success=true;
+		
+		return result;
+		
 	}	
 	
 	/**

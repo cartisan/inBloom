@@ -41,12 +41,16 @@ public class IslandEnvironment extends PlotEnvironment<IslandModel> {
 			result = getModel().stayHome(agent);
 		}
 		
-		else if(action.getFunctor().equals("stranded")) {
-			result = getModel().stranded(agent);
+		else if(action.getFunctor().equals("swimToIsland")) {
+			result = getModel().swimToIsland(agent);
 		}
 		
 		else if(action.getFunctor().equals("happyEnd")) {
 			result = getModel().happyEnd(agent);
+		}
+		
+		else if(action.getFunctor().equals("goOnShip")) {
+			result = getModel().goOnShip(agent);
 		}
 		
 		else if(action.getFunctor().equals("findFriend")) {

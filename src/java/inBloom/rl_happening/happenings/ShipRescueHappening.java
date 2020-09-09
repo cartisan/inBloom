@@ -9,6 +9,7 @@ import inBloom.helper.PerceptAnnotation;
 import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;
+import jason.asSyntax.Literal;
 
 /**
  * A Happening in which the patient is rescued by a ship
@@ -36,7 +37,8 @@ public class ShipRescueHappening extends ConditionalHappening<IslandModel> {
 		chara.goTo(model.civilizedWorld);
 		model.deactivateFeature(IslandModel.onIsland);
 		model.getLogger().info(chara.name + " was rescued!");
-		model.happyRescueEnd(chara);
+		model.environment.addPercept(chara.name, Literal.parseLiteral("rescueEnd"));
+		//model.happyRescueEnd(chara);
 	}
 
 	@Override

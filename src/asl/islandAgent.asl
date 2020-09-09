@@ -44,8 +44,11 @@
 					 
 +!happyEnd <- 	happyEnd;
 				-wish(happyEnd).
+				
++!getRescued <- goOnShip;
+				-wish(getRescued).
 
-+!rescueSelf <- stranded;
++!rescueSelf <- swimToIsland;
 				-wish(rescueSelf).
 				
 
@@ -96,6 +99,8 @@
 +shipWrecked[source(Name)] <- +wish(rescueSelf).
 
 +endStory[source(Name)] <- +wish(happyEnd).
+
++rescueEnd[source(Name)] <- +wish(getRescued).
 
 +sick[source(Name)] <- +wish(heal).
 
