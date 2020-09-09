@@ -51,18 +51,18 @@
 
 @food_plan
 		
-+!eat <- if(has(food)) {
-			eat;
-			-wish(eat);
-		} else {
-			getFood;
-		}.
-		
 +!heal <- if(has(healingPlant)) {
 			useHealingPlants;
 			-wish(heal);
 		} else {
 			findHealingPlants;
+		}.
+		
++!eat <- if(has(food)) {
+			eat;
+			-wish(eat);
+		} else {
+			getFood;
 		}.
 		  
 +!sleep <- if(exists(hut)) {
@@ -77,6 +77,9 @@
 		   } else {
 		   		buildHut;
 		   }.
+			  
++!extinguish_fire <- extinguishFire;
+					 -wish(extinguish_fire).
 		  
 +!complain <- if(has(friend)) {
 				complain;
@@ -84,9 +87,6 @@
 			  } else {
 				findFriend;
 			  }.
-			  
-+!extinguish_fire <- extinguishFire;
-					 -wish(extinguish_fire).
 
 
 

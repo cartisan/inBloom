@@ -277,6 +277,11 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 					
 					// hier könnte man result.success = false setzen, aber an sich hat er ja gegessen
 				}
+			}else {
+				
+				// Robinson feels distress since his already build hut was destroyed.
+				result.addPerception(agent.name, new PerceptAnnotation("disappointment"));
+				getFood(agent);
 			}
 		}
 		return result;
@@ -366,10 +371,9 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 				
 			} else {
 				
-				result.success = false;
 				// Robinson feels distress since his already build hut was destroyed.
 				result.addPerception(agent.name, new PerceptAnnotation("distress"));
-				ActionReport bandaid = buildHut(agent);
+				buildHut(agent);
 			}
 		}	
 		
@@ -478,14 +482,14 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		changeIndividualValue(this.hunger, agent, 1);
 
 		// check if hunger has become critical
-		if(this.hunger.get(agent) >= 10) {
+		if(this.hunger.get(agent) >= 12) {
 			this.getEnvironment().killAgent(agent.name);
 			logger.info(agent.name + " has died.");
 			
 			this.deactivateFeature("isAlive");
 			
 		// Add hungry percept
-		} else if(this.hunger.get(agent) >= 5) {
+		} else if(this.hunger.get(agent) >= 6) {
 			if(!this.environment.containsPercept(agent.name, Literal.parseLiteral("hungry"))) {
 				this.environment.addPercept(agent.name, Literal.parseLiteral("hungry"));
 				this.activateFeature(hungry);
@@ -508,14 +512,14 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		changeIndividualValue(this.fatigue, agent, 1);
 
 		// check if fatigue has become critical
-		if(this.fatigue.get(agent) >= 20) {
+		if(this.fatigue.get(agent) >= 24) {
 			this.getEnvironment().killAgent(agent.name);
 			logger.info(agent.name + " has died.");
 			
 			this.deactivateFeature("isAlive");
 
 		// Add fatigue percept
-		} else if(this.fatigue.get(agent) >= 10) {
+		} else if(this.fatigue.get(agent) >= 16) {
 			if(!this.environment.containsPercept(agent.name, Literal.parseLiteral("fatigue"))) {
 				this.environment.addPercept(agent.name, Literal.parseLiteral("fatigue"));
 				//this.activateFeature(fatigue);
