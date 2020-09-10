@@ -26,22 +26,22 @@ public class ChromosomeHappenings {
 	 * 		boolean: True if Values are the same within a window of tolerance. False otherwise
 	 */
 	public boolean equals(ChromosomeHappenings other) {
-		boolean equality = true;
 
 		for(int i = 0;i< other.values.length;i++) {
 			for(int j = 0; j<other.values[i].length;j++) {
 				
 				// If both Happenings are instantiated take tolerance into account
 				if(this.values[i][j] > 0 && other.values[i][j] > 0) {
-					if(Math.abs(this.values[i][j] - other.values[i][j])<=1)
-						equality = false;
-				}
+					if(Math.abs(this.values[i][j] - other.values[i][j])>1)
+						return false;
+					
 				// Determine if both happenings have the same activation state
-				if(this.values[i][j] != other.values[i][j]) {
-					equality = false;
+				}else if(this.values[i][j] != other.values[i][j]) {
+					return false;
 				}
 			}
 		}
-		return equality;
+		return true;
 	}
+	
 }

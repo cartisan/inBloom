@@ -549,7 +549,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		changeIndividualValue(this.poison, agent, 1);
 
 		// check if poison has become critical
-		if(this.poison.get(agent) >= 5) {
+		if(this.poison.get(agent) >= 6) {
 			this.getEnvironment().killAgent(agent.name);
 			logger.info(agent.name + " has died.");
 			
@@ -692,9 +692,9 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		private boolean isBurning;
 		private Hut hut;
 		private int growTime;
-		private static int healingPlantGrowTime = 5;
+		private static int healingPlantGrowTime = 6;
 		private int torrentialRain;
-		private static int rainDuration = 5;
+		private static int rainDuration = 6;
 		
 		
 		public Island() {

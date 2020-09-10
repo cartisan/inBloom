@@ -23,18 +23,16 @@ public class ChromosomePersonality {
 	 * 		boolean: True if Values are roughly the same (no difference greater than 0.1). False otherwise
 	 */
 	public boolean equals(ChromosomePersonality other) {
-		boolean equality = true;
 		
 		for(int i = 0;i< other.values.length;i++) {
 			for(int j = 0; j<other.values[i].length;j++) {
 				// Window of tolerance
 				if(this.values[i][j] - other.values[i][j] > 0.1) {
-					equality = false;
+					return false;
 				}
 			}
 		}
-		
-		return equality;
+		return true;
 	}
-
+	
 }

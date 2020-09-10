@@ -30,7 +30,7 @@ public class Particle implements Individual,Comparable<Particle> {
 		
 	}
 	
-	public Particle(Candidate candidate, ChromosomePersonality velocity_personality, ChromosomeHappenings velocity_happenings) {
+	public Particle(Candidate candidate, ChromosomePersonality velocity_personality, ChromosomeHappenings velocity_happenings, Fitness fit) {
 		
 		this.current_personality = candidate.get_personality();
 		this.current_happenings = candidate.get_happenings();
@@ -39,11 +39,9 @@ public class Particle implements Individual,Comparable<Particle> {
 
 		this.velocity_personality = velocity_personality;
 		this.velocity_happenings = velocity_happenings;
-		
-		best_personality = current_personality;
-		best_happenings = current_happenings;
-		best_tellability = current_tellability;
-		best_simLength = simulation_length;
+
+		best_tellability=0;
+		update_tellability(fit);
 	}
 	
 	
@@ -153,8 +151,8 @@ public class Particle implements Individual,Comparable<Particle> {
 				
 				current_happenings.values[i][j] += velocity_happenings.values[i][j]*spacetime;
 				
-				if(current_happenings.values[i][j] < 0)
-					current_happenings.values[i][j] = 0;
+				//if(current_happenings.values[i][j] < 0)
+					//current_happenings.values[i][j] = 0;
 				
 				if(current_happenings.values[i][j] > length)
 					length=current_happenings.values[i][j];

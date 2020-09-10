@@ -587,8 +587,9 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			
 			// Initialize particles based on findings of the genetic algorithm
 			if(index < geneticInit) {
-				
-				particles[index] = new Particle(gen_pool[index],pers_velocity,hap_velocity);
+
+				Fitness<EnvType,ModType> fit = new Fitness<EnvType,ModType>(EVO_ENV);
+				particles[index] = new Particle(gen_pool[index],pers_velocity,hap_velocity,fit);
 				
 			// Otherwise use classic initialization
 			}else {
