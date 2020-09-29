@@ -231,26 +231,26 @@ wish(relax).
 	bake(bread);
 	+has(bread).
 
-//@eat1[atomic]
 +!eat : has(Item) & edible(Item) <-
-	!eat(Item);
-	-wish(eat).
+	!eat(Item).
 
 @eat2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +!eat(Food) : not wish(punish) & not received(Food) <-
 	?present(Others);
 	!share(Food, Others);
-	eat(Food).
+	eat(Food);
+	-wish(eat).
 	
 @eat4[atomic, affect(and(personality(agreeableness,medium), mood(pleasure,high)))]
 +!eat(Food) : not wish(punish) & not received(Food) <-
 	?present(Others);
 	!share(Food, Others);
-	eat(Food).
+	eat(Food);
+	-wish(eat).
 
 +!eat(Food) <- 
 	eat(Food);
-	.wait(eat(Food)).
+	-wish(eat).
 
 +!eat(X) : not has(X)<- 
 	.appraise_emotion(disappointment, "eat(X)").
