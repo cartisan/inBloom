@@ -36,7 +36,7 @@ public class Tellability {
 	public static final Long FORTUNE_CHANGE_INTERVAL_LENGTH = 10l;
 	public static final double FORTUNE_CHANGE_DELTA_MOOD_THRESHOLD = 0.5;
 	public static int GRAPH_MATCHING_TOLERANCE = 1;
-	public static final int SIMILARITY_FU_THRESHOLD = 5;
+	public static final int SIMILARITY_FU_THRESHOLD = 3;
 
 	protected static Logger logger = Logger.getLogger(Tellability.class.getName());
 
@@ -169,6 +169,11 @@ public class Tellability {
 			}
 		}
 
+		Integer maxPolyCount = vertexUnitCount.values().stream().mapToInt(i -> i).max().orElse(-1);
+		List<Vertex> mostPolyVertices = vertexUnitCount.entrySet().stream().filter(entry -> entry.getValue() == maxPolyCount)
+																		   .map(entry -> entry.getKey())
+																	       .collect(Collectors.toList());
+
 		this.numFunctionalUnits = unitInstances;
 		String foundUnits = this.functionalUnitCount.entrySet().stream().filter(entry -> entry.getValue() > 0)
 													.map(entry -> entry.getKey().getName() + ": " + entry.getValue())
@@ -178,7 +183,10 @@ public class Tellability {
 		logger.info("   --> Found units: " + foundUnits);
 
 		this.numPolyvalentVertices = polyvalentVertices;
+		logger.info("   Number of vertices that are part of at least one FU: " + vertexUnitCount.size());
 		logger.info("   Number of polyvalent vertices: " + this.numPolyvalentVertices);
+		logger.info("   Most polyvalent vertices (score=" + maxPolyCount + "): " + mostPolyVertices);
+		logger.fine("   Vertx:polyValenceValue-count" + vertexUnitCount);
 		logger.info("   Number of all vertices: " + this.numAllVertices);
 		this.absoluteFunctionalPolyvalence = (double) this.numPolyvalentVertices / this.numAllVertices;
 		logger.info("   --> Functional Polyvalence: " + this.absoluteFunctionalPolyvalence);
@@ -209,7 +217,7 @@ public class Tellability {
 		HashMap<String, List<String>> agentFuSeqMap = this.extractOrderedFUSequences(graph.getRoots().stream().map(v -> v.toString()).collect(Collectors.toList()));
 		boolean sufficientFUPresent = agentFuSeqMap.entrySet().stream().map( entry -> entry.getValue().size() )
 																	   .mapToInt(size -> size)
-																	   .max().orElse(0) >= SIMILARITY_FU_THRESHOLD;
+																	   .min().orElse(0) >= SIMILARITY_FU_THRESHOLD;
 
 		HashMap<String, List<String>> agentSeqMap;
 		List<Float> similarityScores =  new ArrayList<>();
