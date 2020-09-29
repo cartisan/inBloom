@@ -99,6 +99,7 @@ public class Character extends Existent {
 	public Item removeFromInventory(String itemName) {
 		for (Item item : this.inventory) {
 			if (item.getItemName().equals(itemName)) {
+				this.inventory.remove(item);
 				return item;
 			}
 		}

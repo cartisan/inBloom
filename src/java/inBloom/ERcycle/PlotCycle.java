@@ -203,7 +203,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
 		Tellability tel = analyzer.runSynchronously(analyzedGraph);
 		analyzedGraph.setName("ER Cycle, engagement step " + currentCycle);
-		this.log("Tellability" + Double.toString(tel.compute()));
+		this.log("Tellability: " + Double.toString(tel.compute()));
 
 		MoodMapper moodData = runner.getUserModel().moodMapper;
 		EngageResult er = this.createEngageResult(rr, runner, analyzedGraph, tel, moodData);
