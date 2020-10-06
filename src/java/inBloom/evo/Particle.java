@@ -177,7 +177,7 @@ public class Particle implements Individual,Comparable<Particle> {
 			System.out.println("Starting new Simulation: " + simulation_length);
 			current_tellability = fit.evaluate_individual(this);
 
-			if(current_tellability >= best_tellability) {
+			if(current_tellability > best_tellability) {
 				best_personality = current_personality;
 				best_happenings = current_happenings;
 				best_simLength = simulation_length;

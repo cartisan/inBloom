@@ -42,7 +42,7 @@ public class LooseFriendHappening extends ConditionalHappening<IslandModel> {
 
 	@Override
 	protected String getConditionalEmotion() {
-		return "distress";
+		return "pity";
 	}
 	
 }

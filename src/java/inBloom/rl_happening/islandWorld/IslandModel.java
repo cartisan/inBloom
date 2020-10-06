@@ -146,7 +146,8 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 
 		if(agent.location == this.ship) {
 			
-			this.environment.addPercept(agent.name, Literal.parseLiteral("shipWrecked"));		
+			this.environment.addPercept(agent.name, Literal.parseLiteral("shipWrecked"));	
+			result.addPerception(agent.name, new PerceptAnnotation("fear"));	
 			
 		}
 		
@@ -269,6 +270,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 				if(food.isPoisoned()) {
 					// TODO es wäre natürlich schöner, das hier direkt im Agent zu modellieren
 					agent.getPoisoned();
+					result.addPerception(agent.name, new PerceptAnnotation("distress"));
 					this.environment.addPercept(agent.name, Literal.parseLiteral("sick"));
 					logger.info(agent.name + " is sick.");
 					
@@ -355,7 +357,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 				 */
 				
 				logger.info(agent.name + " is asleep.");
-				result.addPerception(agent.name, new PerceptAnnotation("relief"));
+				result.addPerception(agent.name, new PerceptAnnotation("gratification"));
 				
 				
 				/*

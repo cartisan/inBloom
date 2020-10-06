@@ -48,6 +48,7 @@
 +!getRescued <- goOnShip;
 				-wish(getRescued).
 
+@rescueSelf1[priority(3)] 
 +!rescueSelf <- swimToIsland;
 				-wish(rescueSelf).
 				
@@ -61,12 +62,21 @@
 			findHealingPlants;
 		}.
 		
-+!eat <- if(has(food)) {
-			eat;
-			-wish(eat);
-		} else {
-			getFood;
-		}.
+//+!eat <- if(has(food)) {
+//			eat;
+//			-wish(eat);
+//		} else {
+//			getFood;
+//		}.
+		
++!eat : not(has(food)) <- 
+		getFood;
+		eat;
+		-wish(eat).
+		
++!eat : has(food) <-
+		eat;
+		-wish(eat).
 		  
 +!sleep <- if(exists(hut)) {
 				sleep;
@@ -80,7 +90,9 @@
 		   } else {
 		   		buildHut;
 		   }.
-			  
+
+
+@extinguish_fire0[priority(-2)] 
 +!extinguish_fire <- extinguishFire;
 					 -wish(extinguish_fire).
 		  
