@@ -48,19 +48,31 @@
 +!getRescued <- goOnShip;
 				-wish(getRescued).
 
-@rescueSelf1[priority(3)] 
+@rescueSelf0[priority(2)] 
 +!rescueSelf <- swimToIsland;
 				-wish(rescueSelf).
 				
 
 @food_plan
-		
-+!heal <- if(has(healingPlant)) {
-			useHealingPlants;
-			-wish(heal);
-		} else {
+	
+@heal0[priority(1)] 	
+//+!heal <- if(has(healingPlant)) {
+//			useHealingPlants;
+//			-wish(heal);
+//		} else {
+//			findHealingPlants;
+//		}.
+
+@heal0[priority(1)] 	
++!heal : not(has(healingPlant)) <-
 			findHealingPlants;
-		}.
+			useHealingPlants;
+			-wish(heal).
+			
+@heal0[priority(1)] 	
++!heal : has(healingPlant) <-
+			useHealingPlants;
+			-wish(heal).
 		
 //+!eat <- if(has(food)) {
 //			eat;
@@ -69,40 +81,62 @@
 //			getFood;
 //		}.
 		
+@eat0[priority(1)] 
 +!eat : not(has(food)) <- 
 		getFood;
 		eat;
 		-wish(eat).
 		
+@eat0[priority(1)] 
 +!eat : has(food) <-
 		eat;
 		-wish(eat).
 		  
-+!sleep <- if(exists(hut)) {
+//@sleep0[priority(1)] 
+//+!sleep <- if(exists(hut)) {
+//				sleep;
+//				-wish(sleep);
+//				// TODO - only if they wish to heal?
+//				// 1. is it necessary?
+//				// 2. how do I do knowledge abfrage?
+//				// find out object of belief:    ?belief(X)
+//				// find out existence of belief: if(belief)
+//				//-wish(heal);
+//		   } else {
+//		   		buildHut;
+//		   }.
+	
+@sleep0[priority(1)] 	   
++!sleep : not(exists(hut)) <-
+				buildHut;
 				sleep;
-				-wish(sleep);
-				// TODO - only if they wish to heal?
-				// 1. is it necessary?
-				// 2. how do I do knowledge abfrage?
-				// find out object of belief:    ?belief(X)
-				// find out existence of belief: if(belief)
-				//-wish(heal);
-		   } else {
-		   		buildHut;
-		   }.
+				-wish(sleep).
+		
+@sleep0[priority(1)] 		
++!sleep : exists(hut) <-
+				sleep;
+				-wish(sleep.
 
 
-@extinguish_fire0[priority(-2)] 
+@extinguish_fire0[priority(2)] 
 +!extinguish_fire <- extinguishFire;
 					 -wish(extinguish_fire).
 		  
-+!complain <- if(has(friend)) {
-				complain;
-				-wish(complain);
-			  } else {
+//+!complain <- if(has(friend)) {
+//				complain;
+//				-wish(complain);
+//			  } else {
+//				findFriend;
+//			  }.
+			  
++!complain : not(has(friend)) <-
 				findFriend;
-			  }.
-
+				complain;
+				-wish(complain).
+				
++!complain : has(friend) <-
+				complain;
+				-wish(complain).
 
 
 /* React to new Belifes / Percepts */
