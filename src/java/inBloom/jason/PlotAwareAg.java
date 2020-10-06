@@ -225,21 +225,12 @@ public class PlotAwareAg extends AffectiveAgent {
     	Iterator<Intention> ii = intentions.iterator();
     	
     	Intention bestIntention = ii.next();
-
-    	if(ii.hasNext()) {
-	    	//System.out.println(bestIntention.getId());
-	    	System.out.println(bestIntention.toString());
-    	}
     	
     	int best = returnPriority(bestIntention);
 	    	
     	while(ii.hasNext()) {
     		
     		Intention i = ii.next();
-    		
-
-        	System.out.println(i.toString());
-        	//System.out.println(i.getId());
     		
     		int current = returnPriority(i);
         	
@@ -249,13 +240,8 @@ public class PlotAwareAg extends AffectiveAgent {
     		}    	
     	}
     	
-    	logger.info("DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    	
     	intentions.remove(bestIntention);
     	return bestIntention;
-    	//}
-
-        //return intentions.poll();
     }
     
     
