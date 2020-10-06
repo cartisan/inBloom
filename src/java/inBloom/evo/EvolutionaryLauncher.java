@@ -24,8 +24,8 @@ public class EvolutionaryLauncher {
 		 * Choose a Mode:
 		 */
 		
-		//String algorithm = "GEN";
-		String algorithm = "PSO";
+		String algorithm = "GEN";
+		//String algorithm = "PSO";
 		//String algorithm = "Coupled";
 		
 		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,4,0.3,0.2);
