@@ -148,8 +148,8 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 		String name = "GEN";
 
 		@SuppressWarnings("unchecked")
-		//FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, true);
-		FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, false);
+		FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, true);
+		//FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, false);
 		
 		fi.readFile();
 		

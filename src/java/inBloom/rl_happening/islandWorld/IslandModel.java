@@ -696,7 +696,7 @@ public class IslandModel extends FeaturePlotModel<IslandEnvironment> {
 		private int growTime;
 		private static int healingPlantGrowTime = 6;
 		private int torrentialRain;
-		private static int rainDuration = 6;
+		private static int rainDuration = 4;
 		
 		
 		public Island() {
