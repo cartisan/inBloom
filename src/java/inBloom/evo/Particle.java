@@ -223,7 +223,7 @@ public class Particle implements Individual,Comparable<Particle> {
 		int number_agents = best_personality.values.length;
 		int number_happenings = best_happenings.values[0].length;
 		
-		String string = String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(best_simLength) + " " +  String.valueOf(best_actualLength) + "\n";
+		String string = String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(best_simLength) + "\n" +  String.valueOf(best_actualLength) + "\n";
 		
 		
 		for(int i = 0; i < number_agents; i++) {

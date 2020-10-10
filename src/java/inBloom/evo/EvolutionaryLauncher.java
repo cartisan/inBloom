@@ -11,7 +11,7 @@ public class EvolutionaryLauncher {
 		// number individuals
 		int individual_count = 20;
 		// selection size
-		int selection_size = 4;
+		int selection_size = 2;
 		// crossover probability
 		double crossover_prob = 0.2;
 		// mutation probability

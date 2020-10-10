@@ -134,7 +134,7 @@ public class Candidate implements Individual,Comparable<Candidate>{
 		int number_agents = chromosome_personality.values.length;
 		int number_happenings = chromosome_happenings.values[0].length;
 		
-		String string = String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(simulation_length) + " " +  String.valueOf(actual_length) + "\n";
+		String string = String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(simulation_length) + "\n" +  String.valueOf(actual_length) + "\n";
 		
 		
 		for(int i = 0; i < number_agents; i++) {

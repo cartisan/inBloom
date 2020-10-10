@@ -76,11 +76,8 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 			number_agents = Integer.parseInt(in.readLine());
 			number_happenings = Integer.parseInt(in.readLine());
 			
-			line = in.readLine();
-			tk = new StringTokenizer(line);
-			
-			simulation_length = Integer.parseInt(tk.nextToken());
-			actual_length = Integer.parseInt(tk.nextToken());
+			simulation_length = Integer.parseInt(in.readLine());
+			actual_length = Integer.parseInt(in.readLine());
 			
 			// Personality
 			ChromosomePersonality pers = new ChromosomePersonality(number_agents);
@@ -149,13 +146,13 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) {
 		
-		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\G\\INIT\\30\\";
+		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\";
 		//String name = "PSO";
-		String name = "GEN1";
+		String name = "GEN";
 
 		@SuppressWarnings("unchecked")
-		//FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, true);
-		FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, false);
+		FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, true);
+		//FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, false);
 		
 		fi.readFile();
 		
