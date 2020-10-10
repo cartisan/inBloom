@@ -31,7 +31,7 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 	
 	// Termination criteria
 	protected static int no_improvement=0;
-	protected static int termination=50;
+	protected static int termination=25;
 	protected static long start_time;
 	protected static long max_runtime=-1;
 	
@@ -73,7 +73,7 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 	// Set maximum runtime in seconds.
 	public void setMaxRuntime(long time) {
 		
-		if(time>0)
+		if(time>=0)
 			max_runtime = time*1000;
 		else
 			max_runtime = -1;
@@ -91,7 +91,9 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 	
 	public double round(double value) {
 		
-		return Math.round(value*100-0.5)/100;
+		double d = Math.round(value*100-0.5);
+		
+		return d/100;
 	}
 	
 	

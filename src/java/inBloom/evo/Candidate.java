@@ -8,12 +8,14 @@ public class Candidate implements Individual,Comparable<Candidate>{
 	private ChromosomeHappenings chromosome_happenings;
 	private double tellability;
 	private Integer simulation_length;
+	private Integer actual_length;
 	
 	public Candidate(ChromosomePersonality personality, ChromosomeHappenings happenings, Integer simLength, Fitness<?,?> fit){
 		
 		this.chromosome_personality = personality;
 		this.chromosome_happenings = happenings;
 		this.simulation_length = simLength;
+		this.actual_length = simulation_length;
 		
 		try {
 			tellability = fit.evaluate_individual(this);
@@ -30,6 +32,10 @@ public class Candidate implements Individual,Comparable<Candidate>{
 	
 	public Integer get_simLength() {
 		return simulation_length;
+	}
+	
+	public void set_actualLength(int length) {
+		actual_length = length;
 	}
 	
 	public ChromosomePersonality get_personality() {
@@ -62,9 +68,11 @@ public class Candidate implements Individual,Comparable<Candidate>{
 	
 	public boolean equals(Candidate other) {
 		
+		if(actual_length!=other.actual_length)
+			return false;
 		if(!this.chromosome_personality.equals(other.chromosome_personality))
 			return false;
-		if(!this.chromosome_happenings.equals(other.chromosome_happenings))
+		if(!this.chromosome_happenings.equals(other.chromosome_happenings,actual_length))
 			return false;
 		
 		return true;
@@ -79,7 +87,7 @@ public class Candidate implements Individual,Comparable<Candidate>{
 		
 		if(!this.chromosome_personality.equals(other_personality))
 			return false;
-		if(!this.chromosome_happenings.equals(other_happenings))
+		if(!this.chromosome_happenings.equals(other_happenings,actual_length))
 			return false;
 		return true;
 	}
@@ -126,7 +134,7 @@ public class Candidate implements Individual,Comparable<Candidate>{
 		int number_agents = chromosome_personality.values.length;
 		int number_happenings = chromosome_happenings.values[0].length;
 		
-		String string = String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(simulation_length) + "\n";
+		String string = String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(simulation_length) + " " +  String.valueOf(actual_length) + "\n";
 		
 		
 		for(int i = 0; i < number_agents; i++) {

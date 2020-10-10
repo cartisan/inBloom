@@ -389,15 +389,17 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
 		// remove character from story-world model
 		this.model.removeCharacter(agName);
-		if(this.model.getCharacters().isEmpty()) {
-			
+		
+		if (this.model.getCharacters().isEmpty()) {
+
 			logger.info("No agents left.");
 
     		PlotLauncher.runner.pauseExecution();
     		for(EnvironmentListener l : this.listeners) {
     			l.onPauseRepeat();
     		}
-		}
+    		MAX_STEP_NUM = this.getStep();
+    	}
 	}
 
 	/**
@@ -736,6 +738,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	    		this.pause();
 	    	} else if (this.model.getCharacters().isEmpty()) {
 	    		logger.info("Auto-paused execution of simulation, because all agents died.");
+	    		MAX_STEP_NUM = this.getStep();
 	    		this.pause();
 	    	}
 		}

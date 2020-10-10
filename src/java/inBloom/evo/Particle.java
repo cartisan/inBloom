@@ -14,7 +14,9 @@ public class Particle implements Individual,Comparable<Particle> {
 	private double best_tellability;
 	private double spacetime=1;
 	private Integer simulation_length;
+	private Integer actual_length;
 	private Integer best_simLength;
+	private Integer best_actualLength;
 	
 	
 	public Particle(ChromosomePersonality personality, ChromosomePersonality velocity_personality, ChromosomeHappenings happenings, ChromosomeHappenings velocity_happenings, Integer simLength, Fitness<?,?> fit){
@@ -24,6 +26,7 @@ public class Particle implements Individual,Comparable<Particle> {
 		this.current_personality = personality;
 		this.current_happenings = happenings;
 		this.simulation_length = simLength;
+		this.actual_length = simulation_length;
 		
 		best_tellability=0;
 		update_tellability(fit);
@@ -53,6 +56,10 @@ public class Particle implements Individual,Comparable<Particle> {
 	
 	public Integer best_simLength() {
 		return best_simLength;
+	}
+
+	public void set_actualLength(int length) {
+		actual_length = length;
 	}
 	
 	public ChromosomePersonality get_personality() {
@@ -181,6 +188,7 @@ public class Particle implements Individual,Comparable<Particle> {
 				best_personality = current_personality;
 				best_happenings = current_happenings;
 				best_simLength = simulation_length;
+				best_actualLength = actual_length; 
 				best_tellability = current_tellability;
 			}
 			
@@ -215,7 +223,7 @@ public class Particle implements Individual,Comparable<Particle> {
 		int number_agents = best_personality.values.length;
 		int number_happenings = best_happenings.values[0].length;
 		
-		String string = String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(best_simLength) + "\n";
+		String string = String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(best_simLength) + " " +  String.valueOf(best_actualLength) + "\n";
 		
 		
 		for(int i = 0; i < number_agents; i++) {

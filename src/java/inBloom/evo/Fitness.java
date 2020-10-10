@@ -172,6 +172,8 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			super.reset();
 		}
 		
+		individual.set_actualLength(PlotEnvironment.MAX_STEP_NUM);
+		
 		return result;
 	}
 	

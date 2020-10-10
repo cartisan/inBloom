@@ -10,6 +10,7 @@ public interface Individual {
 	public int get_happenings(int x, int y);
 
 	public Integer get_simLength();
+	public void set_actualLength(int length);
 	public double get_tellability();
 	
 	public String to_String();

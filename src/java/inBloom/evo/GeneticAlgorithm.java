@@ -31,7 +31,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
 	private static boolean[] hapInitBool = {true,true,true}; 
 	// randomSelector, rouletteWheelSelection
-	private static boolean[] selectionBool = {true,true}; 
+	private static boolean selectionBool = true;
 	// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
 	private static boolean[] crossoverBool = {true,true,true,true};
 	// randomMutator,toggleMutator,orientedMutator,guidedMutator
@@ -120,30 +120,20 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	
 	// Selection operators
-	public boolean[] getSelection() {
+	public boolean getSelection() {
 		
 		return selectionBool;
 	}
 	
-	public void setSelection(int pos, boolean bool) {
+	public void setSelection(boolean bool) {
 		
-		if(pos>=0 && pos < selectionBool.length)
-			selectionBool[pos] = bool;
-		else
-			System.out.println("Position is out of bounds");
+		selectionBool = bool;
 	}
-	
-	public void setSelection(boolean random, boolean rWheel) {
-		
-		selectionBool[0] = random;
-		selectionBool[1] = rWheel;		
-	}
-	
 	
 	// Crossover operators
 	public boolean[] getCrossover() {
 		
-		return selectionBool;
+		return crossoverBool;
 	}
 	
 	public void setCrossover(int pos, boolean bool) {
@@ -166,7 +156,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	// Mutation operators
 	public boolean[] getMutation() {
 		
-		return selectionBool;
+		return mutationBool;
 	}
 	
 	public void setMutation(int pos, boolean bool) {
@@ -210,11 +200,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		// Minimum Population size
 		if(individual_count<4) {
 			System.out.println("Size of population defaulted to 4!");
-			this.individual_count = 4;
+			individual_count = 4;
 		}
 		
 		// Selection size must be positive
-		if(selection_size < 0) {
+		if(selection_size <= 2) {
 			System.out.println("Selection_size defaulted to: " + selection_size);
 			selection_size = 2;
 		}
@@ -222,7 +212,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		// Selection size must be an even number smaller individual_count
 		while(selection_size>=individual_count) {
 			selection_size/=2;
-			selection_size%=2;
+			selection_size-=selection_size%2;
 			System.out.println("Selection_size reduced to: " + selection_size);
 		}
 		
@@ -325,7 +315,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			initialize_pop();
 			evaluate_population();
 			
-			// Repeat until termination (no improvements found or time criterion -if set- is met):
+			// Repeat until termination (no improvements found) or time criterion -if set- is met:
 			while(no_improvement<termination && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0)) {
 				
 				// Verbose
@@ -626,41 +616,10 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	public List<Integer> select() {
 		
-		// Set used selection operators
-		List<Integer> selectList = new ArrayList<Integer>();
-				
-		for(int i = 0; i < selectionBool.length; i++) {
-			if(selectionBool[i])
-				selectList.add(i);
-		}
-		
-		if(selectList.size()==0) {
-			System.out.println("No selection set. Defaulting to random selection!");
-			selectList.add(0);
-		}
-		
-		List<Integer> result = new ArrayList<Integer>();
-		
-		Integer type = selectList.get((int)Math.round(Math.random()*selectList.size()-0.5));
-		
-		switch(type) {
-		
-		case(0):
+		if(selectionBool) 
+			return rouletteWheelSelector();
 
-			result = randomSelector();
-			break;
-			
-		case(1):
-			
-			result = rouletteWheelSelector();
-			break;			
-			
-		default:
-			
-			System.out.println("Fatal Error @ Selection Operator Selection!");
-			break;
-		}	
-		return result;
+		return randomSelector();
 	}
 	
 	
