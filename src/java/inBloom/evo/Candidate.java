@@ -67,9 +67,7 @@ public class Candidate implements Individual,Comparable<Candidate>{
 	 */
 	
 	public boolean equals(Candidate other) {
-		
-		if(actual_length!=other.actual_length)
-			return false;
+
 		if(!this.chromosome_personality.equals(other.chromosome_personality))
 			return false;
 		if(!this.chromosome_happenings.equals(other.chromosome_happenings,actual_length))

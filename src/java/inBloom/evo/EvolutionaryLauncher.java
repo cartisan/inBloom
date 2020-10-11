@@ -11,14 +11,16 @@ public class EvolutionaryLauncher {
 		// number individuals
 		int individual_count = 20;
 		// selection size
-		int selection_size = 2;
+		int selection_size = 4;
 		// crossover probability
 		double crossover_prob = 0.2;
 		// mutation probability
 		double mutation_prob = 0.1;
 		
-		// maximum time in seconds (no time limit: time < 0 or leave it out as default value is -1)
-		int time = 0;
+		// maximum time in seconds 
+		// no time limit: time < 0 or leave it out as default value is -1
+		// time == 0 : Only Initialization
+		int time = 3600;
 		// number of iterations without improvement till shutdown
 		int max_repetitions = 25;
 		

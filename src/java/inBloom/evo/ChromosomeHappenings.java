@@ -32,7 +32,8 @@ public class ChromosomeHappenings {
 				
 				// If both Happenings are instantiated
 				if(this.values[i][j] > 0 && this.values[i][j] <= length && other.values[i][j] > 0 && other.values[i][j] <= length) {
-					if(this.values[i][j] != other.values[i][j])
+					// Return false if both values are outside of a certain tolerance window
+					if(Math.abs(this.values[i][j] - other.values[i][j])>1)
 						return false;
 					
 				// Determine if both happenings have the same activation state
