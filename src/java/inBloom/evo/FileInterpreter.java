@@ -81,23 +81,22 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 			
 			// Personality
 			ChromosomePersonality pers = new ChromosomePersonality(number_agents);
-
-			line = in.readLine();
-			tk = new StringTokenizer(line);
 			
 			for(int i = 0; i<number_agents;i++) {
+				line = in.readLine();
+				tk = new StringTokenizer(line);
 				for(int j = 0; j < 5; j++) {
 					pers.values[i][j] = Double.parseDouble(tk.nextToken());
 				}
 			}
 
-			line = in.readLine();
-			tk = new StringTokenizer(line);
 			
 			// Happenings
 			ChromosomeHappenings hap = new ChromosomeHappenings(number_agents,number_happenings);
 
 			for(int i = 0; i<number_agents;i++) {
+				line = in.readLine();
+				tk = new StringTokenizer(line);
 				for(int j = 0; j < number_happenings; j++) {
 					hap.values[i][j] = Integer.parseInt(tk.nextToken());
 				}
