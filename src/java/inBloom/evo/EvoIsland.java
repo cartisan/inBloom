@@ -197,7 +197,7 @@ public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, Island
 			
 			ShipRescueHappening shipRescue = new ShipRescueHappening(
 					(IslandModel model) -> {
-						if(!model.island.getCharacters().isEmpty() && model.getStep() > step) {
+						if(!model.island.getCharacters().isEmpty() && model.getStep()>5 && model.getStep() > step) {
 							return true;
 						}
 						return false;
