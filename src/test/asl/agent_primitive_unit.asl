@@ -46,22 +46,22 @@ smelly(poo).
 -has(X) <-
 	+missing(X);
 	if(is_important(X)) {
-		.appraise_emotion(distress, "has(X)[source(percept)]", "self", true);
+		.appraise_emotion(distress, "has(X)", "self", 1);
 		+self(has_purpose);
 		.print("I need to find my ", X, ", it's very important to me! :(");
 		!find(X);
 	}.
 	
 +has(X) : not missing(X) & is_important(X) <-
-	.appraise_emotion(pride, "has(X)[source(percept)]", "self").
+	.appraise_emotion(pride, "has(X)", "self").
 
 @p0[atomic]
 +has(X) : missing(X) <-
-	.appraise_emotion(relief, "has(X)[source(percept)]", "self");
+	.appraise_emotion(relief, "has(X)", "self");
 	.succeed_goal(find(X));
 	-self(has_purpose);
 	-missing(X);												  // creates termination edge to missing
-	.appraise_emotion(joy, "missing(X)[source(self)]", "self");   // artifice to create positive trade-off of second kind (see Wilke thesis pp. 19) 
+	.appraise_emotion(joy, "missing(X)", "self");   // artifice to create positive trade-off of second kind (see Wilke thesis pp. 19) 
 	+is_bad(lost(X)).
 	
 	
