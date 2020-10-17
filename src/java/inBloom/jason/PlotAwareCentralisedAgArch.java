@@ -74,13 +74,13 @@ public class PlotAwareCentralisedAgArch extends CentralisedAgArch {
         try {
         	if(MASConsoleGUI.get().isPause()) {
         		this.logger.info("Agent execution paused.");
-        		if(PlotLauncher.getRunner().getUserEnvironment().getStep() < PlotLauncher.getRunner().getUserEnvironment().MAX_STEP_NUM || PlotLauncher.getRunner().getUserEnvironment().MAX_STEP_NUM<0) {
+        		if(PlotLauncher.runner.getShowGui() && PlotLauncher.getRunner().getUserEnvironment().MAX_STEP_NUM >= 0&& PlotLauncher.getRunner().getUserEnvironment().currentStep > PlotLauncher.getRunner().getUserEnvironment().MAX_STEP_NUM) {
 		            while (MASConsoleGUI.get().isPause()) {
 		                Thread.sleep(100);
 		            }
 		            this.logger.info("Agent execution continued");
         		}else {
-        			PlotLauncher.getRunner().getUserEnvironment().stop();
+        			PlotLauncher.getRunner().pauseExecution();
         		}
         	}
         } catch (Exception e) { }

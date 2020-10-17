@@ -49,6 +49,9 @@ public class PlotControlsLauncher extends RunCentralisedMAS implements AnalysisR
 	public void setShowGui(boolean showGui) {
 		this.showGui = showGui;
 	}
+	public boolean getShowGui() {
+		return this.showGui;
+	}
 
 	@Override
 	public synchronized void setupLogger() {
@@ -162,12 +165,6 @@ public class PlotControlsLauncher extends RunCentralisedMAS implements AnalysisR
 		this.graphs = new LinkedList<>();
 		this.isDraw = false;
 		this.drawButton.setText("Show Graphs");
-	}
-
-	@Override
-	public void finish() {
-		this.pauseExecution();
-		super.finish();
 	}
 
 	@Override
