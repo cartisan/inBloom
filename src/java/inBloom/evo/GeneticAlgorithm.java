@@ -31,7 +31,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
 	private static boolean[] hapInitBool = {true,true,true}; 
 	// randomSelector, rouletteWheelSelection
-	private static boolean selectionBool = true;
+	private static boolean[] selectionBool = {true,true};
 	// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
 	private static boolean[] crossoverBool = {true,true,true,true};
 	// randomMutator,toggleMutator,orientedMutator,guidedMutator
@@ -120,15 +120,25 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	
 	// Selection operators
-	public boolean getSelection() {
+	public boolean[] getSelection() {
 		
 		return selectionBool;
 	}
 	
-	public void setSelection(boolean bool) {
-		
-		selectionBool = bool;
+	public void setSelection(boolean random, boolean roulette) {
+
+		selectionBool[0] = random;
+		selectionBool[1] = roulette;
 	}
+	
+	public void setSelection(int pos, boolean bool) {
+		
+		if(pos>=0 && pos < selectionBool.length) 
+			selectionBool[pos] = bool;
+		else
+			System.out.println("Position is out of bounds");
+	}
+	
 	
 	// Crossover operators
 	public boolean[] getCrossover() {
@@ -616,9 +626,24 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	public List<Integer> select() {
 		
-		if(selectionBool) 
+		// Set used selection operators
+		List<Integer> selectionList = new ArrayList<Integer>();
+				
+		for(int i = 0; i < selectionBool.length; i++) {
+			if(selectionBool[i])
+				selectionList.add(i);
+		}
+		
+		if(selectionList.size()==0) {
+			System.out.println("No selection set. Defaulting to random selection!");
+			selectionList.add(0);
+		}
+		
+		int type = selectionList.get((int)Math.round(Math.random()*selectionList.size()-0.5));
+				
+		if(type == 1)
 			return rouletteWheelSelector();
-
+		
 		return randomSelector();
 	}
 	

@@ -52,11 +52,11 @@ public class EvolutionaryLauncher {
 			}
 			
 			// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
-			ga.setPersInit(true, false, false);
+			ga.setPersInit(false, true, true);
 			// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
-			ga.setHapInit(true, false, false);
+			ga.setHapInit(true, true, false);
 			// true -> rouletteWheelSelection, false -> randomSelector
-			ga.setSelection(true);
+			ga.setSelection(true,true);
 			// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
 			ga.setCrossover(true, true, true, true);
 			// randomMutator,toggleMutator,orientedMutator,guidedMutator

@@ -144,7 +144,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) {
 		
-		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\G\\0201\\";
+		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\Current\\";
 		//String name = "PSO";
 		String name = "GEN 0";
 
