@@ -185,7 +185,6 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			MASConsoleGUI.get().setPause(true);
 			runner.reset();
 		}else {
-			//env.stop();
 			reset();
 		}
 	}
@@ -200,19 +199,14 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	@Override
 	public void reset() {
 		
-		//if(!showGui) {
-			if(env != null) {
-				env.stop();
-				//env = null;
-			}
-			if (control != null) {
-	    		control.stop();
-	    		//control = null;
-	    	}
-	    	stopAgs();
-	    	//runner = null;
-	    	ags.clear();
-		//}
+		if(env != null) {
+			env.stop();
+		}
+		if (control != null) {
+    		control.stop();
+    	}
+    	stopAgs();
+    	ags.clear();
     }
 	
 	

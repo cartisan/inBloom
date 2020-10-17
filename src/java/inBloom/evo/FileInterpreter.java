@@ -89,7 +89,6 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 					pers.values[i][j] = Double.parseDouble(tk.nextToken());
 				}
 			}
-
 			
 			// Happenings
 			ChromosomeHappenings hap = new ChromosomeHappenings(number_agents,number_happenings);
@@ -145,9 +144,9 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) {
 		
-		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\";
+		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\G\\0201\\";
 		//String name = "PSO";
-		String name = "GEN";
+		String name = "GEN 0";
 
 		@SuppressWarnings("unchecked")
 		FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, true);
