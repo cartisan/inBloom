@@ -119,9 +119,9 @@ public class Particle implements Individual,Comparable<Particle> {
 		velocity_personality.values[x][y] += update*spacetime; 
 	}
 	
-	public void update_persVelocity(int x, int y, double update, double factor) {
+	public void update_persVelocity(int x, int y, double update, double decayRate) {
 
-		velocity_personality.values[x][y] *= 1-factor; 
+		velocity_personality.values[x][y] *= 1-decayRate; 
 		velocity_personality.values[x][y] += update*spacetime; 
 	}
 	
@@ -130,9 +130,9 @@ public class Particle implements Individual,Comparable<Particle> {
 		velocity_happenings.values[x][y] += update*spacetime; 
 	}
 	
-	public void update_hapVelocity(int x, int y, int update, double factor) {
+	public void update_hapVelocity(int x, int y, int update, double decayRate) {
 
-		velocity_happenings.values[x][y] *= 1-factor; 
+		velocity_happenings.values[x][y] *= 1-decayRate; 
 		velocity_happenings.values[x][y] += update*spacetime; 
 	}
 	
@@ -184,7 +184,7 @@ public class Particle implements Individual,Comparable<Particle> {
 			System.out.println("Starting new Simulation: " + simulation_length);
 			current_tellability = fit.evaluate_individual(this);
 
-			if(current_tellability > best_tellability) {
+			if(current_tellability >= best_tellability) {
 				best_personality = current_personality;
 				best_happenings = current_happenings;
 				best_simLength = simulation_length;

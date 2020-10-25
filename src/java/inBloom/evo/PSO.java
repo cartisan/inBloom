@@ -48,7 +48,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	// false -> use static update rate, false -> update with force calculation
 	private static boolean floatingParameters = false;
 	// if floatingParameters == false: use this as update rate
-	private static double update_rate = 0.1;
+	private static double decay_factor = 0.1;
 	// determine if particles shall move according to spacetime
 	private static boolean spacetime = false;
 	// exploration is used in the spacetime formula 
@@ -224,12 +224,12 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		floatingParameters = floating;
 	}
 	
-	public double getUpdateRate() {
-		return update_rate;
+	public double getDecayRate() {
+		return decay_factor;
 	}
 	
-	public void setUpdateRate(double rate) {
-		update_rate = rate;
+	public void setDecayRate(double rate) {
+		decay_factor = rate;
 	}
 
 	public boolean getSpacetime() {
@@ -452,33 +452,20 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			// Repeat until termination (no improvements found or time criterion -if set- is met):
 			while(no_improvement<termination && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0)) {
 				
-				// Verbose
-				int generation = population_best.size()-1;
-				
-				System.out.println();
-				System.out.println("Iteration: " + generation);
-				System.out.println();
-				System.out.println("Best Particle: " + population_best.get(generation));
-				System.out.println("Iteration Average: " + population_average.get(generation));
-				System.out.println();
-				
-				if(no_improvement>0) {
-					System.out.println("No improvement found for " + no_improvement + " generations!");
-					System.out.println();
-				}
+				// Print Statistics
+				if(verbose)
+					generation_stats();
 	
 				move_particles();
 				update_movement();
 				evaluate_population();
 				
 			}
-			
-			System.out.println();
-			System.out.println("This is the End!");
-			System.out.println();
-			System.out.println("Iterations: " + population_best.size());
-			System.out.println("Best particle found: " + particles[0].best_tellability() + " , with simulation length: " + particles[0].best_simLength());
-			
+
+			// Print Statistics
+			if(verbose)
+				final_stats();
+
 			to_file(particles[0]);
 			if(system_exit)
 				System.exit(0);
@@ -800,7 +787,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		for(int i = 0; i < number_agents;i++) {
 			for(int j = 0; j < 5; j++) {
 				
-				pers_velocity.values[i][j] = round(Math.random()*2-1);
+				pers_velocity.values[i][j] = round(Math.random()*0.2-0.1);
 			}
 		}
 		return pers_velocity;
@@ -862,7 +849,8 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		}
 		
 		Arrays.sort(particles);
-		update_Distances();
+		if(floatingParameters)
+			update_Distances();
 	}
 
 	
@@ -988,7 +976,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		for(int index = 0; index < informants.size(); index++) {
 
-			double force = update_rate;
+			double force = decay_factor;
 			
 			// determine if force is pulling towards or pushing away
 			if(particles[informants.get(index)].best_tellability() <= particles[recipient].get_tellability())
@@ -1014,12 +1002,12 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			
 			for(int j = 0; j < 5; j++) {
 				
-				particles[recipient].update_persVelocity(i, j, update_personality[i][j] / informants.size(),update_rate);
+				particles[recipient].update_persVelocity(i, j, update_personality[i][j] / informants.size(),decay_factor);
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 
-				particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j] / informants.size()),update_rate);
+				particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j] / informants.size()),decay_factor);
 			}
 		}
 	}

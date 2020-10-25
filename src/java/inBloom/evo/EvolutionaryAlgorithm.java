@@ -29,6 +29,9 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 	protected List<Double> population_best = new ArrayList<Double>();
 	protected List<Double> population_average = new ArrayList<Double>();
 	
+	// Print performance measurement over time
+	protected boolean verbose=true;
+	
 	// Termination criteria
 	protected static int no_improvement=0;
 	protected static int termination=25;
@@ -77,6 +80,11 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 			max_runtime = time*1000;
 		else
 			max_runtime = -1;
+	}
+	
+	public void setVerbose(boolean bool) {
+		
+		verbose = bool;
 	}
 	
 	/**
@@ -162,4 +170,34 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 			e.printStackTrace();
 		}
 	}
+	
+	public void generation_stats() {
+		
+		// Verbose
+		int generation = population_best.size()-1;
+		
+		System.out.println();
+		System.out.println("Generation: " + generation);
+		System.out.println();
+		System.out.println("Best individual: " + population_best.get(generation));
+		System.out.println("Generation Average: " + population_average.get(generation));
+		System.out.println();
+		
+		if(no_improvement>0) {
+			System.out.println("No improvement found for " + no_improvement + " generations!");
+			System.out.println();
+		}
+		
+	}
+	
+	public void final_stats() {
+		
+		System.out.println();
+		System.out.println("This is the End!");
+		System.out.println();
+		System.out.println("Generations: " + population_best.size());
+		System.out.println("Best so far: " + population_best.get(population_best.size()-1));
+		
+	}
+	
 }

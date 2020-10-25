@@ -32,8 +32,8 @@ public class EvolutionaryLauncher {
 		 * Choose a Mode:
 		 */
 		
-		String algorithm = "GEN";
-		//String algorithm = "PSO";
+		//String algorithm = "GEN";
+		String algorithm = "PSO";
 		//String algorithm = "Coupled";
 		
 		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,crossover_prob,mutation_prob);
@@ -55,12 +55,12 @@ public class EvolutionaryLauncher {
 			ga.setPersInit(false, true, true);
 			// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
 			ga.setHapInit(true, true, false);
-			// true -> rouletteWheelSelection, false -> randomSelector
-			ga.setSelection(true,true);
+			// randomSelector, rouletteWheelSelector
+			ga.setSelection(false,true);
 			// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
-			ga.setCrossover(true, true, true, true);
+			ga.setCrossover(false, true, false, false);
 			// randomMutator,toggleMutator,orientedMutator,guidedMutator
-			ga.setMutation(true, true, true, true);
+			ga.setMutation(false, true, false, false);
 			// true -> SteadyReplacer, false -> partiallyRandomReplacer
 			ga.setReplaceMode(true);		
 			
@@ -87,13 +87,13 @@ public class EvolutionaryLauncher {
 			}
 			
 			// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
-			pso.setPersInit(true, true, true);
+			pso.setPersInit(false, true, true);
 			// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
-			pso.setHapInit(true, true, true);
+			pso.setHapInit(true, true, false);
 			// randomVelocityInitializer, discreteVelocityInitializer
 			pso.setVelInit(true, true);
 			// The number of informants (other particles) a particle makes use of additionally to itself to update its velocity
-			pso.setVelocityInformants(19);
+			pso.setVelocityInformants(1);
 			// true -> Roulette Wheel, false -> choose best
 			pso.setSelectionManner(false);
 			// true activates the floating parameters feature
