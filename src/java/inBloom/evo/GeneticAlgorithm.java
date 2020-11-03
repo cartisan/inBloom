@@ -36,6 +36,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	// Performance measurement
 	private List<Double> population_bestHalf = new ArrayList<Double>();
+	private double population_bestAverage = 0;
 	
 	// Discrete values to choose from for personality initialization
 	private static double[] discretePersValues = {-1,-0.9,-0.75,-0.5,-0.25,-0.1,0,0.1,0.25,0.5,0.75,0.9,1};
@@ -352,6 +353,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		population_best.add(best);
 		population_bestHalf.add(halfAverage);
 		population_average.add(average);
+		
+		if(population_bestAverage > average)
+			population_bestAverage = average;
 	}
 	
 	
@@ -367,6 +371,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			
 			// Initialize information containers for floating parameter version
 			initialize_floatingParameters();
+			determineGlobalParameters();
 			
 			// Save current time
 			start_time = System.currentTimeMillis();
@@ -376,19 +381,19 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			evaluate_population();
 			
 			// Repeat until termination (no improvements found) or time criterion -if set- is met:
-			while(no_improvement<termination && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0)) {
+			while((no_improvement < 0 || no_improvement<termination) && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0) && (!floatingParameters || global_mut>0 || global_cross>0)) {
 
 				// Print Statistics
 				if(verbose)
 					generation_stats();
-				
-				if(floatingParameters)
-					determineGlobalParameters();
 	
 				crossover(select());
 				mutate();
 				recombine();
 				evaluate_population();
+				
+				if(floatingParameters)
+					determineGlobalParameters();
 			}
 
 			// Print Statistics
@@ -414,14 +419,14 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		for(int i = 0; i < crossoverBool.length; i++) {
 			if(crossoverBool[i])
-				cross_prob[i]=1;
+				cross_prob[i]=0.25;
 		}
 		
 		mut_prob = new double[mutationBool.length];
 		
 		for(int i = 0; i < mutationBool.length; i++) {
 			if(mutationBool[i])
-				mut_prob[i]=1;
+				mut_prob[i]=0.25;
 		}
 		
 		// Initialize local strategy probabilities
@@ -433,13 +438,13 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		for(int i = 0; i < number_agents; i++) {
 
 			for(int j = 0; j < 5; j++) {
-				personality_cross[i][j] = 1;
-				personality_mut[i][j] = 1;
+				personality_cross[i][j] = 0.5;
+				personality_mut[i][j] = 0.5;
 			}
 
 			for(int j = 0; j < number_happenings; j++) {
-				happenings_cross[i][j] = 1;
-				happenings_mut[i][j] = 1;
+				happenings_cross[i][j] = 0.5;
+				happenings_mut[i][j] = 0.5;
 			}
 		}
 	}
@@ -456,24 +461,68 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		int count = 0;
 		
 		for(int i = 0; i < cross_prob.length; i++) {
-			if(cross_prob[i]>=0.5) {
+			if(cross_prob[i]>=0.05) {
 				global_cross += cross_prob[i];
 				count+=1;
 			}
 		}
-		global_cross /= count;
+		
+		if(count > 0)
+			global_cross /= count;
+		else
+			global_cross = 1.0;
 		
 		// Determine global mutation probability
 		global_mut = 0;
 		count = 0;
 		
 		for(int i = 0; i < mut_prob.length; i++) {
-			if(mut_prob[i]>=0.5) {
+			if(mut_prob[i]>=0.05) {
 				global_mut += mut_prob[i];
 				count+=1;
 			}
 		}
-		global_mut /= count;
+		
+		if(count > 0)
+			global_mut /= count;
+		else
+			global_mut = 1.0;
+		
+		// Print state
+		if(verbose) {
+			System.out.println("Global Crossover Rate: " + global_cross);
+			
+			for(int i = 0; i < 4; i++)
+				System.out.print(cross_prob[i] + " ");
+			System.out.println();
+
+			for(int i = 0; i < 5; i++) {
+				System.out.print(personality_cross[0][i] + " ");
+			}
+			System.out.println();
+			
+			for(int i = 0; i < number_happenings; i++) {
+				System.out.print(happenings_cross[0][i] + " ");
+			}
+			System.out.println();
+			System.out.println();
+			
+			System.out.println("Global Mutation Rate: " + global_mut);
+			
+			for(int i = 0; i < 4; i++)
+				System.out.print(mut_prob[i] + " ");
+			System.out.println();
+			
+			for(int i = 0; i < 5; i++) {
+				System.out.print(personality_mut[0][i] + " ");
+			}
+			System.out.println();
+			
+			for(int i = 0; i < number_happenings; i++) {
+				System.out.print(happenings_mut[0][i] + " ");
+			}
+			System.out.println();
+		}
 	}
 	
 	
@@ -488,13 +537,13 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			for(int j = 0; j < 5; j++) {
 				
 				if(pers[i][j])
-					personality_cross[i][j] = decayUpdate(personality_cross[i][j],improvement);
+					personality_cross[i][j] = localUpdate(personality_cross[i][j],improvement);
 			}
 
 			for(int j = 0; j < number_happenings; j++) {
 
 				if(haps[i][j])
-					happenings_cross[i][j] = decayUpdate(happenings_cross[i][j],improvement);
+					happenings_cross[i][j] = localUpdate(happenings_cross[i][j],improvement);
 			}
 		}
 	}
@@ -511,23 +560,47 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			for(int j = 0; j < 5; j++) {
 				
 				if(pers[i][j])
-					personality_mut[i][j] = decayUpdate(personality_mut[i][j],improvement);
+					personality_mut[i][j] = localUpdate(personality_mut[i][j],improvement);
 			}
 
 			for(int j = 0; j < number_happenings; j++) {
 
 				if(haps[i][j])
-					happenings_mut[i][j] = decayUpdate(happenings_mut[i][j],improvement);
+					happenings_mut[i][j] = localUpdate(happenings_mut[i][j],improvement);
 			}
 		}
 	}
 	
-	// Decay Update Rule
-	public double decayUpdate(double d, boolean improvement) {
+	// Local Decay Update Rule
+	public double localUpdate(double d, boolean improvement) {
 		
 		if(improvement)
-			return factor*(d+(1-d)*decay_rate);
-		return d*(1-decay_rate);
+			return (d+(1-d)*decay_rate*(1+factor));
+		
+		double result = d*(1-decay_rate);
+		
+		// Deactivation threshold
+		if(result < decay_rate)
+			return 0.01;
+		
+		return result;
+	}
+	
+	// Global Decay Update Rule
+	public double globalUpdate(double d, boolean improvement) {
+		
+		double threshold = 0.5;
+		
+		if(improvement)
+			return d+(threshold-d)*decay_rate*(1+factor);
+		
+		double result = d*(1-decay_rate);
+		
+		// Deactivation threshold
+		if(result < decay_rate)
+			return 0.01;
+		
+		return result;
 	}
 	
 	
@@ -929,10 +1002,34 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			int two = positions.get(pos);
 			positions.remove(pos);
 			
-			Integer mode = crossoverList.get((int)Math.round(Math.random()*crossoverList.size()-0.5));
+			Integer mode = 0;
 			
-			if(floatingParameters)
-				crossover_prob = global_cross * cross_prob[mode];
+			if(floatingParameters) {
+				
+				double sum = 0.05;
+				
+				for(int s = 0; s < cross_prob.length; s++)
+					sum += cross_prob[s];
+				
+				double roulette = Math.random()*sum-0.05;
+				
+				crossover_prob = global_cross;
+				
+				if(roulette < 0) {
+					mode = -1;
+				}else {
+					while(roulette > cross_prob[mode]) {
+						roulette -= cross_prob[mode];
+						mode += 1;
+					}
+					crossover_prob = (crossover_prob + cross_prob[mode])/2;
+				}
+				
+				
+			}else {
+				
+				mode = crossoverList.get((int)Math.round(Math.random()*crossoverList.size()-0.5));
+			}
 			
 			switch(mode) {
 
@@ -983,8 +1080,10 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				break;
 				
 			default:
-				
-				System.out.println("Fatal Error @ Crossover Operator Selection!");
+
+				offspring[i] = gen_pool[one];
+				offspring[i+1] = gen_pool[two];
+				System.out.println("No crossover operator selected!");
 				break;
 			}
 		}
@@ -1006,15 +1105,18 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		offspring[index+1] = new_Candidate(two.get_personality(), one.get_happenings());
 		
 		if(floatingParameters) {
-			
+
 			boolean improvement = false;
 			
-			if(offspring[index].get_tellability()>one.get_tellability() || offspring[index+1].get_tellability()>two.get_tellability())
+			if((offspring[index].get_tellability()>one.get_tellability() && offspring[index].get_tellability()>two.get_tellability())
+			|| (offspring[index+1].get_tellability()>one.get_tellability() && offspring[index+1].get_tellability()>two.get_tellability()))
 				improvement = true;
 			
-			cross_prob[0] = decayUpdate(cross_prob[0], improvement);
+			cross_prob[0] = globalUpdate(cross_prob[0], improvement);
+			
 		}
 	}
+	
 	
 	
 	/*
@@ -1032,9 +1134,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		ChromosomeHappenings happeningsTwo = new ChromosomeHappenings(number_agents,number_happenings);
 
 		boolean[][] persChange = new boolean[number_agents][5];
-		Arrays.fill(persChange, false);
 		boolean[][] hapsChange = new boolean[number_agents][number_happenings];
-		Arrays.fill(hapsChange, false);
 		
 		for(int i = 0; i < number_agents; i++) {
 			
@@ -1068,13 +1168,22 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		if(floatingParameters) {
 			
-			boolean improvement = false;
+			boolean local_improvement = false;
+			boolean global_improvement = false;
+
+			if(offspring[index].get_tellability()>one.get_tellability() || offspring[index+1].get_tellability()>two.get_tellability()) {
+				
+				global_improvement = true;
+				
+				if(offspring[index].get_tellability()>gen_pool[individual_count/2-1].get_tellability() 
+				|| offspring[index+1].get_tellability()>gen_pool[individual_count/2-1].get_tellability()) {
+				
+					local_improvement = true;
+				}
+			}
 			
-			if(offspring[index].get_tellability()>one.get_tellability() || offspring[index+1].get_tellability()>two.get_tellability())
-				improvement = true;
-			
-			updateLocalCrossoverProbabilites(persChange, hapsChange, improvement);
-			cross_prob[1] = decayUpdate(cross_prob[1], improvement);
+			updateLocalCrossoverProbabilites(persChange, hapsChange, local_improvement);
+			cross_prob[1] = globalUpdate(cross_prob[1], global_improvement);
 		}
 	}
 	
@@ -1088,8 +1197,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	public void xPointCrossover(Candidate one, Candidate two, int index) {
 
-		boolean[][] crossPersonality = setCrossoverPoints(number_agents);
-		boolean[][] crossHappenings = setCrossoverPoints(number_agents,number_happenings);
+		boolean[][] crossPersonality = new boolean[number_agents][5];
+		boolean[][] personalityPoints = setCrossoverPoints(crossPersonality,0);
+		
+		boolean[][] crossHappenings = new boolean[number_agents][number_happenings];
+		boolean[][] happeningPoints = setCrossoverPoints(crossHappenings,1);
 		
 		ChromosomePersonality personalityOne = new ChromosomePersonality(number_agents);
 		ChromosomePersonality personalityTwo = new ChromosomePersonality(number_agents);
@@ -1127,13 +1239,22 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		if(floatingParameters) {
 			
-			boolean improvement = false;
+			boolean local_improvement = false;
+			boolean global_improvement = false;
+
+			if(offspring[index].get_tellability()>one.get_tellability() || offspring[index+1].get_tellability()>two.get_tellability()) {
+				
+				global_improvement = true;
+				
+				if(offspring[index].get_tellability()>gen_pool[individual_count/2-1].get_tellability() 
+				|| offspring[index+1].get_tellability()>gen_pool[individual_count/2-1].get_tellability()) {
+				
+					local_improvement = true;
+				}
+			}
 			
-			if(offspring[index].get_tellability()>one.get_tellability() || offspring[index+1].get_tellability()>two.get_tellability())
-				improvement = true;
-			
-			updateLocalCrossoverProbabilites(crossPersonality, crossHappenings, improvement);
-			cross_prob[2] = decayUpdate(cross_prob[2], improvement);
+			updateLocalCrossoverProbabilites(personalityPoints, happeningPoints, local_improvement);
+			cross_prob[2] = globalUpdate(cross_prob[2], global_improvement);
 		}
 	}
 	
@@ -1145,21 +1266,14 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * @return: Array containing truth values
 	 */
 	
-	public boolean[][] setCrossoverPoints(int x){
+	public boolean[][] setCrossoverPoints(boolean[][] result, int ChromosomeID){
 		
-		return setCrossoverPoints(x,5,false,0);
-	}
-	
-	public boolean[][] setCrossoverPoints(int x, int y){
+		boolean cross = false;
 		
-		return setCrossoverPoints(x,y,false,1);
-	}
-	
-	public boolean[][] setCrossoverPoints(int x, int y, boolean initial, int ChromosomeID){
-
-		boolean cross = initial;
+		int x = result.length;
+		int y = result[0].length;
 		
-		boolean[][] result = new boolean[x][y];
+		boolean[][] crossover_points = new boolean[x][y];
 		
 		List<Integer> xlist = new ArrayList<Integer>();
 		
@@ -1199,12 +1313,14 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					if(ChromosomeID == 0) {
 						
 						if(Math.random()<crossover_prob*personality_cross[xPos][yPos]) {
+							crossover_points[xPos][yPos] = true;
 							cross = !cross;
 						}
 						
 					}else {
 						
 						if(Math.random()<crossover_prob*happenings_cross[xPos][yPos]) {
+							crossover_points[xPos][yPos] = true;
 							cross = !cross;
 						}					
 					}
@@ -1237,12 +1353,14 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					if(ChromosomeID == 0) {
 							
 						if(Math.random()<crossover_prob*personality_cross[xPos][yPos]) {
+							crossover_points[xPos][yPos] = true;
 							cross = !cross;
 						}
 						
 					}else {
 						
 						if(Math.random()<crossover_prob*happenings_cross[xPos][yPos]) {
+							crossover_points[xPos][yPos] = true;
 							cross = !cross;
 						}					
 					}
@@ -1250,7 +1368,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				}
 			}
 		}
-		return result;
+		return crossover_points;
 	}
 	
 	
@@ -1310,11 +1428,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		if(floatingParameters) {
 			
 			boolean improvement = false;
-			
-			if(offspring[index].get_tellability()>gen_pool[(int) Math.round(((individual_count-1)-0.5)/2)].get_tellability() || offspring[index+1].get_tellability()>gen_pool[(int) Math.round(((individual_count-1)-0.5)/2)].get_tellability())
+
+			if(offspring[index].get_tellability()>gen_pool[individual_count/2-1].get_tellability() 
+			|| offspring[index+1].get_tellability()>gen_pool[individual_count/2-1].get_tellability())
 				improvement = true;
 			
-			cross_prob[1] = decayUpdate(cross_prob[1], improvement);
+			cross_prob[3] = globalUpdate(cross_prob[3], improvement);
 		}
 	}
 	
@@ -1344,10 +1463,31 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		for(int i = 0; i < selection_size; i++) {
 			
-			int mode = mutationList.get((int)Math.round(Math.random()*mutationList.size()-0.5));
+			int mode = 0;
 			
-			if(floatingParameters)
-				mutation_prob = global_mut * mut_prob[mode];
+			if(floatingParameters) {
+				
+				double sum = 0;
+				
+				for(int s = 0; s < mut_prob.length; s++)
+					sum += mut_prob[s];
+				
+				double roulette = Math.random()*sum;
+				
+				while(roulette > mut_prob[mode]) {
+					roulette -= mut_prob[mode];
+					mode += 1;
+				}
+
+				mutation_prob = global_mut;
+				
+				if(mut_prob[mode]>0.05)
+					mutation_prob = (mutation_prob + mut_prob[mode])/2;
+			
+			}else {
+				
+				mode = mutationList.get((int)Math.round(Math.random()*mutationList.size()-0.5));
+			}
 			
 			switch(mode) {
 
@@ -1377,7 +1517,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				
 			default:
 				
-				System.out.println("Fatal Error @ Crossover Operator Selection!");
+				System.out.println("Fatal Error @ Mutation Operator Selection!");
 				break;
 			}
 		}
@@ -1401,9 +1541,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		ChromosomeHappenings mutatedHappenings = new ChromosomeHappenings(number_agents, number_happenings);
 		
 		boolean[][] persChange = new boolean[number_agents][5];
-		Arrays.fill(persChange, false);
 		boolean[][] hapsChange = new boolean[number_agents][number_happenings];
-		Arrays.fill(hapsChange, false);
 		
 		for(int i = 0; i < number_agents; i++) {
 			
@@ -1411,8 +1549,10 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			for(int j = 0; j < 5; j++) {
 				
 				if(Math.random()<mutation_prob*personality_mut[i][j]) {
+					
 					mutatedPersonality.values[i][j] = round(Math.random()*2-1);
 					persChange[i][j] = true;
+					
 				}else {
 					mutatedPersonality.values[i][j] = recipient.get_personality(i,j);
 				}
@@ -1422,8 +1562,10 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			for(int j = 0; j < number_happenings; j++) {
 
 				if(Math.random()<mutation_prob*happenings_mut[i][j]) {
+					
 					mutatedHappenings.values[i][j] = (int)Math.round(Math.random()*recipient.get_simLength()-0.5);
 					hapsChange[i][j] = true;
+					
 				}else {
 					mutatedHappenings.values[i][j] = recipient.get_happenings(i,j);
 				}
@@ -1433,14 +1575,21 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		Candidate result = new_Candidate(mutatedPersonality, mutatedHappenings);
 		
 		if(floatingParameters) {
+
+			boolean global_improvement = false;
+			boolean local_improvement = false;
 			
-			boolean improvement = false;
+			if(result.get_tellability()>recipient.get_tellability()) {
+				
+				global_improvement = true;
+				
+				if(result.get_tellability() > gen_pool[individual_count/2-1].get_tellability())
+				
+					local_improvement = true;
+			}
 			
-			if(result.get_tellability()>recipient.get_tellability())
-				improvement = true;
-			
-			updateLocalMutationProbabilites(persChange, hapsChange, improvement);
-			mut_prob[0] = decayUpdate(mut_prob[0], improvement);
+			updateLocalMutationProbabilites(persChange, hapsChange, local_improvement);
+			mut_prob[0] = globalUpdate(mut_prob[0], global_improvement);
 		}
 		
 		return result;
@@ -1463,9 +1612,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		ChromosomeHappenings mutatedHappenings = new ChromosomeHappenings(number_agents, number_happenings);
 		
 		boolean[][] persChange = new boolean[number_agents][5];
-		Arrays.fill(persChange, false);
 		boolean[][] hapsChange = new boolean[number_agents][number_happenings];
-		Arrays.fill(hapsChange, false);
 		
 		for(int i = 0; i < number_agents; i++) {
 			
@@ -1473,14 +1620,19 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			for(int j = 0; j < 5; j++) {
 
 				mutatedPersonality.values[i][j] = recipient.get_personality(i,j);
-				if(Math.random()<mutation_prob)
+				if(Math.random()<mutation_prob) {
+					
+					persChange[i][j] = true;
 					mutatedPersonality.values[i][j] *= -1;
+				}
 			}
 			
 			// Happenings
 			for(int j = 0; j < number_happenings; j++) {
 
 				if(Math.random()<mutation_prob) {
+					
+					hapsChange[i][j] = true;
 					
 					if(recipient.get_happenings(i,j) > 0)
 						mutatedHappenings.values[i][j] = 0;
@@ -1496,14 +1648,21 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		Candidate result = new_Candidate(mutatedPersonality, mutatedHappenings);
 		
 		if(floatingParameters) {
+
+			boolean global_improvement = false;
+			boolean local_improvement = false;
 			
-			boolean improvement = false;
+			if(result.get_tellability()>recipient.get_tellability()) {
+				
+				global_improvement = true;
+				
+				if(result.get_tellability() > gen_pool[individual_count/2-1].get_tellability())
+				
+					local_improvement = true;
+			}
 			
-			if(result.get_tellability()>recipient.get_tellability())
-				improvement = true;
-			
-			updateLocalMutationProbabilites(persChange, hapsChange, improvement);
-			mut_prob[1] = decayUpdate(mut_prob[1], improvement);
+			updateLocalMutationProbabilites(persChange, hapsChange, local_improvement);
+			mut_prob[1] = globalUpdate(mut_prob[1], global_improvement);
 		}
 		
 		return result;
@@ -1525,9 +1684,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		ChromosomeHappenings mutatedHappenings = new ChromosomeHappenings(number_agents, number_happenings);
 		
 		boolean[][] persChange = new boolean[number_agents][5];
-		Arrays.fill(persChange, false);
 		boolean[][] hapsChange = new boolean[number_agents][number_happenings];
-		Arrays.fill(hapsChange, false);
 		
 		for(int i = 0; i < number_agents; i++) {
 			
@@ -1537,6 +1694,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				mutatedPersonality.values[i][j] = recipient.get_personality(i,j);
 				
 				if(Math.random()<mutation_prob*personality_mut[i][j]) {
+					
+					persChange[i][j] = true;
 					
 					// Generate other position to look at
 					int xPos = i;
@@ -1572,6 +1731,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				mutatedHappenings.values[i][j] = recipient.get_happenings(i,j);
 				
 				if(Math.random()<mutation_prob*happenings_mut[i][j]) {
+					
+					hapsChange[i][j] = true;
 
 					// Generate other position to look at
 					int xPos = i;
@@ -1606,13 +1767,20 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		if(floatingParameters) {
 			
-			boolean improvement = false;
+			boolean global_improvement = false;
+			boolean local_improvement = false;
 			
-			if(result.get_tellability()>recipient.get_tellability())
-				improvement = true;
+			if(result.get_tellability()>recipient.get_tellability()) {
+				
+				global_improvement = true;
+				
+				if(result.get_tellability() > gen_pool[individual_count/2-1].get_tellability())
+				
+					local_improvement = true;
+			}
 			
-			updateLocalMutationProbabilites(persChange, hapsChange, improvement);
-			mut_prob[2] = decayUpdate(mut_prob[2], improvement);
+			updateLocalMutationProbabilites(persChange, hapsChange, local_improvement);
+			mut_prob[2] = globalUpdate(mut_prob[2], global_improvement);
 		}
 		
 		return result;
@@ -1633,9 +1801,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		ChromosomeHappenings mutatedHappenings = new ChromosomeHappenings(number_agents, number_happenings);
 		
 		boolean[][] persChange = new boolean[number_agents][5];
-		Arrays.fill(persChange, false);
 		boolean[][] hapsChange = new boolean[number_agents][number_happenings];
-		Arrays.fill(hapsChange, false);
 		
 		for(int i = 0; i < number_agents; i++) {
 			
@@ -1644,6 +1810,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				mutatedPersonality.values[i][j] = recipient.get_personality().values[i][j];
 				
 				if(Math.random()<mutation_prob*personality_mut[i][j]) {
+
+					persChange[i][j] = true;
 					
 					double ratio = Math.random()*2-1;
 					double distance = mutator.get_personality(i,j) - recipient.get_personality(i,j);
@@ -1665,6 +1833,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				mutatedHappenings.values[i][j] = recipient.get_happenings().values[i][j];
 				
 				if(Math.random()<mutation_prob*happenings_mut[i][j]) {
+
+					hapsChange[i][j] = true;
 					
 					double ratio = Math.random()*2-1;
 					double distance = mutator.get_happenings(i,j) - recipient.get_happenings(i,j);
@@ -1686,13 +1856,20 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		if(floatingParameters) {
 			
-			boolean improvement = false;
+			boolean global_improvement = false;
+			boolean local_improvement = false;
 			
-			if(result.get_tellability()>recipient.get_tellability())
-				improvement = true;
+			if(result.get_tellability()>recipient.get_tellability()) {
+				
+				global_improvement = true;
+				
+				if(result.get_tellability() > gen_pool[individual_count/2-1].get_tellability())
+				
+					local_improvement = true;
+			}
 			
-			updateLocalMutationProbabilites(persChange, hapsChange, improvement);
-			mut_prob[3] = decayUpdate(mut_prob[3], improvement);
+			updateLocalMutationProbabilites(persChange, hapsChange, local_improvement);
+			mut_prob[3] = globalUpdate(mut_prob[3], global_improvement);
 		}
 		
 		return result;
@@ -1791,6 +1968,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		for(int i = steady; i<individual_count; i++) {
 			
 			boolean done = false;
+			
+			if(total_offspring.isEmpty()) {
+				done = true;
+				next_gen[i] = gen_pool[i-steady];
+			}
 			
 			while(!done) {
 				if(!total_offspring.get(0).isContainedIn(next_gen)) {

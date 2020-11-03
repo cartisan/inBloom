@@ -48,7 +48,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	// false -> use static update rate, false -> update with force calculation
 	private static boolean floatingParameters = false;
 	// if floatingParameters == false: use this as update rate
-	private static double decay_factor = 0.1;
+	private static double decay_rate = 0.1;
 	// determine if particles shall move according to spacetime
 	private static boolean spacetime = false;
 	// exploration is used in the spacetime formula 
@@ -225,11 +225,11 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	}
 	
 	public double getDecayRate() {
-		return decay_factor;
+		return decay_rate;
 	}
 	
 	public void setDecayRate(double rate) {
-		decay_factor = rate;
+		decay_rate = rate;
 	}
 
 	public boolean getSpacetime() {
@@ -976,7 +976,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		for(int index = 0; index < informants.size(); index++) {
 
-			double force = decay_factor;
+			double force = decay_rate;
 			
 			// determine if force is pulling towards or pushing away
 			if(particles[informants.get(index)].best_tellability() <= particles[recipient].get_tellability())
@@ -1002,12 +1002,12 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			
 			for(int j = 0; j < 5; j++) {
 				
-				particles[recipient].update_persVelocity(i, j, update_personality[i][j] / informants.size(),decay_factor);
+				particles[recipient].update_persVelocity(i, j, update_personality[i][j] / informants.size(),decay_rate);
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 
-				particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j] / informants.size()),decay_factor);
+				particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j] / informants.size()),decay_rate);
 			}
 		}
 	}

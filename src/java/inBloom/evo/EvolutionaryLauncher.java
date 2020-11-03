@@ -13,9 +13,9 @@ public class EvolutionaryLauncher {
 		// selection size
 		int selection_size = 4;
 		// crossover probability
-		double crossover_prob = 0.2;
+		double crossover_prob = 0.025;
 		// mutation probability
-		double mutation_prob = 0.1;
+		double mutation_prob = 1.0;
 		
 		// maximum time in seconds 
 		// no time limit: time < 0 or leave it out as default value is -1
@@ -32,11 +32,11 @@ public class EvolutionaryLauncher {
 		 * Choose a Mode:
 		 */
 		
-		//String algorithm = "GEN";
-		String algorithm = "PSO";
+		String algorithm = "GEN";
+		//String algorithm = "PSO";
 		//String algorithm = "Coupled";
 		
-		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,crossover_prob,mutation_prob);
+		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,crossover_prob,mutation_prob,true);
 		
 		switch(algorithm) {
 		
@@ -58,9 +58,9 @@ public class EvolutionaryLauncher {
 			// randomSelector, rouletteWheelSelector
 			ga.setSelection(false,true);
 			// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
-			ga.setCrossover(false, true, false, false);
+			ga.setCrossover(true, true, true, true);
 			// randomMutator,toggleMutator,orientedMutator,guidedMutator
-			ga.setMutation(false, true, false, false);
+			ga.setMutation(true, true, true, true);
 			// true -> SteadyReplacer, false -> partiallyRandomReplacer
 			ga.setReplaceMode(true);		
 			
@@ -85,7 +85,9 @@ public class EvolutionaryLauncher {
 
 				pso.setGenInit(10, ga.get_genPool());
 			}
-			
+
+			// Decay Rate of the Velocity update function
+			pso.setDecayRate(0.5);
 			// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
 			pso.setPersInit(false, true, true);
 			// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
@@ -93,7 +95,7 @@ public class EvolutionaryLauncher {
 			// randomVelocityInitializer, discreteVelocityInitializer
 			pso.setVelInit(true, true);
 			// The number of informants (other particles) a particle makes use of additionally to itself to update its velocity
-			pso.setVelocityInformants(1);
+			pso.setVelocityInformants(7);
 			// true -> Roulette Wheel, false -> choose best
 			pso.setSelectionManner(false);
 			// true activates the floating parameters feature
