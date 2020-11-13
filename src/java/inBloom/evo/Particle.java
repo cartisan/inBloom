@@ -181,7 +181,6 @@ public class Particle implements Individual,Comparable<Particle> {
 		
 		try {
 			
-			System.out.println("Starting new Simulation: " + simulation_length);
 			current_tellability = fit.evaluate_individual(this);
 
 			if(current_tellability >= best_tellability) {
@@ -199,7 +198,6 @@ public class Particle implements Individual,Comparable<Particle> {
 		}
 		
 		fit = null;
-		System.out.println("Finish");
 	}
 	
 	/*

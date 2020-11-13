@@ -180,14 +180,14 @@ public class Location extends Existent {
 		if(sublocation != null) {
 			sublocation.characters.add(character);
 			//TODO delete
-			System.out.println("Agent " + character.name + " has entered " + sublocationName);
+			logger.info("Agent " + character.name + " has entered " + sublocationName);
 			// TODO Character can only have one location thou, so Character will always have
 			// the main location so far -> beware
 			return true;
 		} else {
 			// the sublocation does not exist
 			//TODO delete
-			System.out.println("Agent " + character.name + " has not entered " + sublocationName + " because it does not exist");
+			logger.info("Agent " + character.name + " has not entered " + sublocationName + " because it does not exist");
 			return false;
 		}
 	}
@@ -199,11 +199,11 @@ public class Location extends Existent {
 		if(sublocation != null && sublocation.present(character)) {
 			//TODO delete
 			sublocation.characters.remove(character);
-			System.out.println("Agent " + character.name + " has left " + sublocationName);
+			logger.info("Agent " + character.name + " has left " + sublocationName);
 			return true;
 		} else {
 			//TODO delete
-			System.out.println("Agent " + character.name + " has not left " + sublocationName);
+			logger.info("Agent " + character.name + " has not left " + sublocationName);
 			// the sublocation does not exist or the character is not in the sublocation
 			return false;
 		}

@@ -2,7 +2,7 @@ package inBloom.evo;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.logging.Level;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.BufferedWriter;
@@ -24,6 +24,8 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 	public int number_happenings;
 	public int max_steps;
 	public int individual_count;
+	
+	protected Level level = Level.OFF;
 	
 	// Performance measurement
 	protected List<Double> population_best = new ArrayList<Double>();
@@ -85,6 +87,11 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 	public void setVerbose(boolean bool) {
 		
 		verbose = bool;
+	}
+	
+	public void setLevel(Level level) {
+		
+		this.level = level;
 	}
 	
 	/**

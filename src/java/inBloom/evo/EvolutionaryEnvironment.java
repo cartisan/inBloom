@@ -54,9 +54,9 @@ public abstract class EvolutionaryEnvironment <EnvType extends PlotEnvironment<M
 	}
 	
 	
-	public GeneticAlgorithm get_GA(String[] args, int init_stepnumber, int individual_count, int number_selections, double crossover_prob, double mutation_prob, boolean mode){
+	public GeneticAlgorithm get_GA(String[] args, int init_stepnumber, int individual_count, int number_selections, double decay_rate){
 		
-	return new GeneticAlgorithm<EnvType,ModType> (args, this, this.number_agents, this.number_dynamicHappenings, init_stepnumber, individual_count, number_selections, crossover_prob, mutation_prob,mode);
+	return new GeneticAlgorithm<EnvType,ModType> (args, this, this.number_agents, this.number_dynamicHappenings, init_stepnumber, individual_count, number_selections, decay_rate);
 	}
 
 	/*

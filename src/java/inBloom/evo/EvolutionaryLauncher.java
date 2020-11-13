@@ -1,5 +1,7 @@
 package inBloom.evo;
 
+import java.util.logging.Level;
+
 public class EvolutionaryLauncher {
 	
 	public static void main(String[] args) { 
@@ -12,10 +14,12 @@ public class EvolutionaryLauncher {
 		int individual_count = 20;
 		// selection size
 		int selection_size = 4;
+		// decay
+		double decay_rate = 0.05;
 		// crossover probability
-		double crossover_prob = 0.025;
+		double crossover_prob = 0.1;
 		// mutation probability
-		double mutation_prob = 1.0;
+		double mutation_prob = 0.05;
 		
 		// maximum time in seconds 
 		// no time limit: time < 0 or leave it out as default value is -1
@@ -35,15 +39,18 @@ public class EvolutionaryLauncher {
 		String algorithm = "GEN";
 		//String algorithm = "PSO";
 		//String algorithm = "Coupled";
-		
-		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,crossover_prob,mutation_prob,true);
+
+		//GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,crossover_prob,mutation_prob);
+		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,decay_rate);
 		
 		switch(algorithm) {
 		
 		case("Coupled"):
 		
 		case("GEN"):
-		
+			
+			ga.setLevel(Level.OFF);
+			
 			ga.setFileName(path+"GEN"+filename);
 		
 			if(algorithm=="Coupled") {
@@ -78,6 +85,8 @@ public class EvolutionaryLauncher {
 		case("PSO"):
 			
 			PSO<?,?> pso = island.get_PSO(args,init_stepnumber, individual_count);
+		
+			pso.setLevel(Level.OFF);
 			
 			pso.setFileName(path+"PSO"+filename);
 			
@@ -87,7 +96,7 @@ public class EvolutionaryLauncher {
 			}
 
 			// Decay Rate of the Velocity update function
-			pso.setDecayRate(0.5);
+			pso.setDecayRate(0.05);
 			// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
 			pso.setPersInit(false, true, true);
 			// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer

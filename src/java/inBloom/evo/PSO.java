@@ -487,7 +487,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public Particle new_particle(ChromosomePersonality pers,ChromosomePersonality velocity_pers,ChromosomeHappenings hap, ChromosomeHappenings velocity_hap, Integer steps) {
 		
-		Fitness<EnvType,ModType> fit = new Fitness<EnvType,ModType>(EVO_ENV);
+		Fitness<EnvType,ModType> fit = new Fitness<EnvType,ModType>(EVO_ENV,verbose,level);
 		
 		return new Particle(pers, velocity_pers, hap, velocity_hap, steps, fit);
 	}
@@ -575,7 +575,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			// Initialize particles based on findings of the genetic algorithm
 			if(index < geneticInit) {
 
-				Fitness<EnvType,ModType> fit = new Fitness<EnvType,ModType>(EVO_ENV);
+				Fitness<EnvType,ModType> fit = new Fitness<EnvType,ModType>(EVO_ENV,verbose,level);
 				particles[index] = new Particle(gen_pool[index],pers_velocity,hap_velocity,fit);
 				
 			// Otherwise use classic initialization
@@ -841,7 +841,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		for(int i = 0; i < individual_count; i++) {
 			
 			particles[i].move();
-			particles[i].update_tellability(new Fitness<EnvType,ModType>(EVO_ENV));
+			particles[i].update_tellability(new Fitness<EnvType,ModType>(EVO_ENV,verbose,level));
 			
 			if(spacetime) {
 				particles[i].set_spacetime(determine_spacetime(i));

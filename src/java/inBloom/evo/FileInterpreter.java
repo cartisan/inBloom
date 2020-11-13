@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -46,7 +47,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 		filename = name;
 		filepath = path;
 		
-		fit = new Fitness<EnvType,ModType>(EVO_ENV,showGui);
+		fit = new Fitness<EnvType,ModType>(EVO_ENV,true,Level.INFO,showGui);
 		
 	}
 	
@@ -144,9 +145,9 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) {
 		
-		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\G\\_Advanced\\base\\";
+		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\";
 		//String name = "PSO 2";
-		String name = "GEN 0.025";
+		String name = "GEN";
 
 		@SuppressWarnings("unchecked")
 		FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, true);

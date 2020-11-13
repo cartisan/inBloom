@@ -24,8 +24,6 @@ public class Candidate implements Individual,Comparable<Candidate>{
 		} catch (NullPointerException e) {
 			//e.printStackTrace();
 		}
-
-		System.out.println("Finish");
 	}
 	
 	// Get-Methods

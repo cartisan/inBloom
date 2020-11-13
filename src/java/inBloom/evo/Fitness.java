@@ -30,33 +30,42 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	protected boolean isRunning = false;
 	protected boolean set = false;
 	protected boolean cleanup = true;
+	
+	protected boolean verbose;
+	protected Level level;
 
 	/** Timeout in ms before a single simulation is forcibly stopped. A value of -1 means no timeout.  */
 	protected static long TIMEOUT = -1;
 
+	
 	@SuppressWarnings("unchecked")
-	public Fitness(EvolutionaryEnvironment<?, ?> environment){
+	public Fitness(EvolutionaryEnvironment<?, ?> environment, boolean verbose, Level level){
 		
 		this.EVO_ENV = environment;
 		this.ENV_CLASS = environment.ENV_CLASS;
 		PlotControlsLauncher.runner = this;
 		BaseCentralisedMAS.runner = this;
 		this.setShowGui(false);
+		this.verbose = verbose;
+		this.level = level;
 		cleanup = true;
 		
 	}
 	
 	@SuppressWarnings("unchecked")
-	public Fitness(EvolutionaryEnvironment<?, ?> environment, boolean showGui){
+	public Fitness(EvolutionaryEnvironment<?, ?> environment, boolean verbose, Level level, boolean showGui){
 		
 		this.EVO_ENV = environment;
 		this.ENV_CLASS = environment.ENV_CLASS;
 		PlotControlsLauncher.runner = this;
 		BaseCentralisedMAS.runner = this;
 		this.setShowGui(showGui);
+		this.verbose = verbose;
+		this.level = level;
 		cleanup = false;
 		
 	}
+	
 	
 	public double evaluate_individual(Individual individual) throws JasonException {
 		
@@ -65,6 +74,9 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		isRunning = true;
 		set = false;
 		Integer simulation_length = individual.get_simLength();
+		
+		if(verbose)
+			System.out.println("Starting new Simulation with length: " + simulation_length);
 		
 		// Instantiate Objects with methods of GeneticEnvironment
 		ImmutableList<LauncherAgent> agents = EVO_ENV.init_agents(individual.get_personality().values);
@@ -102,8 +114,8 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			onPauseRepeat();
 		}
 		
-		// Logging lvl
-        Logger.getLogger("").setLevel(Level.FINE);
+		// Logging level
+        Logger.getLogger("").setLevel(level);
         
 		MASConsoleGUI.get().setPause(false);
 		boolean hasAddedListener = false;
@@ -173,6 +185,9 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		}
 		
 		individual.set_actualLength(PlotEnvironment.MAX_STEP_NUM);
+		
+		if(verbose)
+			System.out.println("Finished after " + PlotEnvironment.MAX_STEP_NUM +" steps with Tellability Score: " + result);
 		
 		return result;
 	}
