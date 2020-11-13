@@ -1,10 +1,10 @@
 package inBloom.evo;
 
-public class MultipleRuns {
+public class MultipleRunsG {
 	
 public static void main(String[] args) { 
 		
-		for(int i = 0; i < 4; i++) {
+		for(int i = 0; i < 3; i+=1) {
 		
 			// init location
 			EvoIsland island = new EvoIsland();
@@ -13,7 +13,23 @@ public static void main(String[] args) {
 			// number individuals
 			int individual_count = 20;
 			// selection size
-			int selection_size = 4;
+			int selection_size = 2;
+			// decay_rate
+			double decay_rate = 0.1;
+			
+			switch(i) {
+			
+			case(1):
+				decay_rate = 0.05;
+				break;
+				
+			case(2):
+				decay_rate = 0.025;
+				break;
+				
+			default:
+				break;
+			}
 			// crossover probability
 			double crossover_prob = 0.2;
 			// mutation probability
@@ -25,12 +41,13 @@ public static void main(String[] args) {
 			int max_repetitions = 25;
 			
 			// path and name of file
-			String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\G\\0201\\";
-			String filename = "GEN " + String.valueOf(i);
+			String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\Current\\";
+			String filename = "GEN " + String.valueOf(decay_rate);
+
+			//GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,crossover_prob,mutation_prob);
+			GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,decay_rate);
 			
-			GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,4,0.2,0.1);
-			
-			ga.setFileName(path+"GEN"+filename);
+			ga.setFileName(path+filename);
 			
 					
 			ga.setExit(false);
@@ -40,21 +57,17 @@ public static void main(String[] args) {
 			// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
 			ga.setHapInit(true, true, false);
 			
-			// true -> rouletteWheelSelection, false -> randomSelector
-			if(i<2)
-				ga.setSelection(true);
-			else
-				ga.setSelection(false);
+			// randomSelector, steadySelector
+			ga.setSelection(false,true);
+			
 			// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
 			ga.setCrossover(true, true, true, true);
+
 			// randomMutator,toggleMutator,orientedMutator,guidedMutator
 			ga.setMutation(true, true, true, true);
 			
 			// true -> SteadyReplacer, false -> partiallyRandomReplacer
-			if(i%2 == 0)
-				ga.setReplaceMode(true);
-			else
-				ga.setReplaceMode(false);
+			ga.setReplaceMode(true);
 			
 			// Termination Criteria
 			// Runtime in seconds (-1 to deactivate)
@@ -63,6 +76,9 @@ public static void main(String[] args) {
 			ga.setTermination(max_repetitions);
 			
 			ga.run();
+			
+			ga = null;
 		}
+		System.exit(0);
 	}
 }
