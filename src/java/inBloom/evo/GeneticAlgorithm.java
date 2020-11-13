@@ -1138,8 +1138,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	
 	public void binomialCrossover(Candidate one, Candidate two, int index) {
 		
-		boolean change = false;
-		
 		ChromosomePersonality personalityOne = new ChromosomePersonality(number_agents);
 		ChromosomePersonality personalityTwo = new ChromosomePersonality(number_agents);
 		
@@ -1157,7 +1155,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					personalityOne.values[i][j] = one.get_personality(i,j);
 					personalityTwo.values[i][j] = two.get_personality(i,j);
 					persChange[i][j] = true;
-					change = true;
 				}else {
 					personalityOne.values[i][j] = two.get_personality(i,j);
 					personalityTwo.values[i][j] = one.get_personality(i,j);
@@ -1170,7 +1167,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					happeningsOne.values[i][j] = one.get_happenings(i,j);
 					happeningsTwo.values[i][j] = two.get_happenings(i,j);
 					hapsChange[i][j] = true;
-					change = true;
 				}else {
 					happeningsOne.values[i][j] = two.get_happenings(i,j);
 					happeningsTwo.values[i][j] = one.get_happenings(i,j);
@@ -1178,35 +1174,28 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 		}
 		
-		// Enforce a Change
-		if(change) {
+		offspring[index] = new_Candidate(personalityOne,happeningsOne);
+		offspring[index+1] = new_Candidate(personalityTwo,happeningsTwo);	
 		
-			offspring[index] = new_Candidate(personalityOne,happeningsOne);
-			offspring[index+1] = new_Candidate(personalityTwo,happeningsTwo);	
+		if(floatingParameters) {
 			
-			if(floatingParameters) {
+			boolean local_improvement = false;
+			boolean global_improvement = false;
+
+			if(offspring[index].get_tellability()>one.get_tellability() || offspring[index+1].get_tellability()>two.get_tellability()) {
 				
-				boolean local_improvement = false;
-				boolean global_improvement = false;
-	
-				if(offspring[index].get_tellability()>one.get_tellability() || offspring[index+1].get_tellability()>two.get_tellability()) {
-					
-					global_improvement = true;
-					
-					if(offspring[index].get_tellability()>population_bestAverage
-					|| offspring[index+1].get_tellability()>population_bestAverage) {
-					
-						local_improvement = true;
-					}
+				global_improvement = true;
+				
+				if(offspring[index].get_tellability()>population_bestAverage
+				|| offspring[index+1].get_tellability()>population_bestAverage) {
+				
+					local_improvement = true;
 				}
-	
-				global_cross = globalUpdate(global_cross,global_improvement);
-				updateLocalCrossoverProbabilites(persChange, hapsChange, local_improvement);
-				cross_prob[1] = operatorUpdate(cross_prob[1], global_cross, global_improvement);
 			}
-			
-		}else {
-			binomialCrossover(one, two, index);
+
+			global_cross = globalUpdate(global_cross,global_improvement);
+			updateLocalCrossoverProbabilites(persChange, hapsChange, local_improvement);
+			cross_prob[1] = operatorUpdate(cross_prob[1], global_cross, global_improvement);
 		}
 	}
 	
@@ -1219,8 +1208,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 */
 	
 	public void xPointCrossover(Candidate one, Candidate two, int index) {
-		
-		boolean change = false;
 
 		boolean[][] crossPersonality = new boolean[number_agents][5];
 		boolean[][] personalityPoints = setCrossoverPoints(crossPersonality,0);
@@ -1241,7 +1228,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				if(crossPersonality[i][j]) {
 					personalityOne.values[i][j] = one.get_personality(i,j);
 					personalityTwo.values[i][j] = two.get_personality(i,j);
-					change=true;
 				}else {
 					personalityOne.values[i][j] = two.get_personality(i,j);
 					personalityTwo.values[i][j] = one.get_personality(i,j);
@@ -1253,44 +1239,37 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				if(crossHappenings[i][j]) {
 					happeningsOne.values[i][j] = one.get_happenings(i,j);
 					happeningsTwo.values[i][j] = two.get_happenings(i,j);
-					change=true;
 				}else {
 					happeningsOne.values[i][j] = two.get_happenings(i,j);
 					happeningsTwo.values[i][j] = one.get_happenings(i,j);
 				}
 			}
-		}	
+		}
+				
+		offspring[index] = new_Candidate(personalityOne,happeningsOne);
+		offspring[index+1] = new_Candidate(personalityTwo,happeningsTwo);	
 		
-		if(change) {
-				
-			offspring[index] = new_Candidate(personalityOne,happeningsOne);
-			offspring[index+1] = new_Candidate(personalityTwo,happeningsTwo);	
+		
+		if(floatingParameters) {
 			
-			
-			if(floatingParameters) {
+			boolean local_improvement = false;
+			boolean global_improvement = false;
+
+			if(offspring[index].get_tellability()>one.get_tellability() || offspring[index+1].get_tellability()>two.get_tellability()) {
 				
-				boolean local_improvement = false;
-				boolean global_improvement = false;
-	
-				if(offspring[index].get_tellability()>one.get_tellability() || offspring[index+1].get_tellability()>two.get_tellability()) {
-					
-					global_improvement = true;
-					
-					if(offspring[index].get_tellability()>population_bestAverage  
-					|| offspring[index+1].get_tellability()>population_bestAverage) {
-					
-						local_improvement = true;
-					}
+				global_improvement = true;
+				
+				if(offspring[index].get_tellability()>population_bestAverage  
+				|| offspring[index+1].get_tellability()>population_bestAverage) {
+				
+					local_improvement = true;
 				}
-	
-				global_cross = globalUpdate(global_cross,global_improvement);
-				updateLocalCrossoverProbabilites(personalityPoints, happeningPoints, local_improvement);
-				cross_prob[2] = operatorUpdate(cross_prob[2], global_cross, global_improvement);
-	
 			}
-			
-		}else {
-			xPointCrossover(one, two, index);
+
+			global_cross = globalUpdate(global_cross,global_improvement);
+			updateLocalCrossoverProbabilites(personalityPoints, happeningPoints, local_improvement);
+			cross_prob[2] = operatorUpdate(cross_prob[2], global_cross, global_improvement);
+
 		}
 	}
 	
