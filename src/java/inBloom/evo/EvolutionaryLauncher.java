@@ -36,9 +36,10 @@ public class EvolutionaryLauncher {
 		 * Choose a Mode:
 		 */
 		
-		String algorithm = "GEN";
-		//String algorithm = "PSO";
-		//String algorithm = "Coupled";
+//		String algorithm = "GEN";
+//		String algorithm = "PSO";
+//		String algorithm = "Coupled";
+		String algorithm = "QSO";
 
 		//GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,crossover_prob,mutation_prob);
 		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,decay_rate);
@@ -81,7 +82,7 @@ public class EvolutionaryLauncher {
 			
 			if(algorithm=="Evolutionary")
 				break;
-		
+
 		case("PSO"):
 			
 			PSO<?,?> pso = island.get_PSO(args,init_stepnumber, individual_count);
@@ -104,13 +105,11 @@ public class EvolutionaryLauncher {
 			// randomVelocityInitializer, discreteVelocityInitializer
 			pso.setVelInit(true, true);
 			// The number of informants (other particles) a particle makes use of additionally to itself to update its velocity
-			pso.setVelocityInformants(7);
+			pso.setVelocityInformants(1);
 			// true -> Roulette Wheel, false -> choose best
 			pso.setSelectionManner(false);
 			// true activates the floating parameters feature
-			pso.setFloatingParameters(false);
-			// true activates the spacetime feature
-			pso.setSpacetime(false);
+			pso.setFloatingParameters(true);
 			
 			// Termination Criteria
 			// Runtime in seconds (-1 to deactivate)
@@ -121,6 +120,43 @@ public class EvolutionaryLauncher {
 			pso.run();
 			
 			break;
-		}			
+			
+	case("QSO"):
+		
+		QSO<?,?> qso = island.get_QSO(args,init_stepnumber, individual_count);
+	
+		qso.setLevel(Level.OFF);
+		
+		qso.setFileName(path+"QSO"+filename);
+
+		// Decay Rate of the Velocity update function
+		qso.setDecayRate(0.05);
+		// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
+		qso.setPersInit(false, true, true);
+		// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
+		qso.setHapInit(true, true, false);
+		// randomVelocityInitializer, discreteVelocityInitializer
+		qso.setVelInit(true, true);
+		// The number of informants (other particles) a particle makes use of additionally to itself to update its velocity
+		qso.setVelocityInformants(1);
+		// true -> Roulette Wheel, false -> choose best
+		qso.setSelectionManner(false);
+		// true activates the floating parameters feature
+		qso.setFloatingParameters(false);
+		// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
+		ga.setCrossover(false, true, true, true);
+		// randomMutator,toggleMutator,orientedMutator,guidedMutator
+		ga.setMutation(true, true, true, true);
+		
+		// Termination Criteria
+		// Runtime in seconds (-1 to deactivate)
+		qso.setMaxRuntime(time);
+		// Number of times the main loop is repeated without adding a new (relevant) candidate to gen_pool
+		qso.setTermination(max_repetitions);
+		
+		qso.run();
+		
+		break;		
+		}
 	}
 }

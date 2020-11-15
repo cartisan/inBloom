@@ -995,8 +995,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}
 		
 		if(crossoverList.size()==0) {
-			System.out.println("No selection set. Defaulting to simple crossover!");
-			crossoverList.add(0);
+			System.out.println("No selection set. Defaulting to binomial crossover!");
+			crossoverList.add(1);
 		}
 		
 		for(int i = 0; i < selection_size; i+=2) {
@@ -1182,12 +1182,13 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			boolean local_improvement = false;
 			boolean global_improvement = false;
 
-			if(offspring[index].get_tellability()>one.get_tellability() || offspring[index+1].get_tellability()>two.get_tellability()) {
+			if((offspring[index].get_tellability()>one.get_tellability()) && (offspring[index].get_tellability()>two.get_tellability())
+			|| (offspring[index+1].get_tellability()>two.get_tellability()) && (offspring[index+1].get_tellability()>two.get_tellability())) {
 				
 				global_improvement = true;
 				
-				if(offspring[index].get_tellability()>population_bestAverage
-				|| offspring[index+1].get_tellability()>population_bestAverage) {
+				if(offspring[index].get_tellability()>gen_pool[(individual_count/2)-1].get_tellability()
+				|| offspring[index+1].get_tellability()>gen_pool[(individual_count/2)-1].get_tellability()) {
 				
 					local_improvement = true;
 				}
@@ -1210,10 +1211,10 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	public void xPointCrossover(Candidate one, Candidate two, int index) {
 
 		boolean[][] crossPersonality = new boolean[number_agents][5];
-		boolean[][] personalityPoints = setCrossoverPoints(crossPersonality,0);
+		boolean[][] personalityPoints = setCrossoverPoints(crossPersonality);
 		
 		boolean[][] crossHappenings = new boolean[number_agents][number_happenings];
-		boolean[][] happeningPoints = setCrossoverPoints(crossHappenings,1);
+		boolean[][] happeningPoints = setCrossoverPoints(crossHappenings);
 		
 		ChromosomePersonality personalityOne = new ChromosomePersonality(number_agents);
 		ChromosomePersonality personalityTwo = new ChromosomePersonality(number_agents);
@@ -1226,22 +1227,22 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			for(int j = 0; j < 5; j++) {
 				
 				if(crossPersonality[i][j]) {
-					personalityOne.values[i][j] = one.get_personality(i,j);
-					personalityTwo.values[i][j] = two.get_personality(i,j);
-				}else {
 					personalityOne.values[i][j] = two.get_personality(i,j);
 					personalityTwo.values[i][j] = one.get_personality(i,j);
+				}else {
+					personalityOne.values[i][j] = one.get_personality(i,j);
+					personalityTwo.values[i][j] = two.get_personality(i,j);
 				}
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 				
 				if(crossHappenings[i][j]) {
-					happeningsOne.values[i][j] = one.get_happenings(i,j);
-					happeningsTwo.values[i][j] = two.get_happenings(i,j);
-				}else {
 					happeningsOne.values[i][j] = two.get_happenings(i,j);
 					happeningsTwo.values[i][j] = one.get_happenings(i,j);
+				}else {
+					happeningsOne.values[i][j] = one.get_happenings(i,j);
+					happeningsTwo.values[i][j] = two.get_happenings(i,j);
 				}
 			}
 		}
@@ -1255,12 +1256,13 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			boolean local_improvement = false;
 			boolean global_improvement = false;
 
-			if(offspring[index].get_tellability()>one.get_tellability() || offspring[index+1].get_tellability()>two.get_tellability()) {
+			if((offspring[index].get_tellability()>one.get_tellability()) && (offspring[index].get_tellability()>two.get_tellability())
+			|| (offspring[index+1].get_tellability()>two.get_tellability()) && (offspring[index+1].get_tellability()>two.get_tellability())) {
 				
 				global_improvement = true;
 				
-				if(offspring[index].get_tellability()>population_bestAverage  
-				|| offspring[index+1].get_tellability()>population_bestAverage) {
+				if(offspring[index].get_tellability()>gen_pool[(individual_count/2)-1].get_tellability()  
+				|| offspring[index+1].get_tellability()>gen_pool[(individual_count/2)-1].get_tellability()) {
 				
 					local_improvement = true;
 				}
@@ -1281,7 +1283,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * @return: Array containing truth values
 	 */
 	
-	public boolean[][] setCrossoverPoints(boolean[][] result, int ChromosomeID){
+	public boolean[][] setCrossoverPoints(boolean[][] result){
 		
 		boolean cross = false;
 		
@@ -1324,21 +1326,10 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					Integer yCoord = ycopy.get(yPos);
 					ycopy.remove(yPos);
 					
-					// Determine whether current position will be a crossover point
-					if(ChromosomeID == 0) {
-						
-						if(Math.random()<crossover_prob*personality_cross[xPos][yPos]) {
-							crossover_points[xPos][yPos] = true;
-							cross = !cross;
-						}
-						
-					}else {
-						
-						if(Math.random()<crossover_prob*happenings_cross[xPos][yPos]) {
-							crossover_points[xPos][yPos] = true;
-							cross = !cross;
-						}					
-					}
+					if(Math.random()<crossover_prob*happenings_cross[xPos][yPos]) {
+						crossover_points[xPos][yPos] = true;
+						cross = !cross;
+					}		
 						
 					result[xCoord][yCoord] = cross;
 				}
@@ -1364,20 +1355,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					Integer xCoord = xcopy.get(xPos);
 					xcopy.remove(xPos);
 
-					// Determine whether current position will be a crossover point
-					if(ChromosomeID == 0) {
-							
-						if(Math.random()<crossover_prob*personality_cross[xPos][yPos]) {
-							crossover_points[xPos][yPos] = true;
-							cross = !cross;
-						}
-						
-					}else {
-						
-						if(Math.random()<crossover_prob*happenings_cross[xPos][yPos]) {
-							crossover_points[xPos][yPos] = true;
-							cross = !cross;
-						}					
+					if(Math.random()<crossover_prob*happenings_cross[xPos][yPos]) {
+						crossover_points[xPos][yPos] = true;
+						cross = !cross;	
 					}
 					result[xCoord][yCoord] = cross;		
 				}
@@ -1444,8 +1424,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			
 			boolean improvement = false;
 
-			if(offspring[index].get_tellability()>population_bestAverage 
-			|| offspring[index+1].get_tellability()>population_bestAverage )
+			if(offspring[index].get_tellability()>gen_pool[(individual_count/2)-1].get_tellability() 
+			|| offspring[index+1].get_tellability()>gen_pool[(individual_count/2)-1].get_tellability() )
 				improvement = true;
 
 			global_cross = globalUpdate(global_cross,improvement);
@@ -1658,7 +1638,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			for(int j = 0; j < 5; j++) {
 
 				mutatedPersonality.values[i][j] = recipient.get_personality(i,j);
-				if(Math.random()<mutation_prob) {
+				if(Math.random()<mutation_prob*personality_mut[i][j]) {
 
 					mutatedPersonality.values[i][j] *= -1;
 					persChange[i][j] = true;
@@ -1669,7 +1649,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			// Happenings
 			for(int j = 0; j < number_happenings; j++) {
 
-				if(Math.random()<mutation_prob) {
+				if(Math.random()<mutation_prob*happenings_mut[i][j]) {
 					
 					if(recipient.get_happenings(i,j) > 0)
 						mutatedHappenings.values[i][j] = 0;
@@ -2059,7 +2039,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		
 		Candidate[] next_gen = new Candidate[individual_count];
 		
-		// Initialize a List with all Candidates sorted by fitness descending
+		// Initialize a List with all Candidates positions.get(state).get_lifespan()ed by fitness descending
 		List<Candidate> allCandidates = new ArrayList<Candidate>();
 		
 		int posPop = 0;
