@@ -1428,9 +1428,9 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					}else {
 						ratio*=-1;
 						if(distance>0)
-							mutatedPersonality.values[i][j] += ratio * (-1-recipient.get_personality(i,j));
+							mutatedPersonality.values[i][j] += ratio * (-1-recipient.get_position(state).get_personality(i,j));
 						else
-							mutatedPersonality.values[i][j] += ratio * (1-recipient.get_personality(i,j));
+							mutatedPersonality.values[i][j] += ratio * (1-recipient.get_position(state).get_personality(i,j));
 					}
 				}
 			}
@@ -1459,16 +1459,16 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					}
 					
 					double ratio = Math.random()*2-1;
-					double distance = recipient.get_position(state).get_happenings(xPos,yPos) - recipient.get_position(state).get_happenings(i,j);
+					double distance = recipient.best_happenings(xPos,yPos) - recipient.get_position(state).get_happenings(i,j);
 					
 					if(ratio > 0) {
 						mutatedHappenings.values[i][j] += ratio * distance;
 					}else {
 						ratio*=-1;
 						if(distance>0)
-							mutatedHappenings.values[i][j] -= ratio * (recipient.get_happenings(i,j));
+							mutatedHappenings.values[i][j] -= ratio * (recipient.get_position(state).get_happenings(i,j));
 						else
-							mutatedHappenings.values[i][j] += ratio * (recipient.get_simLength()-recipient.get_happenings(i,j));
+							mutatedHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_position(state).get_happenings(i,j));
 					}
 				}
 			}
@@ -1544,7 +1544,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 						if(distance>0)
 							mutatedHappenings.values[i][j] -= ratio * (recipient.get_position(state).get_happenings(i,j));
 						else
-							mutatedHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_happenings(i,j));
+							mutatedHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_position(state).get_happenings(i,j));
 					}
 				}
 			}
