@@ -123,44 +123,44 @@ public class EvolutionaryLauncher {
 			
 			break;
 			
-	case("QSO"):
+		case("QSO"):
+			
+			QSO<?,?> qso = island.get_QSO(args,init_stepnumber, individual_count);
 		
-		QSO<?,?> qso = island.get_QSO(args,init_stepnumber, individual_count);
+			qso.setLevel(Level.OFF);
+			
+			qso.setFileName(path+"QSO"+filename);
 	
-		qso.setLevel(Level.OFF);
-		
-		qso.setFileName(path+"QSO"+filename);
-
-		// Decay Rate of the Velocity update function
-		qso.setDecayRate(0.05);
-		// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
-		qso.setPersInit(false, true, true);
-		// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
-		qso.setHapInit(true, true, false);
-		// randomVelocityInitializer, discreteVelocityInitializer
-		qso.setVelInit(true, true);
-		// The number of informants (other particles) a particle makes use of additionally to itself to update its velocity
-		qso.setVelocityInformants(1);
-		// true -> Roulette Wheel, false -> choose best
-		qso.setSelectionManner(false);
-		// true activates the floating parameters feature
-		qso.setFloatingParameters(false);
-		// true -> using spacetime modifier
-		qso.setSpacetime(false);
-		// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
-		qso.setCrossover(false, true, true, true);
-		// randomMutator,toggleMutator,orientedMutator,guidedMutator
-		qso.setMutation(true, true, true, true);
-		
-		// Termination Criteria
-		// Runtime in seconds (-1 to deactivate)
-		qso.setMaxRuntime(time);
-		// Number of times the main loop is repeated without adding a new (relevant) candidate to gen_pool
-		qso.setTermination(max_repetitions);
-		
-		qso.run();
-		
-		break;		
+			// Decay Rate of the Velocity update function
+			qso.setDecayRate(0.05);
+			// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
+			qso.setPersInit(false, true, true);
+			// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
+			qso.setHapInit(true, true, false);
+			// randomVelocityInitializer, discreteVelocityInitializer
+			qso.setVelInit(true, true);
+			// The number of informants (other particles) a particle makes use of additionally to itself to update its velocity
+			qso.setVelocityInformants(1);
+			// true -> Roulette Wheel, false -> choose best
+			qso.setSelectionManner(false);
+			// true activates the floating parameters feature
+			qso.setFloatingParameters(true);
+			// true -> using spacetime modifier
+			qso.setSpacetime(true);
+			// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
+			qso.setCrossover(false, true, true, true);
+			// randomMutator,toggleMutator,orientedMutator,guidedMutator
+			qso.setMutation(true, true, true, true);
+			
+			// Termination Criteria
+			// Runtime in seconds (-1 to deactivate)
+			qso.setMaxRuntime(time);
+			// Number of times the main loop is repeated without adding a new (relevant) candidate to gen_pool
+			qso.setTermination(max_repetitions);
+			
+			qso.run();
+			
+			break;		
 		}
 	}
 }

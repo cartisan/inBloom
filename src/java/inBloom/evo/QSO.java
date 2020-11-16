@@ -308,25 +308,24 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	public double distance_rating(int recipient, int informant) {
 		
 		double distance = 0;
-		int n = number_agents*5 + number_agents*number_happenings;
+		int n = number_agents*(5+number_happenings);
 		
 		for(int i = 0; i < number_agents; i++) {
 			
 			for(int j = 0; j < 5; j++) {
 
-				//distance += 1-(Math.abs(particles[informant].best_personality(i, j) - particles[recipient].get_personality(i, j))/2);
 				if(max_personality[i][j]-min_personality[i][j] != 0)
-					distance += Math.pow(1-(Math.abs(quantum_particles[informant].best_personality(i, j) - quantum_particles[recipient].get_personality(i, j))/(max_personality[i][j]-min_personality[i][j])),2)/n;
+					distance += Math.pow(1-(Math.abs(quantum_particles[informant].best_personality(i, j) - quantum_particles[recipient].get_personality(i, j))/(max_personality[i][j]-min_personality[i][j])),2);
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 				
 				if(max_happenings[i][j]-min_happenings[i][j]!=0)
-					distance += Math.pow(1-(Math.abs(quantum_particles[informant].best_happenings(i, j) - quantum_particles[recipient].get_happenings(i, j))/(max_happenings[i][j]-min_happenings[i][j])),2)/n;
+					distance += Math.pow(1-(Math.abs(quantum_particles[informant].best_happenings(i, j) - quantum_particles[recipient].get_happenings(i, j))/(max_happenings[i][j]-min_happenings[i][j])),2);
 			}
 		}
 		
-		return Math.sqrt(distance);
+		return Math.sqrt(distance/n);
 	}
 	
 	
@@ -483,7 +482,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		Fitness<EnvType,ModType> fit = new Fitness<EnvType,ModType>(EVO_ENV,verbose,level);
 		
-		return new Quantum(pers, velocity_pers, hap, velocity_hap, steps, fit);
+		return new Quantum(individual_count, pers, velocity_pers, hap, velocity_hap, steps, fit);
 	}
 	
 	public QuantumPosition new_quantumPosition(Quantum quant, int state, ChromosomePersonality pers,ChromosomeHappenings hap) {
@@ -852,22 +851,31 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				valid_particles++;
 		}
 		
-		int i = 0;
-		
-		while(i<valid_particles) {
-				
-			double roulette = Math.random()*total_tellability;
-			int pos = 0;
+		if(valid_particles>amount) {
 			
-			while(roulette > quantum_particles[pos].best_tellability()) {
+			int i = 0;
+			
+			while(i<valid_particles) {
+					
+				double roulette = Math.random()*total_tellability;
+				int pos = 0;
 				
-				roulette -= quantum_particles[pos].best_tellability();
-				pos++;
+				while(roulette > quantum_particles[pos].best_tellability()) {
+					
+					roulette -= quantum_particles[pos].best_tellability();
+					pos++;
+				}
+				
+				if(!unique_positions.contains(pos)) {
+					unique_positions.add(pos);
+					i++;
+				}
 			}
 			
-			if(!unique_positions.contains(pos)) {
+		} else {
+			
+			for(int pos = 0; pos < amount; pos++) {
 				unique_positions.add(pos);
-				i++;
 			}
 		}
 			
@@ -1302,11 +1310,11 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		boolean change = false;
 		
-		ChromosomePersonality mutatedPersonality = new ChromosomePersonality(number_agents);
-		ChromosomeHappenings mutatedHappenings = new ChromosomeHappenings(number_agents, number_happenings);
+		ChromosomePersonality positivePersonality = new ChromosomePersonality(number_agents);
+		ChromosomeHappenings positiveHappenings = new ChromosomeHappenings(number_agents, number_happenings);
 		
-		boolean[][] persChange = new boolean[number_agents][5];
-		boolean[][] hapsChange = new boolean[number_agents][number_happenings];
+		ChromosomePersonality negativePersonality = new ChromosomePersonality(number_agents);
+		ChromosomeHappenings negativeHappenings = new ChromosomeHappenings(number_agents, number_happenings);
 		
 		for(int i = 0; i < number_agents; i++) {
 			
@@ -1314,13 +1322,14 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int j = 0; j < 5; j++) {
 				
 				if(Math.random()<mutation_prob) {
-					
-					mutatedPersonality.values[i][j] = round(Math.random()*2-1);
-					persChange[i][j] = true;
+
+					positivePersonality.values[i][j] = round(Math.random()*2-1);
+					negativePersonality.values[i][j] = recipient.get_position(state).get_personality(i,j);
 					change = true;
 					
 				}else {
-					mutatedPersonality.values[i][j] = recipient.get_position(state).get_personality(i,j);
+					positivePersonality.values[i][j] = recipient.get_position(state).get_personality(i,j);
+					negativePersonality.values[i][j] = round(Math.random()*2-1);
 				}
 			}
 			
@@ -1328,21 +1337,32 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int j = 0; j < number_happenings; j++) {
 
 				if(Math.random()<mutation_prob) {
-					
-					mutatedHappenings.values[i][j] = (int)Math.round(Math.random()*recipient.get_simLength()-0.5);
-					hapsChange[i][j] = true;
+
+					positiveHappenings.values[i][j] = (int)Math.round(Math.random()*recipient.get_simLength()-0.5);
+					negativeHappenings.values[i][j] = recipient.get_position(state).get_happenings(i,j);
 					change = true;
 					
 				}else {
-					mutatedHappenings.values[i][j] = recipient.get_position(state).get_happenings(i,j);
+					positiveHappenings.values[i][j] = recipient.get_position(state).get_happenings(i,j);
+					negativeHappenings.values[i][j] = (int)Math.round(Math.random()*recipient.get_simLength()-0.5);
 				}
 			}
 		}	
-		
-		if(change)
-			add_quantumPosition(recipient, state, mutatedPersonality, mutatedHappenings);
-		else 
+
+		if(change) {
+
+			QuantumPosition positive_resultant = new_quantumPosition(recipient,state,positivePersonality,positiveHappenings);
+			QuantumPosition negative_resultant = new_quantumPosition(recipient,state,negativePersonality,negativeHappenings);
+			
+			if(positive_resultant.get_tellability() > negative_resultant.get_tellability())
+				recipient.add_Position(positive_resultant, state);
+			else
+				recipient.add_Position(negative_resultant, state);
+
+		}else {
+			
 			randomMutator(recipient,state);
+		}
 	}
 	
 	
@@ -1360,23 +1380,28 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		boolean change = false;
 		
-		ChromosomePersonality mutatedPersonality = new ChromosomePersonality(number_agents);
-		ChromosomeHappenings mutatedHappenings = new ChromosomeHappenings(number_agents, number_happenings);
+		ChromosomePersonality positivePersonality = new ChromosomePersonality(number_agents);
+		ChromosomeHappenings positiveHappenings = new ChromosomeHappenings(number_agents, number_happenings);
 		
-		boolean[][] persChange = new boolean[number_agents][5];
-		boolean[][] hapsChange = new boolean[number_agents][number_happenings];
+		ChromosomePersonality negativePersonality = new ChromosomePersonality(number_agents);
+		ChromosomeHappenings negativeHappenings = new ChromosomeHappenings(number_agents, number_happenings);
 		
 		for(int i = 0; i < number_agents; i++) {
 			
 			// Personality
 			for(int j = 0; j < 5; j++) {
 
-				mutatedPersonality.values[i][j] = recipient.get_personality(i,j);
+				positivePersonality.values[i][j] = recipient.get_personality(i,j);
+				negativePersonality.values[i][j] = recipient.get_personality(i,j);
+				
 				if(Math.random()<mutation_prob) {
 
-					mutatedPersonality.values[i][j] *= -1;
-					persChange[i][j] = true;
+					positivePersonality.values[i][j] *= -1;
 					change = true;
+					
+				}else {
+					
+					negativePersonality.values[i][j] *= -1;
 				}
 			}
 			
@@ -1385,24 +1410,49 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 
 				if(Math.random()<mutation_prob) {
 					
-					if(recipient.get_happenings(i,j) > 0)
-						mutatedHappenings.values[i][j] = 0;
-					else
-						mutatedHappenings.values[i][j] = (int)Math.round(Math.random()*(recipient.get_simLength()-1)+0.5);
-
-					hapsChange[i][j] = true;
+					if(recipient.get_happenings(i,j) > 0) {
+						
+						positiveHappenings.values[i][j] = 0;
+						negativeHappenings.values[i][j] = recipient.get_happenings(i,j);
+						
+					}else {
+						
+						positiveHappenings.values[i][j] = (int)Math.round(Math.random()*(recipient.get_simLength()-1)+0.5);
+						negativeHappenings.values[i][j] = recipient.get_happenings(i,j);
+					}
+					
 					change = true;
 					
 				}else {
-					mutatedHappenings.values[i][j] = recipient.get_happenings(i,j);
+
+					if(recipient.get_happenings(i,j) > 0) {
+						
+						positiveHappenings.values[i][j] = recipient.get_happenings(i,j);
+						negativeHappenings.values[i][j] = (int)Math.round(Math.random()*(recipient.get_simLength()-1)+0.5);
+						
+					}else {
+						
+						positiveHappenings.values[i][j] = recipient.get_happenings(i,j);
+						negativeHappenings.values[i][j] = 0;
+					}
 				}
 			}
 		}	
-		
-		if(change) 
-			add_quantumPosition(recipient, state, mutatedPersonality, mutatedHappenings);
-		else
+
+		if(change) {
+
+			QuantumPosition positive_resultant = new_quantumPosition(recipient,state,positivePersonality,positiveHappenings);
+			QuantumPosition negative_resultant = new_quantumPosition(recipient,state,negativePersonality,negativeHappenings);
+			
+			if(positive_resultant.get_tellability() > negative_resultant.get_tellability())
+				recipient.add_Position(positive_resultant, state);
+			else
+				recipient.add_Position(negative_resultant, state);
+
+		}else {
+			
 			toggleMutator(recipient,state);
+		}
 	}
 	
 	
@@ -1419,22 +1469,22 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		boolean change = false;
 		
-		ChromosomePersonality mutatedPersonality = new ChromosomePersonality(number_agents);
-		ChromosomeHappenings mutatedHappenings = new ChromosomeHappenings(number_agents, number_happenings);
+		ChromosomePersonality positivePersonality = new ChromosomePersonality(number_agents);
+		ChromosomeHappenings positiveHappenings = new ChromosomeHappenings(number_agents, number_happenings);
 		
-		boolean[][] persChange = new boolean[number_agents][5];
-		boolean[][] hapsChange = new boolean[number_agents][number_happenings];
+		ChromosomePersonality negativePersonality = new ChromosomePersonality(number_agents);
+		ChromosomeHappenings negativeHappenings = new ChromosomeHappenings(number_agents, number_happenings);
 		
 		for(int i = 0; i < number_agents; i++) {
 			
 			// Personality
 			for(int j = 0; j < 5; j++) {
 
-				mutatedPersonality.values[i][j] = recipient.get_personality(i,j);
+				positivePersonality.values[i][j] = recipient.get_personality(i,j);
+				negativePersonality.values[i][j] = recipient.get_personality(i,j);
 				
 				if(Math.random()<mutation_prob) {
 					
-					persChange[i][j] = true;
 					change = true;
 					
 					// Generate other position to look at
@@ -1454,13 +1504,41 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					double distance = recipient.get_position(state).get_personality(xPos,yPos) - recipient.get_position(state).get_personality(i,j);
 					
 					if(ratio > 0) {
-						mutatedPersonality.values[i][j] += ratio * distance;
+						positivePersonality.values[i][j] += ratio * distance;
 					}else {
 						ratio*=-1;
 						if(distance>0)
-							mutatedPersonality.values[i][j] += ratio * (-1-recipient.get_position(state).get_personality(i,j));
+							positivePersonality.values[i][j] += ratio * (-1-recipient.get_position(state).get_personality(i,j));
 						else
-							mutatedPersonality.values[i][j] += ratio * (1-recipient.get_position(state).get_personality(i,j));
+							positivePersonality.values[i][j] += ratio * (1-recipient.get_position(state).get_personality(i,j));
+					}
+					
+				}else {
+					
+					// Generate other position to look at
+					int xPos = i;
+					int yPos = j;
+					
+					while(i==xPos && j==yPos) {
+						
+						if(Math.random()>0.5) {
+							xPos = (int)Math.round(Math.random()*number_agents-0.5);
+						}else {
+							yPos = (int)Math.round(Math.random()*5-0.5);
+						}
+					}
+					
+					double ratio = Math.random()*2-1;
+					double distance = recipient.get_position(state).get_personality(xPos,yPos) - recipient.get_position(state).get_personality(i,j);
+					
+					if(ratio > 0) {
+						negativePersonality.values[i][j] += ratio * distance;
+					}else {
+						ratio*=-1;
+						if(distance>0)
+							negativePersonality.values[i][j] += ratio * (-1-recipient.get_position(state).get_personality(i,j));
+						else
+							negativePersonality.values[i][j] += ratio * (1-recipient.get_position(state).get_personality(i,j));
 					}
 				}
 			}
@@ -1468,11 +1546,11 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			// Happenings
 			for(int j = 0; j < number_happenings; j++) {
 
-				mutatedHappenings.values[i][j] = recipient.get_happenings(i,j);
+				positiveHappenings.values[i][j] = recipient.get_happenings(i,j);
+				negativeHappenings.values[i][j] = recipient.get_happenings(i,j);
 				
 				if(Math.random()<mutation_prob) {
 					
-					hapsChange[i][j] = true;
 					change = true;
 
 					// Generate other position to look at
@@ -1492,22 +1570,60 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					double distance = recipient.best_happenings(xPos,yPos) - recipient.get_position(state).get_happenings(i,j);
 					
 					if(ratio > 0) {
-						mutatedHappenings.values[i][j] += ratio * distance;
+						positiveHappenings.values[i][j] += ratio * distance;
 					}else {
 						ratio*=-1;
 						if(distance>0)
-							mutatedHappenings.values[i][j] -= ratio * (recipient.get_position(state).get_happenings(i,j));
+							positiveHappenings.values[i][j] -= ratio * (recipient.get_position(state).get_happenings(i,j));
 						else
-							mutatedHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_position(state).get_happenings(i,j));
+							positiveHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_position(state).get_happenings(i,j));
+					}
+					
+				}else {
+
+					// Generate other position to look at
+					int xPos = i;
+					int yPos = j;
+					
+					while(i==xPos && j==yPos) {
+						
+						if(Math.random()>0.5) {
+							xPos = (int)Math.round(Math.random()*number_agents-0.5);
+						}else {
+							yPos = (int)Math.round(Math.random()*5-0.5);
+						}
+					}
+					
+					double ratio = Math.random()*2-1;
+					double distance = recipient.best_happenings(xPos,yPos) - recipient.get_position(state).get_happenings(i,j);
+					
+					if(ratio > 0) {
+						negativeHappenings.values[i][j] += ratio * distance;
+					}else {
+						ratio*=-1;
+						if(distance>0)
+							negativeHappenings.values[i][j] -= ratio * (recipient.get_position(state).get_happenings(i,j));
+						else
+							negativeHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_position(state).get_happenings(i,j));
 					}
 				}
 			}
 		}
-		
-		if(change)
-			add_quantumPosition(recipient, state, mutatedPersonality, mutatedHappenings);
-		else
+
+		if(change) {
+
+			QuantumPosition positive_resultant = new_quantumPosition(recipient,state,positivePersonality,positiveHappenings);
+			QuantumPosition negative_resultant = new_quantumPosition(recipient,state,negativePersonality,negativeHappenings);
+			
+			if(positive_resultant.get_tellability() > negative_resultant.get_tellability())
+				recipient.add_Position(positive_resultant, state);
+			else
+				recipient.add_Position(negative_resultant, state);
+
+		}else {
+
 			orientedMutator(recipient,state);
+		}
 	}
 	
 	/*
@@ -1523,67 +1639,107 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		boolean change = false;
 		
-		ChromosomePersonality mutatedPersonality = new ChromosomePersonality(number_agents);
-		ChromosomeHappenings mutatedHappenings = new ChromosomeHappenings(number_agents, number_happenings);
+		ChromosomePersonality positivePersonality = new ChromosomePersonality(number_agents);
+		ChromosomeHappenings positiveHappenings = new ChromosomeHappenings(number_agents, number_happenings);
 		
-		boolean[][] persChange = new boolean[number_agents][5];
-		boolean[][] hapsChange = new boolean[number_agents][number_happenings];
+		ChromosomePersonality negativePersonality = new ChromosomePersonality(number_agents);
+		ChromosomeHappenings negativeHappenings = new ChromosomeHappenings(number_agents, number_happenings);
 		
 		for(int i = 0; i < number_agents; i++) {
 			
 			for(int j = 0; j < 5; j++) {
 
-				mutatedPersonality.values[i][j] = recipient.get_position(state).get_personality().values[i][j];
+				positivePersonality.values[i][j] = recipient.get_position(state).get_personality().values[i][j];
+				negativePersonality.values[i][j] = recipient.get_position(state).get_personality().values[i][j];
 				
 				if(Math.random()<mutation_prob) {
 
-					persChange[i][j] = true;
 					change = true;
 					
 					double ratio = Math.random()*2-1;
 					double distance = mutator.best_personality(i,j) - recipient.get_position(state).get_personality(i,j);
 					
 					if(ratio > 0) {
-						mutatedPersonality.values[i][j] += ratio * distance;
+						positivePersonality.values[i][j] += ratio * distance;
 					}else {
 						ratio*=-1;
 						if(distance>0)
-							mutatedPersonality.values[i][j] += ratio * (-1-recipient.get_position(state).get_personality(i,j));
+							positivePersonality.values[i][j] += ratio * (-1-recipient.get_position(state).get_personality(i,j));
 						else
-							mutatedPersonality.values[i][j] += ratio * (1-recipient.get_position(state).get_personality(i,j));
+							positivePersonality.values[i][j] += ratio * (1-recipient.get_position(state).get_personality(i,j));
+					}
+					
+				}else {
+					
+					double ratio = Math.random()*2-1;
+					double distance = mutator.best_personality(i,j) - recipient.get_position(state).get_personality(i,j);
+					
+					if(ratio > 0) {
+						negativePersonality.values[i][j] += ratio * distance;
+					}else {
+						ratio*=-1;
+						if(distance>0)
+							negativePersonality.values[i][j] += ratio * (-1-recipient.get_position(state).get_personality(i,j));
+						else
+							negativePersonality.values[i][j] += ratio * (1-recipient.get_position(state).get_personality(i,j));
 					}
 				}
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 
-				mutatedHappenings.values[i][j] = recipient.get_happenings().values[i][j];
+				positiveHappenings.values[i][j] = recipient.get_happenings().values[i][j];
+				negativeHappenings.values[i][j] = recipient.get_happenings().values[i][j];
 				
 				if(Math.random()<mutation_prob) {
 
-					hapsChange[i][j] = true;
 					change = true;
 					
 					double ratio = Math.random()*2-1;
 					double distance = mutator.best_happenings(i,j) - recipient.get_happenings(i,j);
 					
 					if(ratio > 0) {
-						mutatedHappenings.values[i][j] += ratio * distance;
+						positiveHappenings.values[i][j] += ratio * distance;
 					}else {
 						ratio*=-1;
 						if(distance>0)
-							mutatedHappenings.values[i][j] -= ratio * (recipient.get_position(state).get_happenings(i,j));
+							positiveHappenings.values[i][j] -= ratio * (recipient.get_position(state).get_happenings(i,j));
 						else
-							mutatedHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_position(state).get_happenings(i,j));
+							positiveHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_position(state).get_happenings(i,j));
+					}
+					
+				}else {
+					
+					double ratio = Math.random()*2-1;
+					double distance = mutator.best_happenings(i,j) - recipient.get_happenings(i,j);
+					
+					if(ratio > 0) {
+						negativeHappenings.values[i][j] += ratio * distance;
+					}else {
+						ratio*=-1;
+						if(distance>0)
+							negativeHappenings.values[i][j] -= ratio * (recipient.get_position(state).get_happenings(i,j));
+						else
+							negativeHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_position(state).get_happenings(i,j));
 					}
 				}
 			}
 		}
-		
-		if(change)
-			add_quantumPosition(recipient, state, mutatedPersonality, mutatedHappenings);
-		else 
+
+		if(change) {
+
+			QuantumPosition positive_resultant = new_quantumPosition(recipient,state,positivePersonality,positiveHappenings);
+			QuantumPosition negative_resultant = new_quantumPosition(recipient,state,negativePersonality,negativeHappenings);
+			
+			if(positive_resultant.get_tellability() > negative_resultant.get_tellability())
+				recipient.add_Position(positive_resultant, state);
+			else
+				recipient.add_Position(negative_resultant, state);
+
+		}else {
+
 			 guidedMutator(recipient, mutator, state);
+		}
 	}
 
 	
@@ -1772,26 +1928,23 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		double[][][] update_personality = new double[quantum_particles[recipient].amount_positions()][number_agents][5];
 		double[][][] update_happenings = new double[quantum_particles[recipient].amount_positions()][number_agents][number_happenings];
 		
+		double total_force = 0;
+		
 		for(int index = 0; index < informants.size(); index++) {
 			
 			for(int state = 0; state < quantum_particles[recipient].amount_positions(); state++) {
 			
 				// determine strength of interaction
-				double fitnessRating = fitness_rating(recipient, state, informants.get(index));
-				double distanceRating = distance_rating(recipient, informants.get(index));
-				double time = 1;
+				double energy = fitness_rating(recipient, state, informants.get(index));
+				double distance = distance_rating(recipient, informants.get(index));
+				double inertia = 1;
 				
 				if(spacetime)
-					time = determine_spacetime(recipient,state);
+					inertia = determine_spacetime(recipient,state);
 				
-				double force = fitnessRating * distanceRating * time;
-
-//				double force = Math.sqrt(Math.abs(fitnessRating*Math.pow(distanceRating,2)))*time;
-//				
-//				// determine if force is pulling towards or pushing away
-//				if(fitnessRating < 0)
-//					force*=-1;
-
+				double force = energy*inertia*Math.pow(distance, 2);
+				
+				total_force += force;
 				
 				if(verbose)
 					System.out.println("force: " + force);
@@ -1801,7 +1954,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				
 					for(int j = 0; j < 5; j++) {
-						
+
 						update_personality[state][i][j] += force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_position(state).get_personality(i, j));
 					}
 					
@@ -1821,15 +1974,14 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int j = 0; j < 5; j++) {
 					
-					quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[state][i][j] / informants.size());
+						quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[state][i][j] / informants.size(),total_force/informants.size());
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
-	
-					quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[state][i][j] / informants.size()));
+
+						quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[state][i][j] / informants.size()),total_force/informants.size());
 				}
 			}
 		}
 	}
-
 }

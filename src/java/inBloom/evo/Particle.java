@@ -105,20 +105,10 @@ public class Particle implements Individual,Comparable<Particle> {
 	 * Velocity Update
 	 */
 	
-	public void update_persVelocity(int x, int y, double update) {
-		
-		velocity_personality.values[x][y] += update; 
-	}
-	
 	public void update_persVelocity(int x, int y, double update, double decayRate) {
 
 		velocity_personality.values[x][y] *= 1-decayRate; 
 		velocity_personality.values[x][y] += update; 
-	}
-	
-	public void update_hapVelocity(int x, int y, int update) {
-		
-		velocity_happenings.values[x][y] += update; 
 	}
 	
 	public void update_hapVelocity(int x, int y, int update, double decayRate) {

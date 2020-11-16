@@ -15,14 +15,15 @@ public class Quantum implements Individual,Comparable<Quantum> {
 	
 	private List<QuantumPosition> positions = new ArrayList<QuantumPosition>();
 	
-	private static double threshold = 0.01;
+	private double threshold;
 
 	
-	public Quantum(ChromosomePersonality personality, ChromosomePersonality velocity_personality, ChromosomeHappenings happenings, ChromosomeHappenings velocity_happenings, Integer simLength, Fitness<?,?> fit){
-
+	public Quantum(int individual_count, ChromosomePersonality personality, ChromosomePersonality velocity_personality, ChromosomeHappenings happenings, ChromosomeHappenings velocity_happenings, Integer simLength, Fitness<?,?> fit){
+		
 		best_personality = personality;
 		best_happenings = happenings;
 		best_simLength = simLength;
+		threshold = Math.pow(0.5, individual_count/2);
 		
 		QuantumPosition pos = new QuantumPosition(personality, velocity_personality, happenings, velocity_happenings, simLength, 1, fit);
 		
