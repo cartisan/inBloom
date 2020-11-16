@@ -839,10 +839,13 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				roulette -= quantum_particles[pos].best_tellability();
 				
-				if(quantum_particles[pos].best_tellability()>0)
+				if(quantum_particles[pos].best_tellability()>0) {
 					pos++;
-				else
+				}else {
 					roulette = 0;
+					if(pos>1)
+						pos--;
+				}
 			}
 			
 			unique_positions.add(pos);
