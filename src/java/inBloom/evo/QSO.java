@@ -950,24 +950,24 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int j = 0; j < 5; j++) {
 				
 				if(Math.random()<crossover_prob) {
-					personalityOne.values[i][j] = donor.get_position(state).get_personality(i,j);
+					personalityOne.values[i][j] = donor.best_personality(i,j);
 					personalityTwo.values[i][j] = recipient.get_position(state).get_personality(i,j);
 					change = true;
 				}else {
 					personalityOne.values[i][j] = recipient.get_position(state).get_personality(i,j);
-					personalityTwo.values[i][j] = donor.get_position(state).get_personality(i,j);
+					personalityTwo.values[i][j] = donor.best_personality(i,j);
 				}
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 				
 				if(Math.random()<crossover_prob) {
-					happeningsOne.values[i][j] = donor.get_position(state).get_happenings(i,j);
+					happeningsOne.values[i][j] = donor.best_happenings(i,j);
 					happeningsTwo.values[i][j] = recipient.get_position(state).get_happenings(i,j);
 					change = true;
 				}else {
 					happeningsOne.values[i][j] = recipient.get_position(state).get_happenings(i,j);
-					happeningsTwo.values[i][j] = donor.get_position(state).get_happenings(i,j);
+					happeningsTwo.values[i][j] = donor.best_happenings(i,j);
 				}
 			}
 		}
@@ -1016,24 +1016,24 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int j = 0; j < 5; j++) {
 				
 				if(crossPersonality[i][j]) {
-					personalityOne.values[i][j] = donor.get_personality(i,j);
-					personalityTwo.values[i][j] = recipient.get_personality(i,j);
+					personalityOne.values[i][j] = donor.best_personality(i,j);
+					personalityTwo.values[i][j] = recipient.get_position(state).get_personality(i,j);
 					change=true;
 				}else {
-					personalityOne.values[i][j] = recipient.get_personality(i,j);
-					personalityTwo.values[i][j] = donor.get_personality(i,j);
+					personalityOne.values[i][j] = recipient.get_position(state).get_personality(i,j);
+					personalityTwo.values[i][j] = donor.best_personality(i,j);
 				}
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 				
 				if(crossHappenings[i][j]) {
-					happeningsOne.values[i][j] = donor.get_happenings(i,j);
-					happeningsTwo.values[i][j] = recipient.get_happenings(i,j);
+					happeningsOne.values[i][j] = donor.best_happenings(i,j);
+					happeningsTwo.values[i][j] = recipient.get_position(state).get_happenings(i,j);
 					change=true;
 				}else {
-					happeningsOne.values[i][j] = recipient.get_happenings(i,j);
-					happeningsTwo.values[i][j] = donor.get_happenings(i,j);
+					happeningsOne.values[i][j] = recipient.get_position(state).get_happenings(i,j);
+					happeningsTwo.values[i][j] = donor.best_happenings(i,j);
 				}
 			}
 		}
@@ -1171,6 +1171,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				}
 
 				int pos = positions.get((int)Math.round(Math.random()*positions.size()-0.5));
+				
 				personalityRandom.values[i][j] = quantum_particles[pos].best_personality(i,j);
 				personalityAverage.values[i][j] = round(sum/positions.size());
 			}
@@ -1186,6 +1187,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				}
 
 				int pos = positions.get((int)Math.round(Math.random()*positions.size()-0.5));
+				
 				happeningsRandom.values[i][j] = quantum_particles[pos].best_happenings(i,j);
 				happeningsAverage.values[i][j] = (int)Math.round(sum/positions.size());
 			}
@@ -1288,7 +1290,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					change = true;
 					
 				}else {
-					mutatedPersonality.values[i][j] = recipient.get_personality(i,j);
+					mutatedPersonality.values[i][j] = recipient.get_position(state).get_personality(i,j);
 				}
 			}
 			
@@ -1302,7 +1304,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					change = true;
 					
 				}else {
-					mutatedHappenings.values[i][j] = recipient.get_happenings(i,j);
+					mutatedHappenings.values[i][j] = recipient.get_position(state).get_happenings(i,j);
 				}
 			}
 		}	
@@ -1419,7 +1421,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					}
 					
 					double ratio = Math.random()*2-1;
-					double distance = recipient.get_personality(xPos,yPos) - recipient.get_personality(i,j);
+					double distance = recipient.get_position(state).get_personality(xPos,yPos) - recipient.get_position(state).get_personality(i,j);
 					
 					if(ratio > 0) {
 						mutatedPersonality.values[i][j] += ratio * distance;
@@ -1457,7 +1459,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					}
 					
 					double ratio = Math.random()*2-1;
-					double distance = recipient.get_happenings(xPos,yPos) - recipient.get_happenings(i,j);
+					double distance = recipient.get_position(state).get_happenings(xPos,yPos) - recipient.get_position(state).get_happenings(i,j);
 					
 					if(ratio > 0) {
 						mutatedHappenings.values[i][j] += ratio * distance;
@@ -1501,7 +1503,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			
 			for(int j = 0; j < 5; j++) {
 
-				mutatedPersonality.values[i][j] = recipient.get_personality().values[i][j];
+				mutatedPersonality.values[i][j] = recipient.get_position(state).get_personality().values[i][j];
 				
 				if(Math.random()<mutation_prob) {
 
@@ -1509,16 +1511,16 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					change = true;
 					
 					double ratio = Math.random()*2-1;
-					double distance = mutator.get_personality(i,j) - recipient.get_personality(i,j);
+					double distance = mutator.best_personality(i,j) - recipient.get_position(state).get_personality(i,j);
 					
 					if(ratio > 0) {
 						mutatedPersonality.values[i][j] += ratio * distance;
 					}else {
 						ratio*=-1;
 						if(distance>0)
-							mutatedPersonality.values[i][j] += ratio * (-1-recipient.get_personality(i,j));
+							mutatedPersonality.values[i][j] += ratio * (-1-recipient.get_position(state).get_personality(i,j));
 						else
-							mutatedPersonality.values[i][j] += ratio * (1-recipient.get_personality(i,j));
+							mutatedPersonality.values[i][j] += ratio * (1-recipient.get_position(state).get_personality(i,j));
 					}
 				}
 			}
@@ -1533,16 +1535,16 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					change = true;
 					
 					double ratio = Math.random()*2-1;
-					double distance = mutator.get_happenings(i,j) - recipient.get_happenings(i,j);
+					double distance = mutator.best_happenings(i,j) - recipient.get_happenings(i,j);
 					
 					if(ratio > 0) {
 						mutatedHappenings.values[i][j] += ratio * distance;
 					}else {
 						ratio*=-1;
 						if(distance>0)
-							mutatedHappenings.values[i][j] -= ratio * (recipient.get_happenings(i,j));
+							mutatedHappenings.values[i][j] -= ratio * (recipient.get_position(state).get_happenings(i,j));
 						else
-							mutatedHappenings.values[i][j] += ratio * (recipient.get_simLength()-recipient.get_happenings(i,j));
+							mutatedHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_happenings(i,j));
 					}
 				}
 			}
