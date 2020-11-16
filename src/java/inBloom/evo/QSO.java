@@ -837,9 +837,9 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			
 			while(roulette > 0) {
 				
-				roulette -= quantum_particles[i].best_tellability();
+				roulette -= quantum_particles[pos].best_tellability();
 				
-				if(quantum_particles[i].best_tellability()>0)
+				if(quantum_particles[pos].best_tellability()>0)
 					pos++;
 				else
 					roulette = 0;
