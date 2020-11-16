@@ -824,25 +824,39 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		List<Integer> unique_positions = new ArrayList<Integer>();
 		
 		double total_tellability = 0;
+		int i = 0;
 		
-		for(int i = 0; i < individual_count; i++) {
+		for(i = 0; i < individual_count; i++) {
 			
 			total_tellability += quantum_particles[i].best_tellability();
+			if(quantum_particles[i].best_tellability()>0)
+				i++;
 		}
 		
-		for(int i = 0; i < amount; i++) {
+		if(i>=amount) {
 			
-			double roulette = Math.random()*total_tellability;
-			int pos = 0;
-			
-			while(roulette > quantum_particles[pos].best_tellability()) {
+			i = 0;
+			while(i<amount) {
 				
-				roulette -= quantum_particles[pos].best_tellability();
+				double roulette = Math.random()*total_tellability;
+				int pos = 0;
+				
+				while(roulette > quantum_particles[pos].best_tellability()) {
+					
+					roulette -= quantum_particles[pos].best_tellability();
+				}
+				
+				if(!unique_positions.contains(pos)) {
+					unique_positions.add(pos);
+					i++;
+				}
 			}
 			
-			unique_positions.add(pos);
+		}else {
+
+			unique_positions.add(i);
+			i++;
 		}
-		
 		return unique_positions;
 	}
 	
