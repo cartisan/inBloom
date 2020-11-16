@@ -1159,7 +1159,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int k = 0; k < positions.size(); k++) {
 					
-					sum += quantum_particles[k].get_position(state).get_personality(i,j);
+					sum += quantum_particles[positions.get(k)].best_personality(i,j);
 				}
 				
 				personalityRandom.values[i][j] = quantum_particles[pos].get_position(state).get_personality(i,j);
@@ -1174,7 +1174,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int k = 0; k < positions.size(); k++) {
 					
-					sum += quantum_particles[k].get_position(state).get_happenings(i,j);
+					sum += quantum_particles[positions.get(k)].best_happenings(i,j);
 				}
 									
 				happeningsRandom.values[i][j] = quantum_particles[pos].get_position(state).get_happenings(i,j);

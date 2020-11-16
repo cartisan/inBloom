@@ -128,31 +128,9 @@ public class Quantum implements Individual,Comparable<Quantum> {
 		return state;
 	}
 
-	public QuantumPosition get_position(int z) {
+	public QuantumPosition get_position(int state) {
 		
-		return positions.get(z);
-	}
-	
-	
-	public int compareTo(Quantum other) {
-		
-		// smaller operator returns array in descending order
-		if(best_tellability < other.best_tellability())
-			return 1;
-		
-		return -1;
-	}
-	
-	public boolean equals(ChromosomePersonality other_personality, ChromosomeHappenings other_happenings) {
-		
-		for(int i = 0; i < positions.size(); i++) {
-
-			if(positions.get(i).get_happenings().equals(other_happenings))
-				return true;
-			if(positions.get(i).get_personality().equals(other_personality))
-				return true;
-		}
-		return false;
+		return positions.get(state);
 	}
 	
 	
@@ -174,6 +152,7 @@ public class Quantum implements Individual,Comparable<Quantum> {
 		update_lifespan();
 	}
 	
+	
 	private void update_lifespan() {
 		
 		int i = 0;
@@ -193,11 +172,11 @@ public class Quantum implements Individual,Comparable<Quantum> {
 				positions.get(j).update_lifespan(-time);		
 				
 			}
-			
 			i += 1;
 			j -= 1;
 		}
 	}
+	
 	
 	public void add_Position(int state, ChromosomePersonality personality, ChromosomeHappenings happenings, int length, Fitness <?,?> fit) {
 		
@@ -216,6 +195,7 @@ public class Quantum implements Individual,Comparable<Quantum> {
 		}
 		positions.sort(null);
 	}
+	
 	
 	public void add_Position(QuantumPosition qPos, int state) {
 		
@@ -236,6 +216,30 @@ public class Quantum implements Individual,Comparable<Quantum> {
 		}
 		positions.sort(null);
 	}
+	
+	
+	public int compareTo(Quantum other) {
+		
+		// smaller operator returns array in descending order
+		if(best_tellability < other.best_tellability())
+			return 1;
+		
+		return -1;
+	}
+	
+	
+	public boolean equals(ChromosomePersonality other_personality, ChromosomeHappenings other_happenings) {
+		
+		for(int i = 0; i < positions.size(); i++) {
+
+			if(positions.get(i).get_happenings().equals(other_happenings))
+				return true;
+			if(positions.get(i).get_personality().equals(other_personality))
+				return true;
+		}
+		return false;
+	}
+	
 	
 	@Override
 	public String to_String() {
