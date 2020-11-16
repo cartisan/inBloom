@@ -835,17 +835,9 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			double roulette = Math.random()*total_tellability;
 			int pos = 0;
 			
-			while(roulette > 0) {
+			while(roulette > quantum_particles[pos].best_tellability()) {
 				
 				roulette -= quantum_particles[pos].best_tellability();
-				
-				if(quantum_particles[pos].best_tellability()>0) {
-					pos++;
-				}else {
-					roulette = 0;
-					if(pos>1)
-						pos--;
-				}
 			}
 			
 			unique_positions.add(pos);
