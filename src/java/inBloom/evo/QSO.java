@@ -38,8 +38,8 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	// randomMutator,toggleMutator,orientedMutator,guidedMutator
 	private static boolean[] mutationBool = {true,true,true,true}; 
 	
-	private double crossover_prob = 0.1;
-	private double mutation_prob = 0.1;
+	private double crossover_prob;
+	private double mutation_prob;
 	
 	// determine manner of updating velocity
 	// number of informants for a particle
@@ -54,7 +54,8 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public QSO(String[] args, EvolutionaryEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
-		// TODO Auto-generated constructor stub
+		crossover_prob = 5+number_happenings;
+		mutation_prob = 5+number_happenings;
 	}
 
 	/**
