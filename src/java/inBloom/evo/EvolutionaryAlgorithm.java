@@ -189,12 +189,6 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 		System.out.println("Best individual: " + population_best.get(generation));
 		System.out.println("Generation Average: " + population_average.get(generation));
 		System.out.println();
-		
-		if(no_improvement>0) {
-			System.out.println("No improvement found for " + no_improvement + " generations!");
-			System.out.println();
-		}
-		
 	}
 	
 	public void final_stats() {

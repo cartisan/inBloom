@@ -387,7 +387,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	@Override
 	protected void evaluate_population() {
 		
-		double best = quantum_particles[0].get_tellability();
+		double best = quantum_particles[0].best_tellability();
 		double average = 0;
 
 		for(int i = 0; i < individual_count; i++) {
@@ -837,7 +837,11 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			while(roulette > 0) {
 				
 				roulette -= quantum_particles[i].best_tellability();
-				pos++;
+				
+				if(quantum_particles[i].best_tellability()>0)
+					pos++;
+				else
+					roulette = 0;
 			}
 			
 			unique_positions.add(pos);
@@ -941,24 +945,24 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int j = 0; j < 5; j++) {
 				
 				if(Math.random()<crossover_prob) {
-					personalityOne.values[i][j] = recipient.get_position(state).get_personality(i,j);
-					personalityTwo.values[i][j] = donor.get_position(state).get_personality(i,j);
-					change = true;
-				}else {
 					personalityOne.values[i][j] = donor.get_position(state).get_personality(i,j);
 					personalityTwo.values[i][j] = recipient.get_position(state).get_personality(i,j);
+					change = true;
+				}else {
+					personalityOne.values[i][j] = recipient.get_position(state).get_personality(i,j);
+					personalityTwo.values[i][j] = donor.get_position(state).get_personality(i,j);
 				}
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 				
 				if(Math.random()<crossover_prob) {
-					happeningsOne.values[i][j] = recipient.get_position(state).get_happenings(i,j);
-					happeningsTwo.values[i][j] = donor.get_position(state).get_happenings(i,j);
-					change = true;
-				}else {
 					happeningsOne.values[i][j] = donor.get_position(state).get_happenings(i,j);
 					happeningsTwo.values[i][j] = recipient.get_position(state).get_happenings(i,j);
+					change = true;
+				}else {
+					happeningsOne.values[i][j] = recipient.get_position(state).get_happenings(i,j);
+					happeningsTwo.values[i][j] = donor.get_position(state).get_happenings(i,j);
 				}
 			}
 		}

@@ -1152,24 +1152,24 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			for(int j = 0; j < 5; j++) {
 				
 				if(Math.random()<crossover_prob*personality_cross[i][j]) {
-					personalityOne.values[i][j] = one.get_personality(i,j);
-					personalityTwo.values[i][j] = two.get_personality(i,j);
-					persChange[i][j] = true;
-				}else {
 					personalityOne.values[i][j] = two.get_personality(i,j);
 					personalityTwo.values[i][j] = one.get_personality(i,j);
+					persChange[i][j] = true;
+				}else {
+					personalityOne.values[i][j] = one.get_personality(i,j);
+					personalityTwo.values[i][j] = two.get_personality(i,j);
 				}
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 				
 				if(Math.random()<crossover_prob*happenings_cross[i][j]) {
-					happeningsOne.values[i][j] = one.get_happenings(i,j);
-					happeningsTwo.values[i][j] = two.get_happenings(i,j);
-					hapsChange[i][j] = true;
-				}else {
 					happeningsOne.values[i][j] = two.get_happenings(i,j);
 					happeningsTwo.values[i][j] = one.get_happenings(i,j);
+					hapsChange[i][j] = true;
+				}else {
+					happeningsOne.values[i][j] = one.get_happenings(i,j);
+					happeningsTwo.values[i][j] = two.get_happenings(i,j);
 				}
 			}
 		}
