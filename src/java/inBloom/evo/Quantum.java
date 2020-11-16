@@ -14,6 +14,8 @@ public class Quantum implements Individual,Comparable<Quantum> {
 	private Integer best_actualLength;
 	
 	private List<QuantumPosition> positions = new ArrayList<QuantumPosition>();
+	
+	private static double threshold = 0.01;
 
 	
 	public Quantum(ChromosomePersonality personality, ChromosomePersonality velocity_personality, ChromosomeHappenings happenings, ChromosomeHappenings velocity_happenings, Integer simLength, Fitness<?,?> fit){
@@ -117,7 +119,7 @@ public class Quantum implements Individual,Comparable<Quantum> {
 
 	public int choosePosition() {
 		
-		double roulette = Math.random()*0.9;
+		double roulette = Math.random()*(1-2*threshold);
 		int state = 0;
 		
 		while(roulette > positions.get(state).get_lifespan()) {
@@ -160,7 +162,7 @@ public class Quantum implements Individual,Comparable<Quantum> {
 		
 		while(i<j) {
 			
-			if(positions.get(j).get_lifespan()<0.05) {
+			if(positions.get(j).get_lifespan()<threshold) {
 				
 				positions.get(i).update_lifespan(positions.get(j).get_lifespan());
 				positions.remove(j);

@@ -146,8 +146,9 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	public static void main(String[] args) {
 		
 		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\";
-		//String name = "PSO 2";
-		String name = "GEN";
+//		String name = "GEN";
+//		String name = "PSO";
+		String name = "QSO";
 
 		@SuppressWarnings("unchecked")
 		FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, true);

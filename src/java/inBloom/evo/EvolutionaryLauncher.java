@@ -110,6 +110,8 @@ public class EvolutionaryLauncher {
 			pso.setSelectionManner(false);
 			// true activates the floating parameters feature
 			pso.setFloatingParameters(true);
+			// true -> using spacetime modifier
+			pso.setSpacetime(false);
 			
 			// Termination Criteria
 			// Runtime in seconds (-1 to deactivate)
@@ -143,10 +145,12 @@ public class EvolutionaryLauncher {
 		qso.setSelectionManner(false);
 		// true activates the floating parameters feature
 		qso.setFloatingParameters(false);
+		// true -> using spacetime modifier
+		qso.setSpacetime(false);
 		// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
-		ga.setCrossover(false, true, true, true);
+		qso.setCrossover(false, true, true, true);
 		// randomMutator,toggleMutator,orientedMutator,guidedMutator
-		ga.setMutation(true, true, true, true);
+		qso.setMutation(true, true, true, true);
 		
 		// Termination Criteria
 		// Runtime in seconds (-1 to deactivate)

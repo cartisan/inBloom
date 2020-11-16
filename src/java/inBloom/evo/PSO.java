@@ -42,14 +42,17 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	
 	// determine manner of updating velocity
-	// number of informants for a particle
-	private static int number_informants = 1; 
-	// true -> Roulette Wheel Selection, false -> choose best
-	private static boolean fitnessBasedSelection = false;
-	// false -> use static update rate, false -> update with force calculation
-	private static boolean floatingParameters = false;
 	// if floatingParameters == false: use this as update rate
-	private static double decay_rate = 0.1;
+	private double decay_rate = 0.1;
+	// number of informants for a particle
+	private int number_informants = 1; 
+	// true -> Roulette Wheel Selection, false -> choose best
+	private boolean fitnessBasedSelection = false;
+	// false -> use static update rate, false -> update with force calculation
+	private boolean floatingParameters = false;
+	// Determine weather Spacetime modifier should be used
+	private boolean spacetime = false;
+	
 	
 	
 	public PSO(String[] args, EvolutionaryEnvironment <?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
@@ -228,6 +231,14 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		decay_rate = rate;
 	}
 	
+	public boolean getSpacetime() {
+		return spacetime;
+	}
+	
+	public void setSpacetime(boolean time) {
+		spacetime = time;
+	}
+	
 	
 	/**
 	 * Difference Measurements
@@ -244,12 +255,17 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public double fitness_rating(int recipient, int informant) {
 		
-		// If both particles have a best tellability of 0 they shall get a high rating
-		// Therefore they will get propelled away from another and ensure exploration.
-		if(particles[informant].best_tellability()==0 && particles[recipient].best_tellability()==0)
-			return -1;
-		
 		return (particles[informant].best_tellability() - particles[recipient].get_tellability())/particles[0].best_tellability();
+	}
+	
+	
+	/*
+	 * Regulates the update Rate of a particle based on it's tellability
+	 */
+	
+	public double determine_spacetime(int recipient) {
+		
+		return 1-(particles[recipient].get_tellability()/particles[0].best_tellability());
 	}
 	
 	
@@ -978,11 +994,22 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			// determine strength of interaction
 			double fitnessRating = fitness_rating(recipient, informants.get(index));
 			double distanceRating = distance_rating(recipient, informants.get(index));
-			double force = Math.sqrt(Math.abs(fitnessRating*Math.pow(distanceRating,2)));
+			double time = 1;
 			
-			// determine if force is pulling towards or pushing away
-			if(fitnessRating < 0)
-				force*=-1;
+			if(spacetime)
+				time = determine_spacetime(recipient);
+			
+			double force = fitnessRating*distanceRating*time;
+
+//			double force = Math.sqrt(Math.abs(fitnessRating*Math.pow(distanceRating,2)))*time;
+//			
+//			// determine if force is pulling towards or pushing away
+//			if(fitnessRating < 0)
+//				force*=-1;
+			
+			if(verbose) {
+				System.out.println("force: " + force);
+			}
 			
 			// copy information
 			for(int i = 0; i < number_agents; i++) {

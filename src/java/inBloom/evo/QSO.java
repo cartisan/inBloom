@@ -42,20 +42,25 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	private double mutation_prob;
 	
 	// determine manner of updating velocity
+	// if floatingParameters == false: use this as update rate
+	private static double decay_rate = 0.05;
 	// number of informants for a particle
 	private static int number_informants = 1; 
 	// true -> Roulette Wheel Selection, false -> choose best
 	private static boolean fitnessBasedSelection = false;
 	// false -> use static update rate, false -> update with force calculation
 	private static boolean floatingParameters = false;
-	// if floatingParameters == false: use this as update rate
-	private static double decay_rate = 0.05;
+	// Determine weather Spacetime modifier should be used
+	private boolean spacetime = false;
+	
 	
 	
 	public QSO(String[] args, EvolutionaryEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
-		crossover_prob = 5+number_happenings;
-		mutation_prob = 5+number_happenings;
+		
+		int parameter_count = (5+number_happenings)*number_agents;
+		crossover_prob = Math.sqrt(parameter_count)/parameter_count;
+		mutation_prob = Math.sqrt(parameter_count)/parameter_count;
 	}
 
 	/**
@@ -252,6 +257,14 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		decay_rate = rate;
 	}
 	
+	public boolean getSpacetime() {
+		return spacetime;
+	}
+	
+	public void setSpacetime(boolean time) {
+		spacetime = time;
+	}
+	
 	
 	/**
 	 * Difference Measurements
@@ -268,13 +281,19 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public double fitness_rating(int recipient, int state, int informant) {
 		
-		// If both particles have a best tellability of 0 they shall get a high rating
-		// Therefore they will get propelled away from another and ensure exploration.
-		if(quantum_particles[informant].best_tellability()==0 && quantum_particles[recipient].best_tellability()==0)
-			return -1;
-		
 		return (quantum_particles[informant].best_tellability() - quantum_particles[recipient].get_tellability(state))/quantum_particles[0].best_tellability();
 	}
+	
+	
+	/*
+	 * Regulates the update Rate of a particle based on it's tellability
+	 */
+	
+	public double determine_spacetime(int recipient, int state) {
+		
+		return 1-(quantum_particles[recipient].get_position(state).get_tellability()/quantum_particles[0].best_tellability());
+	}
+	
 	
 	
 	/*
@@ -857,6 +876,9 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public void crossover() {
 		
+		if(verbose)
+			System.out.println("Crossover:");
+		
 		// Set used Crossover operators
 		List<Integer> crossoverList = new ArrayList<Integer>();
 				
@@ -906,6 +928,8 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			voteCrossover(positions,state);
 			break;
 		}
+		if(verbose)
+			System.out.println("");
 	}
 
 	/*
@@ -1205,6 +1229,9 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public void mutate() {
 		
+		if(verbose)
+			System.out.println("Mutation:");
+		
 		// Set used Mutation operators
 		List<Integer> mutationList = new ArrayList<Integer>();
 				
@@ -1256,6 +1283,9 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			System.out.println("Fatal Error @ Mutation Operator Selection!");
 			break;
 		}
+		
+		if(verbose)
+			System.out.println("");
 	}
 
 	
@@ -1707,12 +1737,12 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					
 					for(int j = 0; j < 5; j++) {
 						
-						update_personality[state][i][j] += force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_personality(i, j));
+						update_personality[state][i][j] += force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_position(state).get_personality(i, j));
 					}
 					
 					for(int j = 0; j < number_happenings; j++) {
 						
-						update_happenings[state][i][j] += force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_happenings(i, j));
+						update_happenings[state][i][j] += force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_position(state).get_happenings(i, j));
 					}
 				}
 			}
@@ -1749,11 +1779,22 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				// determine strength of interaction
 				double fitnessRating = fitness_rating(recipient, state, informants.get(index));
 				double distanceRating = distance_rating(recipient, informants.get(index));
-				double force = Math.sqrt(Math.abs(fitnessRating*Math.pow(distanceRating,2)));
+				double time = 1;
 				
-				// determine if force is pulling towards or pushing away
-				if(fitnessRating < 0)
-					force*=-1;
+				if(spacetime)
+					time = determine_spacetime(recipient,state);
+				
+				double force = fitnessRating * distanceRating * time;
+
+//				double force = Math.sqrt(Math.abs(fitnessRating*Math.pow(distanceRating,2)))*time;
+//				
+//				// determine if force is pulling towards or pushing away
+//				if(fitnessRating < 0)
+//					force*=-1;
+
+				
+				if(verbose)
+					System.out.println("force: " + force);
 				
 				// copy information
 				for(int i = 0; i < number_agents; i++) {
@@ -1761,12 +1802,12 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 					for(int j = 0; j < 5; j++) {
 						
-						update_personality[state][i][j] += force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_personality(i, j));
+						update_personality[state][i][j] += force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_position(state).get_personality(i, j));
 					}
 					
 					for(int j = 0; j < number_happenings; j++) {
 						
-						update_happenings[state][i][j] += force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_happenings(i, j));
+						update_happenings[state][i][j] += force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_position(state).get_happenings(i, j));
 					}
 				}
 			}
