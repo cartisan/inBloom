@@ -23,7 +23,7 @@ public class Quantum implements Individual,Comparable<Quantum> {
 		best_personality = personality;
 		best_happenings = happenings;
 		best_simLength = simLength;
-		threshold = Math.pow(0.5, individual_count/2);
+		threshold = Math.pow(0.5, individual_count/2-1);
 		
 		QuantumPosition pos = new QuantumPosition(personality, velocity_personality, happenings, velocity_happenings, simLength, 1, fit);
 		
@@ -42,7 +42,7 @@ public class Quantum implements Individual,Comparable<Quantum> {
 	}
 
 	public ChromosomePersonality get_personality() {
-		return get_personality(0);
+		return get_personality(choosePosition());
 	}
 
 	public ChromosomePersonality get_personality(int z) {
@@ -50,7 +50,7 @@ public class Quantum implements Individual,Comparable<Quantum> {
 	}
 
 	public double get_personality(int x, int y) {
-		return get_personality(x,y,0);
+		return get_personality(x,y,choosePosition());
 	}
 
 	public double get_personality(int x, int y, int state) {
@@ -58,7 +58,7 @@ public class Quantum implements Individual,Comparable<Quantum> {
 	}
 
 	public ChromosomeHappenings get_happenings() {
-		return get_happenings(0);
+		return get_happenings(choosePosition());
 	}
 
 	public ChromosomeHappenings get_happenings(int z) {
@@ -66,7 +66,7 @@ public class Quantum implements Individual,Comparable<Quantum> {
 	}
 
 	public int get_happenings(int x, int y) {
-		return get_happenings(x,y,0);
+		return get_happenings(x,y,choosePosition());
 	}
 
 	public int get_happenings(int x, int y, int z) {
@@ -74,7 +74,7 @@ public class Quantum implements Individual,Comparable<Quantum> {
 	}
 
 	public Integer get_simLength() {
-		return get_simLength(0);
+		return get_simLength(choosePosition());
 	}
 
 	public Integer get_simLength(int z) {
@@ -111,7 +111,7 @@ public class Quantum implements Individual,Comparable<Quantum> {
 	}
 
 	public double get_tellability() {
-		return get_tellability(0);
+		return get_tellability(choosePosition());
 	}
 	
 	public double get_tellability(int z) {

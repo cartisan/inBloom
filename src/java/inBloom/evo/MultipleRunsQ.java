@@ -7,21 +7,15 @@ public class MultipleRunsQ {
 	public static void main(String[] args) { 
 		
 		
-		for(int i = 0; i < 4; i++) {
+		for(int i = 0; i < 2; i++) {
 			// init location
 			EvoIsland island = new EvoIsland();
 			// simulation length at initialization
 			int init_stepnumber = 30;
 			// number individuals
-			int individual_count = 20;
-			// selection size
-			int selection_size = 4;
+			int individual_count = 16;
 			// decay
 			double decay_rate = 0.05;
-			// crossover probability
-			double crossover_prob = 0.1;
-			// mutation probability
-			double mutation_prob = 0.05;
 			
 			// maximum time in seconds 
 			// no time limit: time < 0 or leave it out as default value is -1
@@ -49,13 +43,17 @@ public class MultipleRunsQ {
 			// randomVelocityInitializer, discreteVelocityInitializer
 			qso.setVelInit(true, true);
 			// The number of informants (other particles) a particle makes use of additionally to itself to update its velocity
-			qso.setVelocityInformants(1);
+			
+			if(i==0)
+				qso.setVelocityInformants(1);
+			else
+				qso.setVelocityInformants(individual_count-1);
 			// true -> Roulette Wheel, false -> choose best
 			qso.setSelectionManner(false);
 			// true activates the floating parameters feature
-			qso.setFloatingParameters(false);
+			qso.setFloatingParameters(true);
 			// true -> using spacetime modifier
-			qso.setSpacetime(false);
+			qso.setSpacetime(true);
 			// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
 			qso.setCrossover(false, true, true, true);
 			// randomMutator,toggleMutator,orientedMutator,guidedMutator
@@ -69,6 +67,7 @@ public class MultipleRunsQ {
 			
 			qso.run();
 		}
+		
 		System.exit(0);
 	}
 }

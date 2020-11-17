@@ -265,7 +265,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public double determine_spacetime(int recipient) {
 		
-		return 1-(particles[recipient].get_tellability()/particles[0].best_tellability());
+		return 1-Math.pow((particles[recipient].get_tellability()/particles[0].best_tellability()), 2);
 	}
 	
 	
@@ -281,25 +281,28 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	public double distance_rating(int recipient, int informant) {
 		
 		double distance = 0;
-		int n = number_agents*(5+number_happenings);
+		int n = 0;
 		
 		for(int i = 0; i < number_agents; i++) {
 			
 			for(int j = 0; j < 5; j++) {
 
-				//distance += 1-(Math.abs(particles[informant].best_personality(i, j) - particles[recipient].get_personality(i, j))/2);
-				if(max_personality[i][j]-min_personality[i][j] != 0)
-					distance += Math.pow(1-(Math.abs(particles[informant].best_personality(i, j) - particles[recipient].get_personality(i, j))/(max_personality[i][j]-min_personality[i][j])),2);
+				if(max_personality[i][j]-min_personality[i][j] != 0) {
+					distance += Math.pow((particles[informant].best_personality(i, j) - particles[recipient].get_personality(i, j))/(max_personality[i][j]-min_personality[i][j]),2);
+					n++;
+				}
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 				
-				if(max_happenings[i][j]-min_happenings[i][j]!=0)
-					distance += Math.pow(1-(Math.abs(particles[informant].best_happenings(i, j) - particles[recipient].get_happenings(i, j))/(max_happenings[i][j]-min_happenings[i][j])),2);
+				if(max_happenings[i][j]-min_happenings[i][j] != 0) {
+					distance += Math.pow((particles[informant].best_happenings(i, j) - particles[recipient].get_happenings(i, j))/(max_happenings[i][j]-min_happenings[i][j]),2);
+					n++;
+				}
 			}
 		}
 		
-		return Math.sqrt(distance/n);
+		return 1-Math.sqrt(distance/n);
 	}
 	
 	
@@ -1005,9 +1008,13 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			
 			total_force+=force;
 			
-			if(verbose) {
-				System.out.println("force: " + force);
-			}
+//			if(verbose) {
+//				System.out.println("energy: " + energy);
+//				System.out.println("distance: " + distance);
+//				System.out.println("inertia: " + inertia);
+//				System.out.println("force: " + force);
+//				System.out.println( );
+//			}
 			
 			// copy information
 			for(int i = 0; i < number_agents; i++) {
@@ -1028,13 +1035,13 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		for(int i = 0; i < number_agents; i++) {
 			
 			for(int j = 0; j < 5; j++) {
-				
-				particles[recipient].update_persVelocity(i, j, update_personality[i][j] / informants.size(),total_force/informants.size());
+
+				particles[recipient].update_persVelocity(i, j, update_personality[i][j],total_force/informants.size());
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 
-				particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j] / informants.size()),total_force/informants.size());
+				particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]),total_force/informants.size());
 			}
 		}
 	}

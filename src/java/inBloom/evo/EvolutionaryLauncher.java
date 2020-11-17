@@ -111,7 +111,7 @@ public class EvolutionaryLauncher {
 			// true activates the floating parameters feature
 			pso.setFloatingParameters(true);
 			// true -> using spacetime modifier
-			pso.setSpacetime(false);
+			pso.setSpacetime(true);
 			
 			// Termination Criteria
 			// Runtime in seconds (-1 to deactivate)
