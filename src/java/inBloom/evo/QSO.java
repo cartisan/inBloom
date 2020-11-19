@@ -1,5 +1,10 @@
 package inBloom.evo;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,9 +55,10 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	private static boolean fitnessBasedSelection = false;
 	// false -> use static update rate, false -> update with force calculation
 	private static boolean floatingParameters = false;
-	// Determine weather Spacetime modifier should be used
-	private boolean spacetime = false;
 	
+	// counts the amount of neighbors that have been looked at
+	private int analyzed_neighbors=0;
+	private int found_best=0;
 	
 	
 	public QSO(String[] args, EvolutionaryEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
@@ -257,14 +263,6 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		decay_rate = rate;
 	}
 	
-	public boolean getSpacetime() {
-		return spacetime;
-	}
-	
-	public void setSpacetime(boolean time) {
-		spacetime = time;
-	}
-	
 	
 	/**
 	 * Difference Measurements
@@ -291,7 +289,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public double determine_spacetime(int recipient, int state) {
 		
-		return 1-Math.pow((quantum_particles[recipient].get_position(state).get_tellability()/quantum_particles[0].best_tellability()),2);
+		return 1-(quantum_particles[recipient].get_position(state).get_tellability()/quantum_particles[0].best_tellability());
 	}
 	
 	
@@ -422,10 +420,12 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		// Determine if there was improvement
 		if(population_best.size()>0) {
-			if(population_best.get(population_best.size()-1)==best && population_average.get(population_average.size()-1)==average)
+			if(population_best.get(population_best.size()-1)==best && population_average.get(population_average.size()-1)==average) {
 				no_improvement++;
-			else
+			}else {
 				no_improvement=0;
+				found_best = analyzed_neighbors;
+			}
 		}
 		
 		population_best.add(best);
@@ -940,6 +940,9 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			voteCrossover(positions,state);
 			break;
 		}
+		
+		analyzed_neighbors+=2;
+		
 		if(verbose)
 			System.out.println("");
 	}
@@ -1296,6 +1299,8 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			break;
 		}
 		
+		analyzed_neighbors+=2;
+		
 		if(verbose)
 			System.out.println("");
 	}
@@ -1342,13 +1347,13 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 
 				if(Math.random()<mutation_prob) {
 
-					positiveHappenings.values[i][j] = (int)Math.round(Math.random()*recipient.get_simLength()-0.5);
+					positiveHappenings.values[i][j] = (int)Math.round(Math.random()*recipient.get_position(state).get_actualLength()-0.5);
 					negativeHappenings.values[i][j] = recipient.get_position(state).get_happenings(i,j);
 					change = true;
 					
 				}else {
 					positiveHappenings.values[i][j] = recipient.get_position(state).get_happenings(i,j);
-					negativeHappenings.values[i][j] = (int)Math.round(Math.random()*recipient.get_simLength()-0.5);
+					negativeHappenings.values[i][j] = (int)Math.round(Math.random()*recipient.get_position(state).get_actualLength()-0.5);
 				}
 			}
 		}	
@@ -1421,7 +1426,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 						
 					}else {
 						
-						positiveHappenings.values[i][j] = (int)Math.round(Math.random()*(recipient.get_position(state).get_simLength()-1)+0.5);
+						positiveHappenings.values[i][j] = (int)Math.round(Math.random()*(recipient.get_position(state).get_actualLength()-1)+0.5);
 						negativeHappenings.values[i][j] = recipient.get_position(state).get_happenings(i,j);
 					}
 					
@@ -1432,7 +1437,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(recipient.get_happenings(i,j) > 0) {
 						
 						positiveHappenings.values[i][j] = recipient.get_position(state).get_happenings(i,j);
-						negativeHappenings.values[i][j] = (int)Math.round(Math.random()*(recipient.get_position(state).get_simLength()-1)+0.5);
+						negativeHappenings.values[i][j] = (int)Math.round(Math.random()*(recipient.get_position(state).get_actualLength()-1)+0.5);
 						
 					}else {
 						
@@ -1510,7 +1515,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(ratio > 0) {
 						positivePersonality.values[i][j] += ratio * distance;
 					}else {
-						ratio*=-1;
+						ratio = -ratio;
 						if(distance>0)
 							positivePersonality.values[i][j] += ratio * (-1-recipient.get_position(state).get_personality(i,j));
 						else
@@ -1538,7 +1543,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(ratio > 0) {
 						negativePersonality.values[i][j] += ratio * distance;
 					}else {
-						ratio*=-1;
+						ratio = -ratio;
 						if(distance>0)
 							negativePersonality.values[i][j] += ratio * (-1-recipient.get_position(state).get_personality(i,j));
 						else
@@ -1576,11 +1581,11 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(ratio > 0) {
 						positiveHappenings.values[i][j] += ratio * distance;
 					}else {
-						ratio*=-1;
+						ratio = -ratio;
 						if(distance>0)
 							positiveHappenings.values[i][j] -= ratio * (recipient.get_position(state).get_happenings(i,j));
 						else
-							positiveHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_position(state).get_happenings(i,j));
+							positiveHappenings.values[i][j] += ratio * (recipient.best_actualLength() - recipient.get_position(state).get_happenings(i,j));
 					}
 					
 				}else {
@@ -1604,11 +1609,11 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(ratio > 0) {
 						negativeHappenings.values[i][j] += ratio * distance;
 					}else {
-						ratio*=-1;
+						ratio = -ratio;
 						if(distance>0)
 							negativeHappenings.values[i][j] -= ratio * (recipient.get_position(state).get_happenings(i,j));
 						else
-							negativeHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_position(state).get_happenings(i,j));
+							negativeHappenings.values[i][j] += ratio * (recipient.best_actualLength() - recipient.get_position(state).get_happenings(i,j));
 					}
 				}
 			}
@@ -1666,7 +1671,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(ratio > 0) {
 						positivePersonality.values[i][j] += ratio * distance;
 					}else {
-						ratio*=-1;
+						ratio = -ratio;
 						if(distance>0)
 							positivePersonality.values[i][j] += ratio * (-1-recipient.get_position(state).get_personality(i,j));
 						else
@@ -1681,7 +1686,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(ratio > 0) {
 						negativePersonality.values[i][j] += ratio * distance;
 					}else {
-						ratio*=-1;
+						ratio = -ratio;
 						if(distance>0)
 							negativePersonality.values[i][j] += ratio * (-1-recipient.get_position(state).get_personality(i,j));
 						else
@@ -1705,11 +1710,11 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(ratio > 0) {
 						positiveHappenings.values[i][j] += ratio * distance;
 					}else {
-						ratio*=-1;
+						ratio = -ratio;
 						if(distance>0)
 							positiveHappenings.values[i][j] -= ratio * (recipient.get_position(state).get_happenings(i,j));
 						else
-							positiveHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_position(state).get_happenings(i,j));
+							positiveHappenings.values[i][j] += ratio * (mutator.best_actualLength() - recipient.get_position(state).get_happenings(i,j));;
 					}
 					
 				}else {
@@ -1720,11 +1725,11 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(ratio > 0) {
 						negativeHappenings.values[i][j] += ratio * distance;
 					}else {
-						ratio*=-1;
+						ratio = -ratio;
 						if(distance>0)
 							negativeHappenings.values[i][j] -= ratio * (recipient.get_position(state).get_happenings(i,j));
 						else
-							negativeHappenings.values[i][j] += ratio * (recipient.get_position(state).get_simLength()-recipient.get_position(state).get_happenings(i,j));
+							negativeHappenings.values[i][j] += ratio * (mutator.best_actualLength() - recipient.get_position(state).get_happenings(i,j));;
 					}
 				}
 			}
@@ -1752,10 +1757,11 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		for(int i = 0; i < individual_count; i++) {
 			
-			for(int state = 0; state < quantum_particles[i].amount_positions(); state++)
+			for(int state = 0; state < quantum_particles[i].amount_positions(); state++) {
 			
-			quantum_particles[i].move(state,new Fitness<EnvType,ModType>(EVO_ENV,verbose,level));
-			
+				quantum_particles[i].move(state,new Fitness<EnvType,ModType>(EVO_ENV,verbose,level));
+				analyzed_neighbors++;
+			}
 		}
 		
 		Arrays.sort(quantum_particles);
@@ -1915,12 +1921,12 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int j = 0; j < 5; j++) {
 					
-					quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[state][i][j],decay_rate);
+					quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[state][i][j]/informants.size(),decay_rate);
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
 	
-					quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[state][i][j]),decay_rate);
+					quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[state][i][j]/informants.size()),decay_rate);
 				}
 			}
 		}
@@ -1941,22 +1947,11 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				// determine strength of interaction
 				double energy = fitness_rating(recipient, state, informants.get(index));
 				double distance = distance_rating(recipient, informants.get(index));
-				double inertia = 1;
-				
-				if(spacetime)
-					inertia = determine_spacetime(recipient,state);
+				double inertia = determine_spacetime(recipient,state);
 				
 				double force = energy*inertia*Math.pow(distance, 2);
 				
 				total_force += force;
-				
-//				if(verbose ) {
-//					System.out.println("energy: " + energy);
-//					System.out.println("distance: " + distance);
-//					System.out.println("inertia: " + inertia);
-//					System.out.println("force: " + force);
-//					System.out.println( );
-//				}
 					
 				// copy information
 				for(int i = 0; i < number_agents; i++) {
@@ -1983,14 +1978,51 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int j = 0; j < 5; j++) {
 					
-						quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[state][i][j],total_force/informants.size());
+						quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[state][i][j]/informants.size(),total_force/informants.size());
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
 
-						quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[state][i][j]),total_force/informants.size());
+						quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[state][i][j]/informants.size()),total_force/informants.size());
 				}
 			}
+		}
+	}
+	
+	@Override
+	public void to_file(Individual best) {
+		
+		try {
+			
+			File file = new File(filename);
+			
+			PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+			
+			for(int i = 0; i < population_best.size(); i++) {
+				writer.write(String.valueOf(population_best.get(i)));
+				if(i<population_best.size()-1)
+					writer.write(" ");
+			}
+			writer.write("\n");
+			
+			for(int i = 0; i < population_average.size(); i++) {
+				writer.write(String.valueOf(population_average.get(i)));
+				if(i<population_best.size()-1)
+					writer.write(" ");
+			}
+			writer.write("\n");
+			
+			writer.write(found_best);
+			writer.write(" ");
+			writer.write(analyzed_neighbors);
+			
+			writer.write(best.to_String());
+			
+			writer.flush();
+			writer.close();
+			
+		}catch(IOException e){
+			e.printStackTrace();
 		}
 	}
 }

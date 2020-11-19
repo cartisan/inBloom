@@ -23,7 +23,7 @@ public class Quantum implements Individual,Comparable<Quantum> {
 		best_personality = personality;
 		best_happenings = happenings;
 		best_simLength = simLength;
-		threshold = Math.pow(0.5, individual_count/2-1);
+		threshold = Math.pow(0.5, individual_count/2);
 		
 		QuantumPosition pos = new QuantumPosition(personality, velocity_personality, happenings, velocity_happenings, simLength, 1, fit);
 		
@@ -106,6 +106,10 @@ public class Quantum implements Individual,Comparable<Quantum> {
 		best_actualLength = length;
 	}
 
+	public int best_actualLength() {
+		return best_actualLength;
+	}
+	
 	public double best_tellability() {
 		return best_tellability;
 	}
@@ -120,14 +124,18 @@ public class Quantum implements Individual,Comparable<Quantum> {
 
 	public int choosePosition() {
 		
-		double roulette = Math.random()*(1-2*threshold);
 		int state = 0;
 		
-		while(roulette > positions.get(state).get_lifespan()) {
-			roulette -= positions.get(state).get_lifespan();
-			state +=1;
-		}
+		if(superPosition()) { 
+			
+			double roulette = Math.random()*(1-2*threshold);
 		
+			while(roulette > positions.get(state).get_lifespan()) {
+				
+				roulette -= positions.get(state).get_lifespan();
+				state +=1;
+			}
+		}
 		return state;
 	}
 
@@ -158,25 +166,22 @@ public class Quantum implements Individual,Comparable<Quantum> {
 	
 	private void update_lifespan() {
 		
-		int i = 0;
-		int j = positions.size()-1;
+		int pivot = positions.size()/2;
 		
-		while(i<j) {
+		for(int i = 0; i < Math.round(positions.size()/2); i++) {
 			
-			if(positions.get(j).get_lifespan()<threshold) {
+			if(positions.get(pivot+i).get_lifespan()<threshold) {
 				
-				positions.get(i).update_lifespan(positions.get(j).get_lifespan());
-				positions.remove(j);
+				positions.get(i).update_lifespan(positions.get(pivot+i).get_lifespan());
+				positions.remove(pivot+i);
 				
-			} else {
+			}else {
 				
-				double time = positions.get(j).get_lifespan()/(2+i);
+				double time = positions.get(pivot+i).get_lifespan()/2;
 				positions.get(i).update_lifespan(time);
-				positions.get(j).update_lifespan(-time);		
+				positions.get(pivot+i).update_lifespan(-time);		
 				
 			}
-			i += 1;
-			j -= 1;
 		}
 	}
 	

@@ -43,15 +43,13 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	// determine manner of updating velocity
 	// if floatingParameters == false: use this as update rate
-	private double decay_rate = 0.1;
+	private double decay_rate = 0.05;
 	// number of informants for a particle
 	private int number_informants = 1; 
 	// true -> Roulette Wheel Selection, false -> choose best
 	private boolean fitnessBasedSelection = false;
 	// false -> use static update rate, false -> update with force calculation
 	private boolean floatingParameters = false;
-	// Determine weather Spacetime modifier should be used
-	private boolean spacetime = false;
 	
 	
 	
@@ -231,14 +229,6 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		decay_rate = rate;
 	}
 	
-	public boolean getSpacetime() {
-		return spacetime;
-	}
-	
-	public void setSpacetime(boolean time) {
-		spacetime = time;
-	}
-	
 	
 	/**
 	 * Difference Measurements
@@ -265,7 +255,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public double determine_spacetime(int recipient) {
 		
-		return 1-Math.pow((particles[recipient].get_tellability()/particles[0].best_tellability()), 2);
+		return 1-(particles[recipient].get_tellability()/particles[0].best_tellability());
 	}
 	
 	
@@ -999,22 +989,11 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			// determine strength of interaction
 			double energy = fitness_rating(recipient, informants.get(index));
 			double distance = distance_rating(recipient, informants.get(index));
-			double inertia = 1;
-			
-			if(spacetime)
-				inertia = determine_spacetime(recipient);
+			double inertia = determine_spacetime(recipient);
 			
 			double force = energy*inertia*Math.pow(distance,2);
 			
 			total_force+=force;
-			
-//			if(verbose) {
-//				System.out.println("energy: " + energy);
-//				System.out.println("distance: " + distance);
-//				System.out.println("inertia: " + inertia);
-//				System.out.println("force: " + force);
-//				System.out.println( );
-//			}
 			
 			// copy information
 			for(int i = 0; i < number_agents; i++) {
@@ -1036,12 +1015,12 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			
 			for(int j = 0; j < 5; j++) {
 
-				particles[recipient].update_persVelocity(i, j, update_personality[i][j],total_force/informants.size());
+				particles[recipient].update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/informants.size());
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 
-				particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]),total_force/informants.size());
+				particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/informants.size());
 			}
 		}
 	}
