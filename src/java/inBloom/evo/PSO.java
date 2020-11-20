@@ -838,7 +838,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	public List<Integer> select_particles(int individual) {
 		
 		if(fitnessBasedSelection)
-			return rouletteWheel_selector(individual);
+			return gravity_selector(individual);
 		
 		return best_selector(individual);
 	}
@@ -866,68 +866,17 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	}
 	
 	
-	public List<Integer> rouletteWheel_selector(int individual) {
-		
-		// Construct roulette wheel
-		double total_fitness = 0;
-		double[] rouletteWheel = new double[individual_count];
-		
-		// Control parameters
-		boolean control = true;
-		int validParticles = 0;
-		
-		for(int i = 0; i < individual_count; i++) {
-			total_fitness += particles[i].best_tellability();
-			rouletteWheel[i] = total_fitness;
-			
-			// Check if we have enough individuals with fitness
-			if(control && particles[i].best_tellability()==0) {
-				
-				validParticles = i;
-				control = false;
-				
-				// Check if current particle is one of the particles with fitness
-				if(individual < i)
-					validParticles-=1;
-			}
-		}
+	public List<Integer> gravity_selector(int individual) {
 		
 		// Pick Particles
 		List<Integer> selected_particles = new ArrayList<Integer>();
 		
-		// Every particle is an informant to himself
-		selected_particles.add(individual);
-		
-		// If there are more than n particles with fitness (n=number_informants)
-		if(validParticles > number_informants) {
-				
-			// Select other Informants
-			while(selected_particles.size() < number_informants) {
-				
-				int position = 0;
-				double value = Math.random()*total_fitness;
-				
-				while(value > rouletteWheel[position] && position < rouletteWheel.length) {
-					position++;
-				}
-				if(!selected_particles.contains(position)) {
-					selected_particles.add(position);
-				}	
-			}
+		for(int i = 0; i < individual_count; i++) {
 
-		// If we don't have enough particles with fitness, selection with the first n individuals except self
-		}else {
-
-			int buffer = 0;
+			// A Particles qualifies as an informant if it's fitness is greater than the particle to be updated
+			if(particles[i].best_tellability()>=particles[individual].get_tellability()) 
+				selected_particles.add(i);
 			
-			for(int i = 0; i < number_informants; i++) {
-				
-				// exclude self
-				if(i == individual)
-					buffer +=1;
-				
-				selected_particles.add(i+buffer);
-			}
 		}
 		return selected_particles;
 	}

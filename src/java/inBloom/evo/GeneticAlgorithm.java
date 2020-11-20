@@ -1782,7 +1782,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					if(ratio > 0) {
 						mutatedHappenings.values[i][j] += ratio * distance;
 					}else {
-						ratio*=-1;
+						ratio=-ratio;
 						if(distance>0)
 							mutatedHappenings.values[i][j] -= ratio * (recipient.get_happenings(i,j));
 						else
@@ -1880,7 +1880,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					if(ratio > 0) {
 						mutatedHappenings.values[i][j] += ratio * distance;
 					}else {
-						ratio*=-1;
+						ratio=-ratio;
 						if(distance>0)
 							mutatedHappenings.values[i][j] -= ratio * (recipient.get_happenings(i,j));
 						else

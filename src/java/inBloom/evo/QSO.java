@@ -1775,20 +1775,24 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 
 		for(int index = 0; index < individual_count; index++) {
 			
-			List<Integer> informants = select_particles(index);
+			for(int state = 0; state < quantum_particles[index].amount_positions(); state++) {
 				
-			if(floatingParameters)
-				floating_Updater(index, informants);
-			else
-				static_Updater(index, informants);
+				List<Integer> informants = select_particles(index, state);
+					
+				if(floatingParameters)
+					floating_Updater(index, state, informants);
+				else
+					static_Updater(index, state, informants);
+				
+			}
 		}
 	}
 	
 	
-	public List<Integer> select_particles(int individual) {
+	public List<Integer> select_particles(int individual, int state) {
 		
 		if(fitnessBasedSelection)
-			return rouletteWheel_selector(individual);
+			return gravity_selector(individual, state);
 		
 		return best_selector(individual);
 	}
@@ -1816,175 +1820,112 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	}
 	
 	
-	public List<Integer> rouletteWheel_selector(int individual) {
-		
-		// Construct roulette wheel
-		double total_fitness = 0;
-		double[] rouletteWheel = new double[individual_count];
-		
-		// Control parameters
-		boolean control = true;
-		int validParticles = 0;
-		
-		for(int i = 0; i < individual_count; i++) {
-			total_fitness += quantum_particles[i].best_tellability();
-			rouletteWheel[i] = total_fitness;
-			
-			// Check if we have enough individuals with fitness
-			if(control && quantum_particles[i].best_tellability()==0) {
-				
-				validParticles = i;
-				control = false;
-				
-				// Check if current particle is one of the particles with fitness
-				if(individual < i)
-					validParticles-=1;
-			}
-		}
-		
+	public List<Integer> gravity_selector(int individual, int state) {
+
 		// Pick Particles
 		List<Integer> selected_particles = new ArrayList<Integer>();
 		
-		// Every particle is an informant to himself
-		selected_particles.add(individual);
-		
-		// If there are more than n particles with fitness (n=number_informants)
-		if(validParticles > number_informants) {
-				
-			// Select other Informants
-			while(selected_particles.size() < number_informants) {
-				
-				int position = 0;
-				double value = Math.random()*total_fitness;
-				
-				while(value > rouletteWheel[position] && position < rouletteWheel.length) {
-					position++;
-				}
-				if(!selected_particles.contains(position)) {
-					selected_particles.add(position);
-				}	
-			}
-
-		// If we don't have enough particles with fitness, selection with the first n individuals except self
-		}else {
-
-			int buffer = 0;
+		for(int i = 0; i < individual_count; i++) {
 			
-			for(int i = 0; i < number_informants; i++) {
-				
-				// exclude self
-				if(i == individual)
-					buffer +=1;
-				
-				selected_particles.add(i+buffer);
-			}
+			// A Particles qualifies as an informant if it's fitness is greater than the particle to be updated
+			if(quantum_particles[i].best_tellability()>=quantum_particles[individual].get_position(state).get_tellability())
+				selected_particles.add(i);
+			
 		}
 		return selected_particles;
 	}
 	
 	
-	public void static_Updater(int recipient, List<Integer> informants) {
+	public void static_Updater(int recipient, int state, List<Integer> informants) {
 		
-		double[][][] update_personality = new double[quantum_particles[recipient].amount_positions()][number_agents][5];
-		double[][][] update_happenings = new double[quantum_particles[recipient].amount_positions()][number_agents][number_happenings];
+		double[][] update_personality = new double[number_agents][5];
+		double[][] update_happenings = new double[number_agents][number_happenings];
 		
 		for(int index = 0; index < informants.size(); index++) {
 			
-			for(int state = 0; state < quantum_particles[recipient].amount_positions(); state++) {
+			double force = decay_rate;
 			
-				double force = decay_rate;
-				
-				// determine if force is pulling towards or pushing away
-				if(quantum_particles[informants.get(index)].best_tellability() <= quantum_particles[recipient].get_tellability(state))
-					force*=-1;
-				
-				// copy information
-				for(int i = 0; i < number_agents; i++) {
-					
-					for(int j = 0; j < 5; j++) {
-						
-						update_personality[state][i][j] += force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_position(state).get_personality(i, j));
-					}
-					
-					for(int j = 0; j < number_happenings; j++) {
-						
-						update_happenings[state][i][j] += force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_position(state).get_happenings(i, j));
-					}
-				}
-			}
-		}
-
-		for(int state = 0; state < quantum_particles[recipient].amount_positions(); state++) {
-		
-			// Average out the velocity influence and update the chromosomes of current particle 
+			// determine if force is pulling towards or pushing away
+			if(quantum_particles[informants.get(index)].best_tellability() <= quantum_particles[recipient].get_tellability(state))
+				force*=-1;
+			
+			// copy information
 			for(int i = 0; i < number_agents; i++) {
 				
 				for(int j = 0; j < 5; j++) {
 					
-					quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[state][i][j]/informants.size(),decay_rate);
+					update_personality[i][j] += force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_position(state).get_personality(i, j));
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
-	
-					quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[state][i][j]/informants.size()),decay_rate);
+					
+					update_happenings[i][j] += force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_position(state).get_happenings(i, j));
 				}
+			}
+		}
+
+		
+		// Average out the velocity influence and update the chromosomes of current particle 
+		for(int i = 0; i < number_agents; i++) {
+			
+			for(int j = 0; j < 5; j++) {
+				
+				quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),decay_rate);
+			}
+			
+			for(int j = 0; j < number_happenings; j++) {
+
+				quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),decay_rate);
 			}
 		}
 	}
 	
 	
-	public void floating_Updater(int recipient, List<Integer> informants) {
+	public void floating_Updater(int recipient, int state, List<Integer> informants) {
 		
-		double[][][] update_personality = new double[quantum_particles[recipient].amount_positions()][number_agents][5];
-		double[][][] update_happenings = new double[quantum_particles[recipient].amount_positions()][number_agents][number_happenings];
+		double[][] update_personality = new double[number_agents][5];
+		double[][] update_happenings = new double[number_agents][number_happenings];
 		
 		double total_force = 0;
 		
 		for(int index = 0; index < informants.size(); index++) {
 			
-			for(int state = 0; state < quantum_particles[recipient].amount_positions(); state++) {
+			// determine strength of interaction
+			double energy = fitness_rating(recipient, state, informants.get(index));
+			double distance = distance_rating(recipient, informants.get(index));
+			double inertia = determine_spacetime(recipient,state);
 			
-				// determine strength of interaction
-				double energy = fitness_rating(recipient, state, informants.get(index));
-				double distance = distance_rating(recipient, informants.get(index));
-				double inertia = determine_spacetime(recipient,state);
+			double force = energy*inertia*Math.pow(distance, 2);
+			
+			total_force += force;
 				
-				double force = energy*inertia*Math.pow(distance, 2);
-				
-				total_force += force;
-					
-				// copy information
-				for(int i = 0; i < number_agents; i++) {
-				
-				
-					for(int j = 0; j < 5; j++) {
+			// copy information
+			for(int i = 0; i < number_agents; i++) {
+			
+			
+				for(int j = 0; j < 5; j++) {
 
-						update_personality[state][i][j] += force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_position(state).get_personality(i, j));
-					}
+					update_personality[i][j] += force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_position(state).get_personality(i, j));
+				}
+				
+				for(int j = 0; j < number_happenings; j++) {
 					
-					for(int j = 0; j < number_happenings; j++) {
-						
-						update_happenings[state][i][j] += force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_position(state).get_happenings(i, j));
-					}
+					update_happenings[i][j] += force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_position(state).get_happenings(i, j));
 				}
 			}
 		}
 		
 		// Average out the velocity influence and update the chromosomes of current particle 
-
-		for(int state = 0; state < quantum_particles[recipient].amount_positions(); state++) {
+		for(int i = 0; i < number_agents; i++) {
 			
-			for(int i = 0; i < number_agents; i++) {
+			for(int j = 0; j < 5; j++) {
 				
-				for(int j = 0; j < 5; j++) {
-					
-						quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[state][i][j]/informants.size(),total_force/informants.size());
-				}
-				
-				for(int j = 0; j < number_happenings; j++) {
+					quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/informants.size());
+			}
+			
+			for(int j = 0; j < number_happenings; j++) {
 
-						quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[state][i][j]/informants.size()),total_force/informants.size());
-				}
+					quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/informants.size());
 			}
 		}
 	}

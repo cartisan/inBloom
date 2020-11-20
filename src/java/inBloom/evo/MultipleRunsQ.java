@@ -52,7 +52,7 @@ public class MultipleRunsQ {
 			qso.setFloatingParameters(true);
 				
 			// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
-			qso.setCrossover(false, true, true, true);
+			qso.setCrossover(true, true, true, true);
 			// randomMutator,toggleMutator,orientedMutator,guidedMutator
 			qso.setMutation(true, true, true, true);
 			
