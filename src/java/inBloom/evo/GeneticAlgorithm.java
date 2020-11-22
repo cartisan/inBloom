@@ -432,13 +432,25 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		for(int i = 0; i < number_agents; i++) {
 
 			for(int j = 0; j < 5; j++) {
-				personality_cross[i][j] = 0.5;
-				personality_mut[i][j] = 0.5;
+				
+				if(floatingParameters) {
+					personality_cross[i][j] = 0.5;
+					personality_mut[i][j] = 0.5;
+				}else {
+					personality_cross[i][j] = 1;
+					personality_mut[i][j] = 1;
+				}
 			}
 
 			for(int j = 0; j < number_happenings; j++) {
-				happenings_cross[i][j] = 0.5;
-				happenings_mut[i][j] = 0.5;
+				
+				if(floatingParameters) {
+					happenings_cross[i][j] = 0.5;
+					happenings_mut[i][j] = 0.5;
+				}else {
+					happenings_cross[i][j] = 1;
+					happenings_mut[i][j] = 1;
+				}
 			}
 		}
 	}
