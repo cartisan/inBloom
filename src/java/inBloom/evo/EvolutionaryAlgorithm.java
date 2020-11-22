@@ -189,6 +189,7 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 		System.out.println("Best individual: " + population_best.get(generation));
 		System.out.println("Generation Average: " + population_average.get(generation));
 		System.out.println();
+		
 	}
 	
 	public void final_stats() {
@@ -198,7 +199,7 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 		System.out.println();
 		System.out.println("Generations: " + population_best.size());
 		System.out.println("Best so far: " + population_best.get(population_best.size()-1));
+		System.out.println();
 		
 	}
-	
 }

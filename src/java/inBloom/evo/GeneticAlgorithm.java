@@ -359,8 +359,10 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		if(check_parameters()) {
 			
 			// Initialize information containers for floating parameter version
-			initialize_floatingParameters();
-			determineGlobalParameters();
+			if(floatingParameters) {
+				initialize_floatingParameters();
+				determineGlobalParameters();
+			}
 			
 			// Save current time
 			start_time = System.currentTimeMillis();
