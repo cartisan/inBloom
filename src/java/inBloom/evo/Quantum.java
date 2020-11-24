@@ -158,30 +158,22 @@ public class Quantum implements Individual,Comparable<Quantum> {
 			this.best_simLength = positions.get(state).get_simLength();
 			this.best_actualLength = positions.get(state).get_actualLength();
 		}
-		
-		positions.sort(null);
-		update_lifespan();
 	}
 	
 	
-	private void update_lifespan() {
+	public void update_lifespan() {
 		
-		int pivot = positions.size()/2;
+		if(superPosition()) {
 		
-		for(int i = 0; i < Math.round(positions.size()/2); i++) {
+			double time = 0;
 			
-			if(positions.get(pivot+i).get_lifespan()<threshold) {
+			for(int i = positions.size()-1; i > 0; i--) {
 				
-				positions.get(i).update_lifespan(positions.get(pivot+i).get_lifespan());
-				positions.remove(pivot+i);
-				
-			}else {
-				
-				double time = positions.get(pivot+i).get_lifespan()/2;
 				positions.get(i).update_lifespan(time);
-				positions.get(pivot+i).update_lifespan(-time);		
-				
+				time = positions.get(i).get_lifespan()/2;
+				positions.get(i).update_lifespan(-time);
 			}
+			positions.get(0).update_lifespan(time);
 		}
 	}
 	

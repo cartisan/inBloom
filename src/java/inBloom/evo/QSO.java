@@ -1785,6 +1785,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					static_Updater(index, state, informants);
 				
 			}
+			quantum_particles[index].update_lifespan();
 		}
 	}
 	
