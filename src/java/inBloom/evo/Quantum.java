@@ -23,7 +23,7 @@ public class Quantum implements Individual,Comparable<Quantum> {
 		best_personality = personality;
 		best_happenings = happenings;
 		best_simLength = simLength;
-		threshold = Math.pow(0.5, individual_count/2);
+		threshold = Math.pow(0.5, individual_count/2-1);
 		
 		QuantumPosition pos = new QuantumPosition(personality, velocity_personality, happenings, velocity_happenings, simLength, 1, fit);
 		
@@ -168,6 +168,12 @@ public class Quantum implements Individual,Comparable<Quantum> {
 			double time = 0;
 			
 			for(int i = positions.size()-1; i > 0; i--) {
+				
+				if(positions.get(i).get_lifespan()<threshold) {
+					
+					time = positions.get(i).get_lifespan();
+					positions.remove(i);
+				}
 				
 				positions.get(i).update_lifespan(time);
 				time = positions.get(i).get_lifespan()/2;

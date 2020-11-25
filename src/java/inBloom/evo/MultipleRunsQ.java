@@ -7,7 +7,7 @@ public class MultipleRunsQ {
 	public static void main(String[] args) { 
 		
 		
-		for(int i = 0; i < 2; i++) {
+		for(int i = 0; i < 10; i++) {
 			// init location
 			EvoIsland island = new EvoIsland();
 			// simulation length at initialization
