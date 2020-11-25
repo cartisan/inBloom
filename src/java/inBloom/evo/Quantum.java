@@ -173,11 +173,13 @@ public class Quantum implements Individual,Comparable<Quantum> {
 					
 					time = positions.get(i).get_lifespan();
 					positions.remove(i);
-				}
+					
+				} else {
 				
-				positions.get(i).update_lifespan(time);
-				time = positions.get(i).get_lifespan()/2;
-				positions.get(i).update_lifespan(-time);
+					positions.get(i).update_lifespan(time);
+					time = positions.get(i).get_lifespan()/2;
+					positions.get(i).update_lifespan(-time);
+				}
 			}
 			positions.get(0).update_lifespan(time);
 		}
