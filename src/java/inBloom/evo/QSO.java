@@ -420,11 +420,13 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		// Determine if there was improvement
 		if(population_best.size()>0) {
+			if(best>population_best.get(population_best.size()-1))
+				found_best = analyzed_neighbors;
+			
 			if(population_best.get(population_best.size()-1)==best && population_average.get(population_average.size()-1)==average) {
 				no_improvement++;
 			}else {
 				no_improvement=0;
-				found_best = analyzed_neighbors;
 			}
 		}
 		

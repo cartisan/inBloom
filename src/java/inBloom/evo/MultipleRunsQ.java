@@ -7,13 +7,13 @@ public class MultipleRunsQ {
 	public static void main(String[] args) { 
 		
 		
-		for(int i = 0; i < 10; i++) {
+		for(int i = 4; i < 10; i++) {
 			// init location
 			EvoIsland island = new EvoIsland();
 			// simulation length at initialization
 			int init_stepnumber = 30;
 			// number individuals
-			int individual_count = 16;
+			int individual_count = 12;
 			
 			int informants = 1;
 			// decay
