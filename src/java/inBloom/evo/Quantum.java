@@ -169,6 +169,8 @@ public class Quantum implements Individual,Comparable<Quantum> {
 			
 			for(int i = positions.size()-1; i > 0; i--) {
 				
+				positions.get(i).update_lifespan(time);
+				
 				if(positions.get(i).get_lifespan()<threshold) {
 					
 					time = positions.get(i).get_lifespan();
@@ -176,9 +178,9 @@ public class Quantum implements Individual,Comparable<Quantum> {
 					
 				} else {
 				
-					positions.get(i).update_lifespan(time);
 					time = positions.get(i).get_lifespan()/2;
 					positions.get(i).update_lifespan(-time);
+					
 				}
 			}
 			positions.get(0).update_lifespan(time);
