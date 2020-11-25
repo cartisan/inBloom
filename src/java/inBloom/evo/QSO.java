@@ -1952,13 +1952,14 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				if(i<population_best.size()-1)
 					writer.write(" ");
 			}
-			writer.write("\n");
-			
-			writer.write(found_best);
-			writer.write(" ");
-			writer.write(analyzed_neighbors);
 			
 			writer.write(best.to_String());
+			
+			writer.write("\n");
+			
+			writer.write(String.valueOf(found_best));
+			writer.write(" ");
+			writer.write(String.valueOf(analyzed_neighbors));
 			
 			writer.flush();
 			writer.close();
