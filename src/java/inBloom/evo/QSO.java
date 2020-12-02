@@ -1898,7 +1898,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			double distance = distance_rating(recipient, informants.get(index));
 			double inertia = determine_spacetime(recipient,state);
 			
-			double force = energy*inertia*Math.pow(distance, 2);
+			double force = energy*inertia*Math.pow(distance,2);
 			
 			total_force += force;
 				
@@ -1954,6 +1954,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				if(i<population_best.size()-1)
 					writer.write(" ");
 			}
+			writer.write("\n");
 			
 			writer.write(best.to_String());
 			

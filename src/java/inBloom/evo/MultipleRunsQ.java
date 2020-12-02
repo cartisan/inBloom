@@ -7,17 +7,18 @@ public class MultipleRunsQ {
 	public static void main(String[] args) { 
 		
 		
-		for(int i = 4; i < 10; i++) {
+		for(int i = 0; i < 10; i++) {
 			// init location
 			EvoIsland island = new EvoIsland();
 			// simulation length at initialization
 			int init_stepnumber = 30;
 			// number individuals
-			int individual_count = 12;
-			
-			int informants = 1;
+			int individual_count = 16;
+
+//			int informants = 1;
+			int informants = individual_count-1;
 			// decay
-			double decay_rate = 0.05;
+			double decay_rate = 0.1;
 			
 			// maximum time in seconds 
 			// no time limit: time < 0 or leave it out as default value is -1
@@ -49,7 +50,7 @@ public class MultipleRunsQ {
 			// true -> Roulette Wheel, false -> choose best
 			qso.setSelectionManner(false);
 			// true activates the floating parameters feature
-			qso.setFloatingParameters(true);
+			qso.setFloatingParameters(false);
 				
 			// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
 			qso.setCrossover(false, true, true, true);
