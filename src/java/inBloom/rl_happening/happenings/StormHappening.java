@@ -2,14 +2,12 @@ package inBloom.rl_happening.happenings;
 
 import java.util.function.Predicate;
 
-import inBloom.helper.PerceptAnnotation;
 import inBloom.rl_happening.islandWorld.IslandModel;
-import inBloom.storyworld.Happening;
 import inBloom.storyworld.Character;
 
 /**
  * A Happening in which a storm occurs that either leads to a ship wreck or the destruction of the hut
- * 
+ *
  * @author  Julia Wippermann
  */
 public class StormHappening extends ConditionalHappening<IslandModel>{
@@ -17,7 +15,7 @@ public class StormHappening extends ConditionalHappening<IslandModel>{
 
 	/**
 	 * Constructor with trigger, patient and causalProperty
-	 * 
+	 *
 	 * @see @ConditionalHappening.ConditionalHappening
 	 */
 	public StormHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
@@ -45,7 +43,7 @@ public class StormHappening extends ConditionalHappening<IslandModel>{
 			model.destroyHut();
 			// feature of having a hut is automatically deactivated in destroyHut()
 			model.getLogger().info("The hut was destroyed.");
-		}	
+		}
 	}
 
 	@Override
@@ -57,5 +55,5 @@ public class StormHappening extends ConditionalHappening<IslandModel>{
 	protected String getConditionalEmotion() {
 		return "fear";
 	}
-	
+
 }

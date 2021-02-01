@@ -1,26 +1,25 @@
 /**
- * 
+ *
  */
 package inBloom.rl_happening.happenings;
 
 import java.util.function.Predicate;
 
-import inBloom.helper.PerceptAnnotation;
+import jason.asSyntax.Literal;
+
 import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.storyworld.Character;
-import inBloom.storyworld.Happening;
-import jason.asSyntax.Literal;
 
 /**
  * A Happening in which the patient is rescued by a ship
- * 
+ *
  * @author  Julia Wippermann
  */
 public class ShipRescueHappening extends ConditionalHappening<IslandModel> {
 
 	/**
 	 * Constructor with trigger, patient and causalProperty
-	 * 
+	 *
 	 * @see @ConditionalHappening.ConditionalHappening
 	 */
 	public ShipRescueHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
@@ -35,7 +34,6 @@ public class ShipRescueHappening extends ConditionalHappening<IslandModel> {
 	@Override
 	protected void executeModelEffects(IslandModel model, Character chara) {
 		chara.goTo(model.civilizedWorld);
-		model.deactivateFeature(IslandModel.onIsland);
 		model.getLogger().info(chara.name + " was rescued!");
 		model.environment.addPercept(chara.name, Literal.parseLiteral("rescueEnd"));
 		//model.happyRescueEnd(chara);

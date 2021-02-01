@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package inBloom.rl_happening.happenings;
 
@@ -10,14 +10,14 @@ import inBloom.storyworld.Character;
 
 /**
  * A Happening in which there is a fire on the island
- * 
+ *
  * @author Julia Wippermann
  */
 public class FireHappening extends ConditionalHappening<IslandModel> {
 
 	/**
 	 * Constructor with trigger, patient and causalProperty
-	 * 
+	 *
 	 * @see @ConditionalHappening.ConditionalHappening
 	 */
 	public FireHappening(Predicate<IslandModel> trigger, String patient, String causalProperty) {
@@ -33,7 +33,6 @@ public class FireHappening extends ConditionalHappening<IslandModel> {
 	protected void executeModelEffects(IslandModel model, Character chara) {
 		// TODO burning as a boolean in Island
 		model.island.startFire();
-		model.activateFeature(IslandModel.fire);
 		model.getLogger().info("The island is burning!");
 	}
 

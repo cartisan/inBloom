@@ -131,15 +131,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      */
     private ConcurrentHashMap<String, HashMap<Structure, Intention>> actionIntentionMap = new ConcurrentHashMap<>();
 
-    /**
-     * Each state's value, needed to calculate the Reinforcement Learning algorithm
-     */
-     private HashMap<Integer, Integer> stateValues = new HashMap<Integer, Integer>();
-    /**
-     * Determines if the state values should be printed at the end of the run
-     */
-     private boolean printAllStateValuesAtEnd = true;
-     private boolean includeStepsInPrinting = false;
      /**
       * The current Environment step
       */
@@ -228,7 +219,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     public void removeListener(EnvironmentListener l) {
     	this.listeners.remove(l);
     }
-    
+
 	/**
 	 * This method is called by the Jason framework in order to determine, which result an agent's action has, and
 	 * to compute potentially effects on the model.<br>
@@ -389,7 +380,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
 		// remove character from story-world model
 		this.model.removeCharacter(agName);
-		
+
 		if (this.model.getCharacters().isEmpty()) {
 
 			logger.info("No agents left.");
@@ -805,67 +796,5 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
     	for (List<String> actions : this.agentActions.values()) {
 			actions.clear();
     	}
-    }
-    
-    
-    
-    
-    /**
-     * METHODS TO DO STATE CALCULATIONS FOR REINFORCEMENT LEARNING
-     */
-    
-    private void addStateValue() {
-		
-		if(this.stateValues == null) {
-			System.out.println("hashCodes is null");
-			return;
-		}
-		
-		if(model == null) {
-			System.out.println("model is null");
-			return;
-		}
-		
-		// Add the current state value as calculated in PlotModel.getStateValue()
-		this.stateValues.put(this.currentStep, this.model.getStateValue());
-		
-		// If we reached the end of the story, we will stop and print our state values
-		// TODO not hard code the end
-		// CHECK outsource the printing
-		// TODO outsource these things in PlotEnvironment?
-		if(this.shouldPrintAllResults() && this.printAllStateValuesAtEnd) {
-			printAllStateValuesAndSteps();
-		}
-		
-	}
-    
-    /**
-     * Should be overriden by a subclass that intends to print all results at the end
-     * by defining when the story has ended (e.g. by a fixed number of time steps or similar)
-     * 
-     * @return	true
-     * 				if the plot is finished and all results should be printed now
-     * 			false
-     * 				if the plot is not finished yet and nothing should be printed
-     */
-    public boolean shouldPrintAllResults() {
-    	return false;
-    }
-    
-    private void printAllStateValuesAndSteps() {
-    	
-    	/* Print WITH steps in front of the value */
-		for(Integer i: this.stateValues.keySet()) {
-
-			if(this.includeStepsInPrinting) {
-				System.out.print("Step " + i + ": ");
-			}
-
-			if(this.stateValues.get(i) == null) {
-				System.out.println("0");
-			} else {
-				System.out.println(this.stateValues.get(i));
-			}
-		}
     }
 }

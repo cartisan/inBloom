@@ -15,7 +15,6 @@ import jason.asSemantics.Mood;
 import jason.util.Pair;
 
 import inBloom.helper.MoodMapper;
-import inBloom.rl_happening.islandWorld.IslandModel;
 import inBloom.stories.little_red_hen.RedHenLauncher;
 import inBloom.storyworld.Character;
 import inBloom.storyworld.Happening;
@@ -52,7 +51,7 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	public HappeningDirector happeningDirector = null;
 	public EnvType environment = null;
 	public MoodMapper moodMapper = null;
-	
+
 	/** Stores values of model fields (including locations etc.), so that after each action we can check if storyworld changed. <br>
 	 *  <b>mapping:</b>  (field, instance of field) --> old field value */
 	private Table<Field, Object, Object> fieldValueStore;
@@ -86,7 +85,6 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 
 	public void setUpFieldTracking(Object obj) {
         try {
-        	// TODO hier sehen wir, wie wir Annotation @ModelState prüfen
 			for (Field f: obj.getClass().getDeclaredFields()) {
 				if (!f.isAnnotationPresent(ModelState.class)) {
 	        		continue;
@@ -297,153 +295,5 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 
 	public int getStep() {
 		return this.environment.getStep();
-	}
-
-	public int getStateValue() {
-
-		/* STRING HASHVALUES
-		 * 
-		 * The hashValues of the same String, initialised in two different runs, will return
-		 * the same hashValues
-		 * 
-		 * The hashValues of the same Object, initialised in two different runs however, will
-		 * not return the same hashValues -> see CurrentModelState.createCharacter
-		 */
-		int stateValue = 0;
-
-		
-		/*
-		 * 1. MODEL SPECIFIC FIELDS
-		 */
-		Field[] fields = this.getClass().getDeclaredFields();
-		for(Field field: fields) {
-
-			/*
-			 * The HashMap's hashCodes change when the value inside (f.e. hunger) is changed
-			 */
-			if(field.isAnnotationPresent(ModelState.class)) {
-				try {
-					int fieldCode = field.getName().toString().hashCode();
-					stateValue += fieldCode;
-					stateValue += (fieldCode * field.get(this).toString().hashCode());
-				} catch (IllegalArgumentException | IllegalAccessException e) {
-					e.printStackTrace();
-				}
-			}
-
-		}
-		
-		
-		/*
-		 * 2. CHARACTER SPECIFIC VALUES
-		 */
-		for(Character character: characters.values()) {
-			
-			/* MULTIPLY WITH CHARACTER CODE
-			 * 
-			 * To create different, unique values for the Locations/Moods, when two characters might
-			 * be in the same Location / Mood and therefore would have the add the same values here
-			 * without multiplication
-			 */
-			int characterCode = character.toString().hashCode();
-			
-			stateValue += characterCode; 													// what if multiple characters have the same name?
-			stateValue += (characterCode * character.location.toString().hashCode());  		// -""-
-			stateValue += (characterCode * character.getMood().getFullName().hashCode());
-			
-			Object[] items = character.inventory.toArray();
-			for(Object item: items) {
-				stateValue += (characterCode * item.toString().hashCode());
-			}
-
-		}
-		
-		return stateValue;
-	}
-
-	public HashMap<String, Object> getDetailedState() {
-				
-		HashMap<String, Object> detailedValues = new HashMap<String, Object>();
-
-		/* STRING HASHVALUES
-		 * 
-		 * The hashValues of the same String, initialised in two different runs, will return
-		 * the same hashValues
-		 * 
-		 * The hashValues of the same Object, initialised in two different runs however, will
-		 * not return the same hashValues -> see CurrentModelState.createCharacter*/
-
-		for(Character character: characters.values()) {
-			
-			//TODO hierüber
-			character.getMood().getFullName().hashCode();
-
-			//detailedValues.put("Character", character.toString().hashCode()); // what if multiple characters have the same name?
-			//detailedValues.put("Location", character.location.toString().hashCode()); // -""-
-			
-			Object[] items = character.inventory.toArray();
-			for(Object item: items) {
-				//detailedValues.put("Inventory item", item.toString().hashCode());
-			}
-			
-			character.getMood().getFullName().hashCode();
-			
-			/**Map<Long, List<Mood>> myMoods = this.moodMapper.getMoodByAgent(character.name);
-			Collection<List<Mood>> moodCollection = myMoods.values();*/
-			
-			/**Table<String, Long, List<Mood>> allMyMoods = this.moodMapper.getTimedMoodMap();
-			Map<Long, List<Mood>> myMoods = allMyMoods.row(character.name);
-			Collection<List<Mood>> moodCollection = myMoods.values();
-			
-			// für jeden Long (TimeSomething?) gibt es eine eigene Mood
-			for(List<Mood> currentMood: moodCollection) {
-				//System.out.println("List<Mood> currentMood:     " + currentMood);
-				//System.out.println("List<Mood> currentMood hash:" + currentMood.toString().hashCode());
-				//detailedValues.put("curM Name", currentMood);
-				//detailedValues.put("curM hash", currentMood.toString().hashCode());
-				for(Mood mood: currentMood) {
-					//System.out.println("Mood mood:                   " + mood);
-					//System.out.println("Mood mood hash:              " + mood.toString().hashCode());
-					detailedValues.put("mood Name", mood.getFullName());
-					detailedValues.put("mood hash", mood.getFullName().hashCode());
-					
-					
-					// multiply with character name instead
-					detailedValues.put("Mood", (mood.getFullName().hashCode()*character.name.hashCode()));
-					
-					//detailedValues.put("Mood", (mood.hashCode()*currentMood.hashCode()));
-				}
-			}*/
-
-		}
-
-		Field[] fields = this.getClass().getDeclaredFields();
-		for(Field field: fields) {
-			//TODO
-			//nur mit annotation @ModelState
-			
-			// es gibt auch private field in this class fieldValueStore, wo alle Fields drin sind
-			// Character, Location und alle mit @ModelState
-			
-			// yes, the hashMap's hashCodes change when the value inside (f.e. hunger) is changed
-			try {
-				//detailedValues.put("FName", field.getName().toString().hashCode());
-				//detailedValues.put("FValue", field.get(this).toString().hashCode());
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			}
-
-		}
-		
-		return detailedValues;
-	}
-
-	public void printField(Field field) {
-		try {
-			System.out.println(field.getName() + ": " + field.get(this));
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
-		}
-
 	}
 }
