@@ -30,10 +30,6 @@ public class ScheduledHappeningDirector implements HappeningDirector, Cloneable{
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public List<Happening<?>> getTriggeredHappenings(int step) {
-
-
-		logger.info("getTriggeredHappening PERFORMED - but it was scheduled!!");
-
 		List<Happening<?>> triggeredHapps = new LinkedList<>();
 
 		for (Iterator<Happening<?>> iterator = this.scheduledHappenings.iterator(); iterator.hasNext();) {

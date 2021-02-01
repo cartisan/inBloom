@@ -37,6 +37,7 @@ public class Character extends Existent {
     public Location location = null;
     public PlotAwareAg plotAgentPendant;
 
+    @ModelState
     public boolean isSick = false;
     
 	public Character() {
