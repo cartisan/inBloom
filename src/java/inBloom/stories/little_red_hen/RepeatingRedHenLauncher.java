@@ -23,7 +23,7 @@ import inBloom.storyworld.ScheduledHappeningDirector;
 
 public class RepeatingRedHenLauncher extends PlotCycle {
 
-	private static final int FINAL_RUN_NUMBER = 10;
+	private static final int FINAL_RUN_NUMBER = 2;
 
 	/**
 	 * Safes results of individual cycles
@@ -126,7 +126,8 @@ public class RepeatingRedHenLauncher extends PlotCycle {
 				susps.add(t.balancedSuspense);
 				ress.add(t.value);
 
-				this.log(String.format(Locale.US, "      %f\t%f\t%f\t%f\t%f", t.balancedFunctionalPolyvalence, t.balancedSymmetry, t.balancedOpposition, t.balancedSuspense, t.value));
+				this.log(String.format(Locale.US, "      %f\t%f\t%f\t%f\t|%f|\t\t%f\t%f\t%f\t%f\t", t.balancedFunctionalPolyvalence, t.balancedSymmetry, t.balancedOpposition, t.balancedSuspense, t.value, t.absoluteFunctionalPolyvalence, t.absoluteSymmetry, t.absoluteOpposition, t.absoluteSuspense));
+//				this.log(String.format(Locale.US, "      %f\t%f\t%f\t%f\t%f", t.absoluteFunctionalPolyvalence, t.absoluteSymmetry, t.absoluteOpposition, t.absoluteSuspense, t.value));
 			}
 		}
 
@@ -164,10 +165,10 @@ public class RepeatingRedHenLauncher extends PlotCycle {
         LauncherAgent hen = new LauncherAgent("hen",
 					Arrays.asList("hungry", "self(farm_animal)"),
 					    new LinkedList<String>(),
-//					    new Personality(0,  1, 0.7, -0.3, -0.2)    //punishment
+					    new Personality(0,  1, 0.7, -0.3, -0.2)    //punishment
 //						new Personality(0, -1, 0.7, -0.3, -0.2)    //low consc --> no plot
 //						new Personality(0,  1, 0.7, -0.3,   -1)    //low neurot --> eat alone, no punishment
-						new Personality(0,  1, 0.7,  1,   -0.2)    //high aggrea --> sharing despite refusals
+//						new Personality(0,  1, 0.7,  1,   -0.2)    //high aggrea --> sharing despite refusals
 //						new Personality(0,  1, 0,   -0.3, -0.2)    //lower extra --> no help requests, no punishment, sharing
 //						new Personality(0,  1, 0,   -0.3,  -1)     //lower extra, low neurot --> no help requests, no punishment, no sharing
 ////					    new Personality(0,  1, 0.7, 1, -1)   //low neurot, neg aggrea --> no punishment, no share
@@ -175,14 +176,14 @@ public class RepeatingRedHenLauncher extends PlotCycle {
         LauncherAgent dog = new LauncherAgent("dog",
 					Arrays.asList("hungry", "self(farm_animal)"),
 				    	new LinkedList<String>(),
-						new Personality(0, -1, -0.3, -0.7, -0.7)
-//						new Personality(0, -1, -0.3, 0.7, -0.7)	// doggie helps hen v1
+//						new Personality(0, -1, -0.3, -0.7, -0.7)
+						new Personality(0, -1, -0.3, 0.7, -0.7)	// doggie helps hen v1
 		);
         LauncherAgent cow = new LauncherAgent("cow",
 					Arrays.asList("hungry", "self(farm_animal)"),
 				    	new LinkedList<String>(),
-						new Personality(0, -1, -0.3, -0.7, -0.7)
-//						new Personality(0, -1, -0.3, 0.7, -0.7)	// cow helps hen v1
+//						new Personality(0, -1, -0.3, -0.7, -0.7)
+						new Personality(0, -1, -0.3, 0.7, -0.7)	// cow helps hen v1
 		);
         LauncherAgent pig = new LauncherAgent("pig",
 					Arrays.asList("hungry", "self(farm_animal)"),

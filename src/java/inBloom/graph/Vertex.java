@@ -300,4 +300,8 @@ public class Vertex implements Cloneable {
 			return pred.getRoot();
 		}
 	}
+
+	public void setEmotions(LinkedList<String> emotions) {
+		this.emotions = emotions;
+	}
 }

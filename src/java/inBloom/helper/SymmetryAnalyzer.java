@@ -20,6 +20,7 @@ public class SymmetryAnalyzer {
 
 
 	public static Float computeParallelism(List<String> list1, List<String> list2) {
+
 		List<String> shortList = list1.size() <= list2.size() ? list1 : list2;
 		List<String> longList = list1.size() > list2.size() ? list1 : list2;
 
@@ -40,8 +41,8 @@ public class SymmetryAnalyzer {
 			}
 		}
 
-		logger.fine("longest common sub-sequence: " + longestCommonSubList);
-		logger.fine("shortlist size: " + shortList.size());
+		logger.info("longest common sub-sequence: " + longestCommonSubList);
+		logger.info("shortlist size: " + shortList.size());
 		return longestCommonSubList.size() / (float) shortList.size();
 	}
 
@@ -65,8 +66,8 @@ public class SymmetryAnalyzer {
 		Pair<List<String>, Integer> maxTrans = findBestIndividualChain(translational);
 		Pair<List<String>, Integer> maxRefl = findBestIndividualChain(reflectional);
 
-		logger.fine("Best trans chain: " + maxTrans.getFirst() + " with normalized value: " + (float) maxTrans.getSecond() / sequence.size());
-		logger.fine("Best refl chain: " + maxRefl.getFirst() + " with normalized value: " + (float) maxRefl.getSecond() / sequence.size());
+		logger.info("Best trans chain: " + maxTrans.getFirst() + " with normalized value: " + (float) maxTrans.getSecond() / sequence.size());
+		logger.info("Best refl chain: " + maxRefl.getFirst() + " with normalized value: " + (float) maxRefl.getSecond() / sequence.size());
 
 		Float normalizedScore = ((float) maxTrans.getSecond() + maxRefl.getSecond()) / (2 * sequence.size());
 		logger.fine("Overall normalized score: " + normalizedScore);

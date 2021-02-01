@@ -206,7 +206,6 @@ public class Tellability {
 		}
 	}
 
-
 	/**
 	 * Calculates the plot's  overall symmetry and parallelism based on FUs or, if none, raw events (emotions, intentions, beliefs, actions).
 	 * @param graph an analyzed plot graph, i.e. one that has been processed by {@linkplain VertexMergingPPVisitor},
@@ -275,8 +274,8 @@ public class Tellability {
 				normalizedExpectationViolationScore = (float) violationIndicators / relevantEvents;
 			}
 
-			logger.fine("      violated expectations: " + this.counter.violatedExpectationEvents.get(agent));
-			logger.fine("      terminated beliefs: " + this.counter.terminatedPercepts.get(agent));
+			logger.info("      violated expectations: " + this.counter.violatedExpectationEvents.get(agent));
+			logger.info("      terminated beliefs: " + this.counter.terminatedPercepts.get(agent));
 			logger.info("      number of violation indicators: " + violationIndicators);
 			logger.info("      relevantEvents: " + relevantEvents);
 			logger.info("   --> normalized  score: " + normalizedExpectationViolationScore);
@@ -309,8 +308,8 @@ public class Tellability {
 					}
 				}
 			}
-			logger.fine("      fortuneIntervals: " + reversals);
-			logger.fine("      number of entries: " + reversals.size());
+			logger.info("      fortuneIntervals: " + reversals);
+			logger.info("      number of entries: " + reversals.size());
 
 			List<MoodInterval> reversalsNoOverlap = new ArrayList<>();
 			List<MoodInterval> tmpList = new ArrayList<>();
@@ -338,7 +337,7 @@ public class Tellability {
 				// since we removed everything that overlapped with current position, we can safe it as overlap free
 				reversalsNoOverlap.add(interval);
 			}
-			logger.fine("      fortuneIntervalsNoOverlap: " + reversalsNoOverlap);
+			logger.info("      fortuneIntervalsNoOverlap: " + reversalsNoOverlap);
 			logger.info("      number of entries: " + reversalsNoOverlap.size());
 
 			long possibleIntervalNum = (moodData.latestEndTime() - moodData.latestStartTime() ) / 10;
@@ -424,7 +423,7 @@ public class Tellability {
 								  );
 
 		for(String agent: agentFuStringMap.keySet()) {
-			logger.fine("   FU order (" + agent + "): " + agentFuStringMap.get(agent));
+			logger.info("   FU order (" + agent + "): " + agentFuStringMap.get(agent));
 		}
 
 		return agentFuStringMap;
@@ -567,8 +566,8 @@ public class Tellability {
 			float allSym = SymmetryAnalyzer.computeSymmetry(agentEventMap.get(agent.toString()));
 
 
-			logger.fine("\n\nCharacter: " + agent + ": ");
-			logger.fine("\nSequences:" +
+			logger.info("\n\nCharacter: " + agent + ": ");
+			logger.info("\nSequences:" +
 						"\n Emotions: " + emotionSequences +
 						"\n Intentions: " + intentionSequences +
 						"\n Beliefs: " + beliefSequences +
@@ -576,8 +575,8 @@ public class Tellability {
 						"\n Actions: " + actionSequences +
 						"\n All Events: " + agentEventMap.get(agent)
 						);
-			logger.fine("\n");
-			logger.fine("\nVertex Symmetry Anlysis: \n "
+			logger.info("\n");
+			logger.info("\nVertex Symmetry Anlysis: \n "
 						+ emotionSym + "(Emotions),\n "
 						+ intentionSym + "(Intentions),\n "
 						+ beliefSym + "(Beliefs),\n "

@@ -264,6 +264,16 @@ public class FunctionalUnit {
 		return this.name;
 	}
 
+	@Override
+	public FunctionalUnit clone() {
+		String name = String.valueOf(this.name);
+		PlotDirectedSparseGraph graph = this.getGraph().clone();
+
+		FunctionalUnit clone = new FunctionalUnit(name, graph);
+
+		return clone;
+	}
+
 	/**
 	 * Represents an instance of a functional unit.
 	 * Holds the partaking agents as well as the subject,
