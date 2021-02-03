@@ -2,12 +2,12 @@ package inBloom.evo;
 
 import java.util.logging.Level;
 
-public class EvolutionaryLauncher {
+public class NILauncher {
 	
 	public static void main(String[] args) { 
 		
 		// init location
-		EvoIsland island = new EvoIsland();
+		NIRobinsonIsland island = new NIRobinsonIsland();
 		// simulation length at initialization
 		int init_stepnumber = 30;
 		// number individuals
@@ -37,9 +37,9 @@ public class EvolutionaryLauncher {
 		 */
 		
 //		String algorithm = "GEN";
-//		String algorithm = "PSO";
+		String algorithm = "PSO";
 //		String algorithm = "Coupled";
-		String algorithm = "QSO";
+//		String algorithm = "QSO";
 
 		//GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,crossover_prob,mutation_prob);
 		GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,decay_rate);
@@ -95,7 +95,8 @@ public class EvolutionaryLauncher {
 
 				pso.setGenInit(10, ga.get_genPool());
 			}
-
+			
+			pso.setDeterministic(true);
 			// Decay Rate of the Velocity update function
 			pso.setDecayRate(0.05);
 			// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer

@@ -12,7 +12,7 @@ import java.util.List;
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
 
-public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>>  extends EvolutionaryAlgorithm<EnvType,ModType>{
+public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>>  extends NIAlgorithm<EnvType,ModType>{
 
 	
 	// Particle container
@@ -48,20 +48,22 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	// determine manner of updating velocity
 	// if floatingParameters == false: use this as update rate
-	private static double decay_rate = 0.05;
+	private double decay_rate = 0.05;
 	// number of informants for a particle
-	private static int number_informants = 1; 
+	private int number_informants = 1; 
 	// true -> Roulette Wheel Selection, false -> choose best
-	private static boolean fitnessBasedSelection = false;
+	private boolean fitnessBasedSelection = false;
 	// false -> use static update rate, false -> update with force calculation
-	private static boolean floatingParameters = false;
+	private boolean floatingParameters = false;
+	// 
+	private boolean deterministic = false;
 	
 	// counts the amount of neighbors that have been looked at
 	private int analyzed_neighbors=0;
 	private int found_best=0;
 	
 	
-	public QSO(String[] args, EvolutionaryEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
+	public QSO(String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
 		
 		int parameter_count = (5+number_happenings)*number_agents;
@@ -261,6 +263,10 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public void setDecayRate(double rate) {
 		decay_rate = rate;
+	}
+	
+	public void setDeterministic(boolean manner) {
+		deterministic = manner;
 	}
 	
 	
@@ -1843,6 +1849,8 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		double[][] update_personality = new double[number_agents][5];
 		double[][] update_happenings = new double[number_agents][number_happenings];
+
+		double random_factor = 1;
 		
 		for(int index = 0; index < informants.size(); index++) {
 			
@@ -1856,13 +1864,19 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int i = 0; i < number_agents; i++) {
 				
 				for(int j = 0; j < 5; j++) {
+
+					if(!deterministic)
+						random_factor = Math.random();
 					
-					update_personality[i][j] += force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_position(state).get_personality(i, j));
+					update_personality[i][j] += random_factor*force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_position(state).get_personality(i, j));
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
+
+					if(!deterministic)
+						random_factor = Math.random();
 					
-					update_happenings[i][j] += force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_position(state).get_happenings(i, j));
+					update_happenings[i][j] += random_factor*force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_position(state).get_happenings(i, j));
 				}
 			}
 		}
@@ -1873,12 +1887,18 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			
 			for(int j = 0; j < 5; j++) {
 				
-				quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),decay_rate);
+				if(deterministic)
+					quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),decay_rate);
+				else
+					quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),decay_rate/2);
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
-
-				quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),decay_rate);
+				
+				if(deterministic)
+					quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),decay_rate);
+				else
+					quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),decay_rate/2);
 			}
 		}
 	}
@@ -1890,6 +1910,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		double[][] update_happenings = new double[number_agents][number_happenings];
 		
 		double total_force = 0;
+		double random_factor = 1;
 		
 		for(int index = 0; index < informants.size(); index++) {
 			
@@ -1905,15 +1926,20 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			// copy information
 			for(int i = 0; i < number_agents; i++) {
 			
-			
 				for(int j = 0; j < 5; j++) {
 
-					update_personality[i][j] += force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_position(state).get_personality(i, j));
+					if(!deterministic)
+						random_factor = Math.random();
+
+					update_personality[i][j] += random_factor*force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_position(state).get_personality(i, j));
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
+
+					if(!deterministic)
+						random_factor = Math.random();
 					
-					update_happenings[i][j] += force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_position(state).get_happenings(i, j));
+					update_happenings[i][j] += random_factor*force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_position(state).get_happenings(i, j));
 				}
 			}
 		}
@@ -1922,13 +1948,20 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		for(int i = 0; i < number_agents; i++) {
 			
 			for(int j = 0; j < 5; j++) {
-				
+					
+				if(deterministic)
 					quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/informants.size());
+				else
+					quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/(informants.size()*2));
+					
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
-
+				
+				if(deterministic)
 					quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/informants.size());
+				else
+					quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/(informants.size()*2));
 			}
 		}
 	}

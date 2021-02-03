@@ -7,7 +7,7 @@ import java.util.List;
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
 
-public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends EvolutionaryAlgorithm<EnvType,ModType>{
+public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends NIAlgorithm<EnvType,ModType>{
 	
 	public int selection_size;
 	public double crossover_prob;
@@ -60,7 +60,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * Constructors for GA
 	 */
 	
-	public GeneticAlgorithm (String[] args, EvolutionaryEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections, double crossover_prob, double mutation_prob) {
+	public GeneticAlgorithm (String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections, double crossover_prob, double mutation_prob) {
 		
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
 		this.selection_size = number_selections*2;
@@ -70,7 +70,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.mutation_prob = mutation_prob;	
 	}
 	
-	public GeneticAlgorithm (String[] args, EvolutionaryEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections, double decay) {
+	public GeneticAlgorithm (String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections, double decay) {
 		
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
 		this.selection_size = number_selections*2;

@@ -7,9 +7,9 @@ public class MultipleRunsQ {
 	public static void main(String[] args) { 
 		
 		
-		for(int i = 0; i < 10; i++) {
+		for(int i = 9; i < 10; i++) {
 			// init location
-			EvoIsland island = new EvoIsland();
+			NIRobinsonIsland island = new NIRobinsonIsland();
 			// simulation length at initialization
 			int init_stepnumber = 30;
 			// number individuals
@@ -36,7 +36,8 @@ public class MultipleRunsQ {
 			qso.setLevel(Level.OFF);
 			
 			qso.setFileName(path+filename);
-	
+			
+			qso.setDeterministic(true);
 			// Decay Rate of the Velocity update function
 			qso.setDecayRate(decay_rate);
 			// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
@@ -47,10 +48,10 @@ public class MultipleRunsQ {
 			qso.setVelInit(true, true);
 			// The number of informants (other particles) a particle makes use of additionally to itself to update its velocity
 			qso.setVelocityInformants(informants);
-			// true -> Roulette Wheel, false -> choose best
-			qso.setSelectionManner(false);
+			// true -> Gravity Search, false -> choose best
+			qso.setSelectionManner(true);
 			// true activates the floating parameters feature
-			qso.setFloatingParameters(false);
+			qso.setFloatingParameters(true);
 				
 			// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
 			qso.setCrossover(false, true, true, true);

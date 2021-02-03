@@ -7,7 +7,7 @@ import java.util.List;
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
 
-public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends EvolutionaryAlgorithm<EnvType,ModType> {
+public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends NIAlgorithm<EnvType,ModType> {
 
 	// Particle container
 	private Particle[] particles;
@@ -33,6 +33,8 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	// randomVelocityInit, discreteVelocityInit
 	// false, false -> no velocity initialization. Works as long as particles have different positions
 	private static boolean[] velInitBool = {true,true};
+	//
+	private boolean deterministic = false;
 	
 	// This is used for combining the genetic algorithm with pso.
 	// Data field for the gen_pool of the genetic algorithm.
@@ -43,7 +45,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	// determine manner of updating velocity
 	// if floatingParameters == false: use this as update rate
-	private double decay_rate = 0.05;
+	private double decay_rate = 0.1;
 	// number of informants for a particle
 	private int number_informants = 1; 
 	// true -> Roulette Wheel Selection, false -> choose best
@@ -53,7 +55,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	
 	
-	public PSO(String[] args, EvolutionaryEnvironment <?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
+	public PSO(String[] args, NIEnvironment <?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
 		
 		super(args,EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
 		
@@ -229,6 +231,10 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		decay_rate = rate;
 	}
 	
+	public void setDeterministic(boolean manner) {
+		deterministic = manner;
+	}
+	
 	
 	/**
 	 * Difference Measurements
@@ -244,7 +250,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	 */
 	
 	public double fitness_rating(int recipient, int informant) {
-		
+
 		return (particles[informant].best_tellability() - particles[recipient].get_tellability())/particles[0].best_tellability();
 	}
 	
@@ -255,7 +261,8 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public double determine_spacetime(int recipient) {
 		
-		return 1-(particles[recipient].get_tellability()/particles[0].best_tellability());
+//		return 1-(particles[recipient].get_tellability()/particles[0].best_tellability());
+		return 1-Math.pow((particles[recipient].get_tellability()/particles[0].best_tellability()),2);
 	}
 	
 	
@@ -887,6 +894,8 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		double[][] update_personality = new double[number_agents][5];
 		double[][] update_happenings = new double[number_agents][number_happenings];
 		
+		double random_factor = 1;
+		
 		for(int index = 0; index < informants.size(); index++) {
 
 			double force = decay_rate;
@@ -900,12 +909,18 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int j = 0; j < 5; j++) {
 					
-					update_personality[i][j] += force*(particles[informants.get(index)].best_personality(i, j) - particles[recipient].get_personality(i, j));
+					if(!deterministic)
+						random_factor = Math.random();
+					
+					update_personality[i][j] += random_factor * force*(particles[informants.get(index)].best_personality(i, j) - particles[recipient].get_personality(i, j));
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
 					
-					update_happenings[i][j] += force*(particles[informants.get(index)].best_happenings(i, j) - particles[recipient].get_happenings(i, j));
+					if(!deterministic)
+						random_factor = Math.random();
+					
+					update_happenings[i][j] += random_factor * force*(particles[informants.get(index)].best_happenings(i, j) - particles[recipient].get_happenings(i, j));
 				}
 			}
 		}
@@ -915,12 +930,18 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			
 			for(int j = 0; j < 5; j++) {
 				
-				particles[recipient].update_persVelocity(i, j, update_personality[i][j] / informants.size(),decay_rate);
+				if(deterministic)
+					particles[recipient].update_persVelocity(i, j, update_personality[i][j] / informants.size(),decay_rate);
+				else
+					particles[recipient].update_persVelocity(i, j, update_personality[i][j] / informants.size(),decay_rate/2);
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
-
-				particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j] / informants.size()),decay_rate);
+				
+				if(deterministic)
+					particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j] / informants.size()),decay_rate);
+				else
+					particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j] / informants.size()),decay_rate/2);
 			}
 		}
 	}
@@ -932,15 +953,28 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		double[][] update_happenings = new double[number_agents][number_happenings];
 		
 		double total_force=0;
+	
+		double random_factor = 1;
 		
 		for(int index = 0; index < informants.size(); index++) {
 			
 			// determine strength of interaction
 			double energy = fitness_rating(recipient, informants.get(index));
-			double distance = distance_rating(recipient, informants.get(index));
 			double inertia = determine_spacetime(recipient);
+			double distance = distance_rating(recipient, informants.get(index));
 			
 			double force = energy*inertia*Math.pow(distance,2);
+			
+			System.out.println();
+			System.out.println(energy);
+			System.out.println(inertia);
+			System.out.println(distance);
+			System.out.println(force);
+			System.out.println();
+			
+//			if(force < 0){
+//				force *= determine_spacetime(index);
+//			}
 			
 			total_force+=force;
 			
@@ -949,12 +983,18 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int j = 0; j < 5; j++) {
 					
-					update_personality[i][j] += force*(particles[informants.get(index)].best_personality(i, j) - particles[recipient].get_personality(i, j));
+					if(!deterministic)
+						random_factor = Math.random();
+					
+					update_personality[i][j] += random_factor*force*(particles[informants.get(index)].best_personality(i, j) - particles[recipient].get_personality(i, j));
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
 
-					update_happenings[i][j] += force*(particles[informants.get(index)].best_happenings(i, j) - particles[recipient].get_happenings(i, j));
+					if(!deterministic)
+						random_factor = Math.random();
+					
+					update_happenings[i][j] += random_factor*force*(particles[informants.get(index)].best_happenings(i, j) - particles[recipient].get_happenings(i, j));
 				}
 			}
 		}
@@ -963,13 +1003,20 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		for(int i = 0; i < number_agents; i++) {
 			
 			for(int j = 0; j < 5; j++) {
-
-				particles[recipient].update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/informants.size());
+				
+				if(deterministic)
+					particles[recipient].update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/informants.size());
+				else
+					particles[recipient].update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/(informants.size()*2));
+					
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
-
-				particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/informants.size());
+				
+				if(deterministic)
+					particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/informants.size());
+				else
+					particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/(informants.size()*2));
 			}
 		}
 	}

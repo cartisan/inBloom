@@ -25,7 +25,7 @@ import jason.runtime.MASConsoleGUI;
 @SuppressWarnings("rawtypes")
 public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends PlotLauncher implements EnvironmentListener {
 	
-	public EvolutionaryEnvironment<?, ?> EVO_ENV;
+	public NIEnvironment<?, ?> EVO_ENV;
 
 	protected boolean isRunning = false;
 	protected boolean set = false;
@@ -39,7 +39,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 
 	
 	@SuppressWarnings("unchecked")
-	public Fitness(EvolutionaryEnvironment<?, ?> environment, boolean verbose, Level level){
+	public Fitness(NIEnvironment<?, ?> environment, boolean verbose, Level level){
 		
 		this.EVO_ENV = environment;
 		this.ENV_CLASS = environment.ENV_CLASS;
@@ -53,7 +53,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	}
 	
 	@SuppressWarnings("unchecked")
-	public Fitness(EvolutionaryEnvironment<?, ?> environment, boolean verbose, Level level, boolean showGui){
+	public Fitness(NIEnvironment<?, ?> environment, boolean verbose, Level level, boolean showGui){
 		
 		this.EVO_ENV = environment;
 		this.ENV_CLASS = environment.ENV_CLASS;

@@ -12,12 +12,12 @@ import java.io.FileWriter;
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
 
-public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
+public abstract class NIAlgorithm <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
 	
 	// Parameter for PlotLauncher
 	public String[] args;
 	public String filename = "results";
-	public EvolutionaryEnvironment<?,?> EVO_ENV;
+	public NIEnvironment<?,?> EVO_ENV;
 	
 	// Standard parameters for a genetic algorithm
 	public int number_agents;
@@ -43,7 +43,7 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 	// True -> exit system after completion
 	protected boolean system_exit=true;
 	
-	public EvolutionaryAlgorithm(String[] args, EvolutionaryEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
+	public NIAlgorithm(String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
 		
 		this.args = args;
 		this.EVO_ENV = EVO_ENV;

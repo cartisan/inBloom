@@ -11,7 +11,7 @@ import inBloom.PlotModel;
 import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
 
-public abstract class EvolutionaryEnvironment <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
+public abstract class NIEnvironment <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
 	
 	// Environment Class is needed for Plot_Launcher
 	public Class<?> ENV_CLASS;
@@ -34,7 +34,7 @@ public abstract class EvolutionaryEnvironment <EnvType extends PlotEnvironment<M
 	 * 
 	 */
 
-	public EvolutionaryEnvironment(Class<?> ENV_CLASS, String agentSrc, int number_agents, int number_staticHappenings, int number_dynamicHappenings) {
+	public NIEnvironment(Class<?> ENV_CLASS, String agentSrc, int number_agents, int number_staticHappenings, int number_dynamicHappenings) {
 		
 		this.ENV_CLASS = ENV_CLASS;
 		this.agentSrc = agentSrc;
@@ -67,6 +67,10 @@ public abstract class EvolutionaryEnvironment <EnvType extends PlotEnvironment<M
 			
 		return new PSO<EnvType,ModType> (args, this, this.number_agents, this.number_dynamicHappenings, init_stepnumber, individual_count);
 	}
+
+	/*
+	 * Returns the quantum swarm optimization algorithm class in order to further customize the settings
+	 */
 
 	public QSO get_QSO(String[] args, int init_stepnumber, int individual_count){
 			

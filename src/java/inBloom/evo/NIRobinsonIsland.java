@@ -22,9 +22,9 @@ import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
 import jason.asSemantics.Personality;
 
-public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, IslandModel>{
+public class NIRobinsonIsland extends NIEnvironment<IslandEnvironment, IslandModel>{
 	
-	public EvoIsland() {
+	public NIRobinsonIsland() {
 		super(IslandEnvironment.class, "islandAgent", 1, 1, 9);
 	}
 	
@@ -84,12 +84,12 @@ public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, Island
 			FoodPoisoningHappening foodPoisoning = new FoodPoisoningHappening(
 				
 				(IslandModel model) -> {
-					if(model.getCharacter("robinson").has("food") && model.getStep() > step) {
+					if(model.getCharacter(agent.name).has("food") && model.getStep() > step) {
 						return true;
 					}
 					return false;
 				},
-				"robinson",
+				agent.name,
 				null
 				);
 			return foodPoisoning;
@@ -146,7 +146,7 @@ public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, Island
 					}
 					return false;
 				},
-				"robinson",
+				agent.name,
 				null
 				);
 			return hutDestroyed;
