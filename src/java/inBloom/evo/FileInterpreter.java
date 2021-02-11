@@ -1,5 +1,6 @@
 package inBloom.evo;
 
+import java.awt.Rectangle;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -9,11 +10,18 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 
+import javax.swing.ImageIcon;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -25,7 +33,7 @@ import inBloom.PlotModel;
 
 public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
 	
-	private EvolutionaryEnvironment<EnvType,ModType> EVO_ENV;
+	private NIEnvironment<EnvType,ModType> EVO_ENV;
 	
 	public String filename;
 	public String filepath;
@@ -41,7 +49,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	private Fitness<EnvType,ModType> fit;
 	
 	
-	public FileInterpreter(EvolutionaryEnvironment<EnvType,ModType> EVO_ENV, String path, String name, boolean showGui) {
+	public FileInterpreter(NIEnvironment<EnvType,ModType> EVO_ENV, String path, String name, boolean showGui) {
 		
 		this.EVO_ENV = EVO_ENV;
 		filename = name;
@@ -127,13 +135,14 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 		
 		dataset.addSeries(best);
 		dataset.addSeries(average);
+
 		
 		// Initialize Chart
 		int width = 1000;
 		int height = 600;
 		
 		Chart chart = new Chart("Results",filename,dataset,width,height);
-		
+
 		chart.pack();
 	    RefineryUtilities.centerFrameOnScreen( chart );
 	    chart.setVisible( true );
@@ -145,18 +154,18 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) {
 		
-		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\";
-//		String name = "GEN";
-		String name = "PSO";
-//		String name = "QSO";
+		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\G\\0201\\";
+		String name = "GEN 5";
+//		String name = "PSO 2";
+//		String name = "QSO 8";
+//		String name = "best";
 
 		@SuppressWarnings("unchecked")
-		FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, true);
+		FileInterpreter fi = new FileInterpreter(new NIRobinsonIsland(),path, name, true);
 		//FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, false);
 		
 		fi.readFile();
 		
 		fi.get_chart();
-		
 	}
 }
