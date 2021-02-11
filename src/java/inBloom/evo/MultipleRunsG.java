@@ -4,32 +4,19 @@ public class MultipleRunsG {
 	
 public static void main(String[] args) { 
 		
-		for(int i = 0; i < 3; i+=1) {
+		for(int i = 0; i < 10; i+=1) {
 		
 			// init location
-			EvoIsland island = new EvoIsland();
+			NIRobinsonIsland island = new NIRobinsonIsland();
 			// simulation length at initialization
 			int init_stepnumber = 30;
 			// number individuals
 			int individual_count = 20;
 			// selection size
-			int selection_size = 2;
+			int selection_size = 4;
 			// decay_rate
 			double decay_rate = 0.1;
 			
-			switch(i) {
-			
-			case(1):
-				decay_rate = 0.05;
-				break;
-				
-			case(2):
-				decay_rate = 0.025;
-				break;
-				
-			default:
-				break;
-			}
 			// crossover probability
 			double crossover_prob = 0.2;
 			// mutation probability
@@ -42,9 +29,9 @@ public static void main(String[] args) {
 			
 			// path and name of file
 			String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\Current\\";
-			String filename = "GEN " + String.valueOf(decay_rate);
+			String filename = "GEN " + String.valueOf(i);
 
-			//GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,crossover_prob,mutation_prob);
+//			GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,crossover_prob,mutation_prob);
 			GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,decay_rate);
 			
 			ga.setFileName(path+filename);
@@ -82,20 +69,3 @@ public static void main(String[] args) {
 		System.exit(0);
 	}
 }
-			int selection_size = 2;
-			// decay_rate
-			double decay_rate = 0.1;
-			
-			switch(i) {
-			
-			case(1):
-				decay_rate = 0.05;
-				break;
-				
-			case(2):
-				decay_rate = 0.025;
-				break;
-				
-			default:
-				break;
-			}
