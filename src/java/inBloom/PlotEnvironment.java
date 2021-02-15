@@ -63,7 +63,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	/** number of environment steps, before system automatically pauses; -1 to switch off */
 	public static Integer MAX_STEP_NUM = -1;
 	/** time in ms that {@link TimeSteppedEnvironment} affords agents to propose an action, before each step times out */
-	public static String STEP_TIMEOUT = "500";
+	public static String STEP_TIMEOUT = "300";
 	/** string used to represent that an agent took no action, used in agentActions map */
 	private static final String INACTION_STRING = "--";
 

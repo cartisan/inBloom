@@ -66,7 +66,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	public ActionReport tendWheat(Character agent) {
 		ActionReport res = new ActionReport();
 
-		if (agent.location == this.farm & this.farm.produce.state == Wheat.STATES.GROWING){
+		if (agent.location == this.farm && this.farm.produce != null && this.farm.produce.state == Wheat.STATES.GROWING){
 			this.farm.updateProduceState(Wheat.STATES.RIPE);
 			logger.info("Wheat has grown and is ripe now");
 			res.addPerception(agent.name, PerceptAnnotation.fromEmotion("pride"));
@@ -79,7 +79,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	public ActionReport harvestWheat(Character agent) {
 		ActionReport res = new ActionReport();
 
-		if (agent.location == this.farm & this.farm.produce.state == Wheat.STATES.RIPE){
+		if (agent.location == this.farm && this.farm.produce != null && this.farm.produce.state == Wheat.STATES.RIPE){
 			Wheat w =  this.farm.produce;
 			w.state = Wheat.STATES.HARVESTED;
 			agent.addToInventory(w);
