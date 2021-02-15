@@ -14,6 +14,7 @@ import org.jfree.ui.RefineryUtilities;
 
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
+import inBloom.stories.little_red_hen.FarmEvoEnvironment;
 
 public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
 
@@ -140,13 +141,12 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) {
 
-		String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\G\\_Advanced\\base\\";
-		//String name = "PSO 2";
-		String name = "GEN 0.025";
+		String path = "C:\\Users\\Leon\\Desktop\\InBloomNIA\\";
+		String name = "GEN_run.log";
 
 		@SuppressWarnings("unchecked")
-		FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, true);
-		//FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, false);
+		FileInterpreter fi = new FileInterpreter(new FarmEvoEnvironment(), path, name, true);
+//		FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, true);
 
 		fi.readFile();
 
