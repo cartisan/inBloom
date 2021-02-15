@@ -9,13 +9,13 @@ import jason.asSemantics.Personality;
 
 import inBloom.LauncherAgent;
 import inBloom.PlotModel;
-import inBloom.evo.EvolutionaryEnvironment;
+import inBloom.evo.NIEnvironment;
 import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
 
-public class FarmEvoEnvironment extends EvolutionaryEnvironment<FarmEnvironment, FarmModel> {
+public class FarmNIEnvironment extends NIEnvironment<FarmEnvironment, FarmModel> {
 
-	public FarmEvoEnvironment() {
+	public FarmNIEnvironment() {
 		//    env class		agent.asl	chars	static-haps		dynamic haps
 		super(FarmEnvironment.class, "agent_folktale_animal", 4, 0, 1);
 	}

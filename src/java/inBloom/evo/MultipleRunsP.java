@@ -4,18 +4,23 @@ public class MultipleRunsP {
 	
 	public static void main(String[]args) {
 	
-		for(int i = 0; i < 4; i++) {
+		for(int i = 8; i < 10; i++) {
 			
 			// path and name of file
 			String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\Current\\";
 			String filename = "PSO " + String.valueOf(i);
 			
 			// init location
-			EvoIsland island = new EvoIsland();
+			NIRobinsonIsland island = new NIRobinsonIsland();
 			// simulation length at initialization
 			int init_stepnumber = 30;
 			// number individuals
 			int individual_count = 20;
+			// 
+			double decay_rate = 0.1;
+			//
+//			int number_informants = individual_count-1;
+			int number_informants = 1;
 			
 			// maximum time in seconds 
 			// no time limit: time < 0 or leave it out as default value is -1
@@ -28,30 +33,22 @@ public class MultipleRunsP {
 			
 			pso.setFileName(path+filename);
 			
+			pso.setDeterministic(true);
 			// Decay Rate of the Velocity update function
-			pso.setDecayRate(0.1);
+			pso.setDecayRate(decay_rate);
 			// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
 			pso.setPersInit(false, true, true);
 			// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
 			pso.setHapInit(true, true, false);
 			// randomVelocityInitializer, discreteVelocityInitializer
 			pso.setVelInit(true, true);
-
 			// The number of informants (other particles) a particle makes use of additionally to itself to update its velocity
-			if(i < 2) 
-				pso.setVelocityInformants(3);
-			else
-				pso.setVelocityInformants(7);
-				
-			// true -> Roulette Wheel, false -> choose best
-			if(i%2==0)
-				pso.setSelectionManner(false);
-			else
-				pso.setSelectionManner(true);
+			pso.setVelocityInformants(number_informants);
+
+			// true -> gravity, false -> choose best
+			pso.setSelectionManner(true);
 			// true activates the floating parameters feature
-			pso.setFloatingParameters(false);
-			// true activates the spacetime feature
-			pso.setSpacetime(false);
+			pso.setFloatingParameters(true);
 			
 			// Termination Criteria
 			// Runtime in seconds (-1 to deactivate)

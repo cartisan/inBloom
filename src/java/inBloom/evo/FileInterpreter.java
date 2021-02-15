@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -14,11 +15,10 @@ import org.jfree.ui.RefineryUtilities;
 
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
-import inBloom.stories.little_red_hen.FarmEvoEnvironment;
 
 public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
 
-	private EvolutionaryEnvironment<EnvType,ModType> EVO_ENV;
+	private NIEnvironment<EnvType,ModType> EVO_ENV;
 
 	public String filename;
 	public String filepath;
@@ -34,13 +34,13 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	private Fitness<EnvType,ModType> fit;
 
 
-	public FileInterpreter(EvolutionaryEnvironment<EnvType,ModType> EVO_ENV, String path, String name, boolean showGui) {
+	public FileInterpreter(NIEnvironment<EnvType,ModType> EVO_ENV, String path, String name, boolean showGui) {
 
 		this.EVO_ENV = EVO_ENV;
 		this.filename = name;
 		this.filepath = path;
 
-		this.fit = new Fitness<>(EVO_ENV,showGui);
+		this.fit = new Fitness<>(EVO_ENV,true,Level.INFO,showGui);
 
 	}
 
@@ -99,9 +99,8 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 
 			// get best individual
 			this.best_individual = new Candidate(pers,hap,this.simulation_length,this.fit);
-			in.close();
 
-		} catch(IOException e){
+		}catch(IOException e){
 			e.printStackTrace();
 		}
 	}
@@ -124,6 +123,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 		dataset.addSeries(best);
 		dataset.addSeries(average);
 
+
 		// Initialize Chart
 		int width = 1000;
 		int height = 600;
@@ -143,14 +143,16 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 
 		String path = "C:\\Users\\Leon\\Desktop\\InBloomNIA\\";
 		String name = "GEN_run.log";
+//		String name = "PSO 2";
+//		String name = "QSO 8";
+//		String name = "best";
 
 		@SuppressWarnings("unchecked")
-		FileInterpreter fi = new FileInterpreter(new FarmEvoEnvironment(), path, name, true);
-//		FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, true);
+		FileInterpreter fi = new FileInterpreter(new NIRobinsonIsland(),path, name, true);
+		//FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, false);
 
 		fi.readFile();
 
 		fi.get_chart();
-
 	}
 }

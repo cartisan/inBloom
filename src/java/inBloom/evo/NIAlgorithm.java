@@ -2,7 +2,7 @@ package inBloom.evo;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.logging.Level;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.BufferedWriter;
@@ -12,18 +12,20 @@ import java.io.FileWriter;
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
 
-public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
+public abstract class NIAlgorithm <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
 	
 	// Parameter for PlotLauncher
 	public String[] args;
 	public String filename = "results";
-	public EvolutionaryEnvironment<?,?> EVO_ENV;
+	public NIEnvironment<?,?> EVO_ENV;
 	
 	// Standard parameters for a genetic algorithm
 	public int number_agents;
 	public int number_happenings;
 	public int max_steps;
 	public int individual_count;
+	
+	protected Level level = Level.OFF;
 	
 	// Performance measurement
 	protected List<Double> population_best = new ArrayList<Double>();
@@ -41,7 +43,7 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 	// True -> exit system after completion
 	protected boolean system_exit=true;
 	
-	public EvolutionaryAlgorithm(String[] args, EvolutionaryEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
+	public NIAlgorithm(String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count) {
 		
 		this.args = args;
 		this.EVO_ENV = EVO_ENV;
@@ -85,6 +87,11 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 	public void setVerbose(boolean bool) {
 		
 		verbose = bool;
+	}
+	
+	public void setLevel(Level level) {
+		
+		this.level = level;
 	}
 	
 	/**
@@ -183,11 +190,6 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 		System.out.println("Generation Average: " + population_average.get(generation));
 		System.out.println();
 		
-		if(no_improvement>0) {
-			System.out.println("No improvement found for " + no_improvement + " generations!");
-			System.out.println();
-		}
-		
 	}
 	
 	public void final_stats() {
@@ -197,7 +199,7 @@ public abstract class EvolutionaryAlgorithm <EnvType extends PlotEnvironment<Mod
 		System.out.println();
 		System.out.println("Generations: " + population_best.size());
 		System.out.println("Best so far: " + population_best.get(population_best.size()-1));
+		System.out.println();
 		
 	}
-	
 }

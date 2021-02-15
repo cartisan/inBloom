@@ -28,9 +28,7 @@ public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happe
 	 * 			see {@link Happening}
 	 */
 	public ConditionalHappening(Predicate<T> trigger, String patient, String causalProperty) {
-		// TODO der percept "happening" scheint nicht bei dem Agent anzukommen, er reagiert nie darauf
-		// der percept, den wir später von hand hinzufügen, kommt jedoch an.
-		super(trigger, causalProperty, "happening");
+		super(trigger, causalProperty, "");
 		this.patient = patient;
 	}
 	
@@ -56,7 +54,6 @@ public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happe
 	 * @param model
 	 * 			The model onto which the Happening has its effects
 	 * 
-	 * TODO why do these links not work properly?
 	 */
 	public void execute(T model) {
 		
@@ -117,7 +114,3 @@ public abstract class ConditionalHappening<T extends PlotModel<?>> extends Happe
 	}
 	
 }
-
-
-// TODO dinge, die ich als causalProperty haben will, muss ich als @ModelState annotieren
-// für Locations und Characters kann ich das machen
