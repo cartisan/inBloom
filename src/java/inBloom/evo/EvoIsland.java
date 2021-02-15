@@ -47,7 +47,7 @@ public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, Island
 	 */
 
 	@Override
-	public ImmutableList<Happening> init_staticHappenings(ImmutableList<LauncherAgent> agents) {
+	public ImmutableList<Happening> init_staticHappenings(List<LauncherAgent> agents) {
 
 		List<Happening> happeningList = new ArrayList<>();
 
@@ -213,7 +213,7 @@ public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, Island
 	}
 
 	@Override
-	public PlotModel<IslandEnvironment> init_model(ImmutableList<LauncherAgent> agents, ScheduledHappeningDirector hapDir) {
+	public PlotModel<IslandEnvironment> init_model(List<LauncherAgent> agents, ScheduledHappeningDirector hapDir) {
 
 		IslandModel model = new IslandModel(agents, hapDir);
 
@@ -222,7 +222,7 @@ public class EvoIsland extends EvolutionaryEnvironment<IslandEnvironment, Island
 
 
 	@Override
-	public void init_location(ImmutableList<LauncherAgent> agents, PlotModel model) {
+	public void init_location(List<LauncherAgent> agents, PlotModel model) {
 
 		IslandModel island = (IslandModel) model;
 		agents.get(0).location = island.civilizedWorld.name;
