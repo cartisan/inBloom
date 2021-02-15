@@ -36,14 +36,14 @@ public class FarmNIEnvironment extends NIEnvironment<FarmEnvironment, FarmModel>
 	}
 
 	@Override
-	public List<Happening> init_staticHappenings(List<LauncherAgent> agents) {
+	public List<Happening<?>> init_staticHappenings(List<LauncherAgent> agents) {
 		// no static happenings
-		List<Happening> happeningList = new ArrayList<>();
+		List<Happening<?>> happeningList = new ArrayList<>();
 		return happeningList;
 	}
 
 	@Override
-	public Happening init_dynamicHappening(LauncherAgent agent, int happeningIndex, int step) {
+	public Happening<?> init_dynamicHappening(LauncherAgent agent, int happeningIndex, int step) {
 		switch(happeningIndex) {
 			case 0:
 				FindCornHappening findCorn = new FindCornHappening(
@@ -69,7 +69,7 @@ public class FarmNIEnvironment extends NIEnvironment<FarmEnvironment, FarmModel>
 	}
 
 	@Override
-	public void init_location(List<LauncherAgent> agents, PlotModel model) {
+	public void init_location(List<LauncherAgent> agents, PlotModel<?> model) {
 		String locName = ((FarmModel) model).farm.name;
 
 		for (LauncherAgent ag : agents) {

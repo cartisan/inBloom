@@ -77,7 +77,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		
 		// Instantiate Objects with methods of GeneticEnvironment
 		List<LauncherAgent> agents = this.EVO_ENV.init_agents(individual.get_personality().values);
-		List<Happening> happenings = this.EVO_ENV.init_happenings(agents, individual.get_happenings().values);
+		List<Happening<?>> happenings = this.EVO_ENV.init_happenings(agents, individual.get_happenings().values);
 
 		// Initialize MAS with a scheduled happening director
 		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();

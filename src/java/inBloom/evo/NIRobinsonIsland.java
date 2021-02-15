@@ -46,9 +46,9 @@ public class NIRobinsonIsland extends NIEnvironment<IslandEnvironment, IslandMod
 	 */
 	
 	@Override
-	public ImmutableList<Happening> init_staticHappenings(List<LauncherAgent> agents) {
+	public ImmutableList<Happening<?>> init_staticHappenings(List<LauncherAgent> agents) {
 		
-		List<Happening> happeningList = new ArrayList<Happening>();
+		List<Happening<?>> happeningList = new ArrayList<Happening<?>>();
 		
 		
 		StormHappening shipWrecked = new StormHappening(
@@ -64,7 +64,7 @@ public class NIRobinsonIsland extends NIEnvironment<IslandEnvironment, IslandMod
 		
 		happeningList.add(shipWrecked);
 		
-		ImmutableList<Happening> immutable = ImmutableList.copyOf(happeningList);
+		ImmutableList<Happening<?>> immutable = ImmutableList.copyOf(happeningList);
 		
 		return immutable;
 		
@@ -75,7 +75,7 @@ public class NIRobinsonIsland extends NIEnvironment<IslandEnvironment, IslandMod
 	 * The point in time and patient of a happening will be handed over from the GA
 	 */
 	
-	public Happening init_dynamicHappening(LauncherAgent agent, int happeningIndex, int step) {		
+	public Happening<?> init_dynamicHappening(LauncherAgent agent, int happeningIndex, int step) {		
 		
 		switch(happeningIndex) {
 		
@@ -221,7 +221,7 @@ public class NIRobinsonIsland extends NIEnvironment<IslandEnvironment, IslandMod
 	
 	
 	@Override
-	public void init_location(List<LauncherAgent> agents, PlotModel model) {
+	public void init_location(List<LauncherAgent> agents, PlotModel<?> model) {
 		
 		IslandModel island = (IslandModel) model;
 		agents.get(0).location = island.civilizedWorld.name;

@@ -32,7 +32,7 @@ public class Particle implements Individual,Comparable<Particle> {
 		
 	}
 	
-	public Particle(Candidate candidate, ChromosomePersonality velocity_personality, ChromosomeHappenings velocity_happenings, Fitness fit) {
+	public Particle(Candidate candidate, ChromosomePersonality velocity_personality, ChromosomeHappenings velocity_happenings, Fitness<?,?> fit) {
 		
 		this.current_personality = candidate.get_personality();
 		this.current_happenings = candidate.get_happenings();

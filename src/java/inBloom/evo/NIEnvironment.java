@@ -48,13 +48,13 @@ public abstract class NIEnvironment <EnvType extends PlotEnvironment<ModType>, M
 	 * Returns the genetic algorithm class in order to further customize the settings
 	 */
 
-	public GeneticAlgorithm get_GA(String[] args, int init_stepnumber, int individual_count, int number_selections, double crossover_prob, double mutation_prob){
+	public GeneticAlgorithm<?,?> get_GA(String[] args, int init_stepnumber, int individual_count, int number_selections, double crossover_prob, double mutation_prob){
 
 		return new GeneticAlgorithm<EnvType,ModType> (args, this, this.number_agents, this.number_dynamicHappenings, init_stepnumber, individual_count, number_selections, crossover_prob, mutation_prob);
 	}
 
 
-	public GeneticAlgorithm get_GA(String[] args, int init_stepnumber, int individual_count, int number_selections, double decay_rate){
+	public GeneticAlgorithm<?,?> get_GA(String[] args, int init_stepnumber, int individual_count, int number_selections, double decay_rate){
 
 		return new GeneticAlgorithm<EnvType,ModType> (args, this, this.number_agents, this.number_dynamicHappenings, init_stepnumber, individual_count, number_selections, decay_rate);
 	}
@@ -63,7 +63,7 @@ public abstract class NIEnvironment <EnvType extends PlotEnvironment<ModType>, M
 	 * Returns the particle swarm optimization algorithm class in order to further customize the settings
 	 */
 
-	public PSO get_PSO(String[] args, int init_stepnumber, int individual_count){
+	public PSO<?,?> get_PSO(String[] args, int init_stepnumber, int individual_count){
 
 		return new PSO<EnvType,ModType> (args, this, this.number_agents, this.number_dynamicHappenings, init_stepnumber, individual_count);
 	}
@@ -72,7 +72,7 @@ public abstract class NIEnvironment <EnvType extends PlotEnvironment<ModType>, M
 	 * Returns the quantum swarm optimization algorithm class in order to further customize the settings
 	 */
 
-	public QSO get_QSO(String[] args, int init_stepnumber, int individual_count){
+	public QSO<?,?> get_QSO(String[] args, int init_stepnumber, int individual_count){
 
 		return new QSO<EnvType,ModType> (args, this, this.number_agents, this.number_dynamicHappenings, init_stepnumber, individual_count);
 	}
@@ -104,9 +104,9 @@ public abstract class NIEnvironment <EnvType extends PlotEnvironment<ModType>, M
 	 */
 
 
-	public List<Happening> init_happenings(List<LauncherAgent> agents, int[][] happenings){
+	public List<Happening<?>> init_happenings(List<LauncherAgent> agents, int[][] happenings){
 
-		List<Happening> happeningList = new ArrayList<>();
+		List<Happening<?>> happeningList = new ArrayList<>();
 
 		// Get static Happenings
 		if(this.number_staticHappenings > 0) {
@@ -126,7 +126,7 @@ public abstract class NIEnvironment <EnvType extends PlotEnvironment<ModType>, M
 			}
 		}
 
-		ImmutableList<Happening> immutable = ImmutableList.copyOf(happeningList);
+		ImmutableList<Happening<?>> immutable = ImmutableList.copyOf(happeningList);
 		return immutable;
 	}
 
@@ -137,7 +137,7 @@ public abstract class NIEnvironment <EnvType extends PlotEnvironment<ModType>, M
 	 * @return: ImmutableList of all static Happenings
 	 */
 
-	public abstract List<Happening> init_staticHappenings(List<LauncherAgent> agents);
+	public abstract List<Happening<?>> init_staticHappenings(List<LauncherAgent> agents);
 
 
 	/*
@@ -150,7 +150,7 @@ public abstract class NIEnvironment <EnvType extends PlotEnvironment<ModType>, M
 	 * 			Returns a instantiated Happening
 	 */
 
-	public abstract Happening init_dynamicHappening(LauncherAgent agent, int hIndex, int step);
+	public abstract Happening<?> init_dynamicHappening(LauncherAgent agent, int hIndex, int step);
 
 
 	/*
@@ -172,5 +172,5 @@ public abstract class NIEnvironment <EnvType extends PlotEnvironment<ModType>, M
 	 * 		model = Instantiated PlotModel provided by init_model
 	 */
 
-	public abstract void init_location(List<LauncherAgent> agents, PlotModel model);
+	public abstract void init_location(List<LauncherAgent> agents, PlotModel<?> model);
 }
