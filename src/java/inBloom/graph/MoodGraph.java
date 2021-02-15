@@ -87,12 +87,17 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 		this.stepReasoningcycleNumMap = mapper.stepReasoningcycleNumMap;
 
 		logger.fine("Using following mood data to create mood graph:\n" + mapper.toString());
-		Long startTime = this.stepReasoningcycleNumMap.get(0);
+		Long startTime = this.stepReasoningcycleNumMap.getOrDefault(0, 0L);
 		Long endTime = Math.max(mapper.latestEndTime(), this.stepReasoningcycleNumMap.entrySet().stream()
 																								.max((e1, e2) -> e1.getKey().compareTo(e2.getKey()))
 																								.map(e -> e.getValue())
 																								.get()
 								);
+
+		// if we have a LOT of steps, mood graph drawing gets too slow. Set sampling step such that at most 1000 datapoints are necessary
+		if (endTime - startTime > 10000) {
+			samplingStep = (int) (endTime - startTime) / 10000;
+		}
 
 		if(this.selectedMoodDimension != null) {
 			for(String agName: mapper.mappedAgents()) {
