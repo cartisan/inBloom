@@ -17,11 +17,6 @@ public static void main(String[] args) {
 			// decay_rate
 			double decay_rate = 0.1;
 			
-			// crossover probability
-			double crossover_prob = 0.2;
-			// mutation probability
-			double mutation_prob = 0.1;
-			
 			// maximum time in seconds (no time limit: time < 0 or leave it out as default value is -1)
 			int time = 3600;
 			// number of iterations without improvement till shutdown
@@ -31,7 +26,6 @@ public static void main(String[] args) {
 			String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\Current\\";
 			String filename = "GEN " + String.valueOf(i);
 
-//			GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,crossover_prob,mutation_prob);
 			GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,decay_rate);
 			
 			ga.setFileName(path+filename);

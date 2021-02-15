@@ -18,6 +18,7 @@ import inBloom.PlotModel;
 
 public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
 
+	@SuppressWarnings("unused")
 	private NIEnvironment<EnvType,ModType> EVO_ENV;
 
 	public String filename;
@@ -35,13 +36,27 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 
 
 	public FileInterpreter(NIEnvironment<EnvType,ModType> EVO_ENV, String path, String name, boolean showGui) {
-
 		this.EVO_ENV = EVO_ENV;
 		this.filename = name;
 		this.filepath = path;
 
 		this.fit = new Fitness<>(EVO_ENV,true,Level.INFO,showGui);
+	}
 
+	public Candidate getBest_individual() {
+		return best_individual;
+	}
+
+	public void setBest_individual(Candidate best_individual) {
+		this.best_individual = best_individual;
+	}
+
+	public int getActual_length() {
+		return actual_length;
+	}
+
+	public void setActual_length(int actual_length) {
+		this.actual_length = actual_length;
 	}
 
 	public void readFile() {
@@ -73,7 +88,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 			this.number_happenings = Integer.parseInt(in.readLine());
 
 			this.simulation_length = Integer.parseInt(in.readLine());
-			this.actual_length = Integer.parseInt(in.readLine());
+			this.setActual_length(Integer.parseInt(in.readLine()));
 
 			// Personality
 			ChromosomePersonality pers = new ChromosomePersonality(this.number_agents);
@@ -98,7 +113,8 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 			}
 
 			// get best individual
-			this.best_individual = new Candidate(pers,hap,this.simulation_length,this.fit);
+			this.setBest_individual(new Candidate(pers,hap,this.simulation_length,this.fit));
+			in.close();
 
 		}catch(IOException e){
 			e.printStackTrace();
@@ -143,9 +159,6 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 
 		String path = "C:\\Users\\Leon\\Desktop\\InBloomNIA\\";
 		String name = "GEN_run.log";
-//		String name = "PSO 2";
-//		String name = "QSO 8";
-//		String name = "best";
 
 		@SuppressWarnings("unchecked")
 		FileInterpreter fi = new FileInterpreter(new NIRobinsonIsland(),path, name, true);
