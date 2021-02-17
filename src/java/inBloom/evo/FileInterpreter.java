@@ -15,6 +15,7 @@ import org.jfree.ui.RefineryUtilities;
 
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
+import inBloom.stories.little_red_hen.FarmNIEnvironment;
 
 public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
 
@@ -59,8 +60,18 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 		this.actual_length = actual_length;
 	}
 
-	public void readFile() {
+	private String readNextContentLine(BufferedReader in) throws IOException {
+		String line = in.readLine();
 
+		// Skip lines that contain annotations, which are embedded in < and >.
+		while (line.startsWith("<")) {
+			line = in.readLine();
+		}
+		
+		return line;
+	}
+	
+	public void readFile() {
 		File file = new File(this.filepath+this.filename);
 
 		try {
@@ -68,7 +79,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 			BufferedReader in = new BufferedReader(new FileReader(file));
 
 			// Read population_best
-			String line = in.readLine();
+			String line = this.readNextContentLine(in);
 			StringTokenizer tk = new StringTokenizer(line);
 
 			while(tk.hasMoreTokens()) {
@@ -76,7 +87,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 			}
 
 			// Read population_average
-			line = in.readLine();
+			line = this.readNextContentLine(in);
 			tk = new StringTokenizer(line);
 
 			while(tk.hasMoreTokens()) {
@@ -84,17 +95,17 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 			}
 
 			// Read best individual
-			this.number_agents = Integer.parseInt(in.readLine());
-			this.number_happenings = Integer.parseInt(in.readLine());
+			this.number_agents = Integer.parseInt(this.readNextContentLine(in));
+			this.number_happenings = Integer.parseInt(this.readNextContentLine(in));
 
-			this.simulation_length = Integer.parseInt(in.readLine());
-			this.setActual_length(Integer.parseInt(in.readLine()));
+			this.simulation_length = Integer.parseInt(this.readNextContentLine(in));
+			this.setActual_length(Integer.parseInt(this.readNextContentLine(in)));
 
 			// Personality
 			ChromosomePersonality pers = new ChromosomePersonality(this.number_agents);
 
 			for(int i = 0; i<this.number_agents;i++) {
-				line = in.readLine();
+				line = this.readNextContentLine(in);
 				tk = new StringTokenizer(line);
 				for(int j = 0; j < 5; j++) {
 					pers.values[i][j] = Double.parseDouble(tk.nextToken());
@@ -105,7 +116,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 			ChromosomeHappenings hap = new ChromosomeHappenings(this.number_agents,this.number_happenings);
 
 			for(int i = 0; i<this.number_agents;i++) {
-				line = in.readLine();
+				line = this.readNextContentLine(in);
 				tk = new StringTokenizer(line);
 				for(int j = 0; j < this.number_happenings; j++) {
 					hap.values[i][j] = Integer.parseInt(tk.nextToken());

@@ -154,6 +154,7 @@ public abstract class NIAlgorithm <EnvType extends PlotEnvironment<ModType>, Mod
 			
 			PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(file)));
 			
+			writer.write("<Best Found Individual So Far, Per Generation>\n");
 			for(int i = 0; i < population_best.size(); i++) {
 				writer.write(String.valueOf(population_best.get(i)));
 				if(i<population_best.size()-1)
@@ -161,6 +162,7 @@ public abstract class NIAlgorithm <EnvType extends PlotEnvironment<ModType>, Mod
 			}
 			writer.write("\n");
 			
+			writer.write("<Population Average Per Generation>\n");
 			for(int i = 0; i < population_average.size(); i++) {
 				writer.write(String.valueOf(population_average.get(i)));
 				if(i<population_best.size()-1)
@@ -168,6 +170,7 @@ public abstract class NIAlgorithm <EnvType extends PlotEnvironment<ModType>, Mod
 			}
 			writer.write("\n");
 			
+			writer.write("<Best Individual, Settings>");
 			writer.write(best.to_String());
 			
 			writer.flush();
@@ -185,7 +188,6 @@ public abstract class NIAlgorithm <EnvType extends PlotEnvironment<ModType>, Mod
 		
 		System.out.println();
 		System.out.println("Generation: " + generation);
-		System.out.println();
 		System.out.println("Best individual: " + population_best.get(generation));
 		System.out.println("Generation Average: " + population_average.get(generation));
 		System.out.println();
