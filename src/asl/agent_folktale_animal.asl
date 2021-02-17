@@ -123,7 +123,7 @@ wish(relax).
 
 // Ask for help if extraverted, unless one feels powerless
 @general_help_acquisition_plan[affect(and(personality(extraversion,positive),not(mood(dominance,low))))]
-+!X[_] : is_work(X) & not complex_plan(X) & not already_asked(X) & not X==help_with(Y) <-
++!X[_] : is_work(X) & not complex_plan(X) & not already_asked(X) & not X=help_with(_,_) <-
 	.my_name(Me);
 	?present(Agents);
 	+already_asked(X);
