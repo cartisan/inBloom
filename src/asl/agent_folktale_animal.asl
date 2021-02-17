@@ -123,7 +123,7 @@ wish(relax).
 
 // Ask for help if extraverted, unless one feels powerless
 @general_help_acquisition_plan[affect(and(personality(extraversion,positive),not(mood(dominance,low))))]
-+!X[_] : is_work(X) & not complex_plan(X) & not already_asked(X) <-
++!X[_] : is_work(X) & not complex_plan(X) & not already_asked(X) & not X==help_with(Y) <-
 	.my_name(Me);
 	?present(Agents);
 	+already_asked(X);
@@ -234,9 +234,9 @@ wish(relax).
 +!eat : has(Item) & edible(Item) <-
 	!eat(Item).
 
-+!eat <-
-	.print("Ain't got no food");
-	-wish(eat).
+//+!eat <-
+//	.print("Ain't got no food");
+//	-wish(eat).
 
 @eat2[atomic, affect(and(personality(agreeableness,high), not(mood(pleasure,low))))]
 +!eat(Food) : not wish(punish) & not received(Food) <-

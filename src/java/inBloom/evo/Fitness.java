@@ -65,7 +65,6 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	}
 
 	public double evaluate_individual(Individual individual) throws JasonException {
-
 		// Initialize Parameters
 		double result = 0;
 		this.isRunning = true;
@@ -127,7 +126,8 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 					    	if(!this.set) {
 
 					    		// Deactivate Max_Repeate feature
-								PlotEnvironment.MAX_REPEATE_NUM = -1;
+					    		// TODO: Activated again for TLRH
+//								PlotEnvironment.MAX_REPEATE_NUM = -1;
 
 								// Upper Limit
 								if(simulation_length< 100) {

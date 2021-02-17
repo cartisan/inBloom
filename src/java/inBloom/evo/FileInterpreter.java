@@ -62,7 +62,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 
 	private String readNextContentLine(BufferedReader in) throws IOException {
 		String line = in.readLine();
-
+		
 		// Skip lines that contain annotations, which are embedded in < and >.
 		while (line.startsWith("<")) {
 			line = in.readLine();
@@ -172,8 +172,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 		String name = "GEN_run.log";
 
 		@SuppressWarnings("unchecked")
-		FileInterpreter fi = new FileInterpreter(new NIRobinsonIsland(),path, name, true);
-		//FileInterpreter fi = new FileInterpreter(new EvoIsland(),path, name, false);
+		FileInterpreter fi = new FileInterpreter(new FarmNIEnvironment(), path, name, true);
 
 		fi.readFile();
 
