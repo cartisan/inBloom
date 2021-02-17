@@ -89,16 +89,7 @@ public class RedHenPersonalityCycle extends PersonalitySpaceSearchCycle {
 	 */
 	private ScheduledHappeningDirector getHappeningDirector() {
 		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
-		FindCornHappening findCorn = new FindCornHappening(
-				// hen finds wheat after 2 farm work actions
-				(FarmModel model) -> {
-	            		if(model.farm.farmingProgress > 2) {
-	            			return true;
-	            		}
-	            		return false;
-	    		},
-				"hen",
-				"actionCount");
+		FindCornHappening findCorn = new FindCornHappening();
 		hapDir.scheduleHappening(findCorn);
 		return hapDir;
 	}

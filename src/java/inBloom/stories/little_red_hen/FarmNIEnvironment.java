@@ -46,16 +46,7 @@ public class FarmNIEnvironment extends NIEnvironment<FarmEnvironment, FarmModel>
 	public Happening<?> init_dynamicHappening(LauncherAgent agent, int happeningIndex, int step) {
 		switch(happeningIndex) {
 			case 0:
-				FindCornHappening findCorn = new FindCornHappening(
-						// patient finds wheat after at last two farm work actions
-						(FarmModel model) -> {
-			            		if(model.farm.farmingProgress > 1) {
-			            			return true;
-			            		}
-			            		return false;
-			    		},
-						agent.name,
-						"farmingProgress");
+				FindCornHappening findCorn = new FindCornHappening(agent, step);
 				return findCorn;
 		}
 
