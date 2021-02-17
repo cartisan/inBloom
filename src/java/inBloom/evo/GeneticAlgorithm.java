@@ -16,9 +16,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	public double mutation_prob = 0.05;
 
 	// Container for candidates
-	private Candidate[] gen_pool;
-	private Candidate[] offspring;
-	private Candidate[] mutated_offspring;
+	private Individual[] gen_pool;
+	private Individual[] offspring;
+	private Individual[] mutated_offspring;
 
 	// Information storage for floating parameter version
 	private boolean floatingParameters;
@@ -89,7 +89,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * Get & Set Methods
 	 */
 
-	public Candidate[] get_genPool() {
+	public Individual[] get_genPool() {
 
 		return this.gen_pool;
 	}
@@ -292,21 +292,21 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 
 	/**
-	 * Instantiates new fitness object and hands it over to the Candidate to be instantiated.
+	 * Instantiates new fitness object and hands it over to the Individual to be instantiated.
 	 * @param pers: Chromosome containing personality information
 	 * @param hap: Chromosome containing happening information
-	 * @return: Instantiated Candidate
+	 * @return: Instantiated Individual
 	 */
-	public Candidate new_Candidate(ChromosomePersonality pers,ChromosomeHappenings hap) {
+	public Individual new_Candidate(ChromosomePersonality pers,ChromosomeHappenings hap) {
 
 		return this.new_Candidate(pers,hap,this.determineLength(hap));
 	}
 
-	public Candidate new_Candidate(ChromosomePersonality pers,ChromosomeHappenings hap, Integer steps) {
-
+	public Individual new_Candidate(ChromosomePersonality pers,ChromosomeHappenings hap, Integer steps) {
+		System.out.println("******************************* steps: " + steps);
 		Fitness<EnvType,ModType> fit = new Fitness<>(this.EVO_ENV, this.verbose, this.level);
 
-		return new Candidate(pers, hap, steps, fit);
+		return new Individual(pers, hap, steps, fit);
 
 	}
 
@@ -655,9 +655,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 	public void initialize_pop() {
 
-		this.gen_pool = new Candidate[this.individual_count];
-		this.offspring = new Candidate[this.selection_size];
-		this.mutated_offspring = new Candidate[this.selection_size];
+		this.gen_pool = new Individual[this.individual_count];
+		this.offspring = new Individual[this.selection_size];
+		this.mutated_offspring = new Individual[this.selection_size];
 
 		int index = 0;
 
@@ -770,7 +770,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 		}
 
-		// Sort Candidates by performance. Best Candidate will be at position zero descending
+		// Sort Candidates by performance. Best Individual will be at position zero descending
 		Arrays.sort(this.gen_pool);
 	}
 
@@ -1108,7 +1108,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			case 3:
 
 				// Add 2 initial candidates to the List
-				List<Candidate> candidates = new ArrayList<>();
+				List<Individual> candidates = new ArrayList<>();
 
 				candidates.add(this.gen_pool[one]);
 				candidates.add(this.gen_pool[two]);
@@ -1144,7 +1144,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				break;
 			}
 		}
-		// Sort Candidates by performance. Best Candidate will be at position zero descending
+		// Sort Candidates by performance. Best Individual will be at position zero descending
 		Arrays.sort(this.offspring);
 
 		if(this.verbose) {
@@ -1160,7 +1160,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * @param index: position in offspring
 	 */
 
-	public void simpleCrossover(Candidate one, Candidate two, int index) {
+	public void simpleCrossover(Individual one, Individual two, int index) {
 
 		this.offspring[index] = this.new_Candidate(one.get_personality(), two.get_happenings());
 		this.offspring[index+1] = this.new_Candidate(two.get_personality(), one.get_happenings());
@@ -1188,7 +1188,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * @param index: position in offspring
 	 */
 
-	public void binomialCrossover(Candidate one, Candidate two, int index) {
+	public void binomialCrossover(Individual one, Individual two, int index) {
 
 		ChromosomePersonality personalityOne = new ChromosomePersonality(this.number_agents);
 		ChromosomePersonality personalityTwo = new ChromosomePersonality(this.number_agents);
@@ -1260,7 +1260,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * @param index: position in offspring
 	 */
 
-	public void xPointCrossover(Candidate one, Candidate two, int index) {
+	public void xPointCrossover(Individual one, Individual two, int index) {
 
 		boolean[][] crossPersonality = new boolean[this.number_agents][5];
 		boolean[][] personalityPoints = this.setCrossoverPoints(crossPersonality, this.personality_cross);
@@ -1431,7 +1431,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * @param index: position in offspring
 	 */
 
-	public void voteCrossover(List<Candidate> candidates, int index) {
+	public void voteCrossover(List<Individual> candidates, int index) {
 
 		ChromosomePersonality personalityRandom = new ChromosomePersonality(this.number_agents);
 		ChromosomePersonality personalityAverage = new ChromosomePersonality(this.number_agents);
@@ -1580,7 +1580,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 		}
 
-		//Sort Candidates by performance. Best Candidate will be at position zero descending
+		//Sort Candidates by performance. Best Individual will be at position zero descending
 		Arrays.sort(this.mutated_offspring);
 
 		if(this.verbose) {
@@ -1594,11 +1594,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 *
 	 * Iterates the Chromosome and chooses a new random value for a position with probability mutation_prob
 	 *
-	 * @param recipient: Candidate to be mutated
-	 * @return: mutated Candidate
+	 * @param recipient: Individual to be mutated
+	 * @return: mutated Individual
 	 */
 
-	public Candidate randomMutator(Candidate recipient) {
+	public Individual randomMutator(Individual recipient) {
 
 		boolean change = false;
 
@@ -1641,7 +1641,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		if(change) {
 
-			Candidate result = this.new_Candidate(mutatedPersonality, mutatedHappenings);
+			Individual result = this.new_Candidate(mutatedPersonality, mutatedHappenings);
 
 			if(this.floatingParameters) {
 
@@ -1675,11 +1675,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * Iterates the Chromosome and makes changes based on the current values. Happenings get instantiated or turned off
 	 * while personality parameters get multiplied by -1.
 	 *
-	 * @param recipient: Candidate to be mutated
-	 * @return: mutated Candidate
+	 * @param recipient: Individual to be mutated
+	 * @return: mutated Individual
 	 */
 
-	public Candidate toggleMutator(Candidate recipient) {
+	public Individual toggleMutator(Individual recipient) {
 
 		boolean change = false;
 
@@ -1725,7 +1725,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		if(change) {
 
-			Candidate result = this.new_Candidate(mutatedPersonality, mutatedHappenings);
+			Individual result = this.new_Candidate(mutatedPersonality, mutatedHappenings);
 
 			if(this.floatingParameters) {
 
@@ -1757,11 +1757,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 *
 	 * Mutate value towards or away from another internal value in the same chromosome but at a different position
 	 *
-	 * @param recipient: Candidate to be mutated
-	 * @return: mutated Candidate
+	 * @param recipient: Individual to be mutated
+	 * @return: mutated Individual
 	 */
 
-	public Candidate orientedMutator(Candidate recipient) {
+	public Individual orientedMutator(Individual recipient) {
 
 		boolean change = false;
 
@@ -1855,7 +1855,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		if(change) {
 
-			Candidate result = this.new_Candidate(mutatedPersonality, mutatedHappenings);
+			Individual result = this.new_Candidate(mutatedPersonality, mutatedHappenings);
 
 			if(this.floatingParameters) {
 
@@ -1886,11 +1886,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 *
 	 * Mutate a value towards or away from the corresponding value of another candidate with probability mutation_prob
 	 *
-	 * @param recipient: Candidate to be mutated
-	 * @return: mutated Candidate
+	 * @param recipient: Individual to be mutated
+	 * @return: mutated Individual
 	 */
 
-	public Candidate guidedMutator(Candidate recipient, Candidate mutator) {
+	public Individual guidedMutator(Individual recipient, Individual mutator) {
 
 		boolean change = false;
 
@@ -1955,7 +1955,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		if(change) {
 
-			Candidate result = this.new_Candidate(mutatedPersonality, mutatedHappenings);
+			Individual result = this.new_Candidate(mutatedPersonality, mutatedHappenings);
 
 			if(this.floatingParameters) {
 
@@ -1993,12 +1993,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			this.gen_pool = this.partiallyRandomNoDuplicatesReplacer();
 		}
 
-		//Sort Candidates by performance. Best Candidate will be at position zero descending
+		//Sort Candidates by performance. Best Individual will be at position zero descending
 		Arrays.sort(this.gen_pool);
 
 		// remove artifacts
-		this.offspring = new Candidate[this.selection_size];
-		this.mutated_offspring = new Candidate[this.selection_size];
+		this.offspring = new Individual[this.selection_size];
+		this.mutated_offspring = new Individual[this.selection_size];
 	}
 
 	/**
@@ -2007,14 +2007,14 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 *
 	 * @return: Array containing candidates chosen to remain in the population
 	 */
-	public Candidate[] steadyNoDuplicatesReplacer() {
+	public Individual[] steadyNoDuplicatesReplacer() {
 
-		Candidate[] next_gen = new Candidate[this.individual_count];
+		Individual[] next_gen = new Individual[this.individual_count];
 
 		int steady = this.individual_count/2;
 
 		// Create List of all newly generated Candidates sorted by fitness descending (rest of old population is at end)
-		List<Candidate> total_offspring = new ArrayList<>();
+		List<Individual> total_offspring = new ArrayList<>();
 		int posPop = steady;
 		int posOff = 0;
 		int posMut = 0;
@@ -2098,12 +2098,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * @return: Array containing candidates chosen to remain in the population
 	 */
 
-	public Candidate[] partiallyRandomNoDuplicatesReplacer() {
+	public Individual[] partiallyRandomNoDuplicatesReplacer() {
 
-		Candidate[] next_gen = new Candidate[this.individual_count];
+		Individual[] next_gen = new Individual[this.individual_count];
 
 		// Initialize a List with all Candidates positions.get(state).get_lifespan()ed by fitness descending
-		List<Candidate> allCandidates = new ArrayList<>();
+		List<Individual> allCandidates = new ArrayList<>();
 
 		int posPop = 0;
 		int posOff = 0;

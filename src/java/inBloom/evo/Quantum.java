@@ -3,8 +3,9 @@ package inBloom.evo;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Quantum extends Individual implements Comparable<Quantum> {
-	
+public class Quantum extends CandidateSolution implements Comparable<Quantum> {
+	protected Integer simulation_length;
+	protected Integer actual_length;
 	private ChromosomePersonality best_personality;
 	private ChromosomeHappenings best_happenings;
 	private double best_tellability;
@@ -251,6 +252,6 @@ public class Quantum extends Individual implements Comparable<Quantum> {
 	
 	@Override
 	public String to_String() {
-		return this.to_String(best_personality, best_happenings);
+		return this.to_String(best_personality, best_happenings, best_simLength, best_actualLength);
 	}
 }

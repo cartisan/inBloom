@@ -479,10 +479,10 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		}
 	}
 	/*
-	 * Instantiates new fitness object and hands it over to the Candidate to be instantiated.
+	 * Instantiates new fitness object and hands it over to the Individual to be instantiated.
 	 * @param pers: Chromosome containing personality information
 	 * @param hap: Chromosome containing happening information
-	 * @return: Instantiated Candidate
+	 * @return: Instantiated Individual
 	 */
 	
 	public Quantum new_quantum(ChromosomePersonality pers,ChromosomePersonality velocity_pers,ChromosomeHappenings hap, ChromosomeHappenings velocity_hap) {
@@ -1319,8 +1319,8 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	 * 
 	 * Iterates the Chromosome and chooses a new random value for a position with probability mutation_prob
 	 * 
-	 * @param recipient: Candidate to be mutated
-	 * @return: mutated Candidate
+	 * @param recipient: Individual to be mutated
+	 * @return: mutated Individual
 	 */
 	
 	public void randomMutator(Quantum recipient, int state) {
@@ -1389,8 +1389,8 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	 * Iterates the Chromosome and makes changes based on the current values. Happenings get instantiated or turned off
 	 * while personality parameters get multiplied by -1.
 	 * 
-	 * @param recipient: Candidate to be mutated
-	 * @return: mutated Candidate
+	 * @param recipient: Individual to be mutated
+	 * @return: mutated Individual
 	 */
 	
 	public void toggleMutator(Quantum recipient, int state) {
@@ -1478,8 +1478,8 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	 * 
 	 * Mutate value towards or away from another internal value in the same chromosome but at a different position
 	 * 
-	 * @param recipient: Candidate to be mutated
-	 * @return: mutated Candidate
+	 * @param recipient: Individual to be mutated
+	 * @return: mutated Individual
 	 */
 	
 	public void orientedMutator(Quantum recipient, int state) {
@@ -1650,8 +1650,8 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	 * 
 	 * Mutate a value towards or away from the corresponding value of another candidate with probability mutation_prob
 	 * 
-	 * @param recipient: Candidate to be mutated
-	 * @return: mutated Candidate
+	 * @param recipient: Individual to be mutated
+	 * @return: mutated Individual
 	 */
 	
 	public void guidedMutator(Quantum recipient, Quantum mutator, int state) {
@@ -1969,7 +1969,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	}
 	
 	@Override
-	public void to_file(Individual best) {
+	public void to_file(CandidateSolution best) {
 		
 		try {
 			

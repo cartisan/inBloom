@@ -2,15 +2,14 @@ package inBloom.evo;
 
 import jason.JasonException;
 
-public class QuantumPosition extends Individual implements Comparable<QuantumPosition>  {
-	
+public class QuantumPosition extends CandidateSolution implements Comparable<QuantumPosition>  {
+	protected Integer simulation_length;
+	protected Integer actual_length;
 	private ChromosomePersonality current_personality;
 	private ChromosomeHappenings current_happenings;
 	private ChromosomePersonality velocity_personality;
 	private ChromosomeHappenings velocity_happenings;
 	private double current_tellability;
-	private Integer simulation_length;
-	private Integer actual_length;
 	
 	private double lifespan;
 
@@ -168,7 +167,7 @@ public class QuantumPosition extends Individual implements Comparable<QuantumPos
 
 	@Override
 	public String to_String() {
-		return this.to_String(current_personality, current_happenings);
+		return this.to_String(current_personality, current_happenings, simulation_length, actual_length);
 	}
 
 }

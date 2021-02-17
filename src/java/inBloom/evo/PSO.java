@@ -39,7 +39,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	// This is used for combining the genetic algorithm with pso.
 	// Data field for the gen_pool of the genetic algorithm.
-	private Candidate[] gen_pool;
+	private Individual[] gen_pool;
 	// Number of Individuals from the gen_pool.
 	private static int geneticInit = 0;
 	
@@ -182,7 +182,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		return geneticInit;
 	}
 	
-	public void setGenInit(int count, Candidate[] gen_pool) {
+	public void setGenInit(int count, Individual[] gen_pool) {
 		
 		if(count>0) {
 			
@@ -452,10 +452,10 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	
 	/*
-	 * Instantiates new fitness object and hands it over to the Candidate to be instantiated.
+	 * Instantiates new fitness object and hands it over to the Individual to be instantiated.
 	 * @param pers: Chromosome containing personality information
 	 * @param hap: Chromosome containing happening information
-	 * @return: Instantiated Candidate
+	 * @return: Instantiated Individual
 	 */
 	
 	public Particle new_particle(ChromosomePersonality pers,ChromosomePersonality velocity_pers,ChromosomeHappenings hap, ChromosomeHappenings velocity_hap) {

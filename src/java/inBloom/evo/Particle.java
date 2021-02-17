@@ -2,8 +2,9 @@ package inBloom.evo;
 
 import jason.JasonException;
 
-public class Particle extends Individual implements Comparable<Particle>{
-	
+public class Particle extends CandidateSolution implements Comparable<Particle>{
+	protected Integer simulation_length;
+	protected Integer actual_length;
 	private ChromosomePersonality current_personality;
 	private ChromosomeHappenings current_happenings;
 	private ChromosomePersonality best_personality;
@@ -12,8 +13,6 @@ public class Particle extends Individual implements Comparable<Particle>{
 	private ChromosomeHappenings velocity_happenings;
 	private double current_tellability;
 	private double best_tellability;
-	private Integer simulation_length;
-	private Integer actual_length;
 	private Integer best_simLength;
 	private Integer best_actualLength;
 	
@@ -32,7 +31,7 @@ public class Particle extends Individual implements Comparable<Particle>{
 		
 	}
 	
-	public Particle(Candidate candidate, ChromosomePersonality velocity_personality, ChromosomeHappenings velocity_happenings, Fitness<?,?> fit) {
+	public Particle(Individual candidate, ChromosomePersonality velocity_personality, ChromosomeHappenings velocity_happenings, Fitness<?,?> fit) {
 		
 		this.current_personality = candidate.get_personality();
 		this.current_happenings = candidate.get_happenings();
@@ -195,6 +194,6 @@ public class Particle extends Individual implements Comparable<Particle>{
 	
 	@Override
 	public String to_String() {
-		return this.to_String(best_personality, best_happenings);
+		return this.to_String(best_personality, best_happenings, best_simLength, best_actualLength);
 	}
 }

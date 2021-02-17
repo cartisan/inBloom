@@ -112,14 +112,13 @@ public abstract class NIAlgorithm <EnvType extends PlotEnvironment<ModType>, Mod
 	}
 	
 	
-	/*
+	/**
 	 * Sets the length of simulation of a chromosome according to it's Happenings.
 	 * Determined value will be based on the step number of the last occuring happening plus
 	 * an amount of additional steps between 0 and the square root of max step number increased by 1
 	 * @param happenings: Chromosome encoding steps at which happenings occur
 	 * @return: total amount of simulation steps
 	 */
-
 	public Integer determineLength(ChromosomeHappenings happenings) {
 		
 		Integer length = 0;
@@ -146,7 +145,7 @@ public abstract class NIAlgorithm <EnvType extends PlotEnvironment<ModType>, Mod
 	
 	protected abstract void evaluate_population();
 	
-	public void to_file(Individual best) {
+	public void to_file(CandidateSolution best) {
 		
 		try {
 			
@@ -154,7 +153,7 @@ public abstract class NIAlgorithm <EnvType extends PlotEnvironment<ModType>, Mod
 			
 			PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(file)));
 			
-			writer.write("<Best Found Individual So Far, Per Generation>\n");
+			writer.write("<Best Found CandidateSolution So Far, Per Generation>\n");
 			for(int i = 0; i < population_best.size(); i++) {
 				writer.write(String.valueOf(population_best.get(i)));
 				if(i<population_best.size()-1)
@@ -170,7 +169,7 @@ public abstract class NIAlgorithm <EnvType extends PlotEnvironment<ModType>, Mod
 			}
 			writer.write("\n");
 			
-			writer.write("<Best Individual, Settings>");
+			writer.write("<Best CandidateSolution, Settings>");
 			writer.write(best.to_String());
 			
 			writer.flush();

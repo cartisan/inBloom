@@ -27,7 +27,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 
 	public List<Double> population_best = new ArrayList<>();
 	public List<Double> population_average = new ArrayList<>();
-	private Candidate best_individual;
+	private CandidateSolution best_individual;
 
 	private int number_agents;
 	private int number_happenings;
@@ -44,11 +44,11 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 		this.fit = new Fitness<>(EVO_ENV,true,Level.INFO,showGui);
 	}
 
-	public Candidate getBest_individual() {
+	public CandidateSolution getBest_individual() {
 		return best_individual;
 	}
 
-	public void setBest_individual(Candidate best_individual) {
+	public void setBest_individual(Individual best_individual) {
 		this.best_individual = best_individual;
 	}
 
@@ -124,7 +124,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 			}
 
 			// get best individual
-			this.setBest_individual(new Candidate(pers,hap,this.simulation_length,this.fit));
+			this.setBest_individual(new Individual(pers,hap,this.simulation_length,this.fit));
 			in.close();
 
 		}catch(IOException e){
