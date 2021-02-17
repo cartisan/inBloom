@@ -467,13 +467,13 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				update_movement();
 				evaluate_population();
 				
+				to_file(quantum_particles[0]);
 			}
 
 			// Print Statistics
 			if(verbose)
 				final_stats();
 
-			to_file(quantum_particles[0]);
 			if(system_exit)
 				System.exit(0);
 		}
@@ -1578,7 +1578,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 						
 						if(Math.random()>0.5) {
 							xPos = (int)Math.round(Math.random()*number_agents-0.5);
-						}else {
+						} else {
 							// FIXME: here was an error with 5 used instead of happ. num.
 							yPos = (int)Math.round(Math.random()*this.number_happenings-0.5);
 						}
@@ -1597,7 +1597,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 							positiveHappenings.values[i][j] += ratio * (recipient.best_actualLength() - recipient.get_position(state).get_happenings(i,j));
 					}
 					
-				}else {
+				} else {
 
 					// Generate other position to look at
 					int xPos = i;
@@ -1607,7 +1607,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 						
 						if(Math.random()>0.5) {
 							xPos = (int)Math.round(Math.random()*number_agents-0.5);
-						}else {
+						} else {
 							// FIXME: here was an error with 5 used instead of happ. num.
 							yPos = (int)Math.round(Math.random()*this.number_happenings-0.5);
 						}

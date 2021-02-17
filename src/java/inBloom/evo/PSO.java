@@ -8,7 +8,8 @@ import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
 
 public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends NIAlgorithm<EnvType,ModType> {
-
+	private static final boolean USE_FLOATING_PARAM = true;
+	
 	// Particle container
 	private Particle[] particles;
 	
@@ -51,7 +52,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	// true -> Roulette Wheel Selection, false -> choose best
 	private boolean fitnessBasedSelection = false;
 	// false -> use static update rate, false -> update with force calculation
-	private boolean floatingParameters = false;
+	private boolean floatingParameters = USE_FLOATING_PARAM;
 	
 	
 	
@@ -437,13 +438,13 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				update_movement();
 				evaluate_population();
 				
+				to_file(particles[0]);
 			}
 
 			// Print Statistics
 			if(verbose)
 				final_stats();
 
-			to_file(particles[0]);
 			if(system_exit)
 				System.exit(0);
 		}
@@ -965,12 +966,15 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			
 			double force = energy*inertia*Math.pow(distance,2);
 			
-			System.out.println();
-			System.out.println(energy);
-			System.out.println(inertia);
-			System.out.println(distance);
-			System.out.println(force);
-			System.out.println();
+			if(this.verbose) {
+				System.out.println();
+				System.out.println("Informant: " + index);
+				System.out.println("  Energy: " + energy);
+				System.out.println("  Inertia: " + inertia);
+				System.out.println("  Distance: " + distance);
+				System.out.println("  Force: " + force);
+				System.out.println();
+			}
 			
 //			if(force < 0){
 //				force *= determine_spacetime(index);

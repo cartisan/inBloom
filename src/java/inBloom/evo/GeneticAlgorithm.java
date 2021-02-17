@@ -9,7 +9,7 @@ import inBloom.PlotModel;
 
 public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends NIAlgorithm<EnvType,ModType>{
 	private static final boolean USE_FLOATING_PARAM = false;
-
+	
 	// Parameters for static version
 	public int selection_size;
 	public double crossover_prob = 0.1;
@@ -269,7 +269,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}
 
 		if(this.floatingParameters) {
-
 			if(this.decay_rate<=0||this.decay_rate>=1) {
 				this.decay_rate = 0.05;
 				System.out.println("Decay_rate defaulted to 0.05!");
@@ -288,18 +287,16 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 		}
 
-
 		return true;
 	}
 
 
-	/*
+	/**
 	 * Instantiates new fitness object and hands it over to the Candidate to be instantiated.
 	 * @param pers: Chromosome containing personality information
 	 * @param hap: Chromosome containing happening information
 	 * @return: Instantiated Candidate
 	 */
-
 	public Candidate new_Candidate(ChromosomePersonality pers,ChromosomeHappenings hap) {
 
 		return this.new_Candidate(pers,hap,this.determineLength(hap));
@@ -400,14 +397,14 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				if(this.floatingParameters) {
 					this.determineGlobalParameters();
 				}
+
+				this.to_file(this.gen_pool[0]);
 			}
 
 			// Print Statistics
 			if(this.verbose) {
 				this.final_stats();
 			}
-
-			this.to_file(this.gen_pool[0]);
 
 			if(this.system_exit) {
 				System.exit(0);
@@ -1032,9 +1029,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 */
 
 	public void crossover(List<Integer> positions) {
-
 		if(this.verbose) {
-			System.out.println("Crossover:");
+			System.out.println("Start Crossover");
 		}
 
 		// Set used Crossover operators
@@ -1152,7 +1148,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		Arrays.sort(this.offspring);
 
 		if(this.verbose) {
-			System.out.println("");
+			System.out.println("End Crossover\n");
 		}
 	}
 
@@ -1392,7 +1388,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				}
 			}
 
-		}else {
+		} else {
 
 			for(int j = 0; j < y; j++){
 
@@ -1501,9 +1497,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 */
 
 	public void mutate() {
-
 		if(this.verbose) {
-			System.out.println("Mutation:");
+			System.out.println("Start Mutation");
 		}
 
 		// Set used Mutation operators
@@ -1589,7 +1584,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		Arrays.sort(this.mutated_offspring);
 
 		if(this.verbose) {
-			System.out.println("");
+			System.out.println("End Mutation\n");
 		}
 	}
 
@@ -1722,7 +1717,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					hapsChange[i][j] = true;
 					change = true;
 
-				}else {
+				} else {
 					mutatedHappenings.values[i][j] = recipient.get_happenings(i,j);
 				}
 			}
@@ -2006,13 +2001,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.mutated_offspring = new Candidate[this.selection_size];
 	}
 
-	/*
+	/**
 	 * Keep best half of last generation
 	 * Fill up other half with best performing individuals from offspring
 	 *
 	 * @return: Array containing candidates chosen to remain in the population
 	 */
-
 	public Candidate[] steadyNoDuplicatesReplacer() {
 
 		Candidate[] next_gen = new Candidate[this.individual_count];
