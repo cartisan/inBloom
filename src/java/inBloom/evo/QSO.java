@@ -1579,7 +1579,8 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 						if(Math.random()>0.5) {
 							xPos = (int)Math.round(Math.random()*number_agents-0.5);
 						}else {
-							yPos = (int)Math.round(Math.random()*5-0.5);
+							// FIXME: here was an error with 5 used instead of happ. num.
+							yPos = (int)Math.round(Math.random()*this.number_happenings-0.5);
 						}
 					}
 					
@@ -1607,7 +1608,8 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 						if(Math.random()>0.5) {
 							xPos = (int)Math.round(Math.random()*number_agents-0.5);
 						}else {
-							yPos = (int)Math.round(Math.random()*5-0.5);
+							// FIXME: here was an error with 5 used instead of happ. num.
+							yPos = (int)Math.round(Math.random()*this.number_happenings-0.5);
 						}
 					}
 					

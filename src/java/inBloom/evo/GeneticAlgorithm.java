@@ -8,10 +8,12 @@ import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
 
 public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends NIAlgorithm<EnvType,ModType>{
+	private static final boolean USE_FLOATING_PARAM = false;
 
+	// Parameters for static version
 	public int selection_size;
-	public double crossover_prob;
-	public double mutation_prob;
+	public double crossover_prob = 0.1;
+	public double mutation_prob = 0.05;
 
 	// Container for candidates
 	private Candidate[] gen_pool;
@@ -26,6 +28,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	private double global_cross;
 	private double global_mut;
 
+	// parameters for Floating Param version
 	private double[] cross_prob;
 	private double[] mut_prob;
 	private double[][] personality_cross;
@@ -56,25 +59,27 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	private static boolean steadyReplace = true;
 
 
-	/*
-	 * Constructors for GA
+	/**
+	 * Constructors for GA, static version
 	 */
-
 	public GeneticAlgorithm (String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections, double crossover_prob, double mutation_prob) {
 
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
 		this.selection_size = number_selections*2;
-		this.floatingParameters = false;
+		this.floatingParameters = USE_FLOATING_PARAM;
 
 		this.crossover_prob = crossover_prob;
 		this.mutation_prob = mutation_prob;
 	}
 
+	/**
+	 * Constructors for GA, floating param version
+	 */
 	public GeneticAlgorithm (String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections, double decay) {
 
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
 		this.selection_size = number_selections*2;
-		this.floatingParameters = true;
+		this.floatingParameters = USE_FLOATING_PARAM;
 
 		this.decay_rate = decay;
 	}
@@ -272,12 +277,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		}else {
 
-			if(this.mutation_prob<0||this.mutation_prob>1) {
+			if(this.mutation_prob <= 0||this.mutation_prob>1) {
 				System.out.println("Mutation_prob: " + this.mutation_prob + " is suboptimal!");
 				return false;
 			}
 
-			if(this.crossover_prob<0||this.crossover_prob>1) {
+			if(this.crossover_prob <= 0||this.crossover_prob>1) {
 				System.out.println("Crossover_prob: " + this.crossover_prob + " is suboptimal!");
 				return false;
 			}
@@ -1262,10 +1267,10 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	public void xPointCrossover(Candidate one, Candidate two, int index) {
 
 		boolean[][] crossPersonality = new boolean[this.number_agents][5];
-		boolean[][] personalityPoints = this.setCrossoverPoints(crossPersonality);
+		boolean[][] personalityPoints = this.setCrossoverPoints(crossPersonality, this.personality_cross);
 
 		boolean[][] crossHappenings = new boolean[this.number_agents][this.number_happenings];
-		boolean[][] happeningPoints = this.setCrossoverPoints(crossHappenings);
+		boolean[][] happeningPoints = this.setCrossoverPoints(crossHappenings, this.happenings_cross);
 
 		ChromosomePersonality personalityOne = new ChromosomePersonality(this.number_agents);
 		ChromosomePersonality personalityTwo = new ChromosomePersonality(this.number_agents);
@@ -1334,7 +1339,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * @return: Array containing truth values
 	 */
 
-	public boolean[][] setCrossoverPoints(boolean[][] result){
+	public boolean[][] setCrossoverPoints(boolean[][] result, double[][] chromosome_cross){
 
 		boolean cross = false;
 
@@ -1377,7 +1382,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					Integer yCoord = ycopy.get(yPos);
 					ycopy.remove(yPos);
 
-					if(Math.random()<this.crossover_prob*this.happenings_cross[xPos][yPos]) {
+					// FIXME: Here was error with java.lang.ArrayIndexOutOfBoundsException: 2
+					if(Math.random() < this.crossover_prob * chromosome_cross[xPos][yPos]) {
 						crossover_points[xPos][yPos] = true;
 						cross = !cross;
 					}
@@ -1406,7 +1412,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					Integer xCoord = xcopy.get(xPos);
 					xcopy.remove(xPos);
 
-					if(Math.random()<this.crossover_prob*this.happenings_cross[xPos][yPos]) {
+					// FIXME: Here was error with java.lang.ArrayIndexOutOfBoundsException: 3
+					if(Math.random() < this.crossover_prob * chromosome_cross[xPos][yPos]) { 
 						crossover_points[xPos][yPos] = true;
 						cross = !cross;
 					}
