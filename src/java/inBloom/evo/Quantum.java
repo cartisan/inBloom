@@ -3,7 +3,7 @@ package inBloom.evo;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Quantum implements Individual,Comparable<Quantum> {
+public class Quantum extends Individual implements Comparable<Quantum> {
 	
 	private ChromosomePersonality best_personality;
 	private ChromosomeHappenings best_happenings;
@@ -251,31 +251,6 @@ public class Quantum implements Individual,Comparable<Quantum> {
 	
 	@Override
 	public String to_String() {
-		
-		int number_agents = best_personality.values.length;
-		int number_happenings = best_happenings.values[0].length;
-		
-		String string = String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(best_simLength) + "\n" +  String.valueOf(best_actualLength) + "\n";
-		
-		
-		for(int i = 0; i < number_agents; i++) {
-			for(int j = 0; j < 5; j++) {
-				string += String.valueOf(best_personality.values[i][j]);
-				if(j<4)
-					string +=  " ";
-			}
-			string += "\n";
-		}
-		
-		for(int i = 0; i < number_agents; i++) {	
-			for(int j = 0; j < number_happenings; j++) {
-				string += String.valueOf(best_happenings.values[i][j]);	
-				if(j<number_happenings-1)
-					string +=  " ";	
-			}
-			string += "\n";
-		}
-		
-		return string;
+		return this.to_String(best_personality, best_happenings);
 	}
 }
