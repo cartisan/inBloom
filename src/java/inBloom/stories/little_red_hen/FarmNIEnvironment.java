@@ -9,7 +9,7 @@ import jason.asSemantics.Personality;
 
 import inBloom.LauncherAgent;
 import inBloom.PlotModel;
-import inBloom.evo.NIEnvironment;
+import inBloom.nia.NIEnvironment;
 import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
 
