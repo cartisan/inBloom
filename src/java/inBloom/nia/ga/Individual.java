@@ -60,14 +60,13 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 		return tellability;
 	}
 	
-	/*
+	/**
 	 * Equals(Individual other) tests similarity to another Individual
 	 * @param:
 	 * 		other = Another candidate this gets compared with
 	 * @return:
 	 * 		boolean: true if similar. false if not
 	 */
-	
 	public boolean equals(Individual other) {
 
 		if(!this.chromosome_personality.equals(other.chromosome_personality))
@@ -78,13 +77,11 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 		return true;
 	}
 	
-	/*
+	/**
 	 * Works similar to the previous equals but does not require Individual to be instantiated to compare.
 	 * This saves runtime since we do not need to run a simulation in order to determine the tellability.
 	 */
-	
 	public boolean equals(ChromosomePersonality other_personality, ChromosomeHappenings other_happenings) {
-		
 		if(!this.chromosome_personality.equals(other_personality))
 			return false;
 		if(!this.chromosome_happenings.equals(other_happenings,actual_length))
