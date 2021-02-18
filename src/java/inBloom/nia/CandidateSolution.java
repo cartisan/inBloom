@@ -22,7 +22,7 @@ public abstract class CandidateSolution {
 		int number_agents = personality.values.length;
 		int number_happenings = happenings.values[0].length;
 		
-		String string = "<Agent Num \\ Happening Num \\ Simulation Len \\ Actual Len>\n";
+		String string = "<Agent Num / Happening Num / Simulation Len / Actual Len>\n";
 		string += String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(simulation_length) + "\n" +  String.valueOf(actual_length) + "\n";
 		
 		string += "<Personality Parameters Per Agent>\n";

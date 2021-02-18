@@ -1,10 +1,5 @@
 package inBloom.nia.qso;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -1939,41 +1934,11 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	}
 	
 	@Override
-	public void to_file(CandidateSolution best) {
+	public void to_file(CandidateSolution best, String epilogue) {
+		String qsoEpilogue = "<QSO Epilogue: Found Best / Analyzed Neighbors>\n";
+		qsoEpilogue += String.valueOf(found_best) + " " + String.valueOf(analyzed_neighbors) + "\n";
 		
-		try {
-			
-			File file = new File(filename);
-			
-			PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(file)));
-			
-			for(int i = 0; i < population_best.size(); i++) {
-				writer.write(String.valueOf(population_best.get(i)));
-				if(i<population_best.size()-1)
-					writer.write(" ");
-			}
-			writer.write("\n");
-			
-			for(int i = 0; i < population_average.size(); i++) {
-				writer.write(String.valueOf(population_average.get(i)));
-				if(i<population_best.size()-1)
-					writer.write(" ");
-			}
-			writer.write("\n");
-			
-			writer.write(best.to_String());
-			
-			writer.write("\n");
-			
-			writer.write(String.valueOf(found_best));
-			writer.write(" ");
-			writer.write(String.valueOf(analyzed_neighbors));
-			
-			writer.flush();
-			writer.close();
-			
-		}catch(IOException e){
-			e.printStackTrace();
-		}
+		epilogue = qsoEpilogue + epilogue;
+		super.to_file(best, epilogue);
 	}
 }

@@ -68,7 +68,7 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 			// Generate and evaluate initial particles
 			this.initialize_population();
 			this.evaluate_population();
-			this.to_file(population[0]);
+			this.to_file(population[0], "");
 
 			// Repeat until termination (no improvements found or time criterion
 			// -if set- is met):
@@ -80,7 +80,7 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 				this.run_iteration();
 				this.evaluate_population();
 
-				this.to_file(population[0]);
+				this.to_file(population[0], "");
 			}
 
 			// Print Statistics
@@ -149,7 +149,7 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 	 * @param best
 	 *            best solution found by this algoritm so far
 	 */
-	public void to_file(CandidateSolution best) {
+	public void to_file(CandidateSolution best, String epilogue) {
 		try {
 
 			File file = new File(filename);
@@ -172,8 +172,10 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 			}
 			writer.write("\n");
 
-			writer.write("<Best CandidateSolution, Settings>");
+			writer.write("<Best CandidateSolution, Settings>\n");
 			writer.write(best.to_String());
+			
+			writer.write(epilogue);
 
 			writer.flush();
 			writer.close();
