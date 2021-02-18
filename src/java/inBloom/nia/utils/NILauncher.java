@@ -50,7 +50,7 @@ public class NILauncher {
 //		String algorithm = "QSO";
 
 		//GeneticAlgorithm<?,?> ga = island.get_GA(args,init_stepnumber,individual_count,selection_size,crossover_prob,mutation_prob);
-		GeneticAlgorithm<?,?> ga = niEnvironment.get_GA(args,init_stepnumber,individual_count,selection_size,decay_rate);
+		GeneticAlgorithm<?,?> ga = niEnvironment.get_GA(args,init_stepnumber,individual_count,selection_size);
 
 		switch(algorithm) {
 			case "Coupled":
