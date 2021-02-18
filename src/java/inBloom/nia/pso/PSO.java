@@ -17,8 +17,6 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	private static final boolean USE_FLOATING_PARAM = true;
 	
 	// Particle container
-	private Particle[] particles;
-	
 	private double[][] max_happenings;
 	private double[][] min_happenings;
 	private double[][] max_personality;
@@ -38,7 +36,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
 	private static boolean[] hapInitBool = {true,true,true}; 
 	// randomVelocityInit, discreteVelocityInit
-	// false, false -> no velocity initialization. Works as long as particles have different positions
+	// false, false -> no velocity initialization. Works as long as population have different positions
 	private static boolean[] velInitBool = {true,true};
 	//
 	private boolean deterministic = false;
@@ -73,16 +71,16 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	 * Get & Set Methods
 	 */
 	
-	// Get all particles
+	// Get all population
 	public Particle[] getParticles() {
 		
-		return particles;
+		return (Particle[]) population;
 	}
 	
-	// Get specified particle particles
+	// Get specified particle population
 	public Particle getParticle(int position) {
 		
-		return particles[position];
+		return (Particle) population[position];
 	}
 	
 	// Discrete values for personality initialization
@@ -249,7 +247,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	
 	/*
-	 * Returns the normalized difference of two particles tellability score
+	 * Returns the normalized difference of two population tellability score
 	 * 
 	 * @param recipient: Particle that receives velocity update
 	 * @param informant: Particle providing information to recipient
@@ -258,7 +256,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public double fitness_rating(int recipient, int informant) {
 
-		return (particles[informant].best_tellability() - particles[recipient].get_tellability())/particles[0].best_tellability();
+		return (((Particle) population[informant]).best_tellability() - population[recipient].get_tellability())/((Particle) population[0]).best_tellability();
 	}
 	
 	
@@ -268,13 +266,13 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public double determine_spacetime(int recipient) {
 		
-//		return 1-(particles[recipient].get_tellability()/particles[0].best_tellability());
-		return 1-Math.pow((particles[recipient].get_tellability()/particles[0].best_tellability()),2);
+//		return 1-(population[recipient].get_tellability()/population[0].best_tellability());
+		return 1-Math.pow((population[recipient].get_tellability()/((Particle) population[0]).best_tellability()),2);
 	}
 	
 	
 	/*
-	 * Rates the difference between two particles in terms of distance.
+	 * Rates the difference between two population in terms of distance.
 	 * The difference is based on the normalized pythagorean distance.
 	 * 
 	 * @param recipient: Particle that receives velocity update
@@ -292,7 +290,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int j = 0; j < 5; j++) {
 
 				if(max_personality[i][j]-min_personality[i][j] != 0) {
-					distance += Math.pow((particles[informant].best_personality(i, j) - particles[recipient].get_personality(i, j))/(max_personality[i][j]-min_personality[i][j]),2);
+					distance += Math.pow((((Particle) population[informant]).best_personality(i, j) - population[recipient].get_personality(i, j))/(max_personality[i][j]-min_personality[i][j]),2);
 					n++;
 				}
 			}
@@ -300,7 +298,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int j = 0; j < number_happenings; j++) {
 				
 				if(max_happenings[i][j]-min_happenings[i][j] != 0) {
-					distance += Math.pow((particles[informant].best_happenings(i, j) - particles[recipient].get_happenings(i, j))/(max_happenings[i][j]-min_happenings[i][j]),2);
+					distance += Math.pow((((Particle) population[informant]).best_happenings(i, j) - population[recipient].get_happenings(i, j))/(max_happenings[i][j]-min_happenings[i][j]),2);
 					n++;
 				}
 			}
@@ -311,7 +309,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	
 	/*
-	 * Determines the maximum and minimum values existent in the particles chromosomes.
+	 * Determines the maximum and minimum values existent in the population chromosomes.
 	 */
 	
 	public void update_Distances() {
@@ -329,32 +327,32 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int personality = 0; personality < 5; personality++) {
 					
-					if(particles[index].get_personality(agents, personality) < min_personality[agents][personality])
-						min_personality[agents][personality] = particles[index].get_personality(agents, personality);
+					if(population[index].get_personality(agents, personality) < min_personality[agents][personality])
+						min_personality[agents][personality] = population[index].get_personality(agents, personality);
 					
-					if(particles[index].best_personality(agents, personality) < min_personality[agents][personality])
-						min_personality[agents][personality] = particles[index].best_personality(agents, personality);
+					if(((Particle) population[index]).best_personality(agents, personality) < min_personality[agents][personality])
+						min_personality[agents][personality] = ((Particle) population[index]).best_personality(agents, personality);
 					
-					if(particles[index].get_personality(agents, personality) > max_personality[agents][personality])
-						max_personality[agents][personality] = particles[index].get_personality(agents, personality);
+					if(population[index].get_personality(agents, personality) > max_personality[agents][personality])
+						max_personality[agents][personality] = population[index].get_personality(agents, personality);
 					
-					if(particles[index].best_personality(agents, personality) > max_personality[agents][personality])
-						max_personality[agents][personality] = particles[index].best_personality(agents, personality);
+					if(((Particle) population[index]).best_personality(agents, personality) > max_personality[agents][personality])
+						max_personality[agents][personality] = ((Particle) population[index]).best_personality(agents, personality);
 				}
 				
 				for(int happenings = 0; happenings < number_happenings; happenings++) {
 
-					if(particles[index].get_happenings(agents, happenings) < min_happenings[agents][happenings])
-						min_happenings[agents][happenings] = particles[index].get_happenings(agents, happenings);
+					if(population[index].get_happenings(agents, happenings) < min_happenings[agents][happenings])
+						min_happenings[agents][happenings] = population[index].get_happenings(agents, happenings);
 
-					if(particles[index].best_happenings(agents, happenings) < min_happenings[agents][happenings])
-						min_happenings[agents][happenings] = particles[index].best_happenings(agents, happenings);
+					if(((Particle) population[index]).best_happenings(agents, happenings) < min_happenings[agents][happenings])
+						min_happenings[agents][happenings] = ((Particle) population[index]).best_happenings(agents, happenings);
 					
-					if(particles[index].get_happenings(agents, happenings) > max_happenings[agents][happenings])
-						max_happenings[agents][happenings] = particles[index].get_happenings(agents, happenings);
+					if(population[index].get_happenings(agents, happenings) > max_happenings[agents][happenings])
+						max_happenings[agents][happenings] = population[index].get_happenings(agents, happenings);
 					
-					if(particles[index].best_happenings(agents, happenings) > max_happenings[agents][happenings])
-						max_happenings[agents][happenings] = particles[index].best_happenings(agents, happenings);
+					if(((Particle) population[index]).best_happenings(agents, happenings) > max_happenings[agents][happenings])
+						max_happenings[agents][happenings] = ((Particle) population[index]).best_happenings(agents, happenings);
 				}
 			}
 		}
@@ -400,12 +398,12 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	protected void evaluate_population() {
 		
-		double best = particles[0].best_tellability();
+		double best = ((Particle) population[0]).best_tellability();
 		double average = 0;
 
 		for(int i = 0; i < individual_count; i++) {
 			
-			average += particles[i].best_tellability();
+			average += ((Particle) population[i]).best_tellability();
 		}
 		
 		average /= individual_count;
@@ -422,40 +420,11 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		population_average.add(average);
 	}
 	
-	
-	public void run() {
-		
-		if(check_parameters()) {
-			// Save current time
-			start_time = System.currentTimeMillis();
-			
-			// Generate and evaluate initial particles
-			initialize_particles();
-			evaluate_population();
-			
-			// Repeat until termination (no improvements found or time criterion -if set- is met):
-			while(no_improvement<termination && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0)) {
-				
-				// Print Statistics
-				if(verbose)
-					generation_stats();
-	
-				move_particles();
-				update_movement();
-				evaluate_population();
-				
-				to_file(particles[0]);
-			}
-
-			// Print Statistics
-			if(verbose)
-				final_stats();
-
-			if(system_exit)
-				System.exit(0);
-		}
+	@Override
+	public void run_iteration() {
+		this.move_particles();
+		this.update_movement();		
 	}
-	
 	
 	/*
 	 * Instantiates new fitness object and hands it over to the Individual to be instantiated.
@@ -476,10 +445,9 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		return new Particle(pers, velocity_pers, hap, velocity_hap, steps, fit);
 	}
 
-
-	private void initialize_particles() {
-
-		particles = new Particle[individual_count];
+	@Override
+	protected void initialize_population() {
+		population = new Particle[individual_count];
 		
 		// Initialize arrays for tracking minimum and maximum values
 		min_personality = new double[number_agents][5];
@@ -556,11 +524,11 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				}
 			}
 			
-			// Initialize particles based on findings of the genetic algorithm
+			// Initialize population based on findings of the genetic algorithm
 			if(index < geneticInit) {
 
 				Fitness<EnvType,ModType> fit = new Fitness<EnvType,ModType>(EVO_ENV,verbose,level);
-				particles[index] = new Particle(gen_pool[index],pers_velocity,hap_velocity,fit);
+				population[index] = new Particle(gen_pool[index],pers_velocity,hap_velocity,fit);
 				
 			// Otherwise use classic initialization
 			}else {
@@ -623,11 +591,11 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					break;
 				}
 				
-				particles[index] = new_particle(personality,pers_velocity,happenings,hap_velocity,max_steps);
+				population[index] = new_particle(personality,pers_velocity,happenings,hap_velocity,max_steps);
 			}
 		}
 		
-		Arrays.sort(particles);
+		Arrays.sort(population);
 		// Update max distances
 		update_Distances();
 		// Update min distances
@@ -824,12 +792,12 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		for(int i = 0; i < individual_count; i++) {
 			
-			particles[i].move();
-			particles[i].update_tellability(new Fitness<EnvType,ModType>(EVO_ENV,verbose,level));
+			((Particle) population[i]).move();
+			((Particle) population[i]).update_tellability(new Fitness<EnvType,ModType>(EVO_ENV,verbose,level));
 			
 		}
 		
-		Arrays.sort(particles);
+		Arrays.sort(population);
 		if(floatingParameters)
 			update_Distances();
 	}
@@ -888,7 +856,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		for(int i = 0; i < individual_count; i++) {
 
 			// A Particles qualifies as an informant if it's fitness is greater than the particle to be updated
-			if(particles[i].best_tellability()>=particles[individual].get_tellability()) 
+			if(((Particle) population[i]).best_tellability()>=population[individual].get_tellability()) 
 				selected_particles.add(i);
 			
 		}
@@ -908,7 +876,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			double force = decay_rate;
 			
 			// determine if force is pulling towards or pushing away
-			if(particles[informants.get(index)].best_tellability() <= particles[recipient].get_tellability())
+			if(((Particle) population[informants.get(index)]).best_tellability() <= population[recipient].get_tellability())
 				force*=-1;
 			
 			// copy information
@@ -919,7 +887,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(!deterministic)
 						random_factor = Math.random();
 					
-					update_personality[i][j] += random_factor * force*(particles[informants.get(index)].best_personality(i, j) - particles[recipient].get_personality(i, j));
+					update_personality[i][j] += random_factor * force*(((Particle) population[informants.get(index)]).best_personality(i, j) - population[recipient].get_personality(i, j));
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
@@ -927,7 +895,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(!deterministic)
 						random_factor = Math.random();
 					
-					update_happenings[i][j] += random_factor * force*(particles[informants.get(index)].best_happenings(i, j) - particles[recipient].get_happenings(i, j));
+					update_happenings[i][j] += random_factor * force*(((Particle) population[informants.get(index)]).best_happenings(i, j) - population[recipient].get_happenings(i, j));
 				}
 			}
 		}
@@ -938,17 +906,17 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int j = 0; j < 5; j++) {
 				
 				if(deterministic)
-					particles[recipient].update_persVelocity(i, j, update_personality[i][j] / informants.size(),decay_rate);
+					((Particle) population[recipient]).update_persVelocity(i, j, update_personality[i][j] / informants.size(),decay_rate);
 				else
-					particles[recipient].update_persVelocity(i, j, update_personality[i][j] / informants.size(),decay_rate/2);
+					((Particle) population[recipient]).update_persVelocity(i, j, update_personality[i][j] / informants.size(),decay_rate/2);
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 				
 				if(deterministic)
-					particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j] / informants.size()),decay_rate);
+					((Particle) population[recipient]).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j] / informants.size()),decay_rate);
 				else
-					particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j] / informants.size()),decay_rate/2);
+					((Particle) population[recipient]).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j] / informants.size()),decay_rate/2);
 			}
 		}
 	}
@@ -973,13 +941,11 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			double force = energy*inertia*Math.pow(distance,2);
 			
 			if(this.verbose) {
-				System.out.println();
 				System.out.println("Informant: " + index);
 				System.out.println("  Energy: " + energy);
 				System.out.println("  Inertia: " + inertia);
 				System.out.println("  Distance: " + distance);
 				System.out.println("  Force: " + force);
-				System.out.println();
 			}
 			
 //			if(force < 0){
@@ -996,7 +962,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(!deterministic)
 						random_factor = Math.random();
 					
-					update_personality[i][j] += random_factor*force*(particles[informants.get(index)].best_personality(i, j) - particles[recipient].get_personality(i, j));
+					update_personality[i][j] += random_factor*force*(((Particle) population[informants.get(index)]).best_personality(i, j) - population[recipient].get_personality(i, j));
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
@@ -1004,7 +970,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(!deterministic)
 						random_factor = Math.random();
 					
-					update_happenings[i][j] += random_factor*force*(particles[informants.get(index)].best_happenings(i, j) - particles[recipient].get_happenings(i, j));
+					update_happenings[i][j] += random_factor*force*(((Particle) population[informants.get(index)]).best_happenings(i, j) - population[recipient].get_happenings(i, j));
 				}
 			}
 		}
@@ -1015,18 +981,18 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int j = 0; j < 5; j++) {
 				
 				if(deterministic)
-					particles[recipient].update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/informants.size());
+					((Particle) population[recipient]).update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/informants.size());
 				else
-					particles[recipient].update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/(informants.size()*2));
+					((Particle) population[recipient]).update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/(informants.size()*2));
 					
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 				
 				if(deterministic)
-					particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/informants.size());
+					((Particle) population[recipient]).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/informants.size());
 				else
-					particles[recipient].update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/(informants.size()*2));
+					((Particle) population[recipient]).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/(informants.size()*2));
 			}
 		}
 	}

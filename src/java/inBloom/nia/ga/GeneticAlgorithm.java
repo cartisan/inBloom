@@ -14,21 +14,23 @@ import inBloom.nia.NIEnvironment;
 
 public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends NIAlgorithm<EnvType,ModType>{
 	private static final boolean USE_FLOATING_PARAM = false;
+	private static final double DEFAULT_CROSSOVER_PROB = 0.1;
+	private static final double DEFAULT_MUTATION_PROB = 0.05;
+	private static final double DEFAULT_DECAY_RATE = 0.05;
 	
 	// Parameters for static version
 	public int selection_size;
-	public double crossover_prob = 0.1;
-	public double mutation_prob = 0.05;
+	public double crossover_prob = DEFAULT_CROSSOVER_PROB;
+	public double mutation_prob = DEFAULT_MUTATION_PROB;
 
 	// Container for candidates
-	private Individual[] gen_pool;
 	private Individual[] offspring;
 	private Individual[] mutated_offspring;
 
 	// Information storage for floating parameter version
 	private boolean floatingParameters;
 
-	private double decay_rate;
+	private double decay_rate = DEFAULT_DECAY_RATE;
 
 	private double global_cross;
 	private double global_mut;
@@ -64,14 +66,23 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	private static boolean steadyReplace = true;
 
 
+	
+	/**
+	 * Constructors for GA, version based on default paramts in static final members
+	 */
+	public GeneticAlgorithm (String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections) {
+		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
+		this.floatingParameters = USE_FLOATING_PARAM;
+		this.selection_size = number_selections*2;
+	}
+	
 	/**
 	 * Constructors for GA, static version
 	 */
 	public GeneticAlgorithm (String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections, double crossover_prob, double mutation_prob) {
-
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
+		this.floatingParameters = false;
 		this.selection_size = number_selections*2;
-		this.floatingParameters = USE_FLOATING_PARAM;
 
 		this.crossover_prob = crossover_prob;
 		this.mutation_prob = mutation_prob;
@@ -81,10 +92,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * Constructors for GA, floating param version
 	 */
 	public GeneticAlgorithm (String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections, double decay) {
-
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
+		this.floatingParameters = true;
 		this.selection_size = number_selections*2;
-		this.floatingParameters = USE_FLOATING_PARAM;
 
 		this.decay_rate = decay;
 	}
@@ -93,10 +103,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	/**
 	 * Get & Set Methods
 	 */
-
 	public Individual[] get_genPool() {
-
-		return this.gen_pool;
+		return (Individual[])this.population;
 	}
 
 	// Discrete values for personality initialization
@@ -238,12 +246,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		steadyReplace = mode;
 	}
 
-
-	/*
-	 * Checks the parameters of the genetic algorithm.
-	 * @return: boolean determining whether algorithm is runnable.
-	 */
-
+	@Override
 	public boolean check_parameters() {
 
 		// Ensure correctness of parameters
@@ -314,30 +317,27 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 	}
 
-
-	/*
-	 * Saves information about population quality.
-	 * The average fitness of the population as well as best candidate's fitness is saved.
+	/**
+	 * The average fitness of the population as well as best candidate's fitness is computed.
 	 * If there was no improvement compared to the last generation, termination criterion counter gets incremented.
 	 * If there was an improvement, termination criterion counter is reset.
 	 * Average will only take the best half of population into account to ensure termination.
 	 */
-
+	@Override
 	protected void evaluate_population() {
-
-		Double best = this.gen_pool[0].get_tellability();
+		Double best = this.population[0].get_tellability();
 		Double average = 0.0;
 
 		int relevant_size = this.individual_count/2;
 
 		for(int i = 0; i < relevant_size; i++) {
-			average += this.gen_pool[i].get_tellability();
+			average += this.population[i].get_tellability();
 		}
 
 		double halfAverage = average/relevant_size;
 
 		for(int i = relevant_size; i < this.individual_count; i++) {
-			average += this.gen_pool[i].get_tellability();
+			average += this.population[i].get_tellability();
 		}
 
 		average /= this.individual_count;
@@ -358,73 +358,29 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		if(this.population_bestAverage > average) {
 			this.population_bestAverage = average;
 		}
-	}
-
-
-	/*
-	 * Genetic algorithm main loop
-	 * Initializes Population and runs the loop until termination criterion is met.
-	 */
-
-	public void run() {
-
-		// Ensure correct Parameters
-		if(this.check_parameters()) {
-
-			// Initialize information containers for floating parameter version
-			this.initialize_floatingParameters();
-
-			if(this.floatingParameters) {
-				this.determineGlobalParameters();
-			}
-
-			// Save current time
-			start_time = System.currentTimeMillis();
-
-			// Generate and evaluate initial population
-			this.initialize_pop();
-			this.evaluate_population();
-
-			// Repeat until termination (no improvements found) or time criterion -if set- is met:
-			while((no_improvement < 0 || no_improvement<termination) && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0) && (!this.floatingParameters || this.global_mut>0 || this.global_cross>0)) {
-
-				// Print Statistics
-				if(this.verbose) {
-					this.generation_stats();
-				}
-
-				this.crossover(this.select());
-				this.mutate();
-				this.recombine();
-				this.evaluate_population();
-
-				if(this.floatingParameters) {
-					this.determineGlobalParameters();
-				}
-
-				this.to_file(this.gen_pool[0]);
-			}
-
-			// Print Statistics
-			if(this.verbose) {
-				this.final_stats();
-			}
-
-			if(this.system_exit) {
-				System.exit(0);
-			}
+		
+		if(this.floatingParameters) {
+			this.determineGlobalParameters();
 		}
 	}
 
+	@Override
+	public void run_iteration() {
+		this.crossover(this.select());
+		this.mutate();
+		this.recombine();
+	}
+	
+	@Override
+	protected boolean keepRunning() {
+		return (no_improvement < 0 || no_improvement<termination) && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0) && (!this.floatingParameters || this.global_mut>0 || this.global_cross>0);
+	}
 
 	/*
 	 * Initialization of information storage for floating parameter version of GA
 	 */
-
 	public void initialize_floatingParameters() {
-
 		// Initialize global strategy probabilities
-
 		this.global_cross = 0.5;
 		this.cross_prob = new double[crossoverBool.length];
 
@@ -651,18 +607,15 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		return result;
 	}
 
-
-
-	/*
-	 * Initialization of Population
-	 */
-
-	public void initialize_pop() {
-
-		this.gen_pool = new Individual[this.individual_count];
+	@Override
+	public void initialize_population() {
+		// Initialize information containers for floating parameter version
+		this.initialize_floatingParameters();
+		
+		this.population = new Individual[this.individual_count];
 		this.offspring = new Individual[this.selection_size];
 		this.mutated_offspring = new Individual[this.selection_size];
-
+		
 		int index = 0;
 
 		// Set used initializers for personality
@@ -760,7 +713,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			boolean isDuplicate = false;
 
 			for(int i = 0; i < index; i++) {
-				if(this.gen_pool[i].equals(personality,happenings)) {
+				if(((Individual) this.population[i]).equals(personality,happenings)) {
 
 					isDuplicate = true;
 				}
@@ -769,13 +722,13 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			// First candidate cannot have duplicates
 			if(index==0 || !isDuplicate) {
 
-				this.gen_pool[index] = this.new_Candidate(personality,happenings);
+				this.population[index] = this.new_Candidate(personality,happenings);
 				index++;
 			}
 		}
 
 		// Sort Candidates by performance. Best Individual will be at position zero descending
-		Arrays.sort(this.gen_pool);
+		Arrays.sort(this.population);
 	}
 
 
@@ -912,7 +865,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * Selection
 	 *
 	 * Picks Candidates for further application of genetic operators
-	 * @Return: List with positions in gen_pool of chosen candidates
+	 * @Return: List with positions in population of chosen candidates
 	 */
 
 	public List<Integer> select() {
@@ -944,7 +897,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	/*
 	 *  Random Selection
 	 *
-	 *  Chooses selection_size many Candidates from the gen_pool in a random manner
+	 *  Chooses selection_size many Candidates from the population in a random manner
 	 * @Return: List with positions of chosen individuals
 	 */
 
@@ -982,11 +935,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		for(int i = 0; i < this.individual_count; i++) {
 
-			total_fitness += this.gen_pool[i].get_tellability();
+			total_fitness += this.population[i].get_tellability();
 			rouletteWheel[i] = total_fitness;
 
 			// Check if we have enough individuals with fitness
-			if(control && this.gen_pool[i].get_tellability()==0) {
+			if(control && this.population[i].get_tellability()==0) {
 
 				validIndividuals = i;
 				control = false;
@@ -1095,18 +1048,18 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 			case 0:
 
-				this.simpleCrossover(this.gen_pool[one],this.gen_pool[two],i);
+				this.simpleCrossover((Individual) this.population[one], (Individual) this.population[two], i);
 				break;
 
 			case 1:
 
-				this.binomialCrossover(this.gen_pool[one],this.gen_pool[two],i);
+				this.binomialCrossover((Individual) this.population[one], (Individual) this.population[two], i);
 				break;
 
 
 			case 2:
 
-				this.xPointCrossover(this.gen_pool[one],this.gen_pool[two],i);
+				this.xPointCrossover((Individual) this.population[one], (Individual) this.population[two], i);
 				break;
 
 			case 3:
@@ -1114,8 +1067,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				// Add 2 initial candidates to the List
 				List<Individual> candidates = new ArrayList<>();
 
-				candidates.add(this.gen_pool[one]);
-				candidates.add(this.gen_pool[two]);
+				candidates.add((Individual) this.population[one]);
+				candidates.add((Individual) this.population[two]);
 
 				// Initialize list containing additional possible voters
 				List<Integer> possibleVoters = new ArrayList<>();
@@ -1133,7 +1086,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 					int votePos = (int)Math.round(Math.random()*possibleVoters.size()-0.5);
 
-					candidates.add(this.gen_pool[possibleVoters.get(votePos)]);
+					candidates.add((Individual) this.population[possibleVoters.get(votePos)]);
 					additionalVotes--;
 				}
 
@@ -1142,8 +1095,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 			default:
 
-				this.offspring[i] = this.gen_pool[one];
-				this.offspring[i+1] = this.gen_pool[two];
+				this.offspring[i] = (Individual) this.population[one];
+				this.offspring[i+1] = (Individual) this.population[two];
 				System.out.println("No crossover operator selected!");
 				break;
 			}
@@ -1243,8 +1196,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 				global_improvement = true;
 
-				if(this.offspring[index].get_tellability()>this.gen_pool[this.individual_count/2-1].get_tellability()
-				|| this.offspring[index+1].get_tellability()>this.gen_pool[this.individual_count/2-1].get_tellability()) {
+				if(this.offspring[index].get_tellability()>this.population[this.individual_count/2-1].get_tellability()
+				|| this.offspring[index+1].get_tellability()>this.population[this.individual_count/2-1].get_tellability()) {
 
 					local_improvement = true;
 				}
@@ -1317,8 +1270,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 				global_improvement = true;
 
-				if(this.offspring[index].get_tellability()>this.gen_pool[this.individual_count/2-1].get_tellability()
-				|| this.offspring[index+1].get_tellability()>this.gen_pool[this.individual_count/2-1].get_tellability()) {
+				if(this.offspring[index].get_tellability()>this.population[this.individual_count/2-1].get_tellability()
+				|| this.offspring[index+1].get_tellability()>this.population[this.individual_count/2-1].get_tellability()) {
 
 					local_improvement = true;
 				}
@@ -1482,8 +1435,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 			boolean improvement = false;
 
-			if(this.offspring[index].get_tellability()>this.gen_pool[this.individual_count/2-1].get_tellability()
-			|| this.offspring[index+1].get_tellability()>this.gen_pool[this.individual_count/2-1].get_tellability() ) {
+			if(this.offspring[index].get_tellability()>this.population[this.individual_count/2-1].get_tellability()
+			|| this.offspring[index+1].get_tellability()>this.population[this.individual_count/2-1].get_tellability() ) {
 				improvement = true;
 			}
 
@@ -1992,13 +1945,13 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	public void recombine() {
 
 		if(steadyReplace) {
-			this.gen_pool = this.steadyNoDuplicatesReplacer();
+			this.population = this.steadyNoDuplicatesReplacer();
 		} else {
-			this.gen_pool = this.partiallyRandomNoDuplicatesReplacer();
+			this.population = this.partiallyRandomNoDuplicatesReplacer();
 		}
 
 		//Sort Candidates by performance. Best Individual will be at position zero descending
-		Arrays.sort(this.gen_pool);
+		Arrays.sort(this.population);
 
 		// remove artifacts
 		this.offspring = new Individual[this.selection_size];
@@ -2046,7 +1999,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 			case 0:
 
-				total_offspring.add(this.gen_pool[posPop]);
+				total_offspring.add((Individual) this.population[posPop]);
 				posPop++;
 				break;
 
@@ -2071,7 +2024,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		// Keep best performing candidates of current Population
 		for(int i = 0; i < steady; i++) {
-			next_gen[i] = this.gen_pool[i];
+			next_gen[i] = (Individual) this.population[i];
 		}
 
 		// Add best candidates from total_offspring to next_gen avoiding duplicates
@@ -2081,7 +2034,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 			if(total_offspring.isEmpty()) {
 				done = true;
-				next_gen[i] = this.gen_pool[i-steady];
+				next_gen[i] = (Individual) this.population[i-steady];
 			}
 
 			while(!done) {
@@ -2119,9 +2072,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			double bestTellability = -1;
 
 			if(posPop < this.individual_count) {
-				if(this.gen_pool[posPop].get_tellability()>bestTellability) {
+				if(this.population[posPop].get_tellability()>bestTellability) {
 					best = 1;
-					bestTellability = this.gen_pool[posPop].get_tellability();
+					bestTellability = this.population[posPop].get_tellability();
 				}
 			}
 
@@ -2143,7 +2096,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 			case 1:
 
-				allCandidates.add(this.gen_pool[posPop]);
+				allCandidates.add((Individual) this.population[posPop]);
 				posPop++;
 				break;
 

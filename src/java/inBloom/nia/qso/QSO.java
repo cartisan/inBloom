@@ -19,11 +19,6 @@ import inBloom.nia.NIAlgorithm;
 import inBloom.nia.NIEnvironment;
 
 public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>>  extends NIAlgorithm<EnvType,ModType>{
-
-	
-	// Particle container
-	private Quantum[] quantum_particles;
-	
 	private double[][] max_happenings;
 	private double[][] min_happenings;
 	private double[][] max_personality;
@@ -83,14 +78,13 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	// Get all particles
 	public Quantum[] getParticles() {
-		
-		return quantum_particles;
+		return (Quantum[]) population;
 	}
 	
 	// Get specified particle particles
 	public Quantum getParticle(int position) {
 		
-		return quantum_particles[position];
+		return (Quantum) population[position];
 	}
 	
 	// Discrete values for personality initialization
@@ -291,7 +285,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public double fitness_rating(int recipient, int state, int informant) {
 		
-		return (quantum_particles[informant].best_tellability() - quantum_particles[recipient].get_tellability(state))/quantum_particles[0].best_tellability();
+		return (((Quantum) population[informant]).best_tellability() - ((Quantum) population[recipient]).get_tellability(state)) / ((Quantum) population[0]).best_tellability();
 	}
 	
 	
@@ -301,7 +295,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public double determine_spacetime(int recipient, int state) {
 		
-		return 1-(quantum_particles[recipient].get_position(state).get_tellability()/quantum_particles[0].best_tellability());
+		return 1-(((Quantum) population[recipient]).get_position(state).get_tellability() / ((Quantum) population[0]).best_tellability());
 	}
 	
 	
@@ -325,7 +319,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int j = 0; j < 5; j++) {
 
 				if(max_personality[i][j]-min_personality[i][j] != 0) {
-					distance += Math.pow((quantum_particles[informant].best_personality(i, j) - quantum_particles[recipient].get_personality(i, j))/(max_personality[i][j]-min_personality[i][j]),2);
+					distance += Math.pow((((Quantum) population[informant]).best_personality(i, j) - population[recipient].get_personality(i, j))/(max_personality[i][j]-min_personality[i][j]),2);
 					n++;
 				}
 			}
@@ -333,7 +327,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int j = 0; j < number_happenings; j++) {
 				
 				if(max_happenings[i][j]-min_happenings[i][j]!=0) {
-					distance += Math.pow((quantum_particles[informant].best_happenings(i, j) - quantum_particles[recipient].get_happenings(i, j))/(max_happenings[i][j]-min_happenings[i][j]),2);
+					distance += Math.pow((((Quantum) population[informant]).best_happenings(i, j) - population[recipient].get_happenings(i, j))/(max_happenings[i][j]-min_happenings[i][j]),2);
 					n++;
 				}
 			}
@@ -362,32 +356,32 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int personality = 0; personality < 5; personality++) {
 					
-					if(quantum_particles[index].get_personality(agents, personality) < min_personality[agents][personality])
-						min_personality[agents][personality] = quantum_particles[index].get_personality(agents, personality);
+					if(population[index].get_personality(agents, personality) < min_personality[agents][personality])
+						min_personality[agents][personality] = population[index].get_personality(agents, personality);
 					
-					if(quantum_particles[index].best_personality(agents, personality) < min_personality[agents][personality])
-						min_personality[agents][personality] = quantum_particles[index].best_personality(agents, personality);
+					if(((Quantum) population[index]).best_personality(agents, personality) < min_personality[agents][personality])
+						min_personality[agents][personality] = ((Quantum) population[index]).best_personality(agents, personality);
 					
-					if(quantum_particles[index].get_personality(agents, personality) > max_personality[agents][personality])
-						max_personality[agents][personality] = quantum_particles[index].get_personality(agents, personality);
+					if(population[index].get_personality(agents, personality) > max_personality[agents][personality])
+						max_personality[agents][personality] = population[index].get_personality(agents, personality);
 					
-					if(quantum_particles[index].best_personality(agents, personality) > max_personality[agents][personality])
-						max_personality[agents][personality] = quantum_particles[index].best_personality(agents, personality);
+					if(((Quantum) population[index]).best_personality(agents, personality) > max_personality[agents][personality])
+						max_personality[agents][personality] = ((Quantum) population[index]).best_personality(agents, personality);
 				}
 				
 				for(int happenings = 0; happenings < number_happenings; happenings++) {
 
-					if(quantum_particles[index].get_happenings(agents, happenings) < min_happenings[agents][happenings])
-						min_happenings[agents][happenings] = quantum_particles[index].get_happenings(agents, happenings);
+					if(population[index].get_happenings(agents, happenings) < min_happenings[agents][happenings])
+						min_happenings[agents][happenings] = population[index].get_happenings(agents, happenings);
 
-					if(quantum_particles[index].best_happenings(agents, happenings) < min_happenings[agents][happenings])
-						min_happenings[agents][happenings] = quantum_particles[index].best_happenings(agents, happenings);
+					if(((Quantum) population[index]).best_happenings(agents, happenings) < min_happenings[agents][happenings])
+						min_happenings[agents][happenings] = ((Quantum) population[index]).best_happenings(agents, happenings);
 					
-					if(quantum_particles[index].get_happenings(agents, happenings) > max_happenings[agents][happenings])
-						max_happenings[agents][happenings] = quantum_particles[index].get_happenings(agents, happenings);
+					if(population[index].get_happenings(agents, happenings) > max_happenings[agents][happenings])
+						max_happenings[agents][happenings] = population[index].get_happenings(agents, happenings);
 					
-					if(quantum_particles[index].best_happenings(agents, happenings) > max_happenings[agents][happenings])
-						max_happenings[agents][happenings] = quantum_particles[index].best_happenings(agents, happenings);
+					if(((Quantum) population[index]).best_happenings(agents, happenings) > max_happenings[agents][happenings])
+						max_happenings[agents][happenings] = ((Quantum) population[index]).best_happenings(agents, happenings);
 				}
 			}
 		}
@@ -420,12 +414,12 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	@Override
 	protected void evaluate_population() {
 		
-		double best = quantum_particles[0].best_tellability();
+		double best = ((Quantum) population[0]).best_tellability();
 		double average = 0;
 
 		for(int i = 0; i < individual_count; i++) {
 			
-			average += quantum_particles[i].best_tellability();
+			average += ((Quantum) population[i]).best_tellability();
 		}
 		
 		average /= individual_count;
@@ -447,50 +441,20 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 	}
 	
-	
-
 	@Override
-	public void run() {
-		
-		if(check_parameters()) {
-			// Save current time
-			start_time = System.currentTimeMillis();
-			
-			// Generate and evaluate initial particles
-			initialize_particles();
-			evaluate_population();
-			
-			// Repeat until termination (no improvements found or time criterion -if set- is met):
-			while(no_improvement<termination && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0)) {
-				
-				// Print Statistics
-				if(verbose)
-					generation_stats();
-				
-				crossover();
-				mutate();
-				move_particles();
-				update_movement();
-				evaluate_population();
-				
-				to_file(quantum_particles[0]);
-			}
-
-			// Print Statistics
-			if(verbose)
-				final_stats();
-
-			if(system_exit)
-				System.exit(0);
-		}
+	public void run_iteration() {
+		this.crossover();
+		this.mutate();
+		this.move_particles();
+		this.update_movement();	
 	}
+
 	/*
 	 * Instantiates new fitness object and hands it over to the Individual to be instantiated.
 	 * @param pers: Chromosome containing personality information
 	 * @param hap: Chromosome containing happening information
 	 * @return: Instantiated Individual
 	 */
-	
 	public Quantum new_quantum(ChromosomePersonality pers,ChromosomePersonality velocity_pers,ChromosomeHappenings hap, ChromosomeHappenings velocity_hap) {
 		
 		return new_quantum(pers,velocity_pers,hap,velocity_hap,determineLength(hap));
@@ -523,9 +487,9 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	}
 
 
-	private void initialize_particles() {
-
-		quantum_particles = new Quantum[individual_count];
+	@Override
+	protected void initialize_population() {
+		population = new Quantum[individual_count];
 	
 		// Initialize arrays for tracking minimum and maximum values
 		min_personality = new double[number_agents][5];
@@ -660,10 +624,10 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				break;
 			}
 			
-			quantum_particles[index] = new_quantum(personality,pers_velocity,happenings,hap_velocity,max_steps);
+			population[index] = new_quantum(personality,pers_velocity,happenings,hap_velocity,max_steps);
 		}
 		
-		Arrays.sort(quantum_particles);
+		Arrays.sort(population);
 		// Update max distances
 		update_Distances();
 		// Update min distances
@@ -864,8 +828,8 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		for(int i = 0; i < individual_count; i++) {
 			
-			total_tellability += quantum_particles[i].best_tellability();
-			if(quantum_particles[i].best_tellability()>0)
+			total_tellability += ((Quantum) population[i]).best_tellability();
+			if(((Quantum) population[i]).best_tellability()>0)
 				valid_particles++;
 		}
 		
@@ -878,9 +842,9 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				double roulette = Math.random()*total_tellability;
 				int pos = 0;
 				
-				while(roulette > quantum_particles[pos].best_tellability()) {
+				while(roulette > ((Quantum) population[pos]).best_tellability()) {
 					
-					roulette -= quantum_particles[pos].best_tellability();
+					roulette -= ((Quantum) population[pos]).best_tellability();
 					pos++;
 				}
 				
@@ -927,7 +891,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		List<Integer> positions = select(amount);
 		
-		int state = quantum_particles[positions.get(0)].choosePosition();
+		int state = ((Quantum) population[positions.get(0)]).choosePosition();
 		
 		
 		
@@ -935,18 +899,18 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 
 		case(0):
 			
-			simpleCrossover(quantum_particles[positions.get(0)],quantum_particles[positions.get(1)],state);
+			simpleCrossover((Quantum) population[positions.get(0)], (Quantum) population[positions.get(1)],state);
 			break;
 		
 		case(1):
 		
-			binomialCrossover(quantum_particles[positions.get(0)],quantum_particles[positions.get(1)],state);
+			binomialCrossover((Quantum) population[positions.get(0)], (Quantum) population[positions.get(1)],state);
 			break;
 			
 		
 		case(2):
 			
-			xPointCrossover(quantum_particles[positions.get(0)],quantum_particles[positions.get(1)],state);
+			xPointCrossover((Quantum) population[positions.get(0)], (Quantum) population[positions.get(1)],state);
 			break;
 		
 		case(3):
@@ -1220,12 +1184,12 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int k = 0; k < positions.size(); k++) {
 					
-					sum += quantum_particles[positions.get(k)].best_personality(i,j);
+					sum += ((Quantum) population[positions.get(k)]).best_personality(i,j);
 				}
 
 				int pos = positions.get((int)Math.round(Math.random()*positions.size()-0.5));
 				
-				personalityRandom.values[i][j] = quantum_particles[pos].best_personality(i,j);
+				personalityRandom.values[i][j] = ((Quantum) population[pos]).best_personality(i,j);
 				personalityAverage.values[i][j] = round(sum/positions.size());
 			}
 			
@@ -1236,23 +1200,23 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 				
 				for(int k = 0; k < positions.size(); k++) {
 					
-					sum += quantum_particles[positions.get(k)].best_happenings(i,j);
+					sum += ((Quantum) population[positions.get(k)]).best_happenings(i,j);
 				}
 
 				int pos = positions.get((int)Math.round(Math.random()*positions.size()-0.5));
 				
-				happeningsRandom.values[i][j] = quantum_particles[pos].best_happenings(i,j);
+				happeningsRandom.values[i][j] = ((Quantum) population[pos]).best_happenings(i,j);
 				happeningsAverage.values[i][j] = (int)Math.round(sum/positions.size());
 			}
 		}
 			
-		QuantumPosition one = new_quantumPosition(quantum_particles[positions.get(0)],state,personalityRandom,happeningsRandom);
-		QuantumPosition two = new_quantumPosition(quantum_particles[positions.get(0)],state,personalityAverage,happeningsAverage);
+		QuantumPosition one = new_quantumPosition((Quantum) population[positions.get(0)], state,personalityRandom, happeningsRandom);
+		QuantumPosition two = new_quantumPosition((Quantum) population[positions.get(0)], state,personalityAverage, happeningsAverage);
 		
 		if(one.get_tellability() > two.get_tellability())
-			quantum_particles[positions.get(0)].add_Position(one, state);
+			((Quantum) population[positions.get(0)]).add_Position(one, state);
 		else
-			quantum_particles[positions.get(0)].add_Position(two, state);
+			((Quantum) population[positions.get(0)]).add_Position(two, state);
 		
 	}
 	
@@ -1283,28 +1247,28 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		List<Integer> positions = select(amount);
 		
-		int state = quantum_particles[positions.get(0)].choosePosition();
+		int state = ((Quantum) population[positions.get(0)]).choosePosition();
 		
 		switch(mode) {
 
 		case(0):
 			
-			randomMutator(quantum_particles[positions.get(0)],state);
+			randomMutator((Quantum) population[positions.get(0)],state);
 			break;
 		
 		case(1):
 			
-			toggleMutator(quantum_particles[positions.get(0)],state);
+			toggleMutator((Quantum) population[positions.get(0)],state);
 			break;
 			
 		case(2):
 			
-			orientedMutator(quantum_particles[positions.get(0)],state);
+			orientedMutator((Quantum) population[positions.get(0)],state);
 			break;
 			
 		case(3):
 			
-			guidedMutator(quantum_particles[positions.get(0)],quantum_particles[positions.get(1)],state);
+			guidedMutator((Quantum) population[positions.get(0)], (Quantum) population[positions.get(1)],state);
 			break;
 			
 		default:
@@ -1773,14 +1737,14 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		
 		for(int i = 0; i < individual_count; i++) {
 			
-			for(int state = 0; state < quantum_particles[i].amount_positions(); state++) {
+			for(int state = 0; state < ((Quantum) population[i]).amount_positions(); state++) {
 			
-				quantum_particles[i].move(state,new Fitness<EnvType,ModType>(EVO_ENV,verbose,level));
+				((Quantum) population[i]).move(state,new Fitness<EnvType,ModType>(EVO_ENV,verbose,level));
 				analyzed_neighbors++;
 			}
 		}
 		
-		Arrays.sort(quantum_particles);
+		Arrays.sort(population);
 		
 		if(floatingParameters)
 			update_Distances();
@@ -1791,7 +1755,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 
 		for(int index = 0; index < individual_count; index++) {
 			
-			for(int state = 0; state < quantum_particles[index].amount_positions(); state++) {
+			for(int state = 0; state < ((Quantum) population[index]).amount_positions(); state++) {
 				
 				List<Integer> informants = select_particles(index, state);
 					
@@ -1801,7 +1765,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					static_Updater(index, state, informants);
 				
 			}
-			quantum_particles[index].update_lifespan();
+			((Quantum) population[index]).update_lifespan();
 		}
 	}
 	
@@ -1845,7 +1809,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		for(int i = 0; i < individual_count; i++) {
 			
 			// A Particles qualifies as an informant if it's fitness is greater than the particle to be updated
-			if(quantum_particles[i].best_tellability()>=quantum_particles[individual].get_position(state).get_tellability())
+			if(((Quantum) population[i]).best_tellability() >= ((Quantum) population[individual]).get_position(state).get_tellability())
 				selected_particles.add(i);
 			
 		}
@@ -1865,7 +1829,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			double force = decay_rate;
 			
 			// determine if force is pulling towards or pushing away
-			if(quantum_particles[informants.get(index)].best_tellability() <= quantum_particles[recipient].get_tellability(state))
+			if(((Quantum) population[informants.get(index)]).best_tellability() <= ((Quantum) population[recipient]).get_tellability(state))
 				force*=-1;
 			
 			// copy information
@@ -1876,7 +1840,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(!deterministic)
 						random_factor = Math.random();
 					
-					update_personality[i][j] += random_factor*force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_position(state).get_personality(i, j));
+					update_personality[i][j] += random_factor*force*(((Quantum) population[informants.get(index)]).best_personality(i, j) - ((Quantum) population[recipient]).get_position(state).get_personality(i, j));
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
@@ -1884,7 +1848,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(!deterministic)
 						random_factor = Math.random();
 					
-					update_happenings[i][j] += random_factor*force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_position(state).get_happenings(i, j));
+					update_happenings[i][j] += random_factor*force*(((Quantum) population[informants.get(index)]).best_happenings(i, j) - ((Quantum) population[recipient]).get_position(state).get_happenings(i, j));
 				}
 			}
 		}
@@ -1896,17 +1860,17 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int j = 0; j < 5; j++) {
 				
 				if(deterministic)
-					quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),decay_rate);
+					((Quantum) population[recipient]).get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),decay_rate);
 				else
-					quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),decay_rate/2);
+					((Quantum) population[recipient]).get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),decay_rate/2);
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 				
 				if(deterministic)
-					quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),decay_rate);
+					((Quantum) population[recipient]).get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),decay_rate);
 				else
-					quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),decay_rate/2);
+					((Quantum) population[recipient]).get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),decay_rate/2);
 			}
 		}
 	}
@@ -1939,7 +1903,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(!deterministic)
 						random_factor = Math.random();
 
-					update_personality[i][j] += random_factor*force*(quantum_particles[informants.get(index)].best_personality(i, j) - quantum_particles[recipient].get_position(state).get_personality(i, j));
+					update_personality[i][j] += random_factor*force*(((Quantum) population[informants.get(index)])).best_personality(i, j) - ((Quantum) population[recipient]).get_position(state).get_personality(i, j);
 				}
 				
 				for(int j = 0; j < number_happenings; j++) {
@@ -1947,7 +1911,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					if(!deterministic)
 						random_factor = Math.random();
 					
-					update_happenings[i][j] += random_factor*force*(quantum_particles[informants.get(index)].best_happenings(i, j) - quantum_particles[recipient].get_position(state).get_happenings(i, j));
+					update_happenings[i][j] += random_factor*force*(((Quantum) population[informants.get(index)]).best_happenings(i, j) - ((Quantum) population[recipient]).get_position(state).get_happenings(i, j));
 				}
 			}
 		}
@@ -1958,18 +1922,18 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			for(int j = 0; j < 5; j++) {
 					
 				if(deterministic)
-					quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/informants.size());
+					((Quantum) population[recipient]).get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/informants.size());
 				else
-					quantum_particles[recipient].get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/(informants.size()*2));
+					((Quantum) population[recipient]).get_position(state).update_persVelocity(i, j, update_personality[i][j]/informants.size(),total_force/(informants.size()*2));
 					
 			}
 			
 			for(int j = 0; j < number_happenings; j++) {
 				
 				if(deterministic)
-					quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/informants.size());
+					((Quantum) population[recipient]).get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/informants.size());
 				else
-					quantum_particles[recipient].get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/(informants.size()*2));
+					((Quantum) population[recipient]).get_position(state).update_hapVelocity(i, j, (int)Math.round(update_happenings[i][j]/informants.size()),total_force/(informants.size()*2));
 			}
 		}
 	}
