@@ -21,10 +21,11 @@ import inBloom.nia.ChromosomePersonality;
 import inBloom.nia.Fitness;
 import inBloom.nia.NIEnvironment;
 import inBloom.nia.ga.Individual;
+import inBloom.stories.little_red_hen.FarmEnvironment;
+import inBloom.stories.little_red_hen.FarmModel;
 import inBloom.stories.little_red_hen.FarmNIEnvironment;
 
 public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
-
 	@SuppressWarnings("unused")
 	private NIEnvironment<EnvType,ModType> EVO_ENV;
 
@@ -168,17 +169,11 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	    chart.setVisible( true );
 	}
 
-
-
-
-	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) {
-
 		String path = "C:\\Users\\Leon\\Desktop\\InBloomNIA\\";
-		String name = "GEN_run.log";
+		String name = "PSO_run.log";
 
-		@SuppressWarnings("unchecked")
-		FileInterpreter fi = new FileInterpreter(new FarmNIEnvironment(), path, name, true);
+		FileInterpreter<?,?> fi = new FileInterpreter<FarmEnvironment, FarmModel>(new FarmNIEnvironment(), path, name, true);
 
 		fi.readFile();
 

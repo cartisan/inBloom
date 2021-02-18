@@ -2,17 +2,22 @@ package inBloom.nia.utils;
 
 import java.util.logging.Level;
 
+import inBloom.nia.NIEnvironment;
 import inBloom.nia.qso.QSO;
-import inBloom.stories.robinson.IslandNIEnvironment;
+import inBloom.stories.little_red_hen.FarmNIEnvironment;
 
 public class MultipleRunsQ {
+	public static final int RUN_NUM = 10;
+	public static final Class<?> NI_ENV_CLASS = FarmNIEnvironment.class;
 	
-	public static void main(String[] args) { 
+	public static void main(String[] args) throws Exception { 
+		long timestamp = System.currentTimeMillis();
 		
-		
-		for(int i = 9; i < 10; i++) {
+		System.out.println("************ Executing " + RUN_NUM + " QSO runs ************");
+		for(int i = 0; i < RUN_NUM; i++) {
+			System.out.println("************ Starting run " + i + " ************");
 			// init location
-			IslandNIEnvironment island = new IslandNIEnvironment();
+			NIEnvironment<?,?> niEnvironment = (NIEnvironment<?,?>) NI_ENV_CLASS.newInstance();
 			// simulation length at initialization
 			int init_stepnumber = 30;
 			// number individuals
@@ -31,10 +36,10 @@ public class MultipleRunsQ {
 			int max_repetitions = 25;
 			
 			// path and name of file
-			String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\Current\\";
-			String filename = "QSO " + String.valueOf(i);
+			String path = "C:\\Users\\Leon\\Desktop\\InBloomNIA\\";
+			String filename = "QSO_" + timestamp + "_run" + String.valueOf(i) + ".log";
 	
-			QSO<?,?> qso = island.get_QSO(args,init_stepnumber, individual_count);
+			QSO<?,?> qso = niEnvironment.get_QSO(args,init_stepnumber, individual_count);
 			
 			qso.setLevel(Level.OFF);
 			
@@ -70,8 +75,9 @@ public class MultipleRunsQ {
 			qso.setExit(false);
 			
 			qso.run();
+			System.out.println("************ Finished run ************");
 		}
-		
+		System.out.println("************ Finished all QSO runs ************");
 		System.exit(0);
 	}
 }

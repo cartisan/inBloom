@@ -1,20 +1,20 @@
 package inBloom.nia.utils;
 
+import inBloom.nia.NIEnvironment;
 import inBloom.nia.pso.PSO;
-import inBloom.stories.robinson.IslandNIEnvironment;
+import inBloom.stories.little_red_hen.FarmNIEnvironment;
 
 public class MultipleRunsP {
+	public static final int RUN_NUM = 10;
+	public static final Class<?> NI_ENV_CLASS = FarmNIEnvironment.class;
 	
-	public static void main(String[]args) {
-	
-		for(int i = 8; i < 10; i++) {
-			
-			// path and name of file
-			String path = "C:\\Users\\Felix\\Desktop\\!\\Ergebnisse\\Current\\";
-			String filename = "PSO " + String.valueOf(i);
-			
+	public static void main(String[]args) throws Exception {
+		long timestamp = System.currentTimeMillis();
+		
+		System.out.println("************ Executing " + RUN_NUM + " PSO runs ************");
+		for(int i = 0; i < RUN_NUM; i++) {
 			// init location
-			IslandNIEnvironment island = new IslandNIEnvironment();
+			NIEnvironment<?,?> niEnvironment = (NIEnvironment<?,?>) NI_ENV_CLASS.newInstance();
 			// simulation length at initialization
 			int init_stepnumber = 30;
 			// number individuals
@@ -22,7 +22,6 @@ public class MultipleRunsP {
 			// 
 			double decay_rate = 0.1;
 			//
-//			int number_informants = individual_count-1;
 			int number_informants = 1;
 			
 			// maximum time in seconds 
@@ -31,8 +30,12 @@ public class MultipleRunsP {
 			int time = 3600;
 			// number of iterations without improvement till shutdown
 			int max_repetitions = 25;
+
+			// path and name of file
+			String path = "C:\\Users\\Leon\\Desktop\\InBloomNIA\\";
+			String filename = "PSO_" + timestamp + "_run" + String.valueOf(i) + ".log";
 					
-			PSO<?,?> pso = island.get_PSO(args,init_stepnumber, individual_count);
+			PSO<?,?> pso = niEnvironment.get_PSO(args,init_stepnumber, individual_count);
 			
 			pso.setFileName(path+filename);
 			
@@ -62,7 +65,9 @@ public class MultipleRunsP {
 			pso.setExit(false);
 			
 			pso.run();
+			System.out.println("************ Finished run ************");
 		}
+		System.out.println("************ Finished all PSO runs ************");
 		System.exit(0);
 	}
 }
