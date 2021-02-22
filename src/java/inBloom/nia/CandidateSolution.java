@@ -1,16 +1,13 @@
 package inBloom.nia;
 
 public abstract class CandidateSolution {
-	// Functions that get called by the Fitness class in order to start a simulation
-	public abstract ChromosomePersonality get_personality();
-	public abstract ChromosomeHappenings get_happenings();
+	protected Integer simulation_length;
+	protected Integer actual_length;
 	
-	public abstract double get_personality(int x, int y);
-	public abstract int get_happenings(int x, int y);
-
-	public abstract Integer get_simLength();
-	public abstract void set_actualLength(int length);
-	public abstract double get_tellability();
+	protected ChromosomePersonality personality;
+	protected ChromosomeHappenings happenings;
+	
+	protected double tellability;
 	
 	/**
 	 * to_String should convert all information of a candidate into a string.
@@ -18,7 +15,22 @@ public abstract class CandidateSolution {
 	 */
 	public abstract String to_String();
 	
-	public String to_String(ChromosomePersonality personality, ChromosomeHappenings happenings, int simulation_length, int actual_length) {
+	public CandidateSolution(ChromosomePersonality personality, ChromosomeHappenings happenings, Integer simLength){
+		this.personality = personality;
+		this.happenings = happenings;
+		this.simulation_length = simLength;
+		this.actual_length = this.simulation_length;
+	}
+	
+	public CandidateSolution() {
+		this.personality = null;
+		this.happenings = null;
+		this.simulation_length = null;
+		this.actual_length = null;
+	}
+	
+
+	protected String to_String(ChromosomePersonality personality, ChromosomeHappenings happenings, int simulation_length, int actual_length) {
 		int number_agents = personality.values.length;
 		int number_happenings = happenings.values[0].length;
 		
@@ -46,5 +58,37 @@ public abstract class CandidateSolution {
 		}
 		
 		return string;
+	}
+	
+	public Integer get_actualLength() {
+		return this.actual_length;
+	}
+	
+	public void set_actualLength(int length) {
+		this.actual_length = length;
+	}
+	
+	public Integer get_simLength() {
+		return this.simulation_length;
+	}
+	
+	public double get_tellability() {
+		return this.tellability;
+	}
+	
+	public ChromosomePersonality get_personality() {
+		return this.personality;
+	}
+	
+	public double get_personality(int x, int y) {
+		return this.personality.values[x][y];
+	}
+	
+	public ChromosomeHappenings get_happenings() {
+		return this.happenings;
+	}
+	
+	public int get_happenings(int x, int y) {
+		return this.happenings.values[x][y];
 	}
 }

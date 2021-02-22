@@ -9,40 +9,28 @@ import inBloom.nia.Fitness;
 import inBloom.nia.ga.Individual;
 
 public class Particle extends CandidateSolution implements Comparable<Particle>{
-	protected Integer simulation_length;
-	protected Integer actual_length;
-	private ChromosomePersonality current_personality;
-	private ChromosomeHappenings current_happenings;
 	private ChromosomePersonality best_personality;
 	private ChromosomeHappenings best_happenings;
 	private ChromosomePersonality velocity_personality;
 	private ChromosomeHappenings velocity_happenings;
-	private double current_tellability;
 	private double best_tellability;
 	private Integer best_simLength;
 	private Integer best_actualLength;
 	
 	
 	public Particle(ChromosomePersonality personality, ChromosomePersonality velocity_personality, ChromosomeHappenings happenings, ChromosomeHappenings velocity_happenings, Integer simLength, Fitness<?,?> fit){
-		
+		super(personality, happenings, simLength);
 		this.velocity_personality = velocity_personality;
 		this.velocity_happenings = velocity_happenings;
-		this.current_personality = personality;
-		this.current_happenings = happenings;
-		this.simulation_length = simLength;
-		this.actual_length = simulation_length;
 		
-		best_tellability=0;
+		best_tellability = 0;
 		update_tellability(fit);
-		
 	}
 	
 	public Particle(Individual candidate, ChromosomePersonality velocity_personality, ChromosomeHappenings velocity_happenings, Fitness<?,?> fit) {
-		
-		this.current_personality = candidate.get_personality();
-		this.current_happenings = candidate.get_happenings();
-		this.simulation_length = candidate.get_simLength();
-		this.current_tellability = candidate.get_tellability();
+		super(candidate.get_personality(), candidate.get_happenings(), candidate.get_simLength());
+		this.actual_length  = candidate.get_actualLength();
+		this.tellability = candidate.get_tellability();
 
 		this.velocity_personality = velocity_personality;
 		this.velocity_happenings = velocity_happenings;
@@ -53,25 +41,8 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 	
 	
 	// Get-Methods
-	
-	public Integer get_simLength() {
-		return simulation_length;
-	}
-	
 	public Integer best_simLength() {
 		return best_simLength;
-	}
-
-	public void set_actualLength(int length) {
-		actual_length = length;
-	}
-	
-	public ChromosomePersonality get_personality() {
-		return current_personality;
-	}
-	
-	public double get_personality(int x, int y) {
-		return current_personality.values[x][y];
 	}
 	
 	public ChromosomePersonality best_personality() {
@@ -82,24 +53,12 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 		return best_personality.values[x][y];
 	}
 	
-	public ChromosomeHappenings get_happenings() {
-		return current_happenings;
-	}
-	
-	public int get_happenings(int x, int y) {
-		return current_happenings.values[x][y];
-	}
-	
 	public ChromosomeHappenings best_happenings() {
 		return best_happenings;
 	}
 	
 	public int best_happenings(int x, int y) {
 		return best_happenings.values[x][y];
-	}
-	
-	public double get_tellability() {
-		return current_tellability;
 	}
 	
 	public double best_tellability() {
@@ -130,25 +89,25 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 		
 		Integer length = 0;
 		
-		for(int i = 0; i < current_personality.values.length; i++) {
+		for(int i = 0; i < personality.values.length; i++) {
 			
-			for(int j = 0; j < current_personality.values[i].length; j++) {
+			for(int j = 0; j < personality.values[i].length; j++) {
 				
-				current_personality.values[i][j] += velocity_personality.values[i][j];
+				personality.values[i][j] += velocity_personality.values[i][j];
 				
-				if(Math.abs(current_personality.values[i][j]) > 1)
-					current_personality.values[i][j] /= Math.abs(current_personality.values[i][j]);
+				if(Math.abs(personality.values[i][j]) > 1)
+					personality.values[i][j] /= Math.abs(personality.values[i][j]);
 			}
 			
-			for(int j = 0; j < current_happenings.values[i].length; j++) {
+			for(int j = 0; j < happenings.values[i].length; j++) {
 				
-				current_happenings.values[i][j] += velocity_happenings.values[i][j];
+				happenings.values[i][j] += velocity_happenings.values[i][j];
 				
-				//if(current_happenings.values[i][j] < 0)
-					//current_happenings.values[i][j] = 0;
+				//if(happenings.values[i][j] < 0)
+					//happenings.values[i][j] = 0;
 				
-				if(current_happenings.values[i][j] > length)
-					length=current_happenings.values[i][j];
+				if(happenings.values[i][j] > length)
+					length=happenings.values[i][j];
 			}
 		}
 		
@@ -167,14 +126,14 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 		
 		try {
 			
-			current_tellability = fit.evaluate_individual(this);
+			tellability = fit.evaluate_individual(this);
 
-			if(current_tellability >= best_tellability) {
-				best_personality = current_personality;
-				best_happenings = current_happenings;
+			if(tellability >= best_tellability) {
+				best_personality = personality;
+				best_happenings = happenings;
 				best_simLength = simulation_length;
 				best_actualLength = actual_length; 
-				best_tellability = current_tellability;
+				best_tellability = tellability;
 			}
 			
 		} catch (JasonException e) {

@@ -8,26 +8,17 @@ import inBloom.nia.ChromosomePersonality;
 import inBloom.nia.Fitness;
 
 public class QuantumPosition extends CandidateSolution implements Comparable<QuantumPosition>  {
-	protected Integer simulation_length;
-	protected Integer actual_length;
-	private ChromosomePersonality current_personality;
-	private ChromosomeHappenings current_happenings;
 	private ChromosomePersonality velocity_personality;
 	private ChromosomeHappenings velocity_happenings;
-	private double current_tellability;
 	
 	private double lifespan;
 
-
 	
 	public QuantumPosition(ChromosomePersonality personality, ChromosomePersonality velocity_personality, ChromosomeHappenings happenings, ChromosomeHappenings velocity_happenings, Integer simLength, double lifespan, Fitness<?,?> fit){
+		super(personality, happenings, simLength);
 		
 		this.velocity_personality = velocity_personality;
 		this.velocity_happenings = velocity_happenings;
-		this.current_personality = personality;
-		this.current_happenings = happenings;
-		this.simulation_length = simLength;
-		this.actual_length = simulation_length;
 		this.lifespan = lifespan;
 		
 		update_tellability(fit);
@@ -36,45 +27,12 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 	
 	
 	// Get-Methods
-
-	public Integer get_simLength() {
-		return simulation_length;
-	}
-
-	public void set_actualLength(int length) {
-		actual_length = length;
-	}
-
-	public int get_actualLength() {
-		return actual_length;
-	}
-	
-	public ChromosomePersonality get_personality() {
-		return current_personality;
-	}
-	
-	public double get_personality(int x, int y) {
-		return current_personality.values[x][y];
-	}
-	
 	public ChromosomePersonality get_persVelocity() {
 		return velocity_personality; 
 	}
 	
-	public ChromosomeHappenings get_happenings() {
-		return current_happenings;
-	}
-	
-	public int get_happenings(int x, int y) {
-		return current_happenings.values[x][y];
-	}
-	
 	public ChromosomeHappenings get_hapVelocity() {
 		return velocity_happenings;
-	}
-	
-	public double get_tellability() {
-		return current_tellability;
 	}
 	
 	public double get_lifespan() {
@@ -109,25 +67,25 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 		
 		Integer length = 0;
 		
-		for(int i = 0; i < current_personality.values.length; i++) {
+		for(int i = 0; i < personality.values.length; i++) {
 			
-			for(int j = 0; j < current_personality.values[i].length; j++) {
+			for(int j = 0; j < personality.values[i].length; j++) {
 				
-				current_personality.values[i][j] += velocity_personality.values[i][j];
+				personality.values[i][j] += velocity_personality.values[i][j];
 				
-				if(Math.abs(current_personality.values[i][j]) > 1)
-					current_personality.values[i][j] /= Math.abs(current_personality.values[i][j]);
+				if(Math.abs(personality.values[i][j]) > 1)
+					personality.values[i][j] /= Math.abs(personality.values[i][j]);
 			}
 			
-			for(int j = 0; j < current_happenings.values[i].length; j++) {
+			for(int j = 0; j < happenings.values[i].length; j++) {
 				
-				current_happenings.values[i][j] += velocity_happenings.values[i][j];
+				happenings.values[i][j] += velocity_happenings.values[i][j];
 				
-				//if(current_happenings.values[i][j] < 0)
-					//current_happenings.values[i][j] = 0;
+				//if(happenings.values[i][j] < 0)
+					//happenings.values[i][j] = 0;
 				
-				if(current_happenings.values[i][j] > length)
-					length=current_happenings.values[i][j];
+				if(happenings.values[i][j] > length)
+					length=happenings.values[i][j];
 			}
 		}
 		
@@ -146,7 +104,7 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 		
 		try {
 			
-			current_tellability = fit.evaluate_individual(this);
+			tellability = fit.evaluate_individual(this);
 			
 		} catch (JasonException e) {
 			//e.printStackTrace();
@@ -164,7 +122,7 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 	public int compareTo(QuantumPosition other) {
 		
 		// smaller operator returns array in descending order
-		if(current_tellability < other.get_tellability())
+		if(tellability < other.get_tellability())
 			return 1;
 		return -1;
 	}
@@ -172,7 +130,7 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 
 	@Override
 	public String to_String() {
-		return this.to_String(current_personality, current_happenings, simulation_length, actual_length);
+		return this.to_String(personality, happenings, simulation_length, actual_length);
 	}
 
 }

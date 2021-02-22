@@ -9,8 +9,6 @@ import inBloom.nia.ChromosomePersonality;
 import inBloom.nia.Fitness;
 
 public class Quantum extends CandidateSolution implements Comparable<Quantum> {
-	protected Integer simulation_length;
-	protected Integer actual_length;
 	private ChromosomePersonality best_personality;
 	private ChromosomeHappenings best_happenings;
 	private double best_tellability;
@@ -23,18 +21,17 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 
 	
 	public Quantum(int individual_count, ChromosomePersonality personality, ChromosomePersonality velocity_personality, ChromosomeHappenings happenings, ChromosomeHappenings velocity_happenings, Integer simLength, Fitness<?,?> fit){
-		
-		best_personality = personality;
-		best_happenings = happenings;
-		best_simLength = simLength;
-		threshold = Math.pow(0.5, individual_count/2-1);
+		this.best_personality = personality;
+		this.best_happenings = happenings;
+		this.best_simLength = simLength;
+		this.threshold = Math.pow(0.5, individual_count/2-1);
 		
 		QuantumPosition pos = new QuantumPosition(personality, velocity_personality, happenings, velocity_happenings, simLength, 1, fit);
 		
-		best_actualLength = pos.get_actualLength();
-		best_tellability = pos.get_tellability();
+		this.best_actualLength = pos.get_actualLength();
+		this.best_tellability = pos.get_tellability();
 		
-		positions.add(pos);
+		this.positions.add(pos);
 	}
 	
 	public boolean superPosition() {

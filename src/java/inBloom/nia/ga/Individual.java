@@ -8,18 +8,9 @@ import inBloom.nia.ChromosomePersonality;
 import inBloom.nia.Fitness;
 
 public class Individual extends CandidateSolution implements Comparable<Individual>{
-	protected Integer simulation_length;
-	protected Integer actual_length;
-	private ChromosomePersonality chromosome_personality;
-	private ChromosomeHappenings chromosome_happenings;
-	private double tellability;
 	
 	public Individual(ChromosomePersonality personality, ChromosomeHappenings happenings, Integer simLength, Fitness<?,?> fit){
-		
-		this.chromosome_personality = personality;
-		this.chromosome_happenings = happenings;
-		this.simulation_length = simLength;
-		this.actual_length = simulation_length;
+		super(personality, happenings, simLength);
 		
 		try {
 			tellability = fit.evaluate_individual(this);
@@ -28,36 +19,6 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 		} catch (NullPointerException e) {
 			//e.printStackTrace();
 		}
-	}
-	
-	// Get-Methods
-	
-	public Integer get_simLength() {
-		return simulation_length;
-	}
-	
-	public void set_actualLength(int length) {
-		actual_length = length;
-	}
-	
-	public ChromosomePersonality get_personality() {
-		return chromosome_personality;
-	}
-	
-	public double get_personality(int x, int y) {
-		return chromosome_personality.values[x][y];
-	}
-	
-	public ChromosomeHappenings get_happenings() {
-		return chromosome_happenings;
-	}
-	
-	public int get_happenings(int x, int y) {
-		return chromosome_happenings.values[x][y];
-	}
-	
-	public double get_tellability() {
-		return tellability;
 	}
 	
 	/**
@@ -69,9 +30,9 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 	 */
 	public boolean equals(Individual other) {
 
-		if(!this.chromosome_personality.equals(other.chromosome_personality))
+		if(!this.personality.equals(other.personality))
 			return false;
-		if(!this.chromosome_happenings.equals(other.chromosome_happenings,actual_length))
+		if(!this.happenings.equals(other.happenings,actual_length))
 			return false;
 		
 		return true;
@@ -82,9 +43,9 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 	 * This saves runtime since we do not need to run a simulation in order to determine the tellability.
 	 */
 	public boolean equals(ChromosomePersonality other_personality, ChromosomeHappenings other_happenings) {
-		if(!this.chromosome_personality.equals(other_personality))
+		if(!this.personality.equals(other_personality))
 			return false;
-		if(!this.chromosome_happenings.equals(other_happenings,actual_length))
+		if(!this.happenings.equals(other_happenings,actual_length))
 			return false;
 		return true;
 	}
@@ -123,6 +84,6 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 	
 	@Override
 	public String to_String() {
-		return this.to_String(chromosome_personality, chromosome_happenings, simulation_length, actual_length);
+		return this.to_String(personality, happenings, simulation_length, actual_length);
 	}
 }
