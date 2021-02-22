@@ -45,4 +45,29 @@ public class ChromosomeHappenings {
 		return true;
 	}
 	
+	@Override
+	public ChromosomeHappenings clone() {
+		ChromosomeHappenings clone = new ChromosomeHappenings(this.values.length, this.values[0].length);
+		
+		for(int i = 0; i< this.values.length; i++) {
+			for(int j = 0; j<this.values[i].length; j++) {
+				clone.values[i][j] = this.values[i][j];
+			}
+		}
+		
+		return clone;
+	}
+	
+	@Override
+	public String toString() {
+		String res = "";
+		for(int i = 0; i< this.values.length; i++) {
+			for(int j = 0; j<this.values[i].length; j++) {
+				res += this.values[i][j] + " ";
+			}
+			res += "|| ";
+		}
+		
+		return res;
+	}
 }

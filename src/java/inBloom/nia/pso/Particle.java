@@ -118,7 +118,7 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 		simulation_length = length+buffer+1;
 	}
 	
-	/*
+	/**
 	 * Start simulation
 	 */
 	
@@ -128,12 +128,13 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 			
 			tellability = fit.evaluate_individual(this);
 
-			if(tellability >= best_tellability) {
-				best_personality = personality;
-				best_happenings = happenings;
-				best_simLength = simulation_length;
-				best_actualLength = actual_length; 
-				best_tellability = tellability;
+			if(tellability > best_tellability) {
+				// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move
+				this.best_personality = personality.clone();
+				this.best_happenings = happenings.clone();
+				this.best_simLength = simulation_length;
+				this.best_actualLength = actual_length; 
+				this.best_tellability = tellability;
 			}
 			
 		} catch (JasonException e) {
@@ -145,10 +146,9 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 		fit = null;
 	}
 	
-	/*
+	/**
 	 * compareTo gets called by Arrays.sort()
 	 */
-	
 	public int compareTo(Particle other) {
 		
 		// smaller operator returns array in descending order
@@ -159,6 +159,6 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 	
 	@Override
 	public String to_String() {
-		return this.to_String(best_personality, best_happenings, best_simLength, best_actualLength);
+		return this.to_String(this.best_personality, this.best_happenings, this.best_simLength, this.best_actualLength);
 	}
 }
