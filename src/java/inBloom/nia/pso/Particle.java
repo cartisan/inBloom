@@ -17,7 +17,6 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 	private Integer best_simLength;
 	private Integer best_actualLength;
 	
-	
 	public Particle(ChromosomePersonality personality, ChromosomePersonality velocity_personality, ChromosomeHappenings happenings, ChromosomeHappenings velocity_happenings, Integer simLength, Fitness<?,?> fit){
 		super(personality, happenings, simLength);
 		this.velocity_personality = velocity_personality;
@@ -121,11 +120,8 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 	/**
 	 * Start simulation
 	 */
-	
 	public void update_tellability(Fitness<?,?> fit) {
-		
 		try {
-			
 			tellability = fit.evaluate_individual(this);
 
 			if(tellability > best_tellability) {
@@ -135,6 +131,8 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 				this.best_simLength = simulation_length;
 				this.best_actualLength = actual_length; 
 				this.best_tellability = tellability;
+
+				this.updateNotes(fit);
 			}
 			
 		} catch (JasonException e) {

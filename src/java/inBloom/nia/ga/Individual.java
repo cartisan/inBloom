@@ -14,11 +14,13 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 		
 		try {
 			tellability = fit.evaluate_individual(this);
+			this.updateNotes(fit);
 		} catch (JasonException e) {
 			//e.printStackTrace();
 		} catch (NullPointerException e) {
 			//e.printStackTrace();
 		}
+		
 	}
 	
 	/**

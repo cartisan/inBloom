@@ -19,14 +19,16 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 	public String filename = "results";
 	public NIEnvironment<?, ?> EVO_ENV;
 
-	// Standard parameters for a genetic algorithm
+	// Standard parameters for an algorithm
 	protected CandidateSolution[] population;
 	public int number_agents;
 	public int number_happenings;
 	public int max_steps;
 	public int individual_count;
 
+	// management
 	protected Level level = Level.OFF;
+	protected Integer iterationNum; 
 
 	// Performance measurement
 	protected List<Double> population_best = new ArrayList<Double>();
@@ -53,6 +55,7 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 		this.number_happenings = number_happenings;
 		this.max_steps = max_steps;
 		this.individual_count = individual_count;
+		this.iterationNum = 0;
 
 	}
 
@@ -79,6 +82,7 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 
 				this.run_iteration();
 				this.evaluate_population();
+				this.iterationNum += 1;
 
 				this.to_file(population[0], "");
 			}

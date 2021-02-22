@@ -25,6 +25,7 @@ import inBloom.storyworld.ScheduledHappeningDirector;
 public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends PlotLauncher implements EnvironmentListener {
 
 	public NIEnvironment<?, ?> EVO_ENV;
+	public Tellability tellability;
 
 	protected boolean isRunning = false;
 	protected boolean set = false;
@@ -165,12 +166,10 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 
 		GraphAnalyzer analyzer = new GraphAnalyzer(PlotGraphController.getPlotListener().getGraph(), null);
 		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
-
+		
 		try {
-
-			Tellability tel = analyzer.runSynchronously(analyzedGraph);
-			result = tel.compute();
-
+			this.tellability = analyzer.runSynchronously(analyzedGraph);
+			result = this.tellability.compute();
 		}catch(RuntimeException e) {
 			this.pauseExecution();
 		}
@@ -185,7 +184,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		individual.set_actualLength(PlotEnvironment.MAX_STEP_NUM);
 
 		if(verbose)
-			System.out.println("Finished after " + PlotEnvironment.MAX_STEP_NUM +" steps with Tellability Score: " + result);
+			System.out.println("Finished after " + individual.get_actualLength() + " steps with Tellability Score: " + result);
 		
 		return result;
 	}

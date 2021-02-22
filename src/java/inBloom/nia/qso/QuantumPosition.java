@@ -22,7 +22,6 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 		this.lifespan = lifespan;
 		
 		update_tellability(fit);
-		
 	}
 	
 	
@@ -43,12 +42,10 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 		lifespan += span;
 	}
 	
-	/*
+	/**
 	 * Velocity Update
 	 */
-	
 	public void update_persVelocity(int x, int y, double update, double decayRate) {
-
 		velocity_personality.values[x][y] *= 1-decayRate; 
 		velocity_personality.values[x][y] += update; 
 	}
@@ -59,12 +56,10 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 		velocity_happenings.values[x][y] += update; 
 	}
 	
-	/*
+	/**
 	 *  Move the particle
 	 */
-	
 	public void move() {
-		
 		Integer length = 0;
 		
 		for(int i = 0; i < personality.values.length; i++) {
@@ -96,16 +91,13 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 		simulation_length = length+buffer+1;
 	}
 	
-	/*
+	/**
 	 * Start simulation
 	 */
-	
 	public void update_tellability(Fitness<?,?> fit) {
-		
 		try {
-			
 			tellability = fit.evaluate_individual(this);
-			
+			this.updateNotes(fit);
 		} catch (JasonException e) {
 			//e.printStackTrace();
 		} catch (NullPointerException e) {
@@ -115,10 +107,9 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 		fit = null;
 	}
 	
-	/*
+	/**
 	 * compareTo gets called by Arrays.sort()
 	 */
-	
 	public int compareTo(QuantumPosition other) {
 		
 		// smaller operator returns array in descending order

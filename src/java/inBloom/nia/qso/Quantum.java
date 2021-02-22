@@ -145,9 +145,7 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 		return positions.get(state);
 	}
 	
-	
 	public void move(int state, Fitness<?,?> fit) {
-		
 		positions.get(state).move();
 		positions.get(state).update_tellability(fit);
 		
@@ -158,6 +156,8 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 			this.best_happenings = positions.get(state).get_happenings().clone();
 			this.best_simLength = positions.get(state).get_simLength();
 			this.best_actualLength = positions.get(state).get_actualLength();
+			
+			this.updateNotes(fit);
 		}
 	}
 	
@@ -190,7 +190,6 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 	
 	
 	public void add_Position(int state, ChromosomePersonality personality, ChromosomeHappenings happenings, int length, Fitness <?,?> fit) {
-		
 		double time = positions.get(state).get_lifespan()/2;
 		positions.get(state).update_lifespan(-time);
 		
@@ -203,13 +202,14 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 			this.best_happenings = positions.get(positions.size()-1).get_happenings().clone();
 			this.best_simLength = positions.get(positions.size()-1).get_simLength();
 			this.best_actualLength = positions.get(positions.size()-1).get_actualLength();
+			
+			this.updateNotes(fit);
 		}
 		positions.sort(null);
 	}
 	
 	
 	public void add_Position(QuantumPosition qPos, int state) {
-		
 		double time = positions.get(state).get_lifespan()/2;
 		positions.get(state).update_lifespan(-time);
 		
@@ -218,13 +218,14 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 		positions.add(qPos);
 
 		if(positions.get(positions.size()-1).get_tellability() >= best_tellability) {
-			
 			this.best_tellability = positions.get(positions.size()-1).get_tellability();
 			// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move
 			this.best_personality = positions.get(positions.size()-1).get_personality().clone();
 			this.best_happenings = positions.get(positions.size()-1).get_happenings().clone();
 			this.best_simLength = positions.get(positions.size()-1).get_simLength();
 			this.best_actualLength = positions.get(positions.size()-1).get_actualLength();
+			
+			this.notes = qPos.notes;
 		}
 		positions.sort(null);
 	}

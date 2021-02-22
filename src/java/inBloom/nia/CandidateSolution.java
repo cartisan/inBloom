@@ -1,6 +1,8 @@
 package inBloom.nia;
 
 public abstract class CandidateSolution {
+	protected String id = String.valueOf(this.hashCode());
+	
 	protected Integer simulation_length;
 	protected Integer actual_length;
 	
@@ -8,6 +10,9 @@ public abstract class CandidateSolution {
 	protected ChromosomeHappenings happenings;
 	
 	protected double tellability;
+	
+	/** Additional information about this solution, added to log file during {@linkplain NIAlgorithm#to_file(CandidateSolution, String)}*/
+	public String notes;
 	
 	/**
 	 * to_String should convert all information of a candidate into a string.
@@ -29,18 +34,17 @@ public abstract class CandidateSolution {
 		this.actual_length = null;
 	}
 	
-
-	protected String to_String(ChromosomePersonality personality, ChromosomeHappenings happenings, int simulation_length, int actual_length) {
-		int number_agents = personality.values.length;
-		int number_happenings = happenings.values[0].length;
+	protected String to_String(ChromosomePersonality perso, ChromosomeHappenings happ, int simLength, int actLength) {
+		int number_agents = perso.values.length;
+		int number_happenings = happ.values[0].length;
 		
 		String string = "<Agent Num / Happening Num / Simulation Len / Actual Len>\n";
-		string += String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(simulation_length) + "\n" +  String.valueOf(actual_length) + "\n";
+		string += String.valueOf(number_agents) + "\n" + String.valueOf(number_happenings) + "\n" + String.valueOf(simLength) + "\n" +  String.valueOf(actLength) + "\n";
 		
 		string += "<Personality Parameters Per Agent>\n";
 		for(int i = 0; i < number_agents; i++) {
 			for(int j = 0; j < 5; j++) {
-				string += String.valueOf(personality.values[i][j]);
+				string += String.valueOf(perso.values[i][j]);
 				if(j<4)
 					string +=  " ";
 			}
@@ -50,14 +54,25 @@ public abstract class CandidateSolution {
 		string += "<Scheduled Step of Happenings Per Agent>\n";
 		for(int i = 0; i < number_agents; i++) {	
 			for(int j = 0; j < number_happenings; j++) {
-				string += String.valueOf(happenings.values[i][j]);	
+				string += String.valueOf(happ.values[i][j]);	
 				if(j<number_happenings-1)
 					string +=  " ";	
 			}
 			string += "\n";
 		}
 		
+		string += "<Notes>\n";
+		string += this.notes;
+		
 		return string;
+	}
+	
+	protected void updateNotes(Fitness<?, ?> fit) {
+		this.notes = "<Tellability Details>\n";
+		this.notes += "FPO: " + fit.tellability.balancedFunctionalPolyvalence + " SSP: " + fit.tellability.balancedSymmetry +
+				" SOP: " + fit.tellability.balancedOpposition + " SUS: " + fit.tellability.balancedSuspense + "\n";
+		this.notes += "<Candidate ID>\n";
+		this.notes += this.id + "\n";
 	}
 	
 	public Integer get_actualLength() {
