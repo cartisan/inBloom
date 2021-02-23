@@ -1,5 +1,6 @@
 package inBloom.stories.little_red_hen;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,8 +51,8 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 			Wheat wheatItem = (Wheat) agent.get(Wheat.itemName);
 			if (wheatItem.state == Wheat.STATES.SEED) {
 				agent.removeFromInventory(wheatItem);
-				this.farm.produce = wheatItem;
-				this.farm.updateProduceState(Wheat.STATES.GROWING);
+				this.farm.produce.add(wheatItem);
+				this.farm.updateProduceState(Wheat.STATES.GROWING, wheatItem);
 
 				logger.info("Wheat planted");
 				res.addPerception(agent.name,PerceptAnnotation.fromEmotion("pride"));
@@ -66,11 +67,16 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	public ActionReport tendWheat(Character agent) {
 		ActionReport res = new ActionReport();
 
-		if (agent.location == this.farm && this.farm.produce != null && this.farm.produce.state == Wheat.STATES.GROWING){
-			this.farm.updateProduceState(Wheat.STATES.RIPE);
-			logger.info("Wheat has grown and is ripe now");
-			res.addPerception(agent.name, PerceptAnnotation.fromEmotion("pride"));
-			res.success = true;
+		if (agent.location == this.farm && this.farm.produce != null) {
+			for (Wheat item : this.farm.produce) {
+				if (item.state == Wheat.STATES.GROWING) {
+					this.farm.updateProduceState(Wheat.STATES.RIPE, item);
+					logger.info("Wheat has grown and is ripe now");
+					res.addPerception(agent.name, PerceptAnnotation.fromEmotion("pride"));
+					res.success = true;
+					break;
+				}
+			}
 		}
 
 		return res;
@@ -79,15 +85,18 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	public ActionReport harvestWheat(Character agent) {
 		ActionReport res = new ActionReport();
 
-		if (agent.location == this.farm && this.farm.produce != null && this.farm.produce.state == Wheat.STATES.RIPE){
-			Wheat w =  this.farm.produce;
-			w.state = Wheat.STATES.HARVESTED;
-			agent.addToInventory(w);
-			this.farm.updateProduceState(null);
-
-			logger.info("Wheat was harvested");
-			res.addPerception(agent.name, PerceptAnnotation.fromEmotion("pride"));
-			res.success = true;
+		if (agent.location == this.farm && this.farm.produce != null) { 
+			for (Wheat w : this.farm.produce) {
+				if (w.state == Wheat.STATES.RIPE) {
+					w.state = Wheat.STATES.HARVESTED;
+					this.farm.updateProduceState(null, w);
+					agent.addToInventory(w);
+					logger.info("Wheat was harvested");
+					res.addPerception(agent.name, PerceptAnnotation.fromEmotion("pride"));
+					res.success = true;
+					break;
+				}
+			}
 		}
 
 		return res;
@@ -127,7 +136,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	public static class Farm extends Location {
 
 		@ModelState
-		public Wheat produce;
+		public List<Wheat> produce;
 
 		@ModelState
 		public int farmingProgress;
@@ -135,17 +144,27 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		public Farm() {
 			super("farm");
 			this.farmingProgress = 0;
-			this.produce = null;
+			this.produce = new LinkedList<>();
 		}
 
-		public void updateProduceState(Wheat.STATES state) {
+		public void updateProduceState(Wheat.STATES state, Wheat wheat) {
 			this.model.environment.removePerceptsByUnif(this, Literal.parseLiteral("at(wheat[X]," + this.literal() + ")[_]"));
-
-			if (state == null) {
-				this.produce = null;
-			} else{
-				this.produce.state = state;
-				this.model.environment.addPercept(this, Literal.parseLiteral("at(" + this.produce.literal() + "," + this.literal() + ")"));
+			
+			Iterator<Wheat> it = this.produce.iterator();
+			while(it.hasNext()) {
+				Wheat prod = it.next();
+				// find right wheat
+				if (prod == wheat) {
+					// if state is null, remove the wheat from produce, it has been harvested
+					if (state == null) {
+						it.remove();
+						continue;
+					} else {
+						prod.state = state;
+					}
+				}
+				// add new perception for this prod (unless it was removed)
+				this.model.environment.addPercept(this, Literal.parseLiteral("at(" + prod.literal() + "," + this.literal() + ")"));
 			}
 		}
 	}
