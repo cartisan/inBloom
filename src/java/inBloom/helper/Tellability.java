@@ -277,6 +277,14 @@ public class Tellability {
 			logger.info("   computing reversals in fortunes score");
 			Map<Long, List<Mood>> cycleMoodMap = moodData.getMoodByAgent(agent);
 			List<Long> reasoningCycleNums = cycleMoodMap.keySet().stream().sorted().collect(Collectors.toList());
+			
+			// check at which agent reasoning cycle the environment started execution
+			// delete so many entries in reasoningCycleNums, that we will start searching for intervals at the env start reasoning cycle 
+			Long startCycle = moodData.stepReasoningcycleNumMap.getOrDefault(0, 0L);
+			for (long l = 0L; l < startCycle + FORTUNE_CHANGE_INTERVAL_LENGTH; l++) {
+				reasoningCycleNums.remove(l);
+			}
+
 			ArrayList<MoodInterval> reversals = new ArrayList<>();
 			for(Long cycleNum : reasoningCycleNums) {
 				Mood m = moodData.sampleMood(agent, cycleNum);
