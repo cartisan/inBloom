@@ -1,5 +1,7 @@
 package inBloom.nia;
 
+import inBloom.helper.Tellability;
+
 public abstract class CandidateSolution {
 	protected String id = String.valueOf(this.hashCode());
 	
@@ -9,7 +11,8 @@ public abstract class CandidateSolution {
 	protected ChromosomePersonality personality;
 	protected ChromosomeHappenings happenings;
 	
-	protected double tellability;
+	protected double tellabilityValue;
+	protected Tellability tellability;
 	
 	/** Additional information about this solution, added to log file during {@linkplain NIAlgorithm#to_file(CandidateSolution, String)}*/
 	public String notes;
@@ -67,10 +70,10 @@ public abstract class CandidateSolution {
 		return string;
 	}
 	
-	protected void updateNotes(Fitness<?, ?> fit) {
+	protected void updateNotes() {
 		this.notes = "<Tellability Details>\n";
-		this.notes += "FPO: " + fit.tellability.balancedFunctionalPolyvalence + " SSP: " + fit.tellability.balancedSymmetry +
-				" SOP: " + fit.tellability.balancedOpposition + " SUS: " + fit.tellability.balancedSuspense + "\n";
+		this.notes += "FPO: " + this.tellability.balancedFunctionalPolyvalence + " SSP: " + this.tellability.balancedSymmetry +
+				" SOP: " + this.tellability.balancedOpposition + " SUS: " + this.tellability.balancedSuspense + "\n";
 		this.notes += "<Candidate ID>\n";
 		this.notes += this.id + "\n";
 	}
@@ -87,8 +90,8 @@ public abstract class CandidateSolution {
 		return this.simulation_length;
 	}
 	
-	public double get_tellability() {
-		return this.tellability;
+	public double get_tellabilityValue() {
+		return this.tellabilityValue;
 	}
 	
 	public ChromosomePersonality get_personality() {

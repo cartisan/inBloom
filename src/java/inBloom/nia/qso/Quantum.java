@@ -29,7 +29,7 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 		QuantumPosition pos = new QuantumPosition(personality, velocity_personality, happenings, velocity_happenings, simLength, 1, fit);
 		
 		this.best_actualLength = pos.get_actualLength();
-		this.best_tellability = pos.get_tellability();
+		this.best_tellability = pos.get_tellabilityValue();
 		
 		this.positions.add(pos);
 	}
@@ -115,12 +115,12 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 		return best_tellability;
 	}
 
-	public double get_tellability() {
+	public double get_tellabilityValue() {
 		return get_tellability(choosePosition());
 	}
 	
 	public double get_tellability(int z) {
-		return positions.get(z).get_tellability();
+		return positions.get(z).get_tellabilityValue();
 	}
 
 	public int choosePosition() {
@@ -149,15 +149,16 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 		positions.get(state).move();
 		positions.get(state).update_tellability(fit);
 		
-		if(positions.get(state).get_tellability() > best_tellability) {
-			this.best_tellability = positions.get(state).get_tellability();
+		if(positions.get(state).get_tellabilityValue() > best_tellability) {
+			this.best_tellability = positions.get(state).get_tellabilityValue();
 			// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move
 			this.best_personality = positions.get(state).get_personality().clone();
 			this.best_happenings = positions.get(state).get_happenings().clone();
 			this.best_simLength = positions.get(state).get_simLength();
 			this.best_actualLength = positions.get(state).get_actualLength();
 			
-			this.updateNotes(fit);
+			this.tellability = fit.tellability;
+			this.updateNotes();
 		}
 	}
 	
@@ -195,15 +196,16 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 		
 		positions.add(new QuantumPosition(personality, positions.get(state).get_persVelocity(), happenings, positions.get(state).get_hapVelocity(), length, time, fit));
 		
-		if(positions.get(positions.size()-1).get_tellability() > best_tellability) {
-			this.best_tellability = positions.get(positions.size()-1).get_tellability();
+		if(positions.get(positions.size()-1).get_tellabilityValue() > best_tellability) {
+			this.best_tellability = positions.get(positions.size()-1).get_tellabilityValue();
 			// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move
 			this.best_personality = positions.get(positions.size()-1).get_personality().clone();
 			this.best_happenings = positions.get(positions.size()-1).get_happenings().clone();
 			this.best_simLength = positions.get(positions.size()-1).get_simLength();
 			this.best_actualLength = positions.get(positions.size()-1).get_actualLength();
 			
-			this.updateNotes(fit);
+			this.tellability = fit.tellability;
+			this.updateNotes();
 		}
 		positions.sort(null);
 	}
@@ -217,8 +219,8 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 		
 		positions.add(qPos);
 
-		if(positions.get(positions.size()-1).get_tellability() >= best_tellability) {
-			this.best_tellability = positions.get(positions.size()-1).get_tellability();
+		if(positions.get(positions.size()-1).get_tellabilityValue() >= best_tellability) {
+			this.best_tellability = positions.get(positions.size()-1).get_tellabilityValue();
 			// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move
 			this.best_personality = positions.get(positions.size()-1).get_personality().clone();
 			this.best_happenings = positions.get(positions.size()-1).get_happenings().clone();

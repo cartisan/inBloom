@@ -256,7 +256,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public double fitness_rating(int recipient, int informant) {
 
-		return (((Particle) population[informant]).best_tellability() - population[recipient].get_tellability())/((Particle) population[0]).best_tellability();
+		return (((Particle) population[informant]).best_tellability() - population[recipient].get_tellabilityValue())/((Particle) population[0]).best_tellability();
 	}
 	
 	
@@ -267,7 +267,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	public double determine_spacetime(int recipient) {
 		
 //		return 1-(population[recipient].get_tellability()/population[0].best_tellability());
-		return 1-Math.pow((population[recipient].get_tellability()/((Particle) population[0]).best_tellability()),2);
+		return 1-Math.pow((population[recipient].get_tellabilityValue()/((Particle) population[0]).best_tellability()),2);
 	}
 	
 	
@@ -856,7 +856,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		for(int i = 0; i < individual_count; i++) {
 
 			// A Particles qualifies as an informant if it's fitness is greater than the particle to be updated
-			if(((Particle) population[i]).best_tellability()>=population[individual].get_tellability()) 
+			if(((Particle) population[i]).best_tellability()>=population[individual].get_tellabilityValue()) 
 				selected_particles.add(i);
 			
 		}
@@ -876,7 +876,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			double force = decay_rate;
 			
 			// determine if force is pulling towards or pushing away
-			if(((Particle) population[informants.get(index)]).best_tellability() <= population[recipient].get_tellability())
+			if(((Particle) population[informants.get(index)]).best_tellability() <= population[recipient].get_tellabilityValue())
 				force*=-1;
 			
 			// copy information
@@ -940,7 +940,8 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			
 			double force = energy*inertia*Math.pow(distance,2);
 			
-			if(this.verbose) {
+//			if(this.verbose) {
+			if(false) {
 				System.out.println("Informant: " + index);
 				System.out.println("  Energy: " + energy);
 				System.out.println("  Inertia: " + inertia);

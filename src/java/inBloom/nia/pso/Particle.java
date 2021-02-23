@@ -29,7 +29,7 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 	public Particle(Individual candidate, ChromosomePersonality velocity_personality, ChromosomeHappenings velocity_happenings, Fitness<?,?> fit) {
 		super(candidate.get_personality(), candidate.get_happenings(), candidate.get_simLength());
 		this.actual_length  = candidate.get_actualLength();
-		this.tellability = candidate.get_tellability();
+		this.tellabilityValue = candidate.get_tellabilityValue();
 
 		this.velocity_personality = velocity_personality;
 		this.velocity_happenings = velocity_happenings;
@@ -122,17 +122,18 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 	 */
 	public void update_tellability(Fitness<?,?> fit) {
 		try {
-			tellability = fit.evaluate_individual(this);
+			tellabilityValue = fit.evaluate_individual(this);
 
-			if(tellability > best_tellability) {
+			if(tellabilityValue > best_tellability) {
 				// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move
 				this.best_personality = personality.clone();
 				this.best_happenings = happenings.clone();
 				this.best_simLength = simulation_length;
 				this.best_actualLength = actual_length; 
-				this.best_tellability = tellability;
-
-				this.updateNotes(fit);
+				this.best_tellability = tellabilityValue;
+				
+				this.tellability = fit.tellability;
+				this.updateNotes();
 			}
 			
 		} catch (JasonException e) {

@@ -325,19 +325,19 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 */
 	@Override
 	protected void evaluate_population() {
-		Double best = this.population[0].get_tellability();
+		Double best = this.population[0].get_tellabilityValue();
 		Double average = 0.0;
 
 		int relevant_size = this.individual_count/2;
 
 		for(int i = 0; i < relevant_size; i++) {
-			average += this.population[i].get_tellability();
+			average += this.population[i].get_tellabilityValue();
 		}
 
 		double halfAverage = average/relevant_size;
 
 		for(int i = relevant_size; i < this.individual_count; i++) {
-			average += this.population[i].get_tellability();
+			average += this.population[i].get_tellabilityValue();
 		}
 
 		average /= this.individual_count;
@@ -935,11 +935,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		for(int i = 0; i < this.individual_count; i++) {
 
-			total_fitness += this.population[i].get_tellability();
+			total_fitness += this.population[i].get_tellabilityValue();
 			rouletteWheel[i] = total_fitness;
 
 			// Check if we have enough individuals with fitness
-			if(control && this.population[i].get_tellability()==0) {
+			if(control && this.population[i].get_tellabilityValue()==0) {
 
 				validIndividuals = i;
 				control = false;
@@ -1126,8 +1126,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 			boolean improvement = false;
 
-			if(this.offspring[index].get_tellability()>one.get_tellability() && this.offspring[index].get_tellability()>two.get_tellability()
-			|| this.offspring[index+1].get_tellability()>one.get_tellability() && this.offspring[index+1].get_tellability()>two.get_tellability()) {
+			if(this.offspring[index].get_tellabilityValue()>one.get_tellabilityValue() && this.offspring[index].get_tellabilityValue()>two.get_tellabilityValue()
+			|| this.offspring[index+1].get_tellabilityValue()>one.get_tellabilityValue() && this.offspring[index+1].get_tellabilityValue()>two.get_tellabilityValue()) {
 				improvement = true;
 			}
 
@@ -1191,13 +1191,13 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			boolean local_improvement = false;
 			boolean global_improvement = false;
 
-			if(this.offspring[index].get_tellability()>one.get_tellability() && this.offspring[index].get_tellability()>two.get_tellability()
-			|| this.offspring[index+1].get_tellability()>two.get_tellability() && this.offspring[index+1].get_tellability()>two.get_tellability()) {
+			if(this.offspring[index].get_tellabilityValue()>one.get_tellabilityValue() && this.offspring[index].get_tellabilityValue()>two.get_tellabilityValue()
+			|| this.offspring[index+1].get_tellabilityValue()>two.get_tellabilityValue() && this.offspring[index+1].get_tellabilityValue()>two.get_tellabilityValue()) {
 
 				global_improvement = true;
 
-				if(this.offspring[index].get_tellability()>this.population[this.individual_count/2-1].get_tellability()
-				|| this.offspring[index+1].get_tellability()>this.population[this.individual_count/2-1].get_tellability()) {
+				if(this.offspring[index].get_tellabilityValue()>this.population[this.individual_count/2-1].get_tellabilityValue()
+				|| this.offspring[index+1].get_tellabilityValue()>this.population[this.individual_count/2-1].get_tellabilityValue()) {
 
 					local_improvement = true;
 				}
@@ -1222,6 +1222,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		boolean[][] crossPersonality = new boolean[this.number_agents][5];
 		boolean[][] personalityPoints = this.setCrossoverPoints(crossPersonality, this.personality_cross);
 
+		// FIXME: Here was error where crossHappenings was combined with this.personality_cross
 		boolean[][] crossHappenings = new boolean[this.number_agents][this.number_happenings];
 		boolean[][] happeningPoints = this.setCrossoverPoints(crossHappenings, this.happenings_cross);
 
@@ -1265,13 +1266,13 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			boolean local_improvement = false;
 			boolean global_improvement = false;
 
-			if(this.offspring[index].get_tellability()>one.get_tellability() && this.offspring[index].get_tellability()>two.get_tellability()
-			|| this.offspring[index+1].get_tellability()>two.get_tellability() && this.offspring[index+1].get_tellability()>two.get_tellability()) {
+			if(this.offspring[index].get_tellabilityValue()>one.get_tellabilityValue() && this.offspring[index].get_tellabilityValue()>two.get_tellabilityValue()
+			|| this.offspring[index+1].get_tellabilityValue()>two.get_tellabilityValue() && this.offspring[index+1].get_tellabilityValue()>two.get_tellabilityValue()) {
 
 				global_improvement = true;
 
-				if(this.offspring[index].get_tellability()>this.population[this.individual_count/2-1].get_tellability()
-				|| this.offspring[index+1].get_tellability()>this.population[this.individual_count/2-1].get_tellability()) {
+				if(this.offspring[index].get_tellabilityValue()>this.population[this.individual_count/2-1].get_tellabilityValue()
+				|| this.offspring[index+1].get_tellabilityValue()>this.population[this.individual_count/2-1].get_tellabilityValue()) {
 
 					local_improvement = true;
 				}
@@ -1335,7 +1336,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					Integer yCoord = ycopy.get(yPos);
 					ycopy.remove(yPos);
 
-					// FIXME: Here was error with java.lang.ArrayIndexOutOfBoundsException: 2
 					if(Math.random() < this.crossover_prob * chromosome_cross[xPos][yPos]) {
 						crossover_points[xPos][yPos] = true;
 						cross = !cross;
@@ -1365,8 +1365,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					Integer xCoord = xcopy.get(xPos);
 					xcopy.remove(xPos);
 
-					// FIXME: Here was error with java.lang.ArrayIndexOutOfBoundsException: 3
-					if(Math.random() < this.crossover_prob * chromosome_cross[xPos][yPos]) { 
+					if(Math.random() < this.crossover_prob * chromosome_cross[xPos][yPos]) {
 						crossover_points[xPos][yPos] = true;
 						cross = !cross;
 					}
@@ -1435,8 +1434,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 			boolean improvement = false;
 
-			if(this.offspring[index].get_tellability()>this.population[this.individual_count/2-1].get_tellability()
-			|| this.offspring[index+1].get_tellability()>this.population[this.individual_count/2-1].get_tellability() ) {
+			if(this.offspring[index].get_tellabilityValue()>this.population[this.individual_count/2-1].get_tellabilityValue()
+			|| this.offspring[index+1].get_tellabilityValue()>this.population[this.individual_count/2-1].get_tellabilityValue() ) {
 				improvement = true;
 			}
 
@@ -1605,11 +1604,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				boolean global_improvement = false;
 				boolean local_improvement = false;
 
-				if(result.get_tellability()>recipient.get_tellability()) {
+				if(result.get_tellabilityValue()>recipient.get_tellabilityValue()) {
 
 					global_improvement = true;
 
-					if(result.get_tellability() > this.population_bestAverage) {
+					if(result.get_tellabilityValue() > this.population_bestAverage) {
 						local_improvement = true;
 					}
 				}
@@ -1689,11 +1688,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				boolean global_improvement = false;
 				boolean local_improvement = false;
 
-				if(result.get_tellability()>recipient.get_tellability()) {
+				if(result.get_tellabilityValue()>recipient.get_tellabilityValue()) {
 
 					global_improvement = true;
 
-					if(result.get_tellability() > this.population_bestAverage) {
+					if(result.get_tellabilityValue() > this.population_bestAverage) {
 						local_improvement = true;
 					}
 				}
@@ -1819,11 +1818,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				boolean global_improvement = false;
 				boolean local_improvement = false;
 
-				if(result.get_tellability()>recipient.get_tellability()) {
+				if(result.get_tellabilityValue()>recipient.get_tellabilityValue()) {
 
 					global_improvement = true;
 
-					if(result.get_tellability() > this.population_bestAverage) {
+					if(result.get_tellabilityValue() > this.population_bestAverage) {
 						local_improvement = true;
 					}
 				}
@@ -1919,11 +1918,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				boolean global_improvement = false;
 				boolean local_improvement = false;
 
-				if(result.get_tellability()>recipient.get_tellability()) {
+				if(result.get_tellabilityValue()>recipient.get_tellabilityValue()) {
 
 					global_improvement = true;
 
-					if(result.get_tellability() > this.population_bestAverage) {
+					if(result.get_tellabilityValue() > this.population_bestAverage) {
 						local_improvement = true;
 					}
 				}
@@ -1982,16 +1981,16 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			double bestTellability = -1;
 
 			if(posOff < this.selection_size) {
-				if(this.offspring[posOff].get_tellability()>bestTellability) {
+				if(this.offspring[posOff].get_tellabilityValue()>bestTellability) {
 					best = 1;
-					bestTellability = this.offspring[posOff].get_tellability();
+					bestTellability = this.offspring[posOff].get_tellabilityValue();
 				}
 			}
 
 			if(posMut < this.selection_size) {
-				if(this.mutated_offspring[posMut].get_tellability()>bestTellability) {
+				if(this.mutated_offspring[posMut].get_tellabilityValue()>bestTellability) {
 					best = 2;
-					bestTellability = this.mutated_offspring[posMut].get_tellability();
+					bestTellability = this.mutated_offspring[posMut].get_tellabilityValue();
 				}
 			}
 
@@ -2072,23 +2071,23 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			double bestTellability = -1;
 
 			if(posPop < this.individual_count) {
-				if(this.population[posPop].get_tellability()>bestTellability) {
+				if(this.population[posPop].get_tellabilityValue()>bestTellability) {
 					best = 1;
-					bestTellability = this.population[posPop].get_tellability();
+					bestTellability = this.population[posPop].get_tellabilityValue();
 				}
 			}
 
 			if(posOff < this.selection_size) {
-				if(this.offspring[posOff].get_tellability()>bestTellability) {
+				if(this.offspring[posOff].get_tellabilityValue()>bestTellability) {
 					best = 2;
-					bestTellability = this.offspring[posOff].get_tellability();
+					bestTellability = this.offspring[posOff].get_tellabilityValue();
 				}
 			}
 
 			if(posMut < this.selection_size) {
-				if(this.mutated_offspring[posMut].get_tellability()>bestTellability) {
+				if(this.mutated_offspring[posMut].get_tellabilityValue()>bestTellability) {
 					best = 3;
-					bestTellability = this.mutated_offspring[posMut].get_tellability();
+					bestTellability = this.mutated_offspring[posMut].get_tellabilityValue();
 				}
 			}
 

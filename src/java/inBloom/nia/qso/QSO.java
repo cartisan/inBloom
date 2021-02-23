@@ -290,7 +290,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 	
 	public double determine_spacetime(int recipient, int state) {
 		
-		return 1-(((Quantum) population[recipient]).get_position(state).get_tellability() / ((Quantum) population[0]).best_tellability());
+		return 1-(((Quantum) population[recipient]).get_position(state).get_tellabilityValue() / ((Quantum) population[0]).best_tellability());
 	}
 	
 	
@@ -932,7 +932,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		QuantumPosition one = new_quantumPosition(recipient,state,recipient.get_personality(state),donor.best_happenings());
 		QuantumPosition two = new_quantumPosition(recipient,state,donor.best_personality(),recipient.get_happenings(state));
 		
-		if(one.get_tellability() > two.get_tellability())
+		if(one.get_tellabilityValue() > two.get_tellabilityValue())
 			recipient.add_Position(one, state);
 		else
 			recipient.add_Position(two, state);
@@ -989,7 +989,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			QuantumPosition one = new_quantumPosition(recipient,state,personalityOne,happeningsOne);
 			QuantumPosition two = new_quantumPosition(recipient,state,personalityTwo,happeningsTwo);
 			
-			if(one.get_tellability() > two.get_tellability())
+			if(one.get_tellabilityValue() > two.get_tellabilityValue())
 				recipient.add_Position(one, state);
 			else
 				recipient.add_Position(two, state);
@@ -1055,7 +1055,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			QuantumPosition one = new_quantumPosition(recipient,state,personalityOne,happeningsOne);
 			QuantumPosition two = new_quantumPosition(recipient,state,personalityTwo,happeningsTwo);
 			
-			if(one.get_tellability() > two.get_tellability())
+			if(one.get_tellabilityValue() > two.get_tellabilityValue())
 				recipient.add_Position(one, state);
 			else
 				recipient.add_Position(two, state);
@@ -1208,7 +1208,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		QuantumPosition one = new_quantumPosition((Quantum) population[positions.get(0)], state,personalityRandom, happeningsRandom);
 		QuantumPosition two = new_quantumPosition((Quantum) population[positions.get(0)], state,personalityAverage, happeningsAverage);
 		
-		if(one.get_tellability() > two.get_tellability())
+		if(one.get_tellabilityValue() > two.get_tellabilityValue())
 			((Quantum) population[positions.get(0)]).add_Position(one, state);
 		else
 			((Quantum) population[positions.get(0)]).add_Position(two, state);
@@ -1336,7 +1336,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			QuantumPosition positive_resultant = new_quantumPosition(recipient,state,positivePersonality,positiveHappenings);
 			QuantumPosition negative_resultant = new_quantumPosition(recipient,state,negativePersonality,negativeHappenings);
 			
-			if(positive_resultant.get_tellability() > negative_resultant.get_tellability())
+			if(positive_resultant.get_tellabilityValue() > negative_resultant.get_tellabilityValue())
 				recipient.add_Position(positive_resultant, state);
 			else
 				recipient.add_Position(negative_resultant, state);
@@ -1426,7 +1426,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			QuantumPosition positive_resultant = new_quantumPosition(recipient,state,positivePersonality,positiveHappenings);
 			QuantumPosition negative_resultant = new_quantumPosition(recipient,state,negativePersonality,negativeHappenings);
 			
-			if(positive_resultant.get_tellability() > negative_resultant.get_tellability())
+			if(positive_resultant.get_tellabilityValue() > negative_resultant.get_tellabilityValue())
 				recipient.add_Position(positive_resultant, state);
 			else
 				recipient.add_Position(negative_resultant, state);
@@ -1599,7 +1599,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			QuantumPosition positive_resultant = new_quantumPosition(recipient,state,positivePersonality,positiveHappenings);
 			QuantumPosition negative_resultant = new_quantumPosition(recipient,state,negativePersonality,negativeHappenings);
 			
-			if(positive_resultant.get_tellability() > negative_resultant.get_tellability())
+			if(positive_resultant.get_tellabilityValue() > negative_resultant.get_tellabilityValue())
 				recipient.add_Position(positive_resultant, state);
 			else
 				recipient.add_Position(negative_resultant, state);
@@ -1715,7 +1715,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 			QuantumPosition positive_resultant = new_quantumPosition(recipient,state,positivePersonality,positiveHappenings);
 			QuantumPosition negative_resultant = new_quantumPosition(recipient,state,negativePersonality,negativeHappenings);
 			
-			if(positive_resultant.get_tellability() > negative_resultant.get_tellability())
+			if(positive_resultant.get_tellabilityValue() > negative_resultant.get_tellabilityValue())
 				recipient.add_Position(positive_resultant, state);
 			else
 				recipient.add_Position(negative_resultant, state);
@@ -1804,7 +1804,7 @@ public class QSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		for(int i = 0; i < individual_count; i++) {
 			
 			// A Particles qualifies as an informant if it's fitness is greater than the particle to be updated
-			if(((Quantum) population[i]).best_tellability() >= ((Quantum) population[individual]).get_position(state).get_tellability())
+			if(((Quantum) population[i]).best_tellability() >= ((Quantum) population[individual]).get_position(state).get_tellabilityValue())
 				selected_particles.add(i);
 			
 		}

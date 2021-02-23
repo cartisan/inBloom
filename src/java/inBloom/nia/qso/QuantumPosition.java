@@ -96,8 +96,9 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 	 */
 	public void update_tellability(Fitness<?,?> fit) {
 		try {
-			tellability = fit.evaluate_individual(this);
-			this.updateNotes(fit);
+			this.tellabilityValue = fit.evaluate_individual(this);
+			this.tellability = fit.tellability;
+			this.updateNotes();
 		} catch (JasonException e) {
 			//e.printStackTrace();
 		} catch (NullPointerException e) {
@@ -113,7 +114,7 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 	public int compareTo(QuantumPosition other) {
 		
 		// smaller operator returns array in descending order
-		if(tellability < other.get_tellability())
+		if(tellabilityValue < other.get_tellabilityValue())
 			return 1;
 		return -1;
 	}

@@ -13,8 +13,9 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 		super(personality, happenings, simLength);
 		
 		try {
-			tellability = fit.evaluate_individual(this);
-			this.updateNotes(fit);
+			this.tellabilityValue = fit.evaluate_individual(this);
+			this.tellability = fit.tellability;
+			this.updateNotes();
 		} catch (JasonException e) {
 			//e.printStackTrace();
 		} catch (NullPointerException e) {
@@ -42,7 +43,7 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 	
 	/**
 	 * Works similar to the previous equals but does not require Individual to be instantiated to compare.
-	 * This saves runtime since we do not need to run a simulation in order to determine the tellability.
+	 * This saves runtime since we do not need to run a simulation in order to determine the tellabilityValue.
 	 */
 	public boolean equals(ChromosomePersonality other_personality, ChromosomeHappenings other_happenings) {
 		if(!this.personality.equals(other_personality))
@@ -61,7 +62,7 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 		for(int i = others.length-1; i >= 0; i--) {
 			if(others[i]!=null) {
 				if(this.equals(others[i])) {
-					if(tellability>others[i].get_tellability())
+					if(tellabilityValue>others[i].get_tellabilityValue())
 						others[i] = this;
 					return true;
 				}
@@ -79,7 +80,7 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 	public int compareTo(Individual other) {
 		
 		// smaller operator returns array in descending order
-		if(tellability < other.get_tellability())
+		if(tellabilityValue < other.get_tellabilityValue())
 			return 1;
 		return -1;
 	}
