@@ -723,8 +723,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
 	    		this.resetAllAgentActionCounts();
 	    		this.pause();
-	    	}
-	    	if (MAX_STEP_NUM > -1 && this.getStep() >= MAX_STEP_NUM) {
+	    	} else if (MAX_STEP_NUM > -1 && this.getStep() >= MAX_STEP_NUM) {
 	    		logger.info("Auto-paused execution of simulation, because system ran for MAX_STEP_NUM steps.");
 	    		this.pause();
 	    	} else if (this.model.getCharacters().isEmpty()) {
