@@ -48,7 +48,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 		this.filename = name;
 		this.filepath = path;
 
-		this.fit = new Fitness<>(EVO_ENV,true,Level.INFO,showGui);
+		this.fit = new Fitness<>(EVO_ENV, false, Level.INFO, showGui);
 	}
 
 	public CandidateSolution getBest_individual() {
@@ -171,7 +171,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 
 	public static void main(String[] args) {
 		String path = "C:\\Users\\Leon\\Desktop\\InBloomNIA\\";
-		String name = "PSO_run.log";
+		String name = "GEN_run.log";
 
 		FileInterpreter<?,?> fi = new FileInterpreter<FarmEnvironment, FarmModel>(new FarmNIEnvironment(), path, name, true);
 

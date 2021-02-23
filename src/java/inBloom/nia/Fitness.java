@@ -16,13 +16,12 @@ import inBloom.PlotModel;
 import inBloom.graph.GraphAnalyzer;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
-import inBloom.helper.EnvironmentListener;
 import inBloom.helper.Tellability;
 import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
 
 @SuppressWarnings("rawtypes")
-public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends PlotLauncher implements EnvironmentListener {
+public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> extends PlotLauncher {
 	public NIEnvironment<?, ?> EVO_ENV;
 	public Tellability tellability;
 
@@ -33,9 +32,19 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	protected boolean verbose;
 	protected Level level;
 
+	public Thread t;
+
 	/** Timeout in ms before a single simulation is forcibly stopped. A value of -1 means no timeout.  */
 	protected static long TIMEOUT = 10000;
 
+	/**
+	 * Used to start a simulation for the execution of a NIA.
+	 * 
+	 * @param environment
+	 * @param verbose
+	 * @param level
+	 * @param showGui
+	 */
 	@SuppressWarnings("unchecked")
 	public Fitness(NIEnvironment<?, ?> environment, boolean verbose, Level level){
 
@@ -50,6 +59,14 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 
 	}
 
+	/**
+	 * Used to start a simulation from {@linkplain FileInterpreter}.
+	 * 
+	 * @param environment
+	 * @param verbose
+	 * @param level
+	 * @param showGui
+	 */
 	@SuppressWarnings("unchecked")
 	public Fitness(NIEnvironment<?, ?> environment, boolean verbose, Level level, boolean showGui){
 
@@ -70,6 +87,16 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		this.isRunning = true;
 		this.set = false;
 		Integer simulation_length = individual.get_simLength();
+
+		if(simulation_length < 100) {
+			PlotEnvironment.MAX_STEP_NUM = simulation_length;
+		} else {
+			// Upper Limit
+			PlotEnvironment.MAX_STEP_NUM = 100;
+		}
+
+		// Deactivate MAX_REPEAT if needed, by commenting back in:
+//		PlotEnvironment.MAX_REPEATE_NUM = -1;
 
 		if(verbose)
 			System.out.println("Starting new Simulation with length: " + simulation_length);
@@ -97,65 +124,38 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		 */
 
 		try {
-			Thread t = new Thread(new Cycle(runner, model, agents, this.EVO_ENV.agentSrc));
-			t.start();
+			this.t = new Thread(new Cycle(runner, model, agents, this.EVO_ENV.agentSrc));
+			this.t.start();
 		} catch (JasonException e) {
 			//e.printStackTrace();
-			this.onPauseRepeat();
+			this.pauseExecution();
 		} catch (NullPointerException e) {
 			//e.printStackTrace();
-			this.onPauseRepeat();
+			this.pauseExecution();
 		} catch (Exception e) {
 			//e.printStackTrace();
-			this.onPauseRepeat();
+			this.pauseExecution();
 		}
 
 		// Logging level
         Logger.getLogger("").setLevel(level);
 
 		MASConsoleGUI.get().setPause(false);
-		boolean hasAddedListener = false;
 		long startTime = System.currentTimeMillis();
 
 		while(this.isRunning) {
 			try {
-				// This is needed in the loop, because the plot environment is null before starting
-				if(!hasAddedListener) {
-					if(runner.getEnvironmentInfraTier() != null) {
-						if(runner.getEnvironmentInfraTier().getUserEnvironment() != null) {
-					    	if(!this.set) {
-
-					    		// Deactivate Max_Repeate feature
-					    		// TODO: Activated again for TLRH
-//								PlotEnvironment.MAX_REPEATE_NUM = -1;
-
-								// Upper Limit
-								if(simulation_length< 100) {
-									PlotEnvironment.MAX_STEP_NUM = simulation_length;
-								} else {
-									PlotEnvironment.MAX_STEP_NUM = 100;
-								}
-
-								runner.getUserEnvironment().addListener(this);
-								hasAddedListener = true;
-								this.set=true;
-					    	}
-						}
-					}
-				}
 				// Handle the timeout if it was set
 				if(TIMEOUT > -1 && System.currentTimeMillis() - startTime >= TIMEOUT && PlotEnvironment.getPlotTimeNow() >= TIMEOUT) {
-					//log("[PlotCycle] SEVERE: timeout for engagement step triggered, analyzing incomplete story and moving on");
-					this.isRunning = false;
 					this.pauseExecution();
 				}
 				Thread.sleep(150);
 			} catch (InterruptedException e) {
 				//e.printStackTrace();
-				this.onPauseRepeat();
+				this.pauseExecution();
 			} catch (NullPointerException e) {
 				//e.printStackTrace();
-				this.onPauseRepeat();
+				this.pauseExecution();
 			}
 		}
 
@@ -177,9 +177,8 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		// Cleanup to avoid Fragments
 		if(this.cleanup) {
 			PlotGraphController.resetPlotListener();
-			analyzer = null;
-			analyzedGraph = null;
-			super.reset();
+			this.reset();
+			t.stop();
 		}
 
 		if(verbose)
@@ -188,37 +187,11 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		return result;
 	}
 
-	// pauseExecution() with added functionality for showGUI=true
 	@Override
 	public void pauseExecution() {
-
-		if(!this.showGui) {
-			MASConsoleGUI.get().setPause(true);
-			runner.reset();
-		}else {
-			this.reset();
-		}
-	}
-
-	@Override
-	public void onPauseRepeat() {
-
 		this.isRunning = false;
+		super.pauseExecution();
 	}
-
-	// Reset() without NullPointerException
-	@Override
-	public void reset() {
-
-		if(this.env != null) {
-			this.env.stop();
-		}
-		if (this.control != null) {
-    		this.control.stop();
-    	}
-    	this.stopAgs();
-    	this.ags.clear();
-    }
 
 
 	/**
