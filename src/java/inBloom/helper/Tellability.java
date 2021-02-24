@@ -1,5 +1,7 @@
 package inBloom.helper;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,7 +11,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
@@ -72,7 +76,7 @@ public class Tellability {
 
 	// Overall
 	public double value;
-
+	public String detailedLog;
 
 	/**
 	 * Takes an analyzed graph and computes all necessary statistics of the plot to compute tellability.
@@ -80,7 +84,15 @@ public class Tellability {
 	 * {@link VertexMergingPPVisitor} and  {@link EdgeGenerationPPVisitor}.
 	 */
 	public Tellability(PlotDirectedSparseGraph graph, MoodMapper moodData) {
-//		logger.setLevel(Level.FINE);
+		logger.setLevel(Level.FINE);
+
+		// Set up a logging handler that can provide logs of tellability-computation into a string
+		ByteArrayOutputStream loggerContent = new ByteArrayOutputStream();
+		PrintStream prStr = new PrintStream(loggerContent);
+		StreamHandler streamHandler = new StreamHandler(prStr, new PlotFormatter());
+		streamHandler.setLevel(Level.FINE);
+		logger.addHandler(streamHandler);
+
 		// Perform quantitative analysis of plot
 		this.counter = new CountingVisitor();
 		this.computeSimpleStatistics(graph);
@@ -102,6 +114,9 @@ public class Tellability {
 		logger.info("normalized absoluteSymmetry: " + this.absoluteSymmetry);
 		logger.info("normalized absoluteOpposition: " + this.absoluteOpposition);
 		logger.info("normalized absoluteSuspense: " + this.absoluteSuspense);
+
+		streamHandler.flush();
+		this.detailedLog = loggerContent.toString();
 	}
 
 	/**
@@ -232,20 +247,20 @@ public class Tellability {
 			}
 			agentSeqMap = agentEventSeqMap;
 		}
-		
+
 		// compute symmetry and parallelism on either FU or events (use tmp sequence for logging)
-		List<Float> tmp = this.symmetry(agentSeqMap);	
+		List<Float> tmp = this.symmetry(agentSeqMap);
 		if(!tmp.isEmpty()) {
 			logger.info("   average symmetry: " + Stats.meanOf(tmp));
 			similarityScores.addAll(tmp);
 		}
-		
+
 		tmp = this.parallelism(agentSeqMap);
 		if(!tmp.isEmpty()) {
 			logger.info("   average paralellism: " + Stats.meanOf(tmp));
 			similarityScores.addAll(tmp);
 		}
-		
+
 		// overall symmetry is average: over symmetry for each character and parallelism for each character pair
 		this.absoluteSymmetry = Stats.meanOf(similarityScores);
 		return;
@@ -266,7 +281,7 @@ public class Tellability {
 			if (relevantEvents != 0) {
 				normalizedExpectationViolationScore = (float) violationIndicators / relevantEvents;
 			}
-		
+
 			logger.fine("      violated expectations: " + this.counter.violatedExpectationEvents.get(agent));
 			logger.fine("      terminated beliefs: " + this.counter.terminatedPercepts.get(agent));
 			logger.info("      number of violation indicators: " + violationIndicators);
@@ -277,9 +292,9 @@ public class Tellability {
 			logger.info("   computing reversals in fortunes score");
 			Map<Long, List<Mood>> cycleMoodMap = moodData.getMoodByAgent(agent);
 			List<Long> reasoningCycleNums = cycleMoodMap.keySet().stream().sorted().collect(Collectors.toList());
-			
+
 			// check at which agent reasoning cycle the environment started execution
-			// delete so many entries in reasoningCycleNums, that we will start searching for intervals at the env start reasoning cycle 
+			// delete so many entries in reasoningCycleNums, that we will start searching for intervals at the env start reasoning cycle
 			Long startCycle = moodData.stepReasoningcycleNumMap.getOrDefault(0, 0L);
 			for (long l = 0L; l < startCycle + FORTUNE_CHANGE_INTERVAL_LENGTH; l++) {
 				reasoningCycleNums.remove(l);
