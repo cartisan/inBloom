@@ -324,8 +324,8 @@ public class Tellability {
 					}
 				}
 			}
-			logger.fine("      fortuneIntervals: " + reversals);
-			logger.fine("      number of entries: " + reversals.size());
+//			logger.fine("      fortuneIntervals: " + reversals);
+			logger.fine("      fortuneIntervals number of entries: " + reversals.size());
 
 			List<MoodInterval> reversalsNoOverlap = new ArrayList<>();
 			List<MoodInterval> tmpList = new ArrayList<>();

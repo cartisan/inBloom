@@ -362,6 +362,13 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		if(this.floatingParameters) {
 			this.determineGlobalParameters();
 		}
+
+		// Clean log containing detailed information about tellability computation of individuals that are not best
+		// otherwise, we run out of heap memory
+		// TODO: REMOVE after debug
+		for (int i=1; i<this.population.length; ++i) {
+			this.population[i].cleanTellabilityLog();
+		}
 	}
 
 	@Override

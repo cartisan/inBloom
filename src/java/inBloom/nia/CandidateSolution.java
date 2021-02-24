@@ -66,6 +66,7 @@ public abstract class CandidateSolution {
 			string += "\n";
 		}
 
+		this.updateNotes();
 		string += "<Notes>\n";
 		string += this.notes;
 
@@ -112,5 +113,12 @@ public abstract class CandidateSolution {
 
 	public int get_happenings(int x, int y) {
 		return this.happenings.values[x][y];
+	}
+
+	public void cleanTellabilityLog() {
+		if (this.tellability != null) {
+			this.tellability.detailedLog = "";
+			this.tellability = null;
+		}
 	}
 }
