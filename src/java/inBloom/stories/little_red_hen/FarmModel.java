@@ -52,6 +52,7 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 			if (wheatItem.state == Wheat.STATES.SEED) {
 				agent.removeFromInventory(wheatItem);
 				this.farm.produce.add(wheatItem);
+				wheatItem.owner = agent.name;
 				this.farm.updateProduceState(Wheat.STATES.GROWING, wheatItem);
 
 				logger.info("Wheat planted");
@@ -85,13 +86,14 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 	public ActionReport harvestWheat(Character agent) {
 		ActionReport res = new ActionReport();
 
-		if (agent.location == this.farm && this.farm.produce != null) { 
+		if (agent.location == this.farm && this.farm.produce != null) {
 			for (Wheat w : this.farm.produce) {
 				if (w.state == Wheat.STATES.RIPE) {
 					w.state = Wheat.STATES.HARVESTED;
 					this.farm.updateProduceState(null, w);
 					agent.addToInventory(w);
 					logger.info("Wheat was harvested");
+					w.owner = null;
 					res.addPerception(agent.name, PerceptAnnotation.fromEmotion("pride"));
 					res.success = true;
 					break;
@@ -148,8 +150,8 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		}
 
 		public void updateProduceState(Wheat.STATES state, Wheat wheat) {
-			this.model.environment.removePerceptsByUnif(this, Literal.parseLiteral("at(wheat[X]," + this.literal() + ")[_]"));
-			
+			this.model.environment.removePerceptsByUnif(this, Literal.parseLiteral("at(wheat[_,_]," + this.literal() + ")[_]"));
+
 			Iterator<Wheat> it = this.produce.iterator();
 			while(it.hasNext()) {
 				Wheat prod = it.next();
@@ -296,11 +298,15 @@ public class FarmModel extends PlotModel<FarmEnvironment>{
 		public static final String itemName = "wheat";
 
 		public STATES state = Wheat.STATES.SEED;
+		public String owner = null;
 
 		@Override
 		public Literal literal() {
 			Literal res = super.literal();
 			res.addAnnot(ASSyntax.createLiteral("state", ASSyntax.createAtom(this.state.toString().toLowerCase())));
+			if (this.owner != null) {
+				res.addAnnot(ASSyntax.createLiteral("owner", ASSyntax.createAtom(this.owner)));
+			}
 			return res;
 		}
 

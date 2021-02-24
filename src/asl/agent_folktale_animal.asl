@@ -146,11 +146,11 @@ wish(relax).
 	-has(wheat[_]);
 	!create(bread).
 
-+!create(bread) : at(wheat[state(growing)], farm) <-
++!create(bread) : .my_name(Me) & at(wheat[state(growing),owner(Me)], farm) <-
 	!tend(wheat);
 	!create(bread).
 
-+!create(bread) : at(wheat[state(ripe)], farm) <-
++!create(bread) : .my_name(Me) & at(wheat[state(ripe),owner(Me)], farm) <-
 	!harvest(wheat);
 	+has(wheat[state(harvested)]); // TODO: get env to give this information?
 	!create(bread).
