@@ -680,6 +680,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      */
     synchronized void wake() {
     	this.repeatingSequenceMap.clear();
+	    this.resetAllAgentActionCounts();
 
     	this.notifyAll();
     	logger.info(" Execution continued, switching to Jason GUI output");
@@ -721,7 +722,6 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	    		// reset counter
 	    		logger.info("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
 	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
-	    		this.resetAllAgentActionCounts();
 	    		this.pause();
 	    	} else if (MAX_STEP_NUM > -1 && this.getStep() >= MAX_STEP_NUM) {
 	    		logger.info("Auto-paused execution of simulation, because system ran for MAX_STEP_NUM steps.");
