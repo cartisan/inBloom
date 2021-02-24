@@ -56,14 +56,14 @@ public class NILauncher {
 			case "Coupled":
 			case "GEN":
 				ga.setLevel(Level.OFF);
-	
+
 				ga.setFileName(path+"GEN"+filename);
-	
+
 				if(algorithm=="Coupled") {
-	
+
 					ga.setExit(false);
 				}
-	
+
 				// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
 				ga.setPersInit(false, true, true);
 				// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
@@ -76,31 +76,31 @@ public class NILauncher {
 				ga.setMutation(true, true, true, true);
 				// true -> SteadyReplacer, false -> partiallyRandomReplacer
 				ga.setReplaceMode(true);
-	
+
 				// Termination Criteria
 				// Runtime in seconds (-1 to deactivate)
 				ga.setMaxRuntime(time);
 				// Number of times the main loop is repeated without adding a new (relevant) candidate to gen_pool
 				ga.setTermination(max_repetitions);
-	
+
 				ga.run();
-	
+
 				if(algorithm=="Evolutionary") {
 					break;
 				}
-	
+
 			case "PSO":
 				PSO<?,?> pso = niEnvironment.get_PSO(args,init_stepnumber, individual_count);
-	
+
 				pso.setLevel(Level.OFF);
-	
+
 				pso.setFileName(path+"PSO"+filename);
-	
+
 				if(algorithm=="Coupled") {
-	
+
 					pso.setGenInit(10, ga.get_genPool());
 				}
-	
+
 				pso.setDeterministic(true);
 				// Decay Rate of the Velocity update function
 				pso.setDecayRate(0.05);
@@ -116,24 +116,24 @@ public class NILauncher {
 				pso.setSelectionManner(false);
 				// true activates the floating parameters feature
 				pso.setFloatingParameters(true);
-	
+
 				// Termination Criteria
 				// Runtime in seconds (-1 to deactivate)
 				pso.setMaxRuntime(time);
 				// Number of times the main loop is repeated without adding a new (relevant) candidate to gen_pool
 				pso.setTermination(max_repetitions);
-	
+
 				pso.run();
-	
+
 				break;
-	
+
 			case "QSO":
 				QSO<?,?> qso = niEnvironment.get_QSO(args,init_stepnumber, individual_count);
-	
+
 				qso.setLevel(Level.OFF);
-	
+
 				qso.setFileName(path+"QSO"+filename);
-	
+
 				// Decay Rate of the Velocity update function
 				qso.setDecayRate(0.05);
 				// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
@@ -152,15 +152,15 @@ public class NILauncher {
 				qso.setCrossover(false, true, true, true);
 				// randomMutator,toggleMutator,orientedMutator,guidedMutator
 				qso.setMutation(true, true, true, true);
-	
+
 				// Termination Criteria
 				// Runtime in seconds (-1 to deactivate)
 				qso.setMaxRuntime(time);
 				// Number of times the main loop is repeated without adding a new (relevant) candidate to gen_pool
 				qso.setTermination(max_repetitions);
-	
+
 				qso.run();
-	
+
 				break;
 		}
 	}

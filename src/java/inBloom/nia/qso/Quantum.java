@@ -14,126 +14,126 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 	private double best_tellability;
 	private Integer best_simLength;
 	private Integer best_actualLength;
-	
-	private List<QuantumPosition> positions = new ArrayList<QuantumPosition>();
-	
+
+	private List<QuantumPosition> positions = new ArrayList<>();
+
 	private double threshold;
 
-	
+
 	public Quantum(int individual_count, ChromosomePersonality personality, ChromosomePersonality velocity_personality, ChromosomeHappenings happenings, ChromosomeHappenings velocity_happenings, Integer simLength, Fitness<?,?> fit){
 		this.best_personality = personality;
 		this.best_happenings = happenings;
 		this.best_simLength = simLength;
 		this.threshold = Math.pow(0.5, individual_count/2-1);
-		
+
 		QuantumPosition pos = new QuantumPosition(personality, velocity_personality, happenings, velocity_happenings, simLength, 1, fit);
-		
+
 		this.best_actualLength = pos.get_actualLength();
 		this.best_tellability = pos.get_tellabilityValue();
-		
+
 		this.positions.add(pos);
 	}
-	
+
 	public boolean superPosition() {
-		return positions.size()>0;
+		return this.positions.size()>0;
 	}
-	
+
 	public int amount_positions() {
-		return positions.size();
+		return this.positions.size();
 	}
 
 	public ChromosomePersonality get_personality() {
-		return get_personality(choosePosition());
+		return this.get_personality(this.choosePosition());
 	}
 
 	public ChromosomePersonality get_personality(int z) {
-		return positions.get(z).get_personality();
+		return this.positions.get(z).get_personality();
 	}
 
 	public double get_personality(int x, int y) {
-		return get_personality(x,y,choosePosition());
+		return this.get_personality(x,y,this.choosePosition());
 	}
 
 	public double get_personality(int x, int y, int state) {
-		return positions.get(state).get_personality(x, y);
+		return this.positions.get(state).get_personality(x, y);
 	}
 
 	public ChromosomeHappenings get_happenings() {
-		return get_happenings(choosePosition());
+		return this.get_happenings(this.choosePosition());
 	}
 
 	public ChromosomeHappenings get_happenings(int z) {
-		return positions.get(z).get_happenings();
+		return this.positions.get(z).get_happenings();
 	}
 
 	public int get_happenings(int x, int y) {
-		return get_happenings(x,y,choosePosition());
+		return this.get_happenings(x,y,this.choosePosition());
 	}
 
 	public int get_happenings(int x, int y, int z) {
-		return positions.get(z).get_happenings().values[x][y];
+		return this.positions.get(z).get_happenings().values[x][y];
 	}
 
 	public Integer get_simLength() {
-		return get_simLength(choosePosition());
+		return this.get_simLength(this.choosePosition());
 	}
 
 	public Integer get_simLength(int z) {
-		return positions.get(z).get_simLength();
+		return this.positions.get(z).get_simLength();
 	}
-	
+
 
 	public ChromosomePersonality best_personality() {
-		return best_personality;
+		return this.best_personality;
 	}
 
 	public ChromosomeHappenings best_happenings() {
-		return best_happenings;
+		return this.best_happenings;
 	}
 
 	public double best_personality(int x, int y) {
-		return best_personality.values[x][y];
+		return this.best_personality.values[x][y];
 	}
 
 	public int best_happenings(int x, int y) {
-		return best_happenings.values[x][y];
+		return this.best_happenings.values[x][y];
 	}
 
 	public Integer best_simLength() {
-		return best_simLength;
+		return this.best_simLength;
 	}
 
 	public void set_actualLength(int length) {
-		best_actualLength = length;
+		this.best_actualLength = length;
 	}
 
 	public int best_actualLength() {
-		return best_actualLength;
+		return this.best_actualLength;
 	}
-	
+
 	public double best_tellability() {
-		return best_tellability;
+		return this.best_tellability;
 	}
 
 	public double get_tellabilityValue() {
-		return get_tellability(choosePosition());
+		return this.get_tellability(this.choosePosition());
 	}
-	
+
 	public double get_tellability(int z) {
-		return positions.get(z).get_tellabilityValue();
+		return this.positions.get(z).get_tellabilityValue();
 	}
 
 	public int choosePosition() {
-		
+
 		int state = 0;
-		
-		if(superPosition()) { 
-			
-			double roulette = Math.random()*(1-2*threshold);
-		
-			while(roulette > positions.get(state).get_lifespan()) {
-				
-				roulette -= positions.get(state).get_lifespan();
+
+		if(this.superPosition()) {
+
+			double roulette = Math.random()*(1-2*this.threshold);
+
+			while(roulette > this.positions.get(state).get_lifespan()) {
+
+				roulette -= this.positions.get(state).get_lifespan();
 				state +=1;
 			}
 		}
@@ -141,123 +141,126 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 	}
 
 	public QuantumPosition get_position(int state) {
-		
-		return positions.get(state);
+
+		return this.positions.get(state);
 	}
-	
+
 	public void move(int state, Fitness<?,?> fit) {
-		positions.get(state).move();
-		positions.get(state).update_tellability(fit);
-		
-		if(positions.get(state).get_tellabilityValue() > best_tellability) {
-			this.best_tellability = positions.get(state).get_tellabilityValue();
+		this.positions.get(state).move();
+		this.positions.get(state).update_tellability(fit);
+
+		if(this.positions.get(state).get_tellabilityValue() > this.best_tellability) {
+			this.best_tellability = this.positions.get(state).get_tellabilityValue();
 			// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move
-			this.best_personality = positions.get(state).get_personality().clone();
-			this.best_happenings = positions.get(state).get_happenings().clone();
-			this.best_simLength = positions.get(state).get_simLength();
-			this.best_actualLength = positions.get(state).get_actualLength();
-			
+			this.best_personality = this.positions.get(state).get_personality().clone();
+			this.best_happenings = this.positions.get(state).get_happenings().clone();
+			this.best_simLength = this.positions.get(state).get_simLength();
+			this.best_actualLength = this.positions.get(state).get_actualLength();
+
 			this.tellability = fit.tellability;
 			this.updateNotes();
 		}
 	}
-	
-	
+
+
 	public void update_lifespan() {
-		
-		if(superPosition()) {
-		
+
+		if(this.superPosition()) {
+
 			double time = 0;
-			
-			for(int i = positions.size()-1; i > 0; i--) {
-				
-				positions.get(i).update_lifespan(time);
-				
-				if(positions.get(i).get_lifespan()<threshold) {
-					
-					time = positions.get(i).get_lifespan();
-					positions.remove(i);
-					
+
+			for(int i = this.positions.size()-1; i > 0; i--) {
+
+				this.positions.get(i).update_lifespan(time);
+
+				if(this.positions.get(i).get_lifespan()<this.threshold) {
+
+					time = this.positions.get(i).get_lifespan();
+					this.positions.remove(i);
+
 				} else {
-				
-					time = positions.get(i).get_lifespan()/2;
-					positions.get(i).update_lifespan(-time);
-					
+
+					time = this.positions.get(i).get_lifespan()/2;
+					this.positions.get(i).update_lifespan(-time);
+
 				}
 			}
-			positions.get(0).update_lifespan(time);
+			this.positions.get(0).update_lifespan(time);
 		}
 	}
-	
-	
+
+
 	public void add_Position(int state, ChromosomePersonality personality, ChromosomeHappenings happenings, int length, Fitness <?,?> fit) {
-		double time = positions.get(state).get_lifespan()/2;
-		positions.get(state).update_lifespan(-time);
-		
-		positions.add(new QuantumPosition(personality, positions.get(state).get_persVelocity(), happenings, positions.get(state).get_hapVelocity(), length, time, fit));
-		
-		if(positions.get(positions.size()-1).get_tellabilityValue() > best_tellability) {
-			this.best_tellability = positions.get(positions.size()-1).get_tellabilityValue();
+		double time = this.positions.get(state).get_lifespan()/2;
+		this.positions.get(state).update_lifespan(-time);
+
+		this.positions.add(new QuantumPosition(personality, this.positions.get(state).get_persVelocity(), happenings, this.positions.get(state).get_hapVelocity(), length, time, fit));
+
+		if(this.positions.get(this.positions.size()-1).get_tellabilityValue() > this.best_tellability) {
+			this.best_tellability = this.positions.get(this.positions.size()-1).get_tellabilityValue();
 			// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move
-			this.best_personality = positions.get(positions.size()-1).get_personality().clone();
-			this.best_happenings = positions.get(positions.size()-1).get_happenings().clone();
-			this.best_simLength = positions.get(positions.size()-1).get_simLength();
-			this.best_actualLength = positions.get(positions.size()-1).get_actualLength();
-			
+			this.best_personality = this.positions.get(this.positions.size()-1).get_personality().clone();
+			this.best_happenings = this.positions.get(this.positions.size()-1).get_happenings().clone();
+			this.best_simLength = this.positions.get(this.positions.size()-1).get_simLength();
+			this.best_actualLength = this.positions.get(this.positions.size()-1).get_actualLength();
+
 			this.tellability = fit.tellability;
 			this.updateNotes();
 		}
-		positions.sort(null);
+		this.positions.sort(null);
 	}
-	
-	
-	public void add_Position(QuantumPosition qPos, int state) {
-		double time = positions.get(state).get_lifespan()/2;
-		positions.get(state).update_lifespan(-time);
-		
-		qPos.update_lifespan(time);
-		
-		positions.add(qPos);
 
-		if(positions.get(positions.size()-1).get_tellabilityValue() >= best_tellability) {
-			this.best_tellability = positions.get(positions.size()-1).get_tellabilityValue();
+
+	public void add_Position(QuantumPosition qPos, int state) {
+		double time = this.positions.get(state).get_lifespan()/2;
+		this.positions.get(state).update_lifespan(-time);
+
+		qPos.update_lifespan(time);
+
+		this.positions.add(qPos);
+
+		if(this.positions.get(this.positions.size()-1).get_tellabilityValue() >= this.best_tellability) {
+			this.best_tellability = this.positions.get(this.positions.size()-1).get_tellabilityValue();
 			// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move
-			this.best_personality = positions.get(positions.size()-1).get_personality().clone();
-			this.best_happenings = positions.get(positions.size()-1).get_happenings().clone();
-			this.best_simLength = positions.get(positions.size()-1).get_simLength();
-			this.best_actualLength = positions.get(positions.size()-1).get_actualLength();
-			
+			this.best_personality = this.positions.get(this.positions.size()-1).get_personality().clone();
+			this.best_happenings = this.positions.get(this.positions.size()-1).get_happenings().clone();
+			this.best_simLength = this.positions.get(this.positions.size()-1).get_simLength();
+			this.best_actualLength = this.positions.get(this.positions.size()-1).get_actualLength();
+
 			this.notes = qPos.notes;
 		}
-		positions.sort(null);
+		this.positions.sort(null);
 	}
-	
-	
+
+
 	public int compareTo(Quantum other) {
-		
+
 		// smaller operator returns array in descending order
-		if(best_tellability < other.best_tellability())
+		if(this.best_tellability < other.best_tellability()) {
 			return 1;
-		
+		}
+
 		return -1;
 	}
-	
-	
-	public boolean equals(ChromosomePersonality other_personality, ChromosomeHappenings other_happenings) {
-		
-		for(int i = 0; i < positions.size(); i++) {
 
-			if(positions.get(i).get_happenings().equals(other_happenings))
+
+	public boolean equals(ChromosomePersonality other_personality, ChromosomeHappenings other_happenings) {
+
+		for(int i = 0; i < this.positions.size(); i++) {
+
+			if(this.positions.get(i).get_happenings().equals(other_happenings)) {
 				return true;
-			if(positions.get(i).get_personality().equals(other_personality))
+			}
+			if(this.positions.get(i).get_personality().equals(other_personality)) {
 				return true;
+			}
 		}
 		return false;
 	}
-	
-	
+
+
 	@Override
 	public String to_String() {
-		return this.to_String(best_personality, best_happenings, best_simLength, best_actualLength);
+		return this.to_String(this.best_personality, this.best_happenings, this.best_simLength, this.best_actualLength);
 	}
 }

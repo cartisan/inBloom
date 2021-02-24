@@ -17,7 +17,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	private static final double DEFAULT_CROSSOVER_PROB = 0.1;
 	private static final double DEFAULT_MUTATION_PROB = 0.05;
 	private static final double DEFAULT_DECAY_RATE = 0.05;
-	
+
 	// Parameters for static version
 	public int selection_size;
 	public double crossover_prob = DEFAULT_CROSSOVER_PROB;
@@ -66,7 +66,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	private static boolean steadyReplace = true;
 
 
-	
+
 	/**
 	 * Constructors for GA, version based on default paramts in static final members
 	 */
@@ -75,7 +75,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.floatingParameters = USE_FLOATING_PARAM;
 		this.selection_size = number_selections*2;
 	}
-	
+
 	/**
 	 * Constructors for GA, static version
 	 */
@@ -358,7 +358,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		if(this.population_bestAverage > average) {
 			this.population_bestAverage = average;
 		}
-		
+
 		if(this.floatingParameters) {
 			this.determineGlobalParameters();
 		}
@@ -370,7 +370,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.mutate();
 		this.recombine();
 	}
-	
+
 	@Override
 	protected boolean keepRunning() {
 		return (no_improvement < 0 || no_improvement<termination) && (max_runtime<0 || start_time+max_runtime-System.currentTimeMillis()>0) && (!this.floatingParameters || this.global_mut>0 || this.global_cross>0);
@@ -611,11 +611,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	public void initialize_population() {
 		// Initialize information containers for floating parameter version
 		this.initialize_floatingParameters();
-		
+
 		this.population = new Individual[this.individual_count];
 		this.offspring = new Individual[this.selection_size];
 		this.mutated_offspring = new Individual[this.selection_size];
-		
+
 		int index = 0;
 
 		// Set used initializers for personality

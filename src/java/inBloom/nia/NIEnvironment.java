@@ -47,21 +47,21 @@ public abstract class NIEnvironment<EnvType extends PlotEnvironment<ModType>, Mo
 	}
 
 	/**
-	 * Returns an instance of the default version of the genetic algorithm 
+	 * Returns an instance of the default version of the genetic algorithm
 	 */
 	public GeneticAlgorithm<?,?> get_GA(String[] args, int init_stepnumber, int individual_count, int number_selections){
 		return new GeneticAlgorithm<EnvType,ModType>(args, this, this.number_agents, this.number_dynamicHappenings, init_stepnumber, individual_count, number_selections);
 	}
-	
+
 	/**
-	 * Returns an instance of the static version of the genetic algorithm 
+	 * Returns an instance of the static version of the genetic algorithm
 	 */
 	public GeneticAlgorithm<?,?> get_GA_static(String[] args, int init_stepnumber, int individual_count, int number_selections, double crossover_prob, double mutation_prob){
 		return new GeneticAlgorithm<EnvType,ModType>(args, this, this.number_agents, this.number_dynamicHappenings, init_stepnumber, individual_count, number_selections, crossover_prob, mutation_prob);
 	}
 
 	/**
-	 * Returns an instance of the floating parameter version of the genetic algorithm 
+	 * Returns an instance of the floating parameter version of the genetic algorithm
 	 */
 	public GeneticAlgorithm<?,?> get_GA_float(String[] args, int init_stepnumber, int individual_count, int number_selections, double decay_rate){
 		return new GeneticAlgorithm<EnvType,ModType>(args, this, this.number_agents, this.number_dynamicHappenings, init_stepnumber, individual_count, number_selections, decay_rate);

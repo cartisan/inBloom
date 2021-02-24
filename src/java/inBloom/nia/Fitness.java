@@ -17,6 +17,7 @@ import inBloom.graph.GraphAnalyzer;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.PlotGraphController;
 import inBloom.helper.Tellability;
+import inBloom.nia.utils.FileInterpreter;
 import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
 
@@ -35,7 +36,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	public Thread t;
 
 	/** Timeout in ms before a single simulation is forcibly stopped. A value of -1 means no timeout.  */
-	protected static long TIMEOUT = 10000;
+	public static long TIMEOUT = 10000;
 
 	/**
 	 * Used to start a simulation for the execution of a NIA.
@@ -98,8 +99,9 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		// Deactivate MAX_REPEAT if needed, by commenting back in:
 //		PlotEnvironment.MAX_REPEATE_NUM = -1;
 
-		if(verbose)
+		if(this.verbose) {
 			System.out.println("Starting new Simulation with length: " + simulation_length);
+		}
 		
 		// Instantiate Objects with methods of GeneticEnvironment
 		List<LauncherAgent> agents = this.EVO_ENV.init_agents(individual.get_personality().values);
@@ -138,7 +140,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		}
 
 		// Logging level
-        Logger.getLogger("").setLevel(level);
+        Logger.getLogger("").setLevel(this.level);
 
 		MASConsoleGUI.get().setPause(false);
 		long startTime = System.currentTimeMillis();
@@ -171,18 +173,19 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 			this.tellability = analyzer.runSynchronously(analyzedGraph);
 			result = this.tellability.compute();
 		} catch(RuntimeException e) {
-			this.pauseExecution();
+			System.out.println("########################## ### Simulation stopped due to exception in analyze");
 		}
 		
 		// Cleanup to avoid Fragments
 		if(this.cleanup) {
 			PlotGraphController.resetPlotListener();
 			this.reset();
-			t.stop();
+			this.t.stop();
 		}
 
-		if(verbose)
+		if(this.verbose) {
 			System.out.println("Finished after " + individual.get_actualLength() + " steps with Tellability Score: " + result);
+		}
 		
 		return result;
 	}

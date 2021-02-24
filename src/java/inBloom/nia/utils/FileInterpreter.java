@@ -21,8 +21,6 @@ import inBloom.nia.ChromosomePersonality;
 import inBloom.nia.Fitness;
 import inBloom.nia.NIEnvironment;
 import inBloom.nia.ga.Individual;
-import inBloom.stories.little_red_hen.FarmEnvironment;
-import inBloom.stories.little_red_hen.FarmModel;
 import inBloom.stories.little_red_hen.FarmNIEnvironment;
 
 public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
@@ -49,10 +47,11 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 		this.filepath = path;
 
 		this.fit = new Fitness<>(EVO_ENV, false, Level.INFO, showGui);
+		Fitness.TIMEOUT = 100000;
 	}
 
 	public CandidateSolution getBest_individual() {
-		return best_individual;
+		return this.best_individual;
 	}
 
 	public void setBest_individual(Individual best_individual) {
@@ -60,7 +59,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	}
 
 	public int getActual_length() {
-		return actual_length;
+		return this.actual_length;
 	}
 
 	public void setActual_length(int actual_length) {
@@ -69,15 +68,15 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 
 	private String readNextContentLine(BufferedReader in) throws IOException {
 		String line = in.readLine();
-		
+
 		// Skip lines that contain annotations, which are embedded in < and >.
 		while (line.startsWith("<")) {
 			line = in.readLine();
 		}
-		
+
 		return line;
 	}
-	
+
 	public void readFile() {
 		File file = new File(this.filepath+this.filename);
 
@@ -173,7 +172,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 		String path = "C:\\Users\\Leon\\Desktop\\InBloomNIA\\";
 		String name = "GEN_run.log";
 
-		FileInterpreter<?,?> fi = new FileInterpreter<FarmEnvironment, FarmModel>(new FarmNIEnvironment(), path, name, true);
+		FileInterpreter<?,?> fi = new FileInterpreter<>(new FarmNIEnvironment(), path, name, true);
 
 		fi.readFile();
 
