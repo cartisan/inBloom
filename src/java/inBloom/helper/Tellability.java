@@ -84,7 +84,7 @@ public class Tellability {
 	 * {@link VertexMergingPPVisitor} and  {@link EdgeGenerationPPVisitor}.
 	 */
 	public Tellability(PlotDirectedSparseGraph graph, MoodMapper moodData) {
-		logger.setLevel(Level.FINE);
+//		logger.setLevel(Level.FINE);
 
 		// Set up a logging handler that can provide logs of tellability-computation into a string
 		ByteArrayOutputStream loggerContent = new ByteArrayOutputStream();

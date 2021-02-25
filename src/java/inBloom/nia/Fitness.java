@@ -40,7 +40,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 
 	/**
 	 * Used to start a simulation for the execution of a NIA.
-	 * 
+	 *
 	 * @param environment
 	 * @param verbose
 	 * @param level
@@ -62,7 +62,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 
 	/**
 	 * Used to start a simulation from {@linkplain FileInterpreter}.
-	 * 
+	 *
 	 * @param environment
 	 * @param verbose
 	 * @param level
@@ -70,7 +70,6 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	 */
 	@SuppressWarnings("unchecked")
 	public Fitness(NIEnvironment<?, ?> environment, boolean verbose, Level level, boolean showGui){
-
 		this.EVO_ENV = environment;
 		this.ENV_CLASS = environment.ENV_CLASS;
 		PlotControlsLauncher.runner = this;
@@ -102,7 +101,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		if(this.verbose) {
 			System.out.println("Starting new Simulation with length: " + simulation_length);
 		}
-		
+
 		// Instantiate Objects with methods of GeneticEnvironment
 		List<LauncherAgent> agents = this.EVO_ENV.init_agents(individual.get_personality().values);
 		List<Happening<?>> happenings = this.EVO_ENV.init_happenings(agents, individual.get_happenings().values);
@@ -124,18 +123,17 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		/*
 		 * From PlotCycle.java :
 		 */
-
 		try {
 			this.t = new Thread(new Cycle(runner, model, agents, this.EVO_ENV.agentSrc));
 			this.t.start();
 		} catch (JasonException e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 			this.pauseExecution();
 		} catch (NullPointerException e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 			this.pauseExecution();
 		} catch (Exception e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 			this.pauseExecution();
 		}
 
@@ -144,7 +142,6 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 
 		MASConsoleGUI.get().setPause(false);
 		long startTime = System.currentTimeMillis();
-
 		while(this.isRunning) {
 			try {
 				// Handle the timeout if it was set
@@ -153,10 +150,10 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 				}
 				Thread.sleep(150);
 			} catch (InterruptedException e) {
-				//e.printStackTrace();
+				e.printStackTrace();
 				this.pauseExecution();
 			} catch (NullPointerException e) {
-				//e.printStackTrace();
+				e.printStackTrace();
 				this.pauseExecution();
 			}
 		}
@@ -168,14 +165,14 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
 
 		individual.set_actualLength(runner.getUserEnvironment().getStep());
-		
+
 		try {
 			this.tellability = analyzer.runSynchronously(analyzedGraph);
 			result = this.tellability.compute();
 		} catch(RuntimeException e) {
-			System.out.println("########################## ### Simulation stopped due to exception in analyze");
+			e.printStackTrace();
 		}
-		
+
 		// Cleanup to avoid Fragments
 		if(this.cleanup) {
 			PlotGraphController.resetPlotListener();
@@ -186,7 +183,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		if(this.verbose) {
 			System.out.println("Finished after " + individual.get_actualLength() + " steps with Tellability Score: " + result);
 		}
-		
+
 		return result;
 	}
 
@@ -226,9 +223,9 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 				this.runner.initialize(this.args, this.model, this.agents, this.agSrc);
 				this.runner.run();
 			} catch (JasonException e) {
-				//e.printStackTrace();
+				e.printStackTrace();
 			} catch (NullPointerException e) {
-				//e.printStackTrace();
+				e.printStackTrace();
 			}
 		}
 	}
