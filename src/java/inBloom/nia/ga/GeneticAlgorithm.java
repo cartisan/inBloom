@@ -68,7 +68,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 
 	/**
-	 * Constructors for GA, version based on default paramts in static final members
+	 * Constructors for GA, version based on default parameters in static final members
 	 */
 	public GeneticAlgorithm (String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections) {
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
@@ -860,7 +860,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		for(int i = 0; i < this.number_agents;i++) {
 
-			int j = (int)Math.round(Math.random()*this.number_agents-0.5);
+			int j = (int)Math.round(Math.random()*this.number_happenings-0.5);
 
 			happenings.values[i][j] = (int)Math.round(Math.random()*(this.max_steps/this.number_happenings)+0.5)*this.number_happenings;
 		}
