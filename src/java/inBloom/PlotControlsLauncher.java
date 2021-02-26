@@ -109,7 +109,9 @@ public class PlotControlsLauncher extends RunCentralisedMAS implements AnalysisR
 
 	public void pauseExecution() {
 	    MASConsoleGUI.get().setPause(true);
-	    this.pauseButton.setText("Continue");
+	    if(this.pauseButton != null) {
+	    	this.pauseButton.setText("Continue");
+	    }
 
 		this.setupConsoleLogger();
 		this.pauseStart = System.nanoTime();

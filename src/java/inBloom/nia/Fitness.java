@@ -9,7 +9,6 @@ import jason.infra.centralised.BaseCentralisedMAS;
 import jason.runtime.MASConsoleGUI;
 
 import inBloom.LauncherAgent;
-import inBloom.PlotControlsLauncher;
 import inBloom.PlotEnvironment;
 import inBloom.PlotLauncher;
 import inBloom.PlotModel;
@@ -51,8 +50,6 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 
 		this.EVO_ENV = environment;
 		this.ENV_CLASS = environment.ENV_CLASS;
-		PlotControlsLauncher.runner = this;
-		BaseCentralisedMAS.runner = this;
 		this.setShowGui(false);
 		this.verbose = verbose;
 		this.level = level;
@@ -72,8 +69,6 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 	public Fitness(NIEnvironment<?, ?> environment, boolean verbose, Level level, boolean showGui){
 		this.EVO_ENV = environment;
 		this.ENV_CLASS = environment.ENV_CLASS;
-		PlotControlsLauncher.runner = this;
-		BaseCentralisedMAS.runner = this;
 		this.setShowGui(showGui);
 		this.verbose = verbose;
 		this.level = level;
@@ -124,7 +119,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		 * From PlotCycle.java :
 		 */
 		try {
-			this.t = new Thread(new Cycle(runner, model, agents, this.EVO_ENV.agentSrc));
+			this.t = new Thread(new Cycle(this, model, agents, this.EVO_ENV.agentSrc));
 			this.t.start();
 		} catch (JasonException e) {
 			e.printStackTrace();
@@ -164,7 +159,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		GraphAnalyzer analyzer = new GraphAnalyzer(PlotGraphController.getPlotListener().getGraph(), null);
 		PlotDirectedSparseGraph analyzedGraph = new PlotDirectedSparseGraph();			// analysis results will be cloned into this graph
 
-		individual.set_actualLength(runner.getUserEnvironment().getStep());
+		individual.set_actualLength(this.getUserEnvironment().getStep());
 
 		try {
 			this.tellability = analyzer.runSynchronously(analyzedGraph);
@@ -220,6 +215,8 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		@Override
 		public void run() {
 			try {
+				PlotLauncher.runner = this.runner;
+				BaseCentralisedMAS.runner = this.runner;
 				this.runner.initialize(this.args, this.model, this.agents, this.agSrc);
 				this.runner.run();
 			} catch (JasonException e) {
