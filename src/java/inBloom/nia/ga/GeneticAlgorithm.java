@@ -3,6 +3,7 @@ package inBloom.nia.ga;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
@@ -17,6 +18,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	private static final double DEFAULT_CROSSOVER_PROB = 0.1;
 	private static final double DEFAULT_MUTATION_PROB = 0.05;
 	private static final double DEFAULT_DECAY_RATE = 0.05;
+	private static final int DISCRETE_HAP_SPACING = 5;
 
 	// Parameters for static version
 	public int selection_size;
@@ -49,6 +51,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 	// Discrete values to choose from for personality initialization
 	private static double[] discretePersValues = {-1,-0.9,-0.75,-0.5,-0.25,-0.1,0,0.1,0.25,0.5,0.75,0.9,1};
+	private static int[] discreteHapValues = new int[DISCRETE_HAP_SPACING];
 
 	// Boolean arrays are used to manage genetic operators. True enables usage.
 
@@ -74,6 +77,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
 		this.floatingParameters = USE_FLOATING_PARAM;
 		this.selection_size = number_selections*2;
+
+		// set discreteHapValues such, that we have 5 evenly spaced entries starting from 1
+		Arrays.setAll(discreteHapValues, i -> Math.round(max_steps / DISCRETE_HAP_SPACING) * i);			// for max_step 30 and spacing 5: {0, 6, 12, 18, 24}
 	}
 
 	/**
@@ -86,6 +92,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		this.crossover_prob = crossover_prob;
 		this.mutation_prob = mutation_prob;
+
+		// set discreteHapValues such, that we have 5 evenly spaced entries starting from 1
+		Arrays.setAll(discreteHapValues, i -> Math.round(max_steps / DISCRETE_HAP_SPACING) * i);			// for max_step 30 and spacing 5: {0, 6, 12, 18, 24}
 	}
 
 	/**
@@ -97,6 +106,9 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.selection_size = number_selections*2;
 
 		this.decay_rate = decay;
+
+		// set discreteHapValues such, that we have 5 evenly spaced entries starting from 1
+		Arrays.setAll(discreteHapValues, i -> Math.round(max_steps / DISCRETE_HAP_SPACING) * i);			// for max_step 30 and spacing 5: {0, 6, 12, 18, 24}
 	}
 
 
@@ -833,14 +845,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 */
 
 	public ChromosomeHappenings probabilisticHappeningsInitializer() {
-
+		Random r = new Random();
 		ChromosomeHappenings happenings = new ChromosomeHappenings(this.number_agents,this.number_happenings);
 
 		for(int i = 0; i < this.number_agents;i++) {
 			for(int j = 0; j < this.number_happenings; j++) {
-				if(Math.random()<1/this.number_agents) {
-					happenings.values[i][j] = (int)Math.round(Math.random()*(this.max_steps/this.number_happenings)+0.5)*this.number_happenings;
-				}
+				happenings.values[i][j] = discreteHapValues[r.nextInt(discreteHapValues.length)];
 			}
 		}
 		return happenings;
@@ -855,14 +865,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 */
 
 	public ChromosomeHappenings steadyHappeningsInitializer() {
-
+		Random r = new Random();
 		ChromosomeHappenings happenings = new ChromosomeHappenings(this.number_agents,this.number_happenings);
 
-		for(int i = 0; i < this.number_agents;i++) {
-
-			int j = (int)Math.round(Math.random()*this.number_happenings-0.5);
-
-			happenings.values[i][j] = (int)Math.round(Math.random()*(this.max_steps/this.number_happenings)+0.5)*this.number_happenings;
+		for(int j = 0; j < this.number_happenings; j++) {
+			int i = r.nextInt(this.number_agents);
+			happenings.values[i][j] = discreteHapValues[r.nextInt(discreteHapValues.length)];
 		}
 		return happenings;
 	}
@@ -1997,7 +2005,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			if(posMut < this.selection_size) {
 				if(this.mutated_offspring[posMut].get_tellabilityValue()>bestTellability) {
 					best = 2;
-					bestTellability = this.mutated_offspring[posMut].get_tellabilityValue();
 				}
 			}
 
@@ -2023,7 +2030,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 			default:
 
-				System.out.println("Missing Candidates @ partiallyRandomNoDuplicatesReplacer()");
+				System.out.println("Missing Candidates @ steadyNoDuplicatesReplacer()");
 				return null;
 			}
 		}
@@ -2094,7 +2101,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			if(posMut < this.selection_size) {
 				if(this.mutated_offspring[posMut].get_tellabilityValue()>bestTellability) {
 					best = 3;
-					bestTellability = this.mutated_offspring[posMut].get_tellabilityValue();
 				}
 			}
 
