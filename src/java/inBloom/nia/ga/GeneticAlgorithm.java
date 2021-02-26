@@ -7,6 +7,7 @@ import java.util.Random;
 
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
+import inBloom.nia.CandidateSolution;
 import inBloom.nia.ChromosomeHappenings;
 import inBloom.nia.ChromosomePersonality;
 import inBloom.nia.Fitness;
@@ -76,7 +77,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	public GeneticAlgorithm (String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections) {
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
 		this.floatingParameters = USE_FLOATING_PARAM;
-		this.selection_size = number_selections*2;
+		this.selection_size = number_selections;
 
 		// set discreteHapValues such, that we have 5 evenly spaced entries starting from 1
 		Arrays.setAll(discreteHapValues, i -> Math.round(max_steps / DISCRETE_HAP_SPACING) * i);			// for max_step 30 and spacing 5: {0, 6, 12, 18, 24}
@@ -88,7 +89,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	public GeneticAlgorithm (String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections, double crossover_prob, double mutation_prob) {
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
 		this.floatingParameters = false;
-		this.selection_size = number_selections*2;
+		this.selection_size = number_selections;
 
 		this.crossover_prob = crossover_prob;
 		this.mutation_prob = mutation_prob;
@@ -103,7 +104,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	public GeneticAlgorithm (String[] args, NIEnvironment<?,?> EVO_ENV, int number_agents, int number_happenings, int max_steps, int individual_count, int number_selections, double decay) {
 		super(args, EVO_ENV, number_agents, number_happenings, max_steps, individual_count);
 		this.floatingParameters = true;
-		this.selection_size = number_selections*2;
+		this.selection_size = number_selections;
 
 		this.decay_rate = decay;
 
@@ -270,9 +271,15 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}
 
 		// Selection size must be positive
-		if(this.selection_size <= 2) {
-			System.out.println("Selection_size defaulted to: " + this.selection_size);
+		if(this.selection_size < 2) {
 			this.selection_size = 2;
+			System.out.println("Selection_size defaulted to: " + this.selection_size);
+		}
+
+		// Selection size must be at least half of population
+		if(this.selection_size < this.individual_count / 2) {
+			this.selection_size = (int) Math.ceil((double) this.individual_count / 2);
+			System.out.println("Selection_size must be at least half of population size, setting to: " + this.selection_size);
 		}
 
 		// Selection size must be an even number smaller individual_count
@@ -281,6 +288,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			this.selection_size-=this.selection_size%2;
 			System.out.println("Selection_size reduced to: " + this.selection_size);
 		}
+
 
 		// There need to be agents and happenings
 		if(this.number_agents <= 0 || this.number_happenings <= 0) {
@@ -377,7 +385,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		// Clean log containing detailed information about tellability computation of individuals that are not best
 		// otherwise, we run out of heap memory
-		// TODO: REMOVE after debug
 		for (int i=1; i<this.population.length; ++i) {
 			this.population[i].cleanTellabilityLog();
 		}
@@ -1116,8 +1123,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 				break;
 			}
 		}
-		// Sort Candidates by performance. Best Individual will be at position zero descending
-		Arrays.sort(this.offspring);
 
 		if(this.verbose) {
 			System.out.println("End Crossover\n");
@@ -1551,9 +1556,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 		}
 
-		//Sort Candidates by performance. Best Individual will be at position zero descending
-		Arrays.sort(this.mutated_offspring);
-
 		if(this.verbose) {
 			System.out.println("End Mutation\n");
 		}
@@ -1957,6 +1959,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 */
 
 	public void recombine() {
+		System.out.println("Start evaluate mutated offspring");
+		for (Individual i: this.mutated_offspring) {
+			i.evaluate();
+		}
+		Arrays.sort(this.mutated_offspring);
 
 		if(steadyReplace) {
 			this.population = this.steadyNoDuplicatesReplacer();
@@ -1973,89 +1980,62 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	}
 
 	/**
+	 * Tries to find the index iTmp of the next individual in sourceCollection, at or after originalIndex, that is not yet
+	 * contained in targetCollection, such that appending sourceCollection[iTmp] to targetCollection will not leed to
+	 * duplication.
+	 * Returns index iTmp, or if this is impossible, -1.
+	 * @param originalIndex
+	 * @param targetCollection
+	 * @param sourceCollection
+	 * @return
+	 */
+	private int indexOfNextNonDuplicate(int originalIndex, Individual[] targetCollection, CandidateSolution[] sourceCollection) {
+		int iTmp = originalIndex;
+		while(iTmp < sourceCollection.length) {
+			// check if this individual is already part of population
+			if(! ((Individual) sourceCollection[iTmp]).isContainedIn(targetCollection) ) {
+				// if it isn't, we can use this index
+				return iTmp;
+			} else {
+				// if it is, try with next one
+				iTmp += 1;
+			}
+		}
+		// we reached end of sourceCollection and did not find a non-duplicate, indicate this with -1 code
+		return -1;
+	}
+
+	/**
 	 * Keep best half of last generation
 	 * Fill up other half with best performing individuals from offspring
 	 *
 	 * @return: Array containing candidates chosen to remain in the population
 	 */
 	public Individual[] steadyNoDuplicatesReplacer() {
-
 		Individual[] next_gen = new Individual[this.individual_count];
+		int middle = this.individual_count/2;
 
-		int steady = this.individual_count/2;
-
-		// Create List of all newly generated Candidates sorted by fitness descending (rest of old population is at end)
-		List<Individual> total_offspring = new ArrayList<>();
-		int posPop = steady;
-		int posOff = 0;
-		int posMut = 0;
-
-		for(int i = 0; i < this.individual_count-steady+this.selection_size*2; i++) {
-
-			int best = 0;
-			double bestTellability = -1;
-
-			if(posOff < this.selection_size) {
-				if(this.offspring[posOff].get_tellabilityValue()>bestTellability) {
-					best = 1;
-					bestTellability = this.offspring[posOff].get_tellabilityValue();
-				}
-			}
-
-			if(posMut < this.selection_size) {
-				if(this.mutated_offspring[posMut].get_tellabilityValue()>bestTellability) {
-					best = 2;
-				}
-			}
-
-			switch(best) {
-
-			case 0:
-
-				total_offspring.add((Individual) this.population[posPop]);
-				posPop++;
-				break;
-
-			case 1:
-
-				total_offspring.add(this.offspring[posOff]);
-				posOff++;
-				break;
-
-			case 2:
-
-				total_offspring.add(this.mutated_offspring[posMut]);
-				posMut++;
-				break;
-
-			default:
-
-				System.out.println("Missing Candidates @ steadyNoDuplicatesReplacer()");
-				return null;
+		// copy best half of population into next gen
+		for (int i=0; i < middle; ++i) {
+			int sourceIndex = this.indexOfNextNonDuplicate(i, next_gen, this.population);
+			// if we found a non duplicate in population at or after index i, use this one
+			if (sourceIndex != -1) {
+				next_gen[i] = (Individual) this.population[sourceIndex];
+			} else {
+				//otherwise take i and accept that there will be duplication in next_gen
+				next_gen[i] = (Individual) this.population[i];
 			}
 		}
 
-		// Keep best performing candidates of current Population
-		for(int i = 0; i < steady; i++) {
-			next_gen[i] = (Individual) this.population[i];
-		}
-
-		// Add best candidates from total_offspring to next_gen avoiding duplicates
-		for(int i = steady; i<this.individual_count; i++) {
-
-			boolean done = false;
-
-			if(total_offspring.isEmpty()) {
-				done = true;
-				next_gen[i] = (Individual) this.population[i-steady];
-			}
-
-			while(!done) {
-				if(!total_offspring.get(0).isContainedIn(next_gen)) {
-					next_gen[i] = total_offspring.get(0);
-					done = true;
-				}
-				total_offspring.remove(0);
+		// copy best half of offspring into next gen
+		for (int i=middle; i < this.individual_count; ++i) {
+			int sourceIndex = this.indexOfNextNonDuplicate(i-middle, next_gen, this.mutated_offspring);
+			// if we found a non duplicate in population at or after index i, use this one
+			if (sourceIndex != -1) {
+				next_gen[i] = this.mutated_offspring[sourceIndex];
+			} else {
+				//otherwise take i and accept that there will be duplication in next_gen
+				next_gen[i] = this.mutated_offspring[i-middle];
 			}
 		}
 		return next_gen;

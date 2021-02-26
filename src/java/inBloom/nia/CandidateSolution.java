@@ -11,7 +11,7 @@ public abstract class CandidateSolution {
 	protected ChromosomePersonality personality;
 	protected ChromosomeHappenings happenings;
 
-	protected double tellabilityValue;
+	protected Double tellabilityValue;
 	protected Tellability tellability;
 
 	/** Additional information about this solution, added to log file during {@linkplain NIAlgorithm#to_file(CandidateSolution, String)}*/

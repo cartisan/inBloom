@@ -9,18 +9,31 @@ import inBloom.nia.Fitness;
 
 public class Individual extends CandidateSolution implements Comparable<Individual>{
 
+	private Fitness<?,?> fitness;
+
 	public Individual(ChromosomePersonality personality, ChromosomeHappenings happenings, Integer simLength, Fitness<?,?> fit){
 		super(personality, happenings, simLength);
+		this.fitness = fit;
+	}
 
-		try {
-			this.tellabilityValue = fit.evaluate_individual(this);
-			this.tellability = fit.tellability;
-		} catch (JasonException e) {
-			//e.printStackTrace();
-		} catch (NullPointerException e) {
-			//e.printStackTrace();
+	/**
+	 * Evaluates the fitness of this individual and safes the numerical result as well as the tellability object
+	 * containing the computation details. Removes reference to Fitness object, so it can be collected by GC. #
+	 * Operates lazily.
+	 */
+	public void evaluate() {
+		if (this.tellabilityValue == null) {
+			try {
+				this.tellabilityValue = this.fitness.evaluate_individual(this);
+				this.tellability = this.fitness.tellability;
+			} catch (JasonException e) {
+				//e.printStackTrace();
+			} catch (NullPointerException e) {
+				//e.printStackTrace();
+			}
 		}
 
+		this.fitness = null;
 	}
 
 	/**
@@ -65,7 +78,7 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 		for(int i = others.length-1; i >= 0; i--) {
 			if(others[i]!=null) {
 				if(this.equals(others[i])) {
-					if(this.tellabilityValue>others[i].get_tellabilityValue()) {
+					if(this.get_tellabilityValue() > others[i].get_tellabilityValue()) {
 						others[i] = this;
 					}
 					return true;
@@ -84,7 +97,7 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 	public int compareTo(Individual other) {
 
 		// smaller operator returns array in descending order
-		if(this.tellabilityValue < other.get_tellabilityValue()) {
+		if(this.get_tellabilityValue() < other.get_tellabilityValue()) {
 			return 1;
 		}
 		return -1;
@@ -93,5 +106,18 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 	@Override
 	public String to_String() {
 		return this.to_String(this.personality, this.happenings, this.simulation_length, this.actual_length);
+	}
+
+	/**
+	 * Reimplements get_tellabilityValue to be a lazy getter. If tellabilityValue is set, return the value, otherwise
+	 * evaluate this individual and return the value then.
+	 * @see inBloom.nia.CandidateSolution#get_tellabilityValue()
+	 */
+	@Override
+	public double get_tellabilityValue() {
+		if (this.tellabilityValue == null) {
+			this.evaluate();
+		}
+		return this.tellabilityValue;
 	}
 }
