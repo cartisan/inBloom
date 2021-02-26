@@ -295,7 +295,7 @@ public class Tellability {
 
 			// check at which agent reasoning cycle the environment started execution
 			// delete so many entries in reasoningCycleNums, that we will start searching for intervals at the env start reasoning cycle
-			Long startCycle = moodData.stepReasoningcycleNumMap.getOrDefault(0, 0L);
+			Long startCycle = moodData.stepReasoningcycleNumMap.getOrDefault(1, 1L);
 			for (long l = 0L; l < startCycle + FORTUNE_CHANGE_INTERVAL_LENGTH; l++) {
 				reasoningCycleNums.remove(l);
 			}

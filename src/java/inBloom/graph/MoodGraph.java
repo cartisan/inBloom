@@ -90,12 +90,12 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
 		this.stepReasoningcycleNumMap = mapper.stepReasoningcycleNumMap;
 
 		logger.fine("Using following mood data to create mood graph:\n" + mapper.toString());
-		Long startTime = this.stepReasoningcycleNumMap.getOrDefault(0, 0L);
+		Long startTime = this.stepReasoningcycleNumMap.getOrDefault(1, 1L);
 
-		// end time is either start of narrative equilibrium, or the latest agent mood entry/reasoning cycle number 
+		// end time is either start of narrative equilibrium, or the latest agent mood entry/reasoning cycle number
 		Long endTime;
 		if (this.narrEquiStep != null) {
-			endTime = mapper.stepReasoningcycleNumMap.get(this.narrEquiStep);
+			endTime = mapper.stepReasoningcycleNumMap.get(this.narrEquiStep+1);
 		} else {
 			endTime = Math.max(mapper.latestEndTime(), this.stepReasoningcycleNumMap.entrySet().stream()
 																									.max((e1, e2) -> e1.getKey().compareTo(e2.getKey()))
@@ -182,6 +182,9 @@ public class MoodGraph extends JFrame implements PlotmasGraph {
         xAxis.setRange(data.getDomainLowerBound(false), data.getDomainUpperBound(false));
         // choose step distance so we always have around 15 values on xAxis, and round it to the deca level
         long tickDistance = Math.round((data.getDomainUpperBound(false) - data.getDomainLowerBound(false)) / 15 ) / 10 * 10;
+        if (tickDistance < 1) {
+        	tickDistance = 1;
+        }
         xAxis.setTickUnit(new NumberTickUnit(tickDistance));
 
         NumberAxis yAxis = (NumberAxis) ((XYPlot) this.chart.getPlot()).getRangeAxis();
