@@ -21,7 +21,7 @@ public class MultipleRunsG {
 			// number individuals
 			int individual_count = 20;
 			// selection size
-			int selection_size = 4;
+			int selection_size = 10;
 			// maximum time in seconds (no time limit: time < 0 or leave it out as default value is -1)
 			int time = 3600;
 			// number of iterations without improvement till shutdown
@@ -29,7 +29,7 @@ public class MultipleRunsG {
 
 			// path and name of file
 			String path = "C:\\Users\\Leon\\Desktop\\InBloomNIA\\";
-			String filename = "GENstatic_indc20_sels4_time3600_maxrep5" + timestamp + "_run" + String.valueOf(i) + ".log";
+			String filename = "GENstatic_indc20_sels10_time3600_maxrep5" + timestamp + "_run" + String.valueOf(i) + ".log";
 
 			GeneticAlgorithm<?,?> ga = niEnvironment.get_GA(args,init_stepnumber,individual_count,selection_size);
 
