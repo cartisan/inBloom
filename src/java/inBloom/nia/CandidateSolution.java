@@ -118,7 +118,6 @@ public abstract class CandidateSolution {
 	public void cleanTellabilityLog() {
 		if (this.tellability != null) {
 			this.tellability.detailedLog = "";
-			this.tellability = null;
 		}
 	}
 }

@@ -179,7 +179,7 @@ public class VisualizationFilterPPVisitor extends PlotGraphVisitor {
 		List<Integer> narrEquiStepList = new ArrayList<>();
 		if (!seqMap.isEmpty() && repLength > 0) {
 			for(String agent : seqMap.keySet()) {
-				if(seqMap.get(agent).getFirst() == 0) {
+				if(seqMap.get(agent).getFirst() == 0 || seqMap.get(agent).getSecond() == 0) {
 					// this agent stopped due to repetition of non-action, no need to delete vertices
 					continue;
 				}
@@ -187,6 +187,10 @@ public class VisualizationFilterPPVisitor extends PlotGraphVisitor {
 				int lastActionIndex = repLength - (seqMap.get(agent).getFirst() - 1);
 
 				// since the list is already created in reversed order we simply use lastActionVertex, but correct for fact that count starts with 0
+				// TODO: Review this. error was: INdex out of bound: index:16 size:5
+				if (lastActionIndex - 1 > this.agentActionMap.get(agent).size()) {
+					lastActionIndex = this.agentActionMap.get(agent).size() - 1;
+				}
 				Vertex lastV = this.agentActionMap.get(agent).get(lastActionIndex - 1);
 				logger.info("Cutting subgraph for " + agent + " below step " + lastV.getStep() + " due to ensuing narrative equilibrium");
 				this.graph.removeBelow(lastV);
