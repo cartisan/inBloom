@@ -1638,7 +1638,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			return result;
 		}
 
-		return this.randomMutator(recipient);
+		return recipient;
 	}
 
 
@@ -1721,7 +1721,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 			return result;
 		}
-		return this.toggleMutator(recipient);
+		return recipient;
 	}
 
 
@@ -1851,7 +1851,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 			return result;
 		}
-		return this.orientedMutator(recipient);
+		return recipient;
 	}
 
 	/*
@@ -1951,7 +1951,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 			return result;
 		}
-		return this.guidedMutator(recipient, mutator);
+		return recipient;
 	}
 
 	/*
