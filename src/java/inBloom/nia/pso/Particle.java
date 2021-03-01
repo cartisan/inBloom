@@ -27,7 +27,7 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 	}
 
 	public Particle(Individual candidate, ChromosomePersonality velocity_personality, ChromosomeHappenings velocity_happenings, Fitness<?,?> fit) {
-		super(candidate.get_personality(), candidate.get_happenings(), candidate.get_simLength());
+		super(candidate.get_personality(), candidate.get_happenings(), new Integer(candidate.get_simLength().value));
 		this.actual_length  = candidate.get_actualLength();
 		this.tellabilityValue = candidate.get_tellabilityValue();
 
@@ -116,7 +116,7 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 		Integer buffer = (int)Math.round(Math.sqrt(length));
 
 		// Let the simulation run for at least 1 more step than the last happening
-		this.simulation_length = length+buffer+1;
+		this.simulation_length.value = length+buffer+1;
 	}
 
 	/**
@@ -130,7 +130,7 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 				// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move
 				this.best_personality = this.personality.clone();
 				this.best_happenings = this.happenings.clone();
-				this.best_simLength = this.simulation_length;
+				this.best_simLength = this.simulation_length.value;
 				this.best_actualLength = this.actual_length;
 				this.best_tellability = this.tellabilityValue;
 

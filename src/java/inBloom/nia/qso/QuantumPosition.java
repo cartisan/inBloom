@@ -90,7 +90,7 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 		Integer buffer = (int)Math.round(Math.sqrt(length));
 
 		// Let the simulation run for at least 1 more step than the last happening
-		this.simulation_length = length+buffer+1;
+		this.simulation_length.value = length+buffer+1;
 	}
 
 	/**
@@ -125,7 +125,7 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 
 	@Override
 	public String to_String() {
-		return this.to_String(this.personality, this.happenings, this.simulation_length, this.actual_length);
+		return this.to_String(this.personality, this.happenings, this.simulation_length.value, this.actual_length);
 	}
 
 }

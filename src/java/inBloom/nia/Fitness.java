@@ -81,13 +81,13 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 		double result = 0;
 		this.isRunning = true;
 		this.set = false;
-		Integer simulation_length = individual.get_simLength();
+		Integer simulation_length = individual.get_simLength().value;
 
-		if(simulation_length < 100) {
+		if(simulation_length < NIAlgorithm.MAX_SIM_LENGTH) {
 			PlotEnvironment.MAX_STEP_NUM = simulation_length;
 		} else {
 			// Upper Limit
-			PlotEnvironment.MAX_STEP_NUM = 100;
+			PlotEnvironment.MAX_STEP_NUM = NIAlgorithm.MAX_SIM_LENGTH;
 		}
 
 		// Deactivate MAX_REPEAT if needed, by commenting back in:

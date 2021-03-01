@@ -2,13 +2,17 @@ package inBloom.nia.ga;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+
+import com.google.common.collect.Lists;
 
 import inBloom.PlotEnvironment;
 import inBloom.PlotModel;
 import inBloom.nia.CandidateSolution;
 import inBloom.nia.ChromosomeHappenings;
+import inBloom.nia.ChromosomeLength;
 import inBloom.nia.ChromosomePersonality;
 import inBloom.nia.Fitness;
 import inBloom.nia.NIAlgorithm;
@@ -20,6 +24,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	private static final double DEFAULT_MUTATION_PROB = 0.05;
 	private static final double DEFAULT_DECAY_RATE = 0.05;
 	private static final int DISCRETE_HAP_SPACING = 5;
+	private static final int DISCRETE_LEN_SPACING = 5;
 
 	// Parameters for static version
 	public int selection_size;
@@ -45,6 +50,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	private double[][] personality_mut;
 	private double[][] happenings_cross;
 	private double[][] happenings_mut;
+	private double length_mut;
+	private double length_cross;
 
 	// Performance measurement
 	private List<Double> population_bestHalf = new ArrayList<>();
@@ -53,6 +60,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	// Discrete values to choose from for personality initialization
 	private static double[] discretePersValues = {-1,-0.9,-0.75,-0.5,-0.25,-0.1,0,0.1,0.25,0.5,0.75,0.9,1};
 	private static int[] discreteHapValues = new int[DISCRETE_HAP_SPACING];
+	private static int[] discreteLenValues = new int[DISCRETE_LEN_SPACING];
 
 	// Boolean arrays are used to manage genetic operators. True enables usage.
 
@@ -80,7 +88,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.selection_size = number_selections;
 
 		// set discreteHapValues such, that we have 5 evenly spaced entries starting from 1
-		Arrays.setAll(discreteHapValues, i -> Math.round(max_steps / DISCRETE_HAP_SPACING) * i);			// for max_step 30 and spacing 5: {0, 6, 12, 18, 24}
+		Arrays.setAll(discreteHapValues, i -> Math.round(this.estimated_max_steps / DISCRETE_HAP_SPACING) * i);			// for estimated_max_step 30 and spacing 5: {0, 6, 12, 18, 24}
+		Arrays.setAll(discreteLenValues, i -> Math.round(MAX_SIM_LENGTH / DISCRETE_HAP_SPACING) * (i+1));	// for MAX_SIM_LENGTH 100 and spacing 5: {20, 40, 60, 80, 100}
 	}
 
 	/**
@@ -95,7 +104,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.mutation_prob = mutation_prob;
 
 		// set discreteHapValues such, that we have 5 evenly spaced entries starting from 1
-		Arrays.setAll(discreteHapValues, i -> Math.round(max_steps / DISCRETE_HAP_SPACING) * i);			// for max_step 30 and spacing 5: {0, 6, 12, 18, 24}
+		Arrays.setAll(discreteHapValues, i -> Math.round(this.estimated_max_steps / DISCRETE_HAP_SPACING) * i);			// for estimated_max_steps 30 and spacing 5: {0, 6, 12, 18, 24}
+		Arrays.setAll(discreteLenValues, i -> Math.round(MAX_SIM_LENGTH / DISCRETE_HAP_SPACING) * (i+1));	// for MAX_SIM_LENGTH 100 and spacing 5: {20, 40, 60, 80, 100}
 	}
 
 	/**
@@ -109,7 +119,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.decay_rate = decay;
 
 		// set discreteHapValues such, that we have 5 evenly spaced entries starting from 1
-		Arrays.setAll(discreteHapValues, i -> Math.round(max_steps / DISCRETE_HAP_SPACING) * i);			// for max_step 30 and spacing 5: {0, 6, 12, 18, 24}
+		Arrays.setAll(discreteHapValues, i -> Math.round(this.estimated_max_steps / DISCRETE_HAP_SPACING) * i);			// for estimated_max_steps 30 and spacing 5: {0, 6, 12, 18, 24}
+		Arrays.setAll(discreteLenValues, i -> Math.round(MAX_SIM_LENGTH / DISCRETE_HAP_SPACING) * (i+1));	// for MAX_SIM_LENGTH 100 and spacing 5: {20, 40, 60, 80, 100}
 	}
 
 
@@ -325,12 +336,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * @param hap: Chromosome containing happening information
 	 * @return: Instantiated Individual
 	 */
-	public Individual new_Candidate(ChromosomePersonality pers,ChromosomeHappenings hap) {
+	public Individual new_Candidate(ChromosomePersonality pers, ChromosomeHappenings hap) {
 
-		return this.new_Candidate(pers,hap,this.determineLength(hap));
+		return this.new_Candidate(pers, hap, this.determineLength(hap));
 	}
 
-	public Individual new_Candidate(ChromosomePersonality pers,ChromosomeHappenings hap, Integer steps) {
+	public Individual new_Candidate(ChromosomePersonality pers, ChromosomeHappenings hap, Integer steps) {
 		Fitness<EnvType,ModType> fit = new Fitness<>(this.EVO_ENV, this.verbose, this.level);
 
 		return new Individual(pers, hap, steps, fit);
@@ -431,10 +442,15 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.happenings_cross = new double[this.number_agents][this.number_happenings];
 		this.happenings_mut = new double[this.number_agents][this.number_happenings];
 
+		if(this.floatingParameters) {
+			this.length_mut = 0.5;
+			this.length_cross = 0.5;
+		} else {
+			this.length_mut = 1.0;
+			this.length_cross = 1.0;
+		}
 		for(int i = 0; i < this.number_agents; i++) {
-
 			for(int j = 0; j < 5; j++) {
-
 				if(this.floatingParameters) {
 					this.personality_cross[i][j] = 0.5;
 					this.personality_mut[i][j] = 0.5;
@@ -445,7 +461,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 
 			for(int j = 0; j < this.number_happenings; j++) {
-
 				if(this.floatingParameters) {
 					this.happenings_cross[i][j] = 0.5;
 					this.happenings_mut[i][j] = 0.5;
@@ -524,6 +539,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 			System.out.println();
 
+			System.out.println(this.length_mut);
 			for(int i = 0; i < 5; i++) {
 				System.out.print(this.personality_mut[0][i] + " ");
 			}
@@ -565,20 +581,17 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	/*
 	 * Update local mutation probability
 	 */
-
 	public void updateLocalMutationProbabilites(boolean[][] pers, boolean[][] haps, boolean improvement) {
+		this.length_mut =  this.localUpdate(this.length_mut, this.global_mut, improvement);
 
 		for(int i = 0; i < this.number_agents; i++) {
-
 			for(int j = 0; j < 5; j++) {
-
 				if(pers[i][j]) {
 					this.personality_mut[i][j] = this.localUpdate(this.personality_mut[i][j],this.global_mut,improvement);
 				}
 			}
 
 			for(int j = 0; j < this.number_happenings; j++) {
-
 				if(haps[i][j]) {
 					this.happenings_mut[i][j] = this.localUpdate(this.happenings_mut[i][j],this.global_mut,improvement);
 				}
@@ -673,36 +686,40 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}
 
 		// Initialize population
-		while(index<this.individual_count) {
+		while(index < this.individual_count) {
+			// Create new length chromosome
+			ChromosomeLength length = null;
+			int lenType = this.random.nextInt(2);
+			switch(lenType) {
+			case 0:
+				// random initialization of length
+				length = new ChromosomeLength(this.random.nextInt(MAX_SIM_LENGTH));
+				break;
+			case 1:
+				// discretized initialization of length
+				length = new ChromosomeLength(discreteLenValues[this.random.nextInt(discreteLenValues.length)]);
+				break;
+			}
 
 			// Create new personality chromosome
 			ChromosomePersonality personality = new ChromosomePersonality(this.number_agents);
 
 			int persType = persInitializer.get((int)Math.round(Math.random()*persInitializer.size()-0.5));
-
 			switch(persType) {
-
-			case 2:
-
-				if(discretePersValues.length>4) {
-					personality = this.steadyDiscretePersonalityInitializer();
-					break;
-				}
-
+			case 0:
+				personality = this.randomPersonalityInitializer();
+				break;
 			case 1:
-
 				if(discretePersValues.length>0) {
 					personality = this.discretePersonalityInitializer();
 					break;
 				}
-
-			case 0:
-
-				personality = this.randomPersonalityInitializer();
-				break;
-
+			case 2:
+				if(discretePersValues.length>4) {
+					personality = this.steadyDiscretePersonalityInitializer();
+					break;
+				}
 			default:
-
 				System.out.println("Fatal Error @ Personality Initialization Selection!");
 				break;
 			}
@@ -711,26 +728,17 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			ChromosomeHappenings happenings = new ChromosomeHappenings(this.number_agents,this.number_happenings);
 
 			int hapType = hapInitializer.get((int)Math.round(Math.random()*hapInitializer.size()-0.5));
-
 			switch(hapType) {
-
 			case 0:
-
-				happenings = this.randomHappeningsInitializer();
+				happenings = this.randomHappeningsInitializer(length.value);
 				break;
-
 			case 1:
-
 				happenings = this.probabilisticHappeningsInitializer();
 				break;
-
 			case 2:
-
 				happenings = this.steadyHappeningsInitializer();
 				break;
-
 			default:
-
 				System.out.println("Fatal Error @ Happening Initialization Selection!");
 				break;
 			}
@@ -748,7 +756,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			// First candidate cannot have duplicates
 			if(index==0 || !isDuplicate) {
 
-				this.population[index] = this.new_Candidate(personality,happenings);
+				this.population[index] = this.new_Candidate(personality, happenings, length.value);
 				index++;
 			}
 		}
@@ -824,33 +832,31 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	}
 
 
-	/*
+	/**
 	 * Random initializer for ChromosomeHappening
-	 * Inserts random numbers between 0 and max_steps into the chromosome.
-	 * Numbers are discretized to be multiples of max_steps/number_happenings
+	 * Inserts random numbers between 0 and simLengh into the chromosome.
+	 * Numbers are discretized to be multiples of estimated_max_steps/number_happenings
 	 * @Return: Instantiated Chromosome
 	 */
-
-	public ChromosomeHappenings randomHappeningsInitializer() {
+	public ChromosomeHappenings randomHappeningsInitializer(int simLengh) {
 
 		ChromosomeHappenings happenings = new ChromosomeHappenings(this.number_agents,this.number_happenings);
 
 		for(int i = 0; i < this.number_agents;i++) {
 			for(int j = 0; j < this.number_happenings; j++) {
-				happenings.values[i][j] = (int)Math.round(Math.random()*(this.max_steps/this.number_happenings+1)-0.5)*this.number_happenings;
+				happenings.values[i][j] = (int)Math.round(Math.random() * (simLengh / this.number_happenings+1) - 0.5) * this.number_happenings;
 			}
 		}
 		return happenings;
 	}
 
 
-	/*
+	/**
 	 * Instantiates a happening with probability 1/number_agents
-	 * Inserts random numbers between 0 and max_steps into the chromosome.
-	 * Numbers are discretized to be multiples of max_steps/number_happenings
+	 * Inserts random numbers between 0 and estimated_max_steps into the chromosome.
+	 * Numbers are discretized to be multiples of estimated_max_steps/number_happenings
 	 * @Return: Instantiated Chromosome
 	 */
-
 	public ChromosomeHappenings probabilisticHappeningsInitializer() {
 		Random r = new Random();
 		ChromosomeHappenings happenings = new ChromosomeHappenings(this.number_agents,this.number_happenings);
@@ -864,13 +870,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	}
 
 
-	/*
+	/**
 	 * Instantiates every happening exactly once and assigns it to a random agent
-	 * Inserts random numbers between 0 and max_steps into the chromosome.
-	 * Numbers are discretized to be multiples of max_steps/number_happenings
+	 * Inserts random numbers between 0 and estimated_max_steps into the chromosome.
+	 * Numbers are discretized to be multiples of estimated_max_steps/number_happenings
 	 * @Return: Instantiated Chromosome
 	 */
-
 	public ChromosomeHappenings steadyHappeningsInitializer() {
 		Random r = new Random();
 		ChromosomeHappenings happenings = new ChromosomeHappenings(this.number_agents,this.number_happenings);
@@ -1067,25 +1072,16 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 
 			switch(mode) {
-
 			case 0:
-
 				this.simpleCrossover((Individual) this.population[one], (Individual) this.population[two], i);
 				break;
-
 			case 1:
-
 				this.binomialCrossover((Individual) this.population[one], (Individual) this.population[two], i);
 				break;
-
-
 			case 2:
-
 				this.xPointCrossover((Individual) this.population[one], (Individual) this.population[two], i);
 				break;
-
 			case 3:
-
 				// Add 2 initial candidates to the List
 				List<Individual> candidates = new ArrayList<>();
 
@@ -1114,9 +1110,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 				this.voteCrossover(candidates,i);
 				break;
-
 			default:
-
 				this.offspring[i] = (Individual) this.population[one];
 				this.offspring[i+1] = (Individual) this.population[two];
 				System.out.println("No crossover operator selected!");
@@ -1130,17 +1124,54 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	}
 
 
-	/*
-	 * "Simply" exchanges ChromosomePersonality and ChromosomeHappenings
-	 * Is equal to onePointCrossover with a fixed crossover Point
+	/**
+	 * Exhanges one or two chromosomes between individuals one and two, on a random basis.
 	 * @param one, two: The candidates to be crossed over
 	 * @param index: position in offspring
 	 */
-
 	public void simpleCrossover(Individual one, Individual two, int index) {
+		Integer lengthOne = one.get_simLength().value;
+		Integer lengthTwo = two.get_simLength().value;
 
-		this.offspring[index] = this.new_Candidate(one.get_personality(), two.get_happenings());
-		this.offspring[index+1] = this.new_Candidate(two.get_personality(), one.get_happenings());
+		ChromosomePersonality personalityOne = one.get_personality();
+		ChromosomePersonality personalityTwo = two.get_personality();
+
+		ChromosomeHappenings happeningsOne = one.get_happenings();
+		ChromosomeHappenings happeningsTwo = two.get_happenings();
+
+
+		// randomly decide whether one or two chromosomes are exchanged
+		int changeNum = this.random.nextInt(2) + 1;
+
+		// select which chromosomes to exchange: 0 - length, 1 - personality, 2 - happening
+		List<Integer> chromosomeIndex = Lists.newArrayList(0, 1, 2);
+		Collections.shuffle(chromosomeIndex);		// random shuffle places index of chromosomes to be swapped at beginning
+		while (changeNum > 0) {
+			int switchChrom = chromosomeIndex.remove(0);
+
+			switch (switchChrom) {
+			case 0:
+				int tmpL = lengthOne;
+				lengthOne = lengthTwo;
+				lengthTwo = tmpL;
+				break;
+			case 1:
+				ChromosomePersonality tmpP = personalityOne;
+				personalityOne = personalityTwo;
+				personalityTwo = tmpP;
+				break;
+			case 2:
+				ChromosomeHappenings tmpH = happeningsOne;
+				happeningsOne = happeningsTwo;
+				happeningsTwo = tmpH;
+				break;
+			}
+
+			changeNum -= 1;
+		}
+
+		this.offspring[index] = this.new_Candidate(personalityOne, happeningsOne, lengthOne);
+		this.offspring[index+1] = this.new_Candidate(personalityTwo, happeningsTwo, lengthTwo);
 
 		if(this.floatingParameters) {
 
@@ -1166,6 +1197,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 */
 
 	public void binomialCrossover(Individual one, Individual two, int index) {
+		Integer lengthOne = one.get_simLength().value;
+		Integer lengthTwo = two.get_simLength().value;
 
 		ChromosomePersonality personalityOne = new ChromosomePersonality(this.number_agents);
 		ChromosomePersonality personalityTwo = new ChromosomePersonality(this.number_agents);
@@ -1177,7 +1210,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		boolean[][] hapsChange = new boolean[this.number_agents][this.number_happenings];
 
 		for(int i = 0; i < this.number_agents; i++) {
-
 			for(int j = 0; j < 5; j++) {
 
 				if(Math.random()<this.crossover_prob*this.personality_cross[i][j]) {
@@ -1191,7 +1223,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 
 			for(int j = 0; j < this.number_happenings; j++) {
-
 				if(Math.random()<this.crossover_prob*this.happenings_cross[i][j]) {
 					happeningsOne.values[i][j] = two.get_happenings(i,j);
 					happeningsTwo.values[i][j] = one.get_happenings(i,j);
@@ -1203,8 +1234,14 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 		}
 
-		this.offspring[index] = this.new_Candidate(personalityOne,happeningsOne);
-		this.offspring[index+1] = this.new_Candidate(personalityTwo,happeningsTwo);
+		if(Math.random() < this.crossover_prob * this.length_cross) {
+			Integer tmp = lengthOne;
+			lengthOne = lengthTwo;
+			lengthTwo = tmp;
+		}
+
+		this.offspring[index] = this.new_Candidate(personalityOne,happeningsOne, lengthOne);
+		this.offspring[index+1] = this.new_Candidate(personalityTwo,happeningsTwo, lengthTwo);
 
 		if(this.floatingParameters) {
 
@@ -1230,21 +1267,22 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	}
 
 
-	/*
+	/**
 	 * Exchanges allele between crossover points.
 	 * Crossover points are generated by the function setCrossoverPoints()
 	 * @param one, two: The candidates to be crossed over
 	 * @param index: position in offspring
 	 */
-
 	public void xPointCrossover(Individual one, Individual two, int index) {
-
 		boolean[][] crossPersonality = new boolean[this.number_agents][5];
 		boolean[][] personalityPoints = this.setCrossoverPoints(crossPersonality, this.personality_cross);
 
 		// FIXME: Here was error where crossHappenings was combined with this.personality_cross
 		boolean[][] crossHappenings = new boolean[this.number_agents][this.number_happenings];
 		boolean[][] happeningPoints = this.setCrossoverPoints(crossHappenings, this.happenings_cross);
+
+		Integer lengthOne = one.get_simLength().value;
+		Integer lengthTwo = two.get_simLength().value;
 
 		ChromosomePersonality personalityOne = new ChromosomePersonality(this.number_agents);
 		ChromosomePersonality personalityTwo = new ChromosomePersonality(this.number_agents);
@@ -1253,9 +1291,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		ChromosomeHappenings happeningsTwo = new ChromosomeHappenings(this.number_agents,this.number_happenings);
 
 		for(int i = 0; i < this.number_agents; i++) {
-
 			for(int j = 0; j < 5; j++) {
-
 				if(crossPersonality[i][j]) {
 					personalityOne.values[i][j] = two.get_personality(i,j);
 					personalityTwo.values[i][j] = one.get_personality(i,j);
@@ -1266,7 +1302,6 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 
 			for(int j = 0; j < this.number_happenings; j++) {
-
 				if(crossHappenings[i][j]) {
 					happeningsOne.values[i][j] = two.get_happenings(i,j);
 					happeningsTwo.values[i][j] = one.get_happenings(i,j);
@@ -1277,12 +1312,17 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 		}
 
+		// since length is a single allele instead of an array, this is simply a single switch decision
+		if(Math.random() < this.crossover_prob * this.length_cross) {
+			Integer tmp = lengthOne;
+			lengthOne = lengthTwo;
+			lengthTwo = tmp;
+		}
+
 		this.offspring[index] = this.new_Candidate(personalityOne,happeningsOne);
 		this.offspring[index+1] = this.new_Candidate(personalityTwo,happeningsTwo);
 
-
 		if(this.floatingParameters) {
-
 			boolean local_improvement = false;
 			boolean global_improvement = false;
 
@@ -1306,13 +1346,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	}
 
 
-	/*
+	/**
 	 * Generate crossover points
 	 *
 	 * @param x,y: dimensions of the array
 	 * @return: Array containing truth values
 	 */
-
 	public boolean[][] setCrossoverPoints(boolean[][] result, double[][] chromosome_cross){
 
 		boolean cross = false;
@@ -1562,7 +1601,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	}
 
 
-	/*
+	/**
 	 * Random Mutation
 	 *
 	 * Iterates the Chromosome and chooses a new random value for a position with probability mutation_prob
@@ -1570,19 +1609,23 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * @param recipient: Individual to be mutated
 	 * @return: mutated Individual
 	 */
-
 	public Individual randomMutator(Individual recipient) {
-
 		boolean change = false;
 
 		ChromosomePersonality mutatedPersonality = new ChromosomePersonality(this.number_agents);
 		ChromosomeHappenings mutatedHappenings = new ChromosomeHappenings(this.number_agents, this.number_happenings);
+		Integer mutatedLength = recipient.get_simLength().value;
 
 		boolean[][] persChange = new boolean[this.number_agents][5];
 		boolean[][] hapsChange = new boolean[this.number_agents][this.number_happenings];
 
-		for(int i = 0; i < this.number_agents; i++) {
+		// Simulation Length
+		if(Math.random() < this.mutation_prob * this.length_mut) {
+			mutatedLength = this.random.nextInt(MAX_SIM_LENGTH);
+			change = true;
+		}
 
+		for(int i = 0; i < this.number_agents; i++) {
 			// Personality
 			for(int j = 0; j < 5; j++) {
 
@@ -1599,10 +1642,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 			// Happenings
 			for(int j = 0; j < this.number_happenings; j++) {
-
 				if(Math.random()<this.mutation_prob*this.happenings_mut[i][j]) {
-
-					mutatedHappenings.values[i][j] = (int)Math.round(Math.random()*recipient.get_simLength()-0.5);
+					mutatedHappenings.values[i][j] = (int)Math.round(Math.random() * mutatedLength - 0.5);
 					hapsChange[i][j] = true;
 					change = true;
 
@@ -1613,11 +1654,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}
 
 		if(change) {
-
-			Individual result = this.new_Candidate(mutatedPersonality, mutatedHappenings);
-
+			Individual result = this.new_Candidate(mutatedPersonality, mutatedHappenings, mutatedLength);
 			if(this.floatingParameters) {
-
 				boolean global_improvement = false;
 				boolean local_improvement = false;
 
@@ -1645,8 +1683,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	/*
 	 * Toggle Mutation
 	 *
-	 * Iterates the Chromosome and makes changes based on the current values. Happenings get instantiated or turned off
-	 * while personality parameters get multiplied by -1.
+	 * Iterates the Chromosome and makes changes based on the current values. Happenings get instantiated or turned off,
+	 * personality parameters get multiplied by -1, length gets set to max or randomized
 	 *
 	 * @param recipient: Individual to be mutated
 	 * @return: mutated Individual
@@ -1658,9 +1696,24 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		ChromosomePersonality mutatedPersonality = new ChromosomePersonality(this.number_agents);
 		ChromosomeHappenings mutatedHappenings = new ChromosomeHappenings(this.number_agents, this.number_happenings);
+		Integer mutatedLength = recipient.get_simLength().value;
 
 		boolean[][] persChange = new boolean[this.number_agents][5];
 		boolean[][] hapsChange = new boolean[this.number_agents][this.number_happenings];
+
+
+		// Simulation Length
+		if(Math.random() < this.mutation_prob * this.length_mut) {
+			// if length is max, set to random
+			if (recipient.get_simLength().value >= MAX_SIM_LENGTH) {
+				mutatedLength = this.random.nextInt(MAX_SIM_LENGTH);
+			}
+			// if length random, set to max
+			else {
+				mutatedLength = MAX_SIM_LENGTH;
+			}
+			change = true;
+		}
 
 		for(int i = 0; i < this.number_agents; i++) {
 
@@ -1684,7 +1737,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					if(recipient.get_happenings(i,j) > 0) {
 						mutatedHappenings.values[i][j] = 0;
 					} else {
-						mutatedHappenings.values[i][j] = (int)Math.round(Math.random()*(recipient.get_simLength()-1)+0.5);
+						mutatedHappenings.values[i][j] = (int)Math.round(Math.random() * mutatedLength + 0.5);
 					}
 
 					hapsChange[i][j] = true;
@@ -1698,7 +1751,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		if(change) {
 
-			Individual result = this.new_Candidate(mutatedPersonality, mutatedHappenings);
+			Individual result = this.new_Candidate(mutatedPersonality, mutatedHappenings, mutatedLength);
 
 			if(this.floatingParameters) {
 
@@ -1728,7 +1781,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	/*
 	 * Oriented Mutation
 	 *
-	 * Mutate value towards or away from another internal value in the same chromosome but at a different position
+	 * Mutate value towards or away from another internal value in the same chromosome but at a different position. No
+	 * changed for simLength.
 	 *
 	 * @param recipient: Individual to be mutated
 	 * @return: mutated Individual
@@ -1740,9 +1794,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		ChromosomePersonality mutatedPersonality = new ChromosomePersonality(this.number_agents);
 		ChromosomeHappenings mutatedHappenings = new ChromosomeHappenings(this.number_agents, this.number_happenings);
+		Integer mutatedLength = recipient.get_simLength().value;
 
 		boolean[][] persChange = new boolean[this.number_agents][5];
 		boolean[][] hapsChange = new boolean[this.number_agents][this.number_happenings];
+
 
 		for(int i = 0; i < this.number_agents; i++) {
 
@@ -1819,7 +1875,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 						if(distance>0) {
 							mutatedHappenings.values[i][j] -= ratio * recipient.get_happenings(i,j);
 						} else {
-							mutatedHappenings.values[i][j] += ratio * (recipient.get_simLength()-recipient.get_happenings(i,j));
+							mutatedHappenings.values[i][j] += ratio * (mutatedLength - recipient.get_happenings(i,j));
 						}
 					}
 				}
@@ -1827,8 +1883,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}
 
 		if(change) {
-
-			Individual result = this.new_Candidate(mutatedPersonality, mutatedHappenings);
+			Individual result = this.new_Candidate(mutatedPersonality, mutatedHappenings, mutatedLength);
 
 			if(this.floatingParameters) {
 
@@ -1864,14 +1919,23 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 */
 
 	public Individual guidedMutator(Individual recipient, Individual mutator) {
-
 		boolean change = false;
 
 		ChromosomePersonality mutatedPersonality = new ChromosomePersonality(this.number_agents);
 		ChromosomeHappenings mutatedHappenings = new ChromosomeHappenings(this.number_agents, this.number_happenings);
+		Integer mutatedLength = recipient.get_simLength().value;
 
 		boolean[][] persChange = new boolean[this.number_agents][5];
 		boolean[][] hapsChange = new boolean[this.number_agents][this.number_happenings];
+		double ratio;
+		double distance;
+
+		// Simulation Length
+		if(Math.random() < this.mutation_prob * this.length_mut) {
+			ratio = Math.random() * 2 - 1;		// value in [-1, 1)
+			distance = mutator.get_simLength().value - recipient.get_simLength().value;
+			mutatedLength += (int) Math.round(ratio * distance);
+		}
 
 		for(int i = 0; i < this.number_agents; i++) {
 
@@ -1884,12 +1948,12 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					persChange[i][j] = true;
 					change = true;
 
-					double ratio = Math.random()*2-1;
-					double distance = mutator.get_personality(i,j) - recipient.get_personality(i,j);
+					ratio = Math.random()*2-1;
+					distance = mutator.get_personality(i,j) - recipient.get_personality(i,j);
 
 					if(ratio > 0) {
 						mutatedPersonality.values[i][j] += ratio * distance;
-					}else {
+					} else {
 						ratio*=-1;
 						if(distance>0) {
 							mutatedPersonality.values[i][j] += ratio * (-1-recipient.get_personality(i,j));
@@ -1909,8 +1973,8 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 					hapsChange[i][j] = true;
 					change = true;
 
-					double ratio = Math.random()*2-1;
-					double distance = mutator.get_happenings(i,j) - recipient.get_happenings(i,j);
+					ratio = Math.random()*2-1;
+					distance = mutator.get_happenings(i,j) - recipient.get_happenings(i,j);
 
 					if(ratio > 0) {
 						mutatedHappenings.values[i][j] += ratio * distance;
@@ -1919,7 +1983,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 						if(distance>0) {
 							mutatedHappenings.values[i][j] -= ratio * recipient.get_happenings(i,j);
 						} else {
-							mutatedHappenings.values[i][j] += ratio * (recipient.get_simLength()-recipient.get_happenings(i,j));
+							mutatedHappenings.values[i][j] += ratio * (mutatedLength - recipient.get_happenings(i,j));
 						}
 					}
 				}
@@ -1927,8 +1991,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		}
 
 		if(change) {
-
-			Individual result = this.new_Candidate(mutatedPersonality, mutatedHappenings);
+			Individual result = this.new_Candidate(mutatedPersonality, mutatedHappenings, mutatedLength);
 
 			if(this.floatingParameters) {
 

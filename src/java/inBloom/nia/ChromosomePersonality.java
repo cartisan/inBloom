@@ -9,8 +9,8 @@ public class ChromosomePersonality {
 	 */
 	public double[][] values;
 
-	public ChromosomePersonality(int AgentCount){
-		this.values = new double[AgentCount][5];
+	public ChromosomePersonality(int agentCount){
+		this.values = new double[agentCount][5];
 	}
 
 	/**

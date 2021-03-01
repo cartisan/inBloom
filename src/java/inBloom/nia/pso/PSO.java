@@ -587,7 +587,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 					break;
 				}
 
-				this.population[index] = this.new_particle(personality,pers_velocity,happenings,hap_velocity,this.max_steps);
+				this.population[index] = this.new_particle(personality,pers_velocity,happenings,hap_velocity,this.estimated_max_steps);
 			}
 		}
 
@@ -667,8 +667,8 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 
 	/*
 	 * Random initializer for ChromosomeHappening
-	 * Inserts random numbers between 0 and max_steps into the chromosome.
-	 * Numbers are discretized to be multiples of max_steps/number_happenings
+	 * Inserts random numbers between 0 and estimated_max_steps into the chromosome.
+	 * Numbers are discretized to be multiples of estimated_max_steps/number_happenings
 	 * @Return: Instantiated Chromosome
 	 */
 
@@ -678,7 +678,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 
 		for(int i = 0; i < this.number_agents;i++) {
 			for(int j = 0; j < this.number_happenings; j++) {
-				happenings.values[i][j] = (int)Math.round(Math.random()*(this.max_steps/this.number_happenings+1)-0.5)*this.number_happenings;
+				happenings.values[i][j] = (int)Math.round(Math.random()*(this.estimated_max_steps/this.number_happenings+1)-0.5)*this.number_happenings;
 			}
 		}
 		return happenings;
@@ -687,8 +687,8 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 
 	/*
 	 * Instantiates a happening with probability 1/number_agents
-	 * Inserts random numbers between 0 and max_steps into the chromosome.
-	 * Numbers are discretized to be multiples of max_steps/number_happenings
+	 * Inserts random numbers between 0 and estimated_max_steps into the chromosome.
+	 * Numbers are discretized to be multiples of estimated_max_steps/number_happenings
 	 * @Return: Instantiated Chromosome
 	 */
 
@@ -699,7 +699,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		for(int i = 0; i < this.number_agents;i++) {
 			for(int j = 0; j < this.number_happenings; j++) {
 				if(Math.random()<1/this.number_agents) {
-					happenings.values[i][j] = (int)Math.round(Math.random()*(this.max_steps/this.number_happenings)+0.5)*this.number_happenings;
+					happenings.values[i][j] = (int)Math.round(Math.random()*(this.estimated_max_steps/this.number_happenings)+0.5)*this.number_happenings;
 				}
 			}
 		}
@@ -709,8 +709,8 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 
 	/*
 	 * Instantiates every happening exactly once and assigns it to a random agent
-	 * Inserts random numbers between 0 and max_steps into the chromosome.
-	 * Numbers are discretized to be multiples of max_steps/number_happenings
+	 * Inserts random numbers between 0 and estimated_max_steps into the chromosome.
+	 * Numbers are discretized to be multiples of estimated_max_steps/number_happenings
 	 * @Return: Instantiated Chromosome
 	 */
 
@@ -722,7 +722,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 
 			int j = (int)Math.round(Math.random()*this.number_agents-0.5);
 
-			happenings.values[i][j] = (int)Math.round(Math.random()*(this.max_steps/this.number_happenings)+0.5)*this.number_happenings;
+			happenings.values[i][j] = (int)Math.round(Math.random()*(this.estimated_max_steps/this.number_happenings)+0.5)*this.number_happenings;
 		}
 		return happenings;
 	}
@@ -749,7 +749,7 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 		for(int i = 0; i < this.number_agents;i++) {
 			for(int j = 0; j < this.number_happenings; j++) {
 
-				hap_velocity.values[i][j] = (int)Math.round((Math.random()*2-1)*this.max_steps/this.number_happenings);
+				hap_velocity.values[i][j] = (int)Math.round((Math.random()*2-1)*this.estimated_max_steps/this.number_happenings);
 			}
 		}
 		return hap_velocity;

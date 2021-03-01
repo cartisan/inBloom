@@ -5,6 +5,7 @@ import java.util.List;
 
 import inBloom.nia.CandidateSolution;
 import inBloom.nia.ChromosomeHappenings;
+import inBloom.nia.ChromosomeLength;
 import inBloom.nia.ChromosomePersonality;
 import inBloom.nia.Fitness;
 
@@ -74,11 +75,11 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 		return this.positions.get(z).get_happenings().values[x][y];
 	}
 
-	public Integer get_simLength() {
+	public ChromosomeLength get_simLength() {
 		return this.get_simLength(this.choosePosition());
 	}
 
-	public Integer get_simLength(int z) {
+	public ChromosomeLength get_simLength(int z) {
 		return this.positions.get(z).get_simLength();
 	}
 
@@ -154,7 +155,7 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 			// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move
 			this.best_personality = this.positions.get(state).get_personality().clone();
 			this.best_happenings = this.positions.get(state).get_happenings().clone();
-			this.best_simLength = this.positions.get(state).get_simLength();
+			this.best_simLength = this.positions.get(state).get_simLength().value;
 			this.best_actualLength = this.positions.get(state).get_actualLength();
 
 			this.tellability = fit.tellability;
@@ -201,7 +202,7 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 			// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move
 			this.best_personality = this.positions.get(this.positions.size()-1).get_personality().clone();
 			this.best_happenings = this.positions.get(this.positions.size()-1).get_happenings().clone();
-			this.best_simLength = this.positions.get(this.positions.size()-1).get_simLength();
+			this.best_simLength = this.positions.get(this.positions.size()-1).get_simLength().value;
 			this.best_actualLength = this.positions.get(this.positions.size()-1).get_actualLength();
 
 			this.tellability = fit.tellability;
@@ -224,7 +225,7 @@ public class Quantum extends CandidateSolution implements Comparable<Quantum> {
 			// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move
 			this.best_personality = this.positions.get(this.positions.size()-1).get_personality().clone();
 			this.best_happenings = this.positions.get(this.positions.size()-1).get_happenings().clone();
-			this.best_simLength = this.positions.get(this.positions.size()-1).get_simLength();
+			this.best_simLength = this.positions.get(this.positions.size()-1).get_simLength().value;
 			this.best_actualLength = this.positions.get(this.positions.size()-1).get_actualLength();
 
 			this.notes = qPos.notes;

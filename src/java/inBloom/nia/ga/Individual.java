@@ -105,7 +105,7 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 
 	@Override
 	public String to_String() {
-		return this.to_String(this.personality, this.happenings, this.simulation_length, this.actual_length);
+		return this.to_String(this.personality, this.happenings, this.simulation_length.value, this.actual_length);
 	}
 
 	/**

@@ -5,14 +5,13 @@ import inBloom.helper.Tellability;
 public abstract class CandidateSolution {
 	protected String id = String.valueOf(this.hashCode());
 
-	protected Integer simulation_length;
-	protected Integer actual_length;
-
 	protected ChromosomePersonality personality;
 	protected ChromosomeHappenings happenings;
+	protected ChromosomeLength simulation_length;
 
 	protected Double tellabilityValue;
 	protected Tellability tellability;
+	protected Integer actual_length;
 
 	/** Additional information about this solution, added to log file during {@linkplain NIAlgorithm#to_file(CandidateSolution, String)}*/
 	public String notes;
@@ -26,8 +25,8 @@ public abstract class CandidateSolution {
 	public CandidateSolution(ChromosomePersonality personality, ChromosomeHappenings happenings, Integer simLength){
 		this.personality = personality;
 		this.happenings = happenings;
-		this.simulation_length = simLength;
-		this.actual_length = this.simulation_length;
+		this.simulation_length = new ChromosomeLength(simLength);
+		this.actual_length = this.simulation_length.value;
 	}
 
 	public CandidateSolution() {
@@ -37,7 +36,7 @@ public abstract class CandidateSolution {
 		this.actual_length = null;
 	}
 
-	protected String to_String(ChromosomePersonality perso, ChromosomeHappenings happ, int simLength, int actLength) {
+	protected String to_String(ChromosomePersonality perso, ChromosomeHappenings happ, Integer simLength, int actLength) {
 		int number_agents = perso.values.length;
 		int number_happenings = happ.values[0].length;
 
@@ -91,7 +90,7 @@ public abstract class CandidateSolution {
 		this.actual_length = length;
 	}
 
-	public Integer get_simLength() {
+	public ChromosomeLength get_simLength() {
 		return this.simulation_length;
 	}
 

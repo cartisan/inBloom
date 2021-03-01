@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 
 import inBloom.PlotEnvironment;
@@ -14,6 +15,8 @@ import inBloom.PlotModel;
 import inBloom.nia.utils.FileInterpreter;
 
 public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType extends PlotModel<EnvType>> {
+	public static final int MAX_SIM_LENGTH = 100;
+
 	// Parameter for PlotLauncher
 	public String[] args;
 	public String filename = "results";
@@ -23,16 +26,17 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 	protected CandidateSolution[] population;
 	public int number_agents;
 	public int number_happenings;
-	public int max_steps;
+	public int estimated_max_steps;
 	public int individual_count;
 
 	// management
 	protected Level level = Level.OFF;
-	protected Integer iterationNum; 
+	protected Integer iterationNum;
+	protected Random random;
 
 	// Performance measurement
-	protected List<Double> population_best = new ArrayList<Double>();
-	protected List<Double> population_average = new ArrayList<Double>();
+	protected List<Double> population_best = new ArrayList<>();
+	protected List<Double> population_average = new ArrayList<>();
 
 	// Print performance measurement over time
 	protected boolean verbose = true;
@@ -53,9 +57,10 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 		this.EVO_ENV = EVO_ENV;
 		this.number_agents = number_agents;
 		this.number_happenings = number_happenings;
-		this.max_steps = max_steps;
+		this.estimated_max_steps = max_steps;
 		this.individual_count = individual_count;
 		this.iterationNum = 0;
+		this.random = new Random();
 
 	}
 
@@ -71,28 +76,31 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 			// Generate and evaluate initial particles
 			this.initialize_population();
 			this.evaluate_population();
-			this.to_file(population[0], "");
+			this.to_file(this.population[0], "");
 
 			// Repeat until termination (no improvements found or time criterion
 			// -if set- is met):
 			while (this.keepRunning()) {
 				// Print Statistics
-				if (verbose)
+				if (this.verbose) {
 					this.generation_stats();
+				}
 
 				this.run_iteration();
 				this.evaluate_population();
 				this.iterationNum += 1;
 
-				this.to_file(population[0], "");
+				this.to_file(this.population[0], "");
 			}
 
 			// Print Statistics
-			if (verbose)
+			if (this.verbose) {
 				this.final_stats();
+			}
 
-			if (system_exit)
+			if (this.system_exit) {
 				System.exit(0);
+			}
 		}
 	}
 
@@ -103,27 +111,29 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 
 	// ***************** Utility Functions *****************
 	public void setFileName(String name) {
-		filename = name;
+		this.filename = name;
 	}
 
 	public void setExit(boolean exit) {
-		system_exit = exit;
+		this.system_exit = exit;
 	}
 
 	public void setTermination(int end) {
-		if (end > 0)
+		if (end > 0) {
 			termination = end;
+		}
 	}
 
 	public void setMaxRuntime(long time) {
-		if (time >= 0)
+		if (time >= 0) {
 			max_runtime = time * 1000;
-		else
+		} else {
 			max_runtime = -1;
+		}
 	}
 
 	public void setVerbose(boolean bool) {
-		verbose = bool;
+		this.verbose = bool;
 	}
 
 	public void setLevel(Level level) {
@@ -134,7 +144,7 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 
 	/**
 	 * Rounds personality values in order to discretize the search space.
-	 * 
+	 *
 	 * @param personality
 	 *            value
 	 * @return rounded value
@@ -149,36 +159,38 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 	 * Saves a log to file that contains the performance of the algorithm as
 	 * well as the best found solution. Can be loaded and executed by
 	 * {@linkplain FileInterpreter#readFile}.
-	 * 
+	 *
 	 * @param best
 	 *            best solution found by this algoritm so far
 	 */
 	public void to_file(CandidateSolution best, String epilogue) {
 		try {
 
-			File file = new File(filename);
+			File file = new File(this.filename);
 
 			PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(file)));
 
 			writer.write("<Best Found CandidateSolution So Far, Per Generation>\n");
-			for (int i = 0; i < population_best.size(); i++) {
-				writer.write(String.valueOf(population_best.get(i)));
-				if (i < population_best.size() - 1)
+			for (int i = 0; i < this.population_best.size(); i++) {
+				writer.write(String.valueOf(this.population_best.get(i)));
+				if (i < this.population_best.size() - 1) {
 					writer.write(" ");
+				}
 			}
 			writer.write("\n");
 
 			writer.write("<Population Average Per Generation>\n");
-			for (int i = 0; i < population_average.size(); i++) {
-				writer.write(String.valueOf(population_average.get(i)));
-				if (i < population_best.size() - 1)
+			for (int i = 0; i < this.population_average.size(); i++) {
+				writer.write(String.valueOf(this.population_average.get(i)));
+				if (i < this.population_best.size() - 1) {
 					writer.write(" ");
+				}
 			}
 			writer.write("\n");
 
 			writer.write("<Best CandidateSolution, Settings>\n");
 			writer.write(best.to_String());
-			
+
 			writer.write(epilogue);
 
 			writer.flush();
@@ -191,12 +203,12 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 
 	public void generation_stats() {
 		// Verbose
-		int generation = population_best.size() - 1;
+		int generation = this.population_best.size() - 1;
 
 		System.out.println();
 		System.out.println("Generation: " + generation);
-		System.out.println("Best individual: " + population_best.get(generation));
-		System.out.println("Generation Average: " + population_average.get(generation));
+		System.out.println("Best individual: " + this.population_best.get(generation));
+		System.out.println("Generation Average: " + this.population_average.get(generation));
 		System.out.println();
 
 	}
@@ -205,8 +217,8 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 		System.out.println();
 		System.out.println("This is the End!");
 		System.out.println();
-		System.out.println("Generations: " + population_best.size());
-		System.out.println("Best so far: " + population_best.get(population_best.size() - 1));
+		System.out.println("Generations: " + this.population_best.size());
+		System.out.println("Best so far: " + this.population_best.get(this.population_best.size() - 1));
 		System.out.println();
 
 	}
@@ -216,7 +228,7 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 	 * Happenings. Determined value will be based on the step number of the last
 	 * occuring happening plus an amount of additional steps between 0 and the
 	 * square root of max step number increased by 1
-	 * 
+	 *
 	 * @param happenings:
 	 *            Chromosome encoding steps at which happenings occur
 	 * @return: total amount of simulation steps
@@ -225,8 +237,8 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 
 		Integer length = 0;
 
-		for (int i = 0; i < number_agents; i++) {
-			for (int j = 0; j < number_happenings; j++) {
+		for (int i = 0; i < this.number_agents; i++) {
+			for (int j = 0; j < this.number_happenings; j++) {
 				if (happenings.values[i][j] >= length) {
 					length = happenings.values[i][j];
 				}
@@ -243,7 +255,7 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 	// ***************** Methods to be implemented by subclass *****************
 	/**
 	 * Checks whether NIA is configured in a valid way
-	 * 
+	 *
 	 * @return: boolean determining whether algorithm is runnable.
 	 */
 	public abstract boolean check_parameters();
