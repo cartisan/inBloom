@@ -170,6 +170,9 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 
 			PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(file)));
 
+			writer.write("<Number of Generations>\n");
+			writer.write(String.valueOf(this.iterationNum) + "\n");
+
 			writer.write("<Best Found CandidateSolution So Far, Per Generation>\n");
 			for (int i = 0; i < this.population_best.size(); i++) {
 				writer.write(String.valueOf(this.population_best.get(i)));
