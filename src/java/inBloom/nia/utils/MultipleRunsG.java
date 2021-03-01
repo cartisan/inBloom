@@ -45,7 +45,7 @@ public class MultipleRunsG {
 			ga.setSelection(true,true);
 
 			// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
-			ga.setCrossover(true, true, true, true);
+			ga.setCrossover(true, true, true, false);
 
 			// randomMutator,toggleMutator,orientedMutator,guidedMutator
 			ga.setMutation(true, true, true, true);
