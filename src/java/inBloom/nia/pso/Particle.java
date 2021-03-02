@@ -124,7 +124,7 @@ public class Particle extends CandidateSolution implements Comparable<Particle>{
 	 */
 	public void update_tellability(Fitness<?,?> fit) {
 		try {
-			this.tellabilityValue = fit.evaluate_individual(this);
+			this.tellabilityValue = fit.evaluateSolution(this);
 
 			if(this.tellabilityValue > this.best_tellability) {
 				// FIXME: Fixed bug where best_personality would be same instance as personality, and change with every move

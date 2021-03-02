@@ -98,7 +98,7 @@ public class QuantumPosition extends CandidateSolution implements Comparable<Qua
 	 */
 	public void update_tellability(Fitness<?,?> fit) {
 		try {
-			this.tellabilityValue = fit.evaluate_individual(this);
+			this.tellabilityValue = fit.evaluateSolution(this);
 			this.tellability = fit.tellability;
 			this.updateNotes();
 		} catch (JasonException e) {

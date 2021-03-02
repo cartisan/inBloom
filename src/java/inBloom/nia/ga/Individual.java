@@ -24,7 +24,7 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 	public void evaluate() {
 		if (this.tellabilityValue == null) {
 			try {
-				this.tellabilityValue = this.fitness.evaluate_individual(this);
+				this.tellabilityValue = this.fitness.evaluateSolution(this);
 				this.tellability = this.fitness.tellability;
 			} catch (JasonException e) {
 				//e.printStackTrace();

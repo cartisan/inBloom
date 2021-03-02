@@ -76,7 +76,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 
 	}
 
-	public double evaluate_individual(CandidateSolution individual) throws JasonException {
+	public double evaluateSolution(CandidateSolution individual) throws JasonException {
 		// Initialize Parameters
 		double result = 0;
 		this.isRunning = true;
