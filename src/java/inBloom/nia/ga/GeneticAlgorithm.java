@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import com.google.common.collect.Lists;
 
@@ -798,7 +797,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 		for(int i = 0; i < this.number_agents;i++) {
 			for(int j = 0; j < 5; j++) {
-				personality.values[i][j] = discretePersValues[(int)Math.round(Math.random()*discretePersValues.length-0.5)];
+				personality.values[i][j] = discretePersValues[this.random.nextInt(discretePersValues.length)];
 			}
 		}
 		return personality;
@@ -823,7 +822,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 			}
 
 			for(int j = 0; j < 5; j++) {
-				int position = (int)Math.round(Math.random()*discreteList.size()-0.5);
+				int position = this.random.nextInt(discreteList.size());
 				personality.values[i][j] = discreteList.get(position);
 				discreteList.remove(position);
 			}
@@ -835,16 +834,14 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	/**
 	 * Random initializer for ChromosomeHappening
 	 * Inserts random numbers between 0 and simLengh into the chromosome.
-	 * Numbers are discretized to be multiples of estimated_max_steps/number_happenings
 	 * @Return: Instantiated Chromosome
 	 */
 	public ChromosomeHappenings randomHappeningsInitializer(int simLengh) {
-
 		ChromosomeHappenings happenings = new ChromosomeHappenings(this.number_agents,this.number_happenings);
 
 		for(int i = 0; i < this.number_agents;i++) {
 			for(int j = 0; j < this.number_happenings; j++) {
-				happenings.values[i][j] = (int)Math.round(Math.random() * (simLengh / this.number_happenings+1) - 0.5) * this.number_happenings;
+				happenings.values[i][j] = this.random.nextInt(simLengh);
 			}
 		}
 		return happenings;
@@ -852,18 +849,16 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 
 
 	/**
-	 * Instantiates a happening with probability 1/number_agents
-	 * Inserts random numbers between 0 and estimated_max_steps into the chromosome.
-	 * Numbers are discretized to be multiples of estimated_max_steps/number_happenings
+	 * Instantiates a random happening based on one of DISVRETE_HAPP_SPACING discrete values, in order to achieve more
+	 * chance of synchronicity
 	 * @Return: Instantiated Chromosome
 	 */
 	public ChromosomeHappenings probabilisticHappeningsInitializer() {
-		Random r = new Random();
 		ChromosomeHappenings happenings = new ChromosomeHappenings(this.number_agents,this.number_happenings);
 
 		for(int i = 0; i < this.number_agents;i++) {
 			for(int j = 0; j < this.number_happenings; j++) {
-				happenings.values[i][j] = discreteHapValues[r.nextInt(discreteHapValues.length)];
+				happenings.values[i][j] = discreteHapValues[this.random.nextInt(discreteHapValues.length)];
 			}
 		}
 		return happenings;
@@ -877,12 +872,11 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	 * @Return: Instantiated Chromosome
 	 */
 	public ChromosomeHappenings steadyHappeningsInitializer() {
-		Random r = new Random();
 		ChromosomeHappenings happenings = new ChromosomeHappenings(this.number_agents,this.number_happenings);
 
 		for(int j = 0; j < this.number_happenings; j++) {
-			int i = r.nextInt(this.number_agents);
-			happenings.values[i][j] = discreteHapValues[r.nextInt(discreteHapValues.length)];
+			int i = this.random.nextInt(this.number_agents);
+			happenings.values[i][j] = discreteHapValues[this.random.nextInt(discreteHapValues.length)];
 		}
 		return happenings;
 	}
