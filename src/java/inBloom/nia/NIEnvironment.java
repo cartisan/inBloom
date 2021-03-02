@@ -11,6 +11,7 @@ import inBloom.PlotModel;
 import inBloom.nia.ga.GeneticAlgorithm;
 import inBloom.nia.pso.PSO;
 import inBloom.nia.qso.QSO;
+import inBloom.nia.random.RandomSearch;
 import inBloom.storyworld.Happening;
 import inBloom.storyworld.ScheduledHappeningDirector;
 
@@ -81,6 +82,15 @@ public abstract class NIEnvironment<EnvType extends PlotEnvironment<ModType>, Mo
 	public QSO<?,?> get_QSO(String[] args, int init_stepnumber, int individual_count){
 
 		return new QSO<EnvType,ModType> (args, this, this.number_agents, this.number_dynamicHappenings, init_stepnumber, individual_count);
+	}
+
+
+	/**
+	 * Returns the random search algorithm class in order to further customize the settings
+	 */
+	public RandomSearch<?,?> get_RAN(String[] args, int init_stepnumber, int individual_count){
+
+		return new RandomSearch<EnvType,ModType> (args, this, this.number_agents, this.number_dynamicHappenings, init_stepnumber, individual_count);
 	}
 
 	/* _____________________________________________________________________________________________

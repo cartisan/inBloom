@@ -6,6 +6,7 @@ import inBloom.nia.NIEnvironment;
 import inBloom.nia.ga.GeneticAlgorithm;
 import inBloom.nia.pso.PSO;
 import inBloom.nia.qso.QSO;
+import inBloom.nia.random.RandomSearch;
 import inBloom.stories.little_red_hen.FarmNIEnvironment;
 
 public class NILauncher {
@@ -19,9 +20,9 @@ public class NILauncher {
 		// simulation length at initialization
 		int init_stepnumber = 30;
 		// number individuals
-		int individual_count = 10;
+		int individual_count = 20;
 		// selection size
-		int selection_size = 4;
+		int selection_size = 10;
 		// decay
 		double decay_rate = 0.05;
 		// crossover probability
@@ -44,7 +45,8 @@ public class NILauncher {
 		 * Choose a Mode:
 		 */
 
-		String algorithm = "GEN";
+//		String algorithm = "GEN";
+		String algorithm = "RAN";
 //		String algorithm = "PSO";
 //		String algorithm = "Coupled";
 //		String algorithm = "QSO";
@@ -65,13 +67,13 @@ public class NILauncher {
 				}
 
 				// randomPersonalityInitializer, discretePersonalityInitializer, steadydiscretePersonalityInitializer
-				ga.setPersInit(false, true, true);
+				ga.setPersInit(true, true, true);
 				// randomHappeningsInitializer, probabilisticHappeningsInitializer, steadyHappeningsInitializer
-				ga.setHapInit(true, true, false);
+				ga.setHapInit(true, true, true);
 				// randomSelector, rouletteWheelSelector
 				ga.setSelection(false,true);
 				// simpleCrossover,binomialCrossover,xPointCrossover,voteCrossover
-				ga.setCrossover(true, true, true, true);
+				ga.setCrossover(true, true, true, false);
 				// randomMutator,toggleMutator,orientedMutator,guidedMutator
 				ga.setMutation(true, true, true, true);
 				// true -> SteadyReplacer, false -> partiallyRandomReplacer
@@ -160,6 +162,22 @@ public class NILauncher {
 				qso.setTermination(max_repetitions);
 
 				qso.run();
+
+				break;
+
+			case "RAN":
+				RandomSearch<?,?> ran = niEnvironment.get_RAN(args, init_stepnumber, individual_count);
+
+				ran.setLevel(Level.OFF);
+				ran.setFileName(path+"RAN"+filename);
+
+				// Termination Criteria
+				// Runtime in seconds (-1 to deactivate)
+				ran.setMaxRuntime(time);
+				// Number of times the main loop is repeated without adding a new (relevant) candidate to gen_pool
+				ran.setTermination(max_repetitions);
+
+				ran.run();
 
 				break;
 		}
