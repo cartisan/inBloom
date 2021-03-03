@@ -32,6 +32,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 
 	public List<Double> population_best = new ArrayList<>();
 	public List<Double> population_average = new ArrayList<>();
+	protected List<Double> average_length = new ArrayList<>();
 	private CandidateSolution best_individual;
 
 	private int number_agents;
@@ -79,14 +80,18 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 
 	public void readFile() {
 		File file = new File(this.filepath+this.filename);
-
+		String line;
+		StringTokenizer tk;
 		try {
 
 			BufferedReader in = new BufferedReader(new FileReader(file));
 
+			// Ignore gen number and run length and
+			line = this.readNextContentLine(in);
+
 			// Read population_best
-			String line = this.readNextContentLine(in);
-			StringTokenizer tk = new StringTokenizer(line);
+			line = this.readNextContentLine(in);
+			tk = new StringTokenizer(line);
 
 			while(tk.hasMoreTokens()) {
 				this.population_best.add(Double.parseDouble(tk.nextToken()));
@@ -98,6 +103,14 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 
 			while(tk.hasMoreTokens()) {
 				this.population_average.add(Double.parseDouble(tk.nextToken()));
+			}
+
+			// Read average run length
+			line = this.readNextContentLine(in);
+			tk = new StringTokenizer(line);
+
+			while(tk.hasMoreTokens()) {
+				this.average_length.add(Double.parseDouble(tk.nextToken()));
 			}
 
 			// Read best individual

@@ -37,6 +37,7 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 	// Performance measurement
 	protected List<Double> population_best = new ArrayList<>();
 	protected List<Double> population_average = new ArrayList<>();
+	protected List<Double> average_length = new ArrayList<>();
 
 	// Print performance measurement over time
 	protected boolean verbose = true;
@@ -170,8 +171,9 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 
 			PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(file)));
 
-			writer.write("<Number of Generations>\n");
-			writer.write(String.valueOf(this.iterationNum) + "\n");
+			writer.write("<Number of Generations / Average Actual Sim Length Over all Gen>\n");
+			double aveLen = this.average_length.stream().mapToDouble(d -> d).summaryStatistics().getAverage();
+			writer.write(String.valueOf(this.iterationNum) + " / "+ String.valueOf(aveLen) +"\n");
 
 			writer.write("<Best Found CandidateSolution So Far, Per Generation>\n");
 			for (int i = 0; i < this.population_best.size(); i++) {
@@ -182,11 +184,24 @@ public abstract class NIAlgorithm<EnvType extends PlotEnvironment<ModType>, ModT
 			}
 			writer.write("\n");
 
-			writer.write("<Population Average Per Generation>\n");
+			writer.write("<Population Average Performance, Per Generation>\n");
 			for (int i = 0; i < this.population_average.size(); i++) {
 				writer.write(String.valueOf(this.population_average.get(i)));
-				if (i < this.population_best.size() - 1) {
+				if (i < this.population_average.size() - 1) {
 					writer.write(" ");
+				}
+			}
+			writer.write("\n");
+
+			writer.write("<Average Actual Length of Simulation, Per Generation>\n");
+			if (this.average_length.size() == 0) {
+				writer.write("-1");
+			} else {
+				for (int i = 0; i < this.average_length.size(); i++) {
+					writer.write(String.valueOf(this.average_length.get(i)));
+					if (i < this.average_length.size() - 1) {
+						writer.write(" ");
+					}
 				}
 			}
 			writer.write("\n");

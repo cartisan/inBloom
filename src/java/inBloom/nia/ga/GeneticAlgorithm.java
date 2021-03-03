@@ -357,21 +357,24 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 	protected void evaluate_population() {
 		Double best = this.population[0].get_tellabilityValue();
 		Double average = 0.0;
+		Double lenAve = 0.0;
 
 		int relevant_size = this.individual_count/2;
 
 		for(int i = 0; i < relevant_size; i++) {
 			average += this.population[i].get_tellabilityValue();
+			lenAve += this.population[i].get_actualLength();
 		}
 
 		double halfAverage = average/relevant_size;
 
 		for(int i = relevant_size; i < this.individual_count; i++) {
 			average += this.population[i].get_tellabilityValue();
+			lenAve += this.population[i].get_simLength().value;
 		}
 
 		average /= this.individual_count;
-
+		lenAve /= this.individual_count;
 
 		// Determine if there was improvement
 		if(this.population_best.size()>0) {
@@ -384,6 +387,7 @@ public class GeneticAlgorithm<EnvType extends PlotEnvironment<ModType>, ModType 
 		this.population_best.add(best);
 		this.population_bestHalf.add(halfAverage);
 		this.population_average.add(average);
+		this.average_length.add(lenAve);
 
 		if(this.population_bestAverage > average) {
 			this.population_bestAverage = average;

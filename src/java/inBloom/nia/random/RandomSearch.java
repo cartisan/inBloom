@@ -39,17 +39,22 @@ public class RandomSearch <EnvType extends PlotEnvironment<ModType>, ModType ext
 	@Override
 	protected void evaluate_population() {
 		Double generationAverage = 0.0;
+		Double lenAve = 0.0;
 
 		for(int i = 0; i < this.individual_count; i++) {
 			if(this.bestSolution.get_tellabilityValue() < this.population[i].get_tellabilityValue()) {
 				this.bestSolution = (Individual) this.population[i];
 			}
 			generationAverage += this.population[i].get_tellabilityValue();
+			lenAve += this.population[i].get_actualLength();
 		}
+
 		generationAverage /= this.individual_count;
+		lenAve /= this.individual_count;
 
 		this.population_average.add(generationAverage);
 		this.population_best.add(this.bestSolution.get_tellabilityValue());
+		this.average_length.add(lenAve);
 
 		// Determine if there was improvement
 		if(this.population_best.size() > 1) {
