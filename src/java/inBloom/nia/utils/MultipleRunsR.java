@@ -5,7 +5,7 @@ import inBloom.nia.random.RandomSearch;
 import inBloom.stories.little_red_hen.FarmNIEnvironment;
 
 public class MultipleRunsR {
-	public static final int RUN_NUM = 10;
+	public static final int RUN_NUM = 9;
 	public static final Class<?> NI_ENV_CLASS = FarmNIEnvironment.class;
 
 	public static void main(String[] args) throws Exception {
@@ -27,7 +27,7 @@ public class MultipleRunsR {
 
 			// path and name of file
 			String path = "C:\\Users\\Leon\\Desktop\\InBloomNIA\\";
-			String filename = "RAN" + timestamp + "_run" + String.valueOf(i) + ".log";
+			String filename = "RAN_" + timestamp + "_run" + String.valueOf(i) + ".log";
 
 			RandomSearch<?,?> ran =niEnvironment.get_RAN(args, init_stepnumber, individual_count);
 
