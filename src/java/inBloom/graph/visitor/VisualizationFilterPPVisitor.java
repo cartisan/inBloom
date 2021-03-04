@@ -188,8 +188,8 @@ public class VisualizationFilterPPVisitor extends PlotGraphVisitor {
 
 				// since the list is already created in reversed order we simply use lastActionVertex, but correct for fact that count starts with 0
 				// TODO: Review this. error was: INdex out of bound: index:16 size:5
-				if (lastActionIndex - 1 > this.agentActionMap.get(agent).size()) {
-					lastActionIndex = this.agentActionMap.get(agent).size() - 1;
+				if (lastActionIndex > this.agentActionMap.get(agent).size()) {
+					lastActionIndex = this.agentActionMap.get(agent).size();
 				}
 				Vertex lastV = this.agentActionMap.get(agent).get(lastActionIndex - 1);
 				logger.info("Cutting subgraph for " + agent + " below step " + lastV.getStep() + " due to ensuing narrative equilibrium");
