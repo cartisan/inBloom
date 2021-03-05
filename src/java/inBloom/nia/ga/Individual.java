@@ -27,9 +27,11 @@ public class Individual extends CandidateSolution implements Comparable<Individu
 				this.tellabilityValue = this.fitness.evaluateSolution(this);
 				this.tellability = this.fitness.tellability;
 			} catch (JasonException e) {
-				//e.printStackTrace();
+				e.printStackTrace();
+				this.tellabilityValue = 0.0;
 			} catch (NullPointerException e) {
-				//e.printStackTrace();
+				e.printStackTrace();
+				this.tellabilityValue = 0.0;
 			}
 		}
 
