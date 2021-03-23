@@ -350,7 +350,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 
 		this.getContentPane().remove(this.scrollPane);
     	this.dispose();
-    	this.visViewer = null;
+    	this.visViewer = new VisualizationViewer<>(new PlotGraphLayout((PlotDirectedSparseGraph)this.graphTypeList.getSelectedItem()));
 
     	PlotControlsLauncher gui = PlotLauncher.getRunner();
     	gui.graphClosed(this);
