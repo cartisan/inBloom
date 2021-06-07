@@ -5,7 +5,7 @@ import inBloom.nia.random.RandomSearch;
 import inBloom.stories.little_red_hen.FarmNIEnvironment;
 
 public class MultipleRunsR {
-	public static final int RUN_NUM = 9;
+	public static final int RUN_NUM = 10;
 	public static final Class<?> NI_ENV_CLASS = FarmNIEnvironment.class;
 
 	public static void main(String[] args) throws Exception {

@@ -144,7 +144,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 
 			// get best individual
 			this.setBest_individual(new Individual(pers,hap,this.simulation_length,this.fit));
-			this.best_individual.get_tellabilityValue();
+			double tell = this.best_individual.get_tellabilityValue();
 			in.close();
 
 		}catch(IOException e){
@@ -183,8 +183,8 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 	}
 
 	public static void main(String[] args) {
-		String path = "C:\\Users\\Leon\\Desktop\\InBloomNIA\\";
-		String name = "GEN_run.log";
+		String path = "C:\\Users\\Leon\\Dropbox\\Uni\\projects\\21 InBloom NIA Experiments\\GA\\7-var-length-longer-timeout\\";
+		String name = "GENstatic_indc20_sels10_time3600_maxrep5_lenChrome_slowerStepTimout1614944568374_run6.log";
 
 		FileInterpreter<?,?> fi = new FileInterpreter<>(new FarmNIEnvironment(), path, name, true);
 

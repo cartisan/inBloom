@@ -45,8 +45,8 @@ public class NILauncher {
 		 * Choose a Mode:
 		 */
 
-//		String algorithm = "GEN";
-		String algorithm = "RAN";
+		String algorithm = "GEN";
+//		String algorithm = "RAN";
 //		String algorithm = "PSO";
 //		String algorithm = "Coupled";
 //		String algorithm = "QSO";
