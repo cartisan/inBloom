@@ -946,19 +946,6 @@ public class PSO <EnvType extends PlotEnvironment<ModType>, ModType extends Plot
 
 			double force = energy*inertia*Math.pow(distance,2);
 
-//			if(this.verbose) {
-			if(false) {
-				System.out.println("Informant: " + index);
-				System.out.println("  Energy: " + energy);
-				System.out.println("  Inertia: " + inertia);
-				System.out.println("  Distance: " + distance);
-				System.out.println("  Force: " + force);
-			}
-
-//			if(force < 0){
-//				force *= determine_spacetime(index);
-//			}
-
 			total_force+=force;
 
 			// copy information

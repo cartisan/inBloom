@@ -76,6 +76,7 @@ public class Fitness<EnvType extends PlotEnvironment<ModType>, ModType extends P
 
 	}
 
+	@SuppressWarnings("deprecation")
 	public double evaluateSolution(CandidateSolution individual) throws JasonException {
 		// Initialize Parameters
 		double result = 0;

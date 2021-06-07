@@ -144,7 +144,7 @@ public class FileInterpreter<EnvType extends PlotEnvironment<ModType>, ModType e
 
 			// get best individual
 			this.setBest_individual(new Individual(pers,hap,this.simulation_length,this.fit));
-			double tell = this.best_individual.get_tellabilityValue();
+			this.best_individual.get_tellabilityValue();
 			in.close();
 
 		}catch(IOException e){
