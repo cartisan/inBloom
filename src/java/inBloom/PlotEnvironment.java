@@ -63,7 +63,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	/** number of environment steps, before system automatically pauses; -1 to switch off */
 	public static Integer MAX_STEP_NUM = -1;
 	/** time in ms that {@link TimeSteppedEnvironment} affords agents to propose an action, before each step times out */
-	public static String STEP_TIMEOUT = "100";
+	public static String STEP_TIMEOUT = "300";
 	/** string used to represent that an agent took no action, used in agentActions map */
 	private static final String INACTION_STRING = "--";
 
@@ -130,6 +130,11 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      * maps: {agent name -> {action -> intention}}
      */
     private ConcurrentHashMap<String, HashMap<Structure, Intention>> actionIntentionMap = new ConcurrentHashMap<>();
+
+     /**
+      * The current Environment step
+      */
+     public int currentStep = 0;
 
     /**
      * Counts plot steps, synchronously to {@link TimeSteppedEnvironment#step} but designating the step of the
@@ -375,6 +380,17 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 
 		// remove character from story-world model
 		this.model.removeCharacter(agName);
+
+		if (this.model.getCharacters().isEmpty()) {
+
+			logger.info("No agents left.");
+
+    		PlotLauncher.runner.pauseExecution();
+    		for(EnvironmentListener l : this.listeners) {
+    			l.onPauseRepeat();
+    		}
+    		MAX_STEP_NUM = this.getStep();
+    	}
 	}
 
 	/**
@@ -664,6 +680,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
      */
     synchronized void wake() {
     	this.repeatingSequenceMap.clear();
+	    this.resetAllAgentActionCounts();
 
     	this.notifyAll();
     	logger.info(" Execution continued, switching to Jason GUI output");
@@ -673,7 +690,7 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	 * Checks if Launcher is in paused state and defers action execution
 	 * until its woken up again.
 	 */
-	synchronized void waitWhilePause() {
+	protected synchronized void waitWhilePause() {
 		this.checkPause();
         try {
             while (MASConsoleGUI.get().isPause()) {
@@ -705,14 +722,13 @@ public abstract class PlotEnvironment<ModType extends PlotModel<?>> extends Time
 	    		// reset counter
 	    		logger.info("Auto-paused execution of simulation, because all agents repeated the same action sequence " +
 	    				String.valueOf(MAX_REPEATE_NUM) + " # of times.");
-	    		this.resetAllAgentActionCounts();
 	    		this.pause();
-	    	}
-	    	if (MAX_STEP_NUM > -1 && this.getStep() % MAX_STEP_NUM == 0) {
+	    	} else if (MAX_STEP_NUM > -1 && this.getStep() >= MAX_STEP_NUM) {
 	    		logger.info("Auto-paused execution of simulation, because system ran for MAX_STEP_NUM steps.");
 	    		this.pause();
 	    	} else if (this.model.getCharacters().isEmpty()) {
 	    		logger.info("Auto-paused execution of simulation, because all agents died.");
+	    		MAX_STEP_NUM = this.getStep();
 	    		this.pause();
 	    	}
 		}

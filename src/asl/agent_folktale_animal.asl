@@ -61,6 +61,10 @@ wish(relax).
 	-hungry;
 	-has(Food).
 		
+//If we fail to relax once due to too high arousal, stop the wish	
++relax[success(false)] <-	
+	-wish(relax).
+		
 /***** request answer management **********************************************/
 /******************************************************************************/
 
@@ -123,7 +127,7 @@ wish(relax).
 
 // Ask for help if extraverted, unless one feels powerless
 @general_help_acquisition_plan[affect(and(personality(extraversion,positive),not(mood(dominance,low))))]
-+!X[_] : is_work(X) & not complex_plan(X) & not already_asked(X) <-
++!X[_] : is_work(X) & not complex_plan(X) & not already_asked(X) & not X=help_with(_,_) <-
 	.my_name(Me);
 	?present(Agents);
 	+already_asked(X);
@@ -142,11 +146,11 @@ wish(relax).
 	-has(wheat[_]);
 	!create(bread).
 
-+!create(bread) : at(wheat[state(growing)], farm) <-
++!create(bread) : .my_name(Me) & at(wheat[state(growing),owner(Me)], farm) <-
 	!tend(wheat);
 	!create(bread).
 
-+!create(bread) : at(wheat[state(ripe)], farm) <-
++!create(bread) : .my_name(Me) & at(wheat[state(ripe),owner(Me)], farm) <-
 	!harvest(wheat);
 	+has(wheat[state(harvested)]); // TODO: get env to give this information?
 	!create(bread).

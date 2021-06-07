@@ -21,7 +21,13 @@
 @reject_request_2[atomic, affect(and(mood(dominance,high), personality(agreeableness,negative)))]
 +!obligation(help_with(Helpee, Plan)) : wish(Y) & is_work(help_with(Plan)) <-
 	!reject(Helpee, Plan).
-//    if none of these is true, do help
+//To prevent conscientiousness agents (which should help) from jumping to plan @obligation1 due to lack of annotations, here
+@accept_request_1[affect(personality(conscientiousness,high))]
++!obligation(help_with(Helpee, Plan)) <-		
+	!accept(Helpee, Plan); 
+	!obligation(help_with(Helpee, Plan)).
+//if none of these is true, do help
+@accept_request_2
 +!obligation(help_with(Helpee, Plan)) <-
 	!accept(Helpee, Plan); 
 	!obligation(help_with(Helpee, Plan)).
@@ -55,9 +61,9 @@
 @wish_rem[atomic]
 -wish(Plan) <-
 	.drop_desire(wish(Plan));
-//	.succeed_goal(wish(Plan));
-	.drop_desire(Plan).
-//	.succeed_goal(Plan).
+	.succeed_goal(wish(Plan));
+	.drop_desire(Plan);
+	.succeed_goal(Plan).
 
 // if conscientious do not follow (non-coping) wishes when an obligation is desired --> coping wishes, like !punish, don't fall under this
 @wish1[affect(personality(conscientiousness,high))]

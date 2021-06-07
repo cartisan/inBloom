@@ -1,8 +1,10 @@
 package inBloom.graph.visitor;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -13,6 +15,7 @@ import jason.util.Pair;
 import inBloom.PlotLauncher;
 import inBloom.graph.Edge;
 import inBloom.graph.Edge.Type;
+import inBloom.graph.MoodGraph;
 import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.Vertex;
 
@@ -164,23 +167,38 @@ public class VisualizationFilterPPVisitor extends PlotGraphVisitor {
 	private void postProcessing() {
 		// Remove repeating pattern at end, if pause in execution was caused by a narrative equilibrium
 		HashMap<String, Pair<Integer, Integer>> seqMap = PlotLauncher.getRunner().getUserEnvironment().getRepeatingSequenceMap();
-		int repLength = seqMap.values().stream().mapToInt(pair -> pair.getFirst() * pair.getSecond()).min().orElse(0);
 
-		if (!seqMap.isEmpty()) {
+		// Compute the length of the whole repeating sequence that cause the pause: len(chain) * num_rep
+		// repLength is number of vertices to be removed, we want it to be the same for all agents, even if their number of
+		// repetitions differed. If a seqMap value for an agent is zero, means rep was due to no-action. In this case
+		// ignore for repLength computation, but skip later when removing vertices.
+		int repLength = seqMap.values().stream().mapToInt(pair -> pair.getFirst() * pair.getSecond())
+												.filter(i -> i > 0)
+												.min().orElse(0);
+
+		List<Integer> narrEquiStepList = new ArrayList<>();
+		if (!seqMap.isEmpty() && repLength > 0) {
 			for(String agent : seqMap.keySet()) {
-				// the length of the whole repeating sequence that cause the pause is len(chain) * num_rep
-				if(repLength == 0) {
+				if(seqMap.get(agent).getFirst() == 0 || seqMap.get(agent).getSecond() == 0) {
+					// this agent stopped due to repetition of non-action, no need to delete vertices
 					continue;
 				}
 				// the last vertex to keep is the last vertex in the chain, not the first
 				int lastActionIndex = repLength - (seqMap.get(agent).getFirst() - 1);
 
 				// since the list is already created in reversed order we simply use lastActionVertex, but correct for fact that count starts with 0
+				// TODO: Review this. error was: INdex out of bound: index:16 size:5
+				if (lastActionIndex > this.agentActionMap.get(agent).size()) {
+					lastActionIndex = this.agentActionMap.get(agent).size();
+				}
 				Vertex lastV = this.agentActionMap.get(agent).get(lastActionIndex - 1);
+				logger.info("Cutting subgraph for " + agent + " below step " + lastV.getStep() + " due to ensuing narrative equilibrium");
 				this.graph.removeBelow(lastV);
 
-				logger.info("Cutting subgraph for " + agent + " below step " + lastV.getStep() + " due to ensuing narrative equilibrium");
+				narrEquiStepList.add(lastV.getStep());
 			}
+
+			MoodGraph.getMoodListener().narrEquiStep = narrEquiStepList.stream().mapToInt(i -> i).max().getAsInt();
 		}
 
 	}

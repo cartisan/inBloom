@@ -73,8 +73,8 @@ public class PlotAwareCentralisedAgArch extends CentralisedAgArch {
     protected void reasoningCycle() {
         try {
         	if(MASConsoleGUI.get().isPause()) {
-        		this.logger.info("Agent execution paused.");
-	            while (MASConsoleGUI.get().isPause()) {
+    		this.logger.info("Agent execution paused.");
+    		 while (MASConsoleGUI.get().isPause()) {
 	                Thread.sleep(100);
 	            }
 	            this.logger.info("Agent execution continued");

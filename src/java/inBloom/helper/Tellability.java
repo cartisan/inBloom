@@ -1,5 +1,7 @@
 package inBloom.helper;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,7 +11,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
@@ -36,7 +40,7 @@ public class Tellability {
 	public static final Long FORTUNE_CHANGE_INTERVAL_LENGTH = 10l;
 	public static final double FORTUNE_CHANGE_DELTA_MOOD_THRESHOLD = 0.5;
 	public static int GRAPH_MATCHING_TOLERANCE = 1;
-	public static final int SIMILARITY_FU_THRESHOLD = 3;
+	public static final int SIMILARITY_FU_THRESHOLD = 5;
 
 	protected static Logger logger = Logger.getLogger(Tellability.class.getName());
 
@@ -72,7 +76,7 @@ public class Tellability {
 
 	// Overall
 	public double value;
-
+	public String detailedLog;
 
 	/**
 	 * Takes an analyzed graph and computes all necessary statistics of the plot to compute tellability.
@@ -80,7 +84,15 @@ public class Tellability {
 	 * {@link VertexMergingPPVisitor} and  {@link EdgeGenerationPPVisitor}.
 	 */
 	public Tellability(PlotDirectedSparseGraph graph, MoodMapper moodData) {
-//		logger.setLevel(Level.FINE);
+		logger.setLevel(Level.FINE);
+
+		// Set up a logging handler that can provide logs of tellability-computation into a string
+		ByteArrayOutputStream loggerContent = new ByteArrayOutputStream();
+		PrintStream prStr = new PrintStream(loggerContent);
+		StreamHandler streamHandler = new StreamHandler(prStr, new PlotFormatter());
+		streamHandler.setLevel(Level.FINE);
+		logger.addHandler(streamHandler);
+
 		// Perform quantitative analysis of plot
 		this.counter = new CountingVisitor();
 		this.computeSimpleStatistics(graph);
@@ -102,6 +114,9 @@ public class Tellability {
 		logger.info("normalized absoluteSymmetry: " + this.absoluteSymmetry);
 		logger.info("normalized absoluteOpposition: " + this.absoluteOpposition);
 		logger.info("normalized absoluteSuspense: " + this.absoluteSuspense);
+
+		streamHandler.flush();
+		this.detailedLog = loggerContent.toString();
 	}
 
 	/**
@@ -169,11 +184,6 @@ public class Tellability {
 			}
 		}
 
-		Integer maxPolyCount = vertexUnitCount.values().stream().mapToInt(i -> i).max().orElse(-1);
-		List<Vertex> mostPolyVertices = vertexUnitCount.entrySet().stream().filter(entry -> entry.getValue() == maxPolyCount)
-																		   .map(entry -> entry.getKey())
-																	       .collect(Collectors.toList());
-
 		this.numFunctionalUnits = unitInstances;
 		String foundUnits = this.functionalUnitCount.entrySet().stream().filter(entry -> entry.getValue() > 0)
 													.map(entry -> entry.getKey().getName() + ": " + entry.getValue())
@@ -183,10 +193,7 @@ public class Tellability {
 		logger.info("   --> Found units: " + foundUnits);
 
 		this.numPolyvalentVertices = polyvalentVertices;
-		logger.info("   Number of vertices that are part of at least one FU: " + vertexUnitCount.size());
 		logger.info("   Number of polyvalent vertices: " + this.numPolyvalentVertices);
-		logger.info("   Most polyvalent vertices (score=" + maxPolyCount + "): " + mostPolyVertices);
-		logger.fine("   Vertx:polyValenceValue-count" + vertexUnitCount);
 		logger.info("   Number of all vertices: " + this.numAllVertices);
 		this.absoluteFunctionalPolyvalence = (double) this.numPolyvalentVertices / this.numAllVertices;
 		logger.info("   --> Functional Polyvalence: " + this.absoluteFunctionalPolyvalence);
@@ -206,6 +213,7 @@ public class Tellability {
 		}
 	}
 
+
 	/**
 	 * Calculates the plot's  overall symmetry and parallelism based on FUs or, if none, raw events (emotions, intentions, beliefs, actions).
 	 * @param graph an analyzed plot graph, i.e. one that has been processed by {@linkplain VertexMergingPPVisitor},
@@ -216,7 +224,7 @@ public class Tellability {
 		HashMap<String, List<String>> agentFuSeqMap = this.extractOrderedFUSequences(graph.getRoots().stream().map(v -> v.toString()).collect(Collectors.toList()));
 		boolean sufficientFUPresent = agentFuSeqMap.entrySet().stream().map( entry -> entry.getValue().size() )
 																	   .mapToInt(size -> size)
-																	   .min().orElse(0) >= SIMILARITY_FU_THRESHOLD;
+																	   .max().orElse(0) >= SIMILARITY_FU_THRESHOLD;
 
 		HashMap<String, List<String>> agentSeqMap;
 		List<Float> similarityScores =  new ArrayList<>();
@@ -274,8 +282,8 @@ public class Tellability {
 				normalizedExpectationViolationScore = (float) violationIndicators / relevantEvents;
 			}
 
-			logger.info("      violated expectations: " + this.counter.violatedExpectationEvents.get(agent));
-			logger.info("      terminated beliefs: " + this.counter.terminatedPercepts.get(agent));
+			logger.fine("      violated expectations: " + this.counter.violatedExpectationEvents.get(agent));
+			logger.fine("      terminated beliefs: " + this.counter.terminatedPercepts.get(agent));
 			logger.info("      number of violation indicators: " + violationIndicators);
 			logger.info("      relevantEvents: " + relevantEvents);
 			logger.info("   --> normalized  score: " + normalizedExpectationViolationScore);
@@ -284,6 +292,14 @@ public class Tellability {
 			logger.info("   computing reversals in fortunes score");
 			Map<Long, List<Mood>> cycleMoodMap = moodData.getMoodByAgent(agent);
 			List<Long> reasoningCycleNums = cycleMoodMap.keySet().stream().sorted().collect(Collectors.toList());
+
+			// check at which agent reasoning cycle the environment started execution
+			// delete so many entries in reasoningCycleNums, that we will start searching for intervals at the env start reasoning cycle
+			Long startCycle = moodData.stepReasoningcycleNumMap.getOrDefault(1, 1L);
+			for (long l = 0L; l < startCycle + FORTUNE_CHANGE_INTERVAL_LENGTH; l++) {
+				reasoningCycleNums.remove(l);
+			}
+
 			ArrayList<MoodInterval> reversals = new ArrayList<>();
 			for(Long cycleNum : reasoningCycleNums) {
 				Mood m = moodData.sampleMood(agent, cycleNum);
@@ -308,8 +324,8 @@ public class Tellability {
 					}
 				}
 			}
-			logger.info("      fortuneIntervals: " + reversals);
-			logger.info("      number of entries: " + reversals.size());
+//			logger.fine("      fortuneIntervals: " + reversals);
+			logger.fine("      fortuneIntervals number of entries: " + reversals.size());
 
 			List<MoodInterval> reversalsNoOverlap = new ArrayList<>();
 			List<MoodInterval> tmpList = new ArrayList<>();
@@ -337,7 +353,7 @@ public class Tellability {
 				// since we removed everything that overlapped with current position, we can safe it as overlap free
 				reversalsNoOverlap.add(interval);
 			}
-			logger.info("      fortuneIntervalsNoOverlap: " + reversalsNoOverlap);
+			logger.fine("      fortuneIntervalsNoOverlap: " + reversalsNoOverlap);
 			logger.info("      number of entries: " + reversalsNoOverlap.size());
 
 			long possibleIntervalNum = (moodData.latestEndTime() - moodData.latestStartTime() ) / 10;
@@ -423,7 +439,7 @@ public class Tellability {
 								  );
 
 		for(String agent: agentFuStringMap.keySet()) {
-			logger.info("   FU order (" + agent + "): " + agentFuStringMap.get(agent));
+			logger.fine("   FU order (" + agent + "): " + agentFuStringMap.get(agent));
 		}
 
 		return agentFuStringMap;
@@ -475,6 +491,7 @@ public class Tellability {
 		logger.info("(Average tellability: " + aveTellability + ")");
 
 		this.value = this.balanceButSuspense();
+		logger.info("FP: " + this.balancedFunctionalPolyvalence + " SYM: " + this.balancedSymmetry + " OPO: " + this.balancedOpposition + " SUS: " + this.balancedSuspense);
 		logger.info("Balanced tellability: " + this.value);
 
 		return this.value;
@@ -566,8 +583,8 @@ public class Tellability {
 			float allSym = SymmetryAnalyzer.computeSymmetry(agentEventMap.get(agent.toString()));
 
 
-			logger.info("\n\nCharacter: " + agent + ": ");
-			logger.info("\nSequences:" +
+			logger.fine("\n\nCharacter: " + agent + ": ");
+			logger.fine("\nSequences:" +
 						"\n Emotions: " + emotionSequences +
 						"\n Intentions: " + intentionSequences +
 						"\n Beliefs: " + beliefSequences +
@@ -575,8 +592,8 @@ public class Tellability {
 						"\n Actions: " + actionSequences +
 						"\n All Events: " + agentEventMap.get(agent)
 						);
-			logger.info("\n");
-			logger.info("\nVertex Symmetry Anlysis: \n "
+			logger.fine("\n");
+			logger.fine("\nVertex Symmetry Anlysis: \n "
 						+ emotionSym + "(Emotions),\n "
 						+ intentionSym + "(Intentions),\n "
 						+ beliefSym + "(Beliefs),\n "

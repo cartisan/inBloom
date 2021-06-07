@@ -2,6 +2,7 @@ package inBloom.ERcycle;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
@@ -81,6 +82,8 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	private void initGui() {
 		this.cycleFrame = new JFrame("Plot Cycle");
 		this.cycleFrame.setLayout(new BorderLayout());
+
+		this.logTextArea.setFont(new Font("Menlo", Font.PLAIN, 12));
 
 		// setup text field
 		JScrollPane scroll = new JScrollPane(this.logTextArea);
@@ -274,7 +277,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 
 		while(rr.shouldContinue) {
 			++currentCycle;
-			this.log("Running cycle: " + currentCycle);
+			this.log("\nRunning cycle: " + currentCycle);
 			er = this.engage(rr);
 			this.stories.add(er.getPlotGraph());
 			if (SHOW_FULL_GRAPH){
@@ -297,7 +300,7 @@ public abstract class PlotCycle implements Runnable, EnvironmentListener {
 	 * '\n' is appended automatically.
 	 * @param string Message to log
 	 */
-	protected void log(String string) {
+	public void log(String string) {
 		if(this.logTextArea != null) {
 			this.logTextArea.append(string + "\n");
 			this.logTextArea.setCaretPosition(this.logTextArea.getText().length());

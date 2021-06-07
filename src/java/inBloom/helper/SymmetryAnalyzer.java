@@ -220,7 +220,7 @@ public class SymmetryAnalyzer {
 				startingPositions.add(start);
 			}
     	}
-		logger.fine("   chain-startposition map: " + sequenceStartposMap);
+//		logger.fine("   chain-startposition map: " + sequenceStartposMap);
 
 		Map<List<String>, ArrayList<Integer>> noOverlapSequenceMap = filterOverlappingChains(sequenceStartposMap);
 		logger.fine("   without overlapping chains: " + noOverlapSequenceMap);
