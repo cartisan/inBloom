@@ -3,3 +3,4 @@ target
 /launcher.mas2j
 *.csv
 *.log
+*.class

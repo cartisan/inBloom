@@ -64,16 +64,7 @@ public class RedHenCounterfactualityCycle extends CounterfactualityCycle {
 	 */
 	private ScheduledHappeningDirector getHappeningDirector(List<LauncherAgent> agents) {
 		ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
-		FindCornHappening findCorn = new FindCornHappening(
-				// hen finds wheat after 2 farm work actions
-				(FarmModel model) -> {
-	            		if(model.farm.farmingProgress > 2) {
-	            			return true;
-	            		}
-	            		return false;
-	    		},
-				"hen",
-				"farmingProgress");
+		FindCornHappening findCorn = new FindCornHappening();
 		hapDir.scheduleHappening(findCorn);
 		return hapDir;
 	}

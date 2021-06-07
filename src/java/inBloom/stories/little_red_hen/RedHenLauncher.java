@@ -68,16 +68,7 @@ public class RedHenLauncher extends PlotLauncher<FarmEnvironment, FarmModel> {
 
         // Initialize MAS with a scheduled happening director
         ScheduledHappeningDirector hapDir = new ScheduledHappeningDirector();
-		FindCornHappening findCorn = new FindCornHappening(
-				// hen finds wheat after 2 farm work actions
-				(FarmModel model) -> {
-	            		if(model.farm.farmingProgress > 1) {
-	            			return true;
-	            		}
-	            		return false;
-	    		},
-				null,		// patient can be inferred from agent responsible for a change in farmingProgress
-				"farmingProgress");
+		FindCornHappening findCorn = new FindCornHappening();
 		hapDir.scheduleHappening(findCorn);
 
         FarmModel model = new FarmModel(agents, hapDir);

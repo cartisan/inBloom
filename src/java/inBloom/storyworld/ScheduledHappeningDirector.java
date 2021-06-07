@@ -3,10 +3,13 @@ package inBloom.storyworld;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import inBloom.PlotModel;
 
 public class ScheduledHappeningDirector implements HappeningDirector, Cloneable{
+
+	protected static Logger logger = Logger.getLogger(ScheduledHappeningDirector.class.getName());
 
 	private List<Happening<?>> scheduledHappenings;    // contains happenings that are scheduled but were not yet executed this round
 	private List<Happening<?>> allHappenings;			// contains happenings that are scheduled (independent of current cycle's state)

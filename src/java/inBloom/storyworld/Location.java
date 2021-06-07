@@ -18,6 +18,8 @@ public class Location extends Existent {
 	private List<Character> characters = null;
 	@ModelState
 	private List<Item> items = null;
+	@ModelState
+	private LinkedList<Location> sublocations;
 
 	protected PlotModel<?> model = null;
 	public String name = null;
@@ -26,6 +28,7 @@ public class Location extends Existent {
 		this.name = name;
 		this.characters = new LinkedList<>();
 		this.items = new LinkedList<>();
+		this.sublocations = new LinkedList<Location>();
 	}
 
 	public void initialize(PlotModel<?> model) {
@@ -52,6 +55,7 @@ public class Location extends Existent {
 			return false;
 		}
 	}
+	
 
 	protected void characterLocationUpdate(Character character) {
 		this.characters.add(character);
@@ -107,7 +111,7 @@ public class Location extends Existent {
 	 * @param character
 	 * @return
 	 */
-	public boolean leave(Character character) {
+	public boolean leaveWithoutSublocation(Character character) {
 		if (this.characters.contains(character)) {
 			this.characters.remove(character);
 			character.location = null;
@@ -124,11 +128,87 @@ public class Location extends Existent {
 			return false;
 		}
 	}
+	
+	/**
+	 * Previously leave is now leaveWithoutSublocation (above).
+	 * This leave makes sure that the character leaves all sublocations as well
+	 * when leaving the main location
+	 * 
+	 * @param character
+	 * 			The character that is leaving
+	 * @return true if the character had been present in the main location beforehand
+	 */
+	public boolean leave(Character character) {
+		
+		// first leave all sublocations
+		for(Location sublocation: this.sublocations) {
+			// if the character hasn't been present in any of the sublocations
+			// this call will return false, but throw no errors
+			this.leaveSublocation(character, sublocation.name);
+		}
+		
+		// then leave this main location as known
+		return this.leaveWithoutSublocation(character);
+	}
 
 	public boolean present(Character character) {
 		return this.characters.contains(character);
 	}
 
+	/**
+	 * Adds a sublocation dynamically during runtime
+	 * 
+	 * @param sublocation
+	 * 			The sublocation to be added
+	 */
+	public void addSublocation(Location sublocation) {
+		this.sublocations.add(sublocation);
+	}
+	
+	public boolean destroySublocation(Location sublocation) {
+		return this.sublocations.remove(sublocation);
+	}
+
+	public boolean hasSublocation(Location sublocation) {
+		return this.sublocations.contains(sublocation);
+	}
+	
+	public boolean enterSublocation(Character character, String sublocationName) {
+		
+		Location sublocation = this.getSublocation(sublocationName);
+
+		if(sublocation != null) {
+			sublocation.characters.add(character);
+			//TODO delete
+			logger.info("Agent " + character.name + " has entered " + sublocationName);
+			// TODO Character can only have one location thou, so Character will always have
+			// the main location so far -> beware
+			return true;
+		} else {
+			// the sublocation does not exist
+			//TODO delete
+			logger.info("Agent " + character.name + " has not entered " + sublocationName + " because it does not exist");
+			return false;
+		}
+	}
+
+	public boolean leaveSublocation(Character character, String sublocationName) {
+
+		Location sublocation = this.getSublocation(sublocationName);
+
+		if(sublocation != null && sublocation.present(character)) {
+			//TODO delete
+			sublocation.characters.remove(character);
+			logger.info("Agent " + character.name + " has left " + sublocationName);
+			return true;
+		} else {
+			//TODO delete
+			logger.info("Agent " + character.name + " has not left " + sublocationName);
+			// the sublocation does not exist or the character is not in the sublocation
+			return false;
+		}
+	}
+	
 	public Boolean isGroundLevel(Character character) {
 		return true;
 	}
@@ -230,5 +310,18 @@ public class Location extends Existent {
 
 	protected void setItems(List<Item> items) {
 		this.items = items;
+	}
+	
+	/** 
+	 * @param sublocation
+	 * @return null if the sublocation doesn't exist
+	 */
+	public Location getSublocation(String sublocation) {
+		for(Location existentSublocation: sublocations) {
+			if(existentSublocation.name.equals(sublocation)) {
+				return existentSublocation;
+			}
+		}
+		return null;
 	}
 }

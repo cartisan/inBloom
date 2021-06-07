@@ -1,7 +1,9 @@
 package inBloom.jason;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,6 +19,7 @@ import jason.asSemantics.Unifier;
 import jason.asSyntax.Literal;
 import jason.asSyntax.Plan;
 import jason.asSyntax.PlanBody;
+import jason.asSyntax.Pred;
 import jason.asSyntax.Trigger.TEOperator;
 
 import inBloom.PlotLauncher;
@@ -210,6 +213,63 @@ public class PlotAwareAg extends AffectiveAgent {
     		pb = pb.getBodyNext();
     	}
     	return false;
+    }
+
+    @Override
+    public Intention selectIntention(Queue<Intention> intentions) {
+        // make sure the selected Intention is removed from 'intentions'
+        // and make sure no intention will "starve"!!!
+
+    	Iterator<Intention> ii = intentions.iterator();
+
+    	Intention bestIntention = ii.next();
+
+    	int best = this.returnPriority(bestIntention);
+
+    	while(ii.hasNext()) {
+
+    		Intention i = ii.next();
+
+    		int current = this.returnPriority(i);
+
+    		if(this.returnPriority(i)>best) {
+    			bestIntention = i;
+    			best = current;
+    		}
+    	}
+
+    	intentions.remove(bestIntention);
+    	return bestIntention;
+    }
+
+
+    /** returns true if the intention has a "idle" annotation */
+    private int returnPriority(Intention i) {
+    	// looks for an "idle" annotation in every
+    	// intended means of the intention stack
+
+    	Iterator<IntendedMeans> ii = i.iterator();
+
+    	while(ii.hasNext()) {
+
+    		IntendedMeans im = ii.next();
+
+    		Pred label = im.getPlan().getLabel();
+
+    		Literal l = label.getAnnot("priority");
+
+    		if(l != null) {
+    			String s = l.getTerm(0).toString();
+
+    			// Parse Negative Integer
+    			if(s.charAt(0) == "(".charAt(0)) {
+					return Integer.parseInt(s.substring(1, s.length()-1));
+				}
+
+    			return Integer.parseInt(s);
+    		}
+    	}
+    	return 0;
     }
 
 	@Override

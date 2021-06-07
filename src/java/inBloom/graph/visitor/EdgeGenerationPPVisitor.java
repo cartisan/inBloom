@@ -163,7 +163,7 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 
 	private void lookForPerseverance(Vertex vertex) {
 		for(Vertex target : this.eventList) {
-			if(target.getIntention().equals(vertex.getIntention()) & target.getRoot().equals(vertex.getRoot())  ) {
+			if(target.getIntention().equals(vertex.getIntention()) && target.getRoot().equals(vertex.getRoot())  ) {
 				this.graph.addEdge(new Edge(Edge.Type.EQUIVALENCE), vertex, target);	//equivalence edges point up
 				return;
 			}
@@ -311,7 +311,7 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 		Vertex causeV = null;
 		for(Vertex v : this.eventList) {
 			if(TermParser.removeAnnots(v.getLabel()).equals(cause) ||
-						TermParser.removeAnnots(v.getLabel()).equals(cause.substring(1)) & v.getType().equals(Vertex.Type.ACTION)) {
+						TermParser.removeAnnots(v.getLabel()).equals(cause.substring(1)) && v.getType().equals(Vertex.Type.ACTION)) {
 				// Source found! We take every source!
 				causeV = v;
 				break;
@@ -376,7 +376,7 @@ public class EdgeGenerationPPVisitor extends PlotGraphVisitor {
 		// Look for cause
 		for(Vertex v : this.eventList) {
 			if(TermParser.removeAnnots(v.getLabel()).equals(cause) ||
-						TermParser.removeAnnots(v.getLabel()).equals(cause.substring(1)) & v.getType().equals(Vertex.Type.ACTION)) {
+						TermParser.removeAnnots(v.getLabel()).equals(cause.substring(1)) && v.getType().equals(Vertex.Type.ACTION)) {
 				// Source found! We take every source!
 				this.graph.addEdge(new Edge(Edge.Type.CAUSALITY), v, vertex);
 				break;
