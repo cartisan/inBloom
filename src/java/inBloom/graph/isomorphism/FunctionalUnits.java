@@ -7,6 +7,7 @@ import inBloom.graph.PlotDirectedSparseGraph;
 import inBloom.graph.Vertex;
 import inBloom.graph.Vertex.Type;
 import inBloom.graph.visitor.EdgeLayoutVisitor;
+import inBloom.helper.VertexOrderComparator;
 
 /**
  * Class where all functional units are defined.
@@ -16,7 +17,9 @@ import inBloom.graph.visitor.EdgeLayoutVisitor;
  *
  * The vertex creation helper methods require a parameter,
  * indicating the vertex' place on the y-axis of the resulting
- * display graph of the functional unit.
+ * display graph of the functional unit. <b> Make sure that each
+ * vertex is alone on it step, otherwise vertex order comparison will
+ * not function properly in {@link VertexOrderComparator}.</b>
  * @author Sven Wilke
  *
  */
@@ -33,9 +36,9 @@ public class FunctionalUnits {
 	 */
 	public static FunctionalUnit[] PRIMITIVES;
 
-	public static final FunctionalUnit NESTED_GOAL;
 	public static final FunctionalUnit DENIED_REQUEST;
 	public static final FunctionalUnit RETALIATION;
+	public static final FunctionalUnit NESTED_GOAL;
 	public static final FunctionalUnit HONORED_REQUEST;
 	public static final FunctionalUnit INTENTIONAL_PROBLEM_RESOLUTION;
 	public static final FunctionalUnit FORTUITOUS_PROBLEM_RESOLUTION;
@@ -44,6 +47,8 @@ public class FunctionalUnits {
 	public static final FunctionalUnit STARTING_OVER;
 	public static final FunctionalUnit GIVING_UP;
 	public static final FunctionalUnit SACRIFICE;
+	public static final FunctionalUnit MALICIOUS_ACT;
+	public static final FunctionalUnit INADVERTENT_AGGRAVATION;
 
 
 
@@ -54,45 +59,43 @@ public class FunctionalUnits {
 	public static final PlotDirectedSparseGraph ALL_UNITS_GRAPH;
 
 	static {
-		ALL = new FunctionalUnit[11];
+		ALL = new FunctionalUnit[13];
 
 		Vertex v1, v2, v3;
 
 		PlotDirectedSparseGraph deniedRequest = new PlotDirectedSparseGraph();
-		v1 = makeIntention(1, deniedRequest);
-		v2 = makeNegative(1, deniedRequest);
-		deniedRequest.addEdge(makeCommunication(), v1, v2);
-		v3 = makeIntention(2, deniedRequest);
+		v1 = makeSpeech(1, deniedRequest);
+		v2 = makeIntention(2, deniedRequest);
+		deniedRequest.addEdge(makeCrosschar(), v1, v2);
+		v3 = makeIntention(3, deniedRequest);
 		deniedRequest.addEdge(makeMotivation(), v2, v3);
-		v2 = makeIntention(3, deniedRequest);
-		deniedRequest.addEdge(makeMotivation(), v3, v2);
-		v3 = makeNegative(4, deniedRequest);
-		deniedRequest.addEdge(makeCommunication(), v2, v3);
-		DENIED_REQUEST = new FunctionalUnit("Denied Request", deniedRequest);
+		v2 = makeSpeech(4, deniedRequest);
+		deniedRequest.addEdge(makeActualization(), v3, v2);
+		v3 = makeNegative(5, deniedRequest);
+		deniedRequest.addEdge(makeCrosschar(), v2, v3);
+		DENIED_REQUEST = new FunctionalUnit("Denied Request", deniedRequest, 1, 2);
 		DENIED_REQUEST.setSubject(new Pair<>(v1, "request\\((.*)\\)"));
 
 		PlotDirectedSparseGraph nestedGoal = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1, nestedGoal);
 		v2 = makeIntention(2, nestedGoal);
-		v3 = makePolyemotional(3, nestedGoal);
+		v3 = makeActive(3, nestedGoal);
 		nestedGoal.addEdge(makeMotivation(), v1, v2);
 		nestedGoal.addEdge(makeActualization(), v2, v3);
 		NESTED_GOAL = new FunctionalUnit("Nested Goal", nestedGoal);
 		NESTED_GOAL.setSubject(new Pair<>(v1, "(.*)"));
 
 		PlotDirectedSparseGraph retaliation = new PlotDirectedSparseGraph();
-		v1 = makeWildcard(1, retaliation);
-		v2 = makeNegative(1, retaliation);
-		retaliation.addEdge(makeCommunication(), v1, v2);
-		v3 = makeIntention(2, retaliation);
+		v1 = makeActive(1, retaliation);
+		v2 = makeNegative(2, retaliation);
+		retaliation.addEdge(makeCrosschar(), v1, v2);
+		v3 = makeIntention(3, retaliation);
 		retaliation.addEdge(makeMotivation(), v2, v3);
-		v2 = makeWildcard(3, retaliation);
-		retaliation.addEdge(makeMotivation(), v3, v2);
-		v1 = makeIntention(3, retaliation);
-		retaliation.addEdge(makeCommunication(), v2, v1);
-		v2 = makeNegative(4, retaliation);
-		retaliation.addEdge(makeActualization(), v1, v2);
-		RETALIATION = new FunctionalUnit("Retaliation", retaliation);
+		v2 = makeActive(4, retaliation);
+		retaliation.addEdge(makeActualization(), v3, v2);
+		v1 = makeNegative(5, retaliation);
+		retaliation.addEdge(makeCrosschar(), v2, v1);
+		RETALIATION = new FunctionalUnit("Retaliation", retaliation, 1, 2);
 		RETALIATION.setSubject(new Pair<>(v3, "(.*)"));
 
 		PlotDirectedSparseGraph intentionalProblemResolution = new PlotDirectedSparseGraph();
@@ -102,7 +105,7 @@ public class FunctionalUnits {
 		intentionalProblemResolution.addEdge(makeMotivation(), v1, v2);
 		intentionalProblemResolution.addEdge(makeActualization(), v2, v3);
 		intentionalProblemResolution.addEdge(makeTermination(), v3, v1);
-		INTENTIONAL_PROBLEM_RESOLUTION = new FunctionalUnit("Intentional Problem Resolution", intentionalProblemResolution);
+		INTENTIONAL_PROBLEM_RESOLUTION = new FunctionalUnit("Intentional Prob. Resol.", intentionalProblemResolution);
 
 		PlotDirectedSparseGraph fortuitousProblemResolution = new PlotDirectedSparseGraph();
 		v1 = makeNegative(1, fortuitousProblemResolution);
@@ -110,7 +113,7 @@ public class FunctionalUnits {
 		v3 = makePositive(3, fortuitousProblemResolution);
 		fortuitousProblemResolution.addEdge(makeMotivation(), v1, v2);
 		fortuitousProblemResolution.addEdge(makeTermination(), v3, v1);
-		FORTUITOUS_PROBLEM_RESOLUTION = new FunctionalUnit("Fortuitous Problem Resolution", fortuitousProblemResolution);
+		FORTUITOUS_PROBLEM_RESOLUTION = new FunctionalUnit("Fortuitous Prob. Resol.", fortuitousProblemResolution);
 
 		PlotDirectedSparseGraph successBornOfAdversity = new PlotDirectedSparseGraph();
 		v1 = makeNegative(1, successBornOfAdversity);
@@ -118,7 +121,7 @@ public class FunctionalUnits {
 		v3 = makePositive(3, successBornOfAdversity);
 		successBornOfAdversity.addEdge(makeMotivation(), v1, v2);
 		successBornOfAdversity.addEdge(makeActualization(), v2, v3);
-		SUCCESS_BORN_OF_ADVERSITY = new FunctionalUnit("Success born of Adversity", successBornOfAdversity);
+		SUCCESS_BORN_OF_ADVERSITY = new FunctionalUnit("Success from Adversity", successBornOfAdversity);
 
 		PlotDirectedSparseGraph fleetingSuccess = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1, fleetingSuccess);
@@ -156,30 +159,61 @@ public class FunctionalUnits {
 		sacrifice.addEdge(makeTermination(), v3, v1);
 		SACRIFICE = new FunctionalUnit("Sacrifice", sacrifice);
 
+		PlotDirectedSparseGraph inadvAggr = new PlotDirectedSparseGraph();
+		v1 = makePositive(1, inadvAggr);
+		v2 = makeIntention(2, inadvAggr);
+		v3 = makeNegative(3, inadvAggr);
+		inadvAggr.addEdge(makeActualization(), v2, v3);
+		inadvAggr.addEdge(makeTermination(), v3, v1);
+		INADVERTENT_AGGRAVATION = new FunctionalUnit("Inadv. Aggr.", inadvAggr);
+
 		PlotDirectedSparseGraph honoredRequest = new PlotDirectedSparseGraph();
-		v1 = makeIntention(1, honoredRequest);
-		v2 = makePositive(1, honoredRequest);
-		honoredRequest.addEdge(makeCommunication(), v1, v2);
-		v3 = makeIntention(2, honoredRequest);
+		v1 = makeSpeech(1, honoredRequest);
+		v2 = makeIntention(2, honoredRequest);
+		honoredRequest.addEdge(makeCrosschar(), v1, v2);
+		v3 = makeIntention(3, honoredRequest);
 		honoredRequest.addEdge(makeMotivation(), v2, v3);
-		v2 = makeIntention(3, honoredRequest);
-		honoredRequest.addEdge(makeMotivation(), v3, v2);
-		v3 = makePositive(4, honoredRequest);
-		honoredRequest.addEdge(makeCommunication(), v2, v3);
-		HONORED_REQUEST = new FunctionalUnit("Honored Request", honoredRequest);
+		v2 = makeSpeech(4, honoredRequest);
+		honoredRequest.addEdge(makeActualization(), v3, v2);
+		v1 = makePositive(5, honoredRequest);
+		honoredRequest.addEdge(makeCrosschar(), v2, v1);
+		v2 = makeAction(6, honoredRequest);
+		honoredRequest.addEdge(makeActualization(), v3, v2);
+
+		HONORED_REQUEST = new FunctionalUnit("Honored Request", honoredRequest, 1, 2);
 		HONORED_REQUEST.setSubject(new Pair<>(v1, "request\\((.*)\\)"));
 
-		ALL[0] = DENIED_REQUEST;
-		ALL[1] = NESTED_GOAL;
+		PlotDirectedSparseGraph maliciousAct = new PlotDirectedSparseGraph();
+		v1 = makeIntention(1, maliciousAct);
+		v2 = makeIntention(2, maliciousAct);
+		maliciousAct.addEdge(makeMotivation(), v1, v2);
+		v3 = makeActive(3, maliciousAct);
+		maliciousAct.addEdge(makeActualization(), v2, v3);
+		v2 = makePositive(4, maliciousAct);
+		maliciousAct.addEdge(makeCrosschar(), v3, v2);
+		v3 = makeIntention(5, maliciousAct);
+		maliciousAct.addEdge(makeMotivation(), v2, v3);
+		v2 = makeNegative(6, maliciousAct);
+		maliciousAct.addEdge(makeActualization(), v3, v2);
+		v3 = makePositive(7, maliciousAct);
+		maliciousAct.addEdge(makeCrosschar(), v2, v3);
+		v3 = makePositive(8, maliciousAct);
+		maliciousAct.addEdge(makeActualization(), v1, v3);
+		MALICIOUS_ACT = new FunctionalUnit("Malicious Act", maliciousAct, 1, 4);
+
+		ALL[0] = HONORED_REQUEST;
+		ALL[1] = DENIED_REQUEST;
 		ALL[2] = RETALIATION;
-		ALL[3] = INTENTIONAL_PROBLEM_RESOLUTION;
-		ALL[4] = FORTUITOUS_PROBLEM_RESOLUTION;
-		ALL[5] = SUCCESS_BORN_OF_ADVERSITY;
+		ALL[3] = MALICIOUS_ACT;
+		ALL[4] = INTENTIONAL_PROBLEM_RESOLUTION;
+		ALL[5] = FORTUITOUS_PROBLEM_RESOLUTION;
 		ALL[6] = FLEETING_SUCCESS;
 		ALL[7] = STARTING_OVER;
 		ALL[8] = GIVING_UP;
 		ALL[9] = SACRIFICE;
-		ALL[10] = HONORED_REQUEST;
+		ALL[10] = SUCCESS_BORN_OF_ADVERSITY;
+		ALL[11] = NESTED_GOAL;
+		ALL[12] = INADVERTENT_AGGRAVATION;
 
 		PlotDirectedSparseGraph allUnitsGraph = ALL[0].getDisplayGraph();
 		for(int i = 1; i < ALL.length; i++) {
@@ -287,55 +321,55 @@ public class FunctionalUnits {
 		g = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1, g);
 		v2 = makeIntention(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[15] = new FunctionalUnit("Request", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makePositive(1, g);
 		v2 = makeIntention(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[16] = new FunctionalUnit("CC Enablement", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makeNegative(1, g);
 		v2 = makeIntention(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[17] = new FunctionalUnit("CC Motivation", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1, g);
 		v2 = makeNegative(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[18] = new FunctionalUnit("CC Threat", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makeIntention(1, g);
 		v2 = makePositive(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[19] = new FunctionalUnit("CC Promise", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makePositive(1, g);
 		v2 = makePositive(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[20] = new FunctionalUnit("Shared Positive Event", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makeNegative(1, g);
 		v2 = makeNegative(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[21] = new FunctionalUnit("Shared Negative Event", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makePositive(1, g);
 		v2 = makeNegative(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[22] = new FunctionalUnit("CC Mixed Blessing", g);
 
 		g = new PlotDirectedSparseGraph();
 		v1 = makeNegative(1, g);
 		v2 = makePositive(2, g);
-		g.addEdge(makeCommunication(), v1, v2);
+		g.addEdge(makeCrosschar(), v1, v2);
 		PRIMITIVES[23] = new FunctionalUnit("CC Hidden Blessing", g);
 
 		for(FunctionalUnit unit : PRIMITIVES) {
@@ -343,55 +377,68 @@ public class FunctionalUnits {
 		}
 	}
 
-	private static Vertex makeIntention(int step, PlotDirectedSparseGraph graph) {
-		return new Vertex("!intention", Vertex.Type.INTENTION, step, graph);
+	public static Vertex makeIntention(int step, PlotDirectedSparseGraph graph) {
+		return new Vertex("FU I", Vertex.Type.INTENTION, step, graph);
 	}
 
-	private static Vertex makePositive(int step, PlotDirectedSparseGraph graph) {
-		Vertex vertex = new Vertex("+", Type.PERCEPT, step, graph);
+	public static Vertex makeAction(int step, PlotDirectedSparseGraph graph) {
+		return new Vertex("FU A", Vertex.Type.ACTION, step, graph);
+	}
+
+	public static Vertex makeSpeech(int step, PlotDirectedSparseGraph graph) {
+		return new Vertex("FU S", Vertex.Type.SPEECHACT, step, graph);
+	}
+
+	public static Vertex makePositive(int step, PlotDirectedSparseGraph graph) {
+		Vertex vertex = new Vertex("FU +", Type.PERCEPT, step, graph);
 		vertex.addEmotion("love");
 		return vertex;
 	}
 
-	private static Vertex makeNegative(int step, PlotDirectedSparseGraph graph) {
-		Vertex vertex = new Vertex("-", Type.PERCEPT, step, graph);
+	public static Vertex makeNegative(int step, PlotDirectedSparseGraph graph) {
+		Vertex vertex = new Vertex("FU -", Type.PERCEPT, step, graph);
 		vertex.addEmotion("hate");
 		return vertex;
 	}
 
-	private static Vertex makePolyemotional(int step, PlotDirectedSparseGraph graph) {
-		Vertex vertex = new Vertex("*", Type.PERCEPT, step, graph);
+	public static Vertex makePolyemotional(int step, PlotDirectedSparseGraph graph) {
+		Vertex vertex = new Vertex("FU +/-", Type.PERCEPT, step, graph);
 		vertex.addEmotion("love");
 		vertex.addEmotion("hate");
 		return vertex;
 	}
 
-	private static Vertex makeWildcard(int step, PlotDirectedSparseGraph graph) {
-		Vertex vertex = new Vertex("?", Vertex.Type.WILDCARD, step, graph);
+	public static Vertex makeWildcard(int step, PlotDirectedSparseGraph graph) {
+		Vertex vertex = new Vertex("FU ?", Vertex.Type.WILDCARD, step, graph);
 		return vertex;
 	}
 
-	private static Edge makeCommunication() {
+	public static Vertex makeActive(int step, PlotDirectedSparseGraph graph) {
+		Vertex vertex = new Vertex("FU A/S", Vertex.Type.ACTIVE, step, graph);
+		return vertex;
+	}
+
+	public static Edge makeCrosschar() {
 		return new Edge(Edge.Type.CROSSCHARACTER);
 	}
 
-	private static Edge makeMotivation() {
+	public static Edge makeMotivation() {
 		return new Edge(Edge.Type.MOTIVATION);
 	}
 
-	private static Edge makeActualization() {
+	public static Edge makeActualization() {
 		return new Edge(Edge.Type.ACTUALIZATION);
 	}
 
-	private static Edge makeTermination() {
+	public static Edge makeTermination() {
 		return new Edge(Edge.Type.TERMINATION);
 	}
 
-	private static Edge makeEquivalence() {
+	public static Edge makeEquivalence() {
 		return new Edge(Edge.Type.EQUIVALENCE);
 	}
 
-	private static Edge makeCausality() {
+	public static Edge makeCausality() {
 		return new Edge(Edge.Type.CAUSALITY);
 	}
 }

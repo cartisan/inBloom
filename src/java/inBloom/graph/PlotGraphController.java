@@ -24,6 +24,8 @@ import javax.swing.SwingConstants;
 import org.freehep.graphicsbase.util.export.ExportDialog;
 import org.jfree.ui.RefineryUtilities;
 
+import com.google.common.collect.HashMultimap;
+
 import jason.asSemantics.Message;
 
 import inBloom.LauncherAgent;
@@ -31,11 +33,12 @@ import inBloom.PlotControlsLauncher;
 import inBloom.PlotLauncher;
 import inBloom.ERcycle.CounterfactualityCycle;
 import inBloom.graph.isomorphism.FunctionalUnit;
+import inBloom.graph.isomorphism.FunctionalUnit.Instance;
 import inBloom.graph.isomorphism.FunctionalUnits;
-import inBloom.graph.visitor.EdgeLayoutVisitor;
 import inBloom.helper.MoodMapper;
 import inBloom.helper.Tellability;
 
+import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
@@ -48,7 +51,7 @@ import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 /**
  * Responsible for maintaining and visualizing the graph that represents the emergent plot of the narrative universe.
  * Class provides an instance: <i>plotListener</i>, which is accessible throughout inBloom for saving plot-relevant
- * events. In order to open a JFrame with the graph call the  non-static
+ * events. In order to open a JFrame with the graph call the non-static
  * {@link #visualizeGraph(boolean) visualizeGraph} method.
  * @author Leonid Berov
  */
@@ -57,15 +60,19 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 
 	protected static Logger logger = Logger.getLogger(PlotGraphController.class.getName());
 
+	/** Save action command. */
+	public static final String SAVE_COMMAND = "SAVE";
+	/** Change plot view action command. */
+	public static final String CHANGE_VIEW_COMMAND = "CHANGE_VIEW";
+
 	/** Singleton instance used to collect the plot */
 	private static PlotGraphController plotListener = null;
 
 	public static Color BGCOLOR = Color.WHITE;
 
-	/** Save action command. */
-	public static final String SAVE_COMMAND = "SAVE";
-	/** Change plot view action command. */
-    public static final String CHANGE_VIEW_COMMAND = "CHANGE_VIEW";
+	/** Saves which vertices are to be highlighted, because they belong to the same FU type
+	 * maps from vertex to set of FU Instances of which this vertex is part of */
+	static public HashMultimap<Vertex, Integer> HIGHLIGHTED_VERTICES = HashMultimap.create();
 
 	private PlotDirectedSparseGraph graph = null;			// graph that gets populated by this listener
 	private JComboBox<PlotDirectedSparseGraph> graphTypeList = new JComboBox<>();	// ComboBox that is displayed on the graph to change display type
@@ -106,6 +113,22 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	public static PlotGraphController fromGraph(PlotDirectedSparseGraph graph) {
 		PlotGraphController.plotListener = new PlotGraphController(graph);
 		return PlotGraphController.plotListener;
+	}
+
+	/**
+	 * Opens a window visualizing 'graph', creates roots and steps if necessary. For debugging purposes.
+	 * @param graph graph to be displayed
+	 * @param plotLayout whether the inBloom plot layout should be used, or a jung default-layout
+	 * @param the step numbers of the vertices that are to be used as first vertex in each char subgraph, i.e. to be connected with the roots
+	 */
+	public static void visualize(PlotDirectedSparseGraph graph, boolean plotLayout, Integer... startSteps) {
+		FunctionalUnit display = new FunctionalUnit(graph.getName(), graph, startSteps);
+		PlotGraphController vis =  PlotGraphController.fromGraph(display.getDisplayGraph());
+		if (plotLayout) {
+			vis.visualizeGraph();
+		} else {
+			vis.visualizeGraph(new CircleLayout<>(graph));
+		}
 	}
 
 	/**
@@ -180,11 +203,16 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 			public void actionPerformed(ActionEvent event) {
 				@SuppressWarnings("unchecked")
 				JComboBox<FunctionalUnit> combo = (JComboBox<FunctionalUnit>) event.getSource();
+				PlotGraphController.HIGHLIGHTED_VERTICES.clear();
+				SelectingTranslatingGraphMousePlugin.PICKED_INSTANCES = null;
+
 				FunctionalUnit selectedUnit = (FunctionalUnit) combo.getSelectedItem();
-				if(selectedUnit == null) {
-					Transformers.HIGHLIGHT = null;
-				} else {
-					Transformers.HIGHLIGHT = ((PlotDirectedSparseGraph) PlotGraphController.this.graphTypeList.getSelectedItem()).getUnitVertices(selectedUnit);
+				int instanceNum = 0;
+				for (Instance i : ((PlotDirectedSparseGraph) PlotGraphController.this.graphTypeList.getSelectedItem()).getFUInstances(selectedUnit)) {
+					++instanceNum;
+					for (Vertex v : i.getVertices()) {
+						PlotGraphController.HIGHLIGHTED_VERTICES.put(v, instanceNum);
+					}
 				}
 				PlotGraphController.getPlotListener().visViewer.repaint();
 			}
@@ -319,6 +347,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 
 		this.getContentPane().remove(this.scrollPane);
     	this.dispose();
+    	this.visViewer = null;
 
     	PlotControlsLauncher gui = PlotLauncher.getRunner();
     	gui.graphClosed(this);
@@ -333,8 +362,7 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	}
 
 	public Vertex addMsgSend(Message m, String motivation, int step) {
-		// Format message to intention format, i.e. "!performative(content)"
-		Vertex senderV = this.graph.addMsgSend(m.getSender(), "!" + m.getIlForce() + "(" + m.getPropCont().toString() + ")" + motivation, step);
+		Vertex senderV = this.graph.addMsgSend(m.getSender(), m.getIlForce() + "(" + m.getPropCont().toString() + ")" + motivation, step);
 		return senderV;
 	}
 
@@ -363,15 +391,19 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	}
 
 	/**
-	 * Adds a graph to the graph type list.
-	 * If a graph with the same name is already in the list,
-	 * the new one will replace it.
+	 * Adds a graph to the graph type list. If a graph with the same name is already in the list, the new one will
+	 * replace it.</br>
+	 * The name of graph g has to be set, otherwise it can not be selected using {@link #setSelectedGraph(PlotDirectedSparseGraph)}.
 	 * @param g Graph to add
 	 */
 	public void addGraph(PlotDirectedSparseGraph g) {
+		if(g.getName() == null) {
+			throw new RuntimeException("Name of graph g has to be set");
+		}
+
 		for(int i = 0; i < this.graphTypeList.getItemCount(); i++) {
-			String n = this.graphTypeList.getItemAt(i).toString();
-			if(n.equals(g.toString())) {
+			String n = this.graphTypeList.getItemAt(i).getName();
+			if(n.equals(g.getName())) {
 				this.graphTypeList.removeItemAt(i);
 				this.graphTypeList.addItem(g);
 				return;
@@ -390,80 +422,67 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 	}
 
 	/**
-	 * Uses the combobox graphTypeList to select graph g. Results in {@linkplain #visualizeGraph} showing this graph.
-	 * @param g
+	 * Uses the combobox graphTypeList to select graph g, results in {@linkplain #visualizeGraph} showing this graph.
+	 * The name of graph g should be set, as should be the names of the graphs in this.graphTypeList
+	 * (see {@link #addGraph(PlotDirectedSparseGraph)}).
+	 * @param g Graph to be selected
 	 */
 	public void setSelectedGraph(PlotDirectedSparseGraph g) {
-		this.graphTypeList.setSelectedItem(g);
-	}
-
-	/**
-	 * Analyzes the plot graph, computes the plots tellability and returns it.
-	 * Unlike {@link analyze(PlotDirectedSparseGraph) analyze}, does not store the
-	 * analyzed version of the graph for further processing.
-	 */
-	public Tellability analyze() {
-		return this.analyze(null);
-	}
-
-	/**
-	 * Analyzes the plot graph, computes the plots tellability and returns it.
-	 * <ul>
-	 *  <li> Analyzing a plot graph includes merging related vertices and specifying the edge types from mere temporal to
-	 * ones with more appropriate semantics so all primitive plot units can be represented. The resulting <b> new plot
-	 * graph is stored in analyzedGraphContainer </b> for displaying and further analyzes e.g. by the ER cycle.</li>
-	 *  <li> Computing the tellability atm includes just computing functional polyvalence and dispalying the results
-	 *  in the info panel. </li>
-	 *  </ul>
-	 * @param analyzedGraphContainer an (empty) plot graph that will be used to store the analyzed graph, or null
-	 * @return
-	 */
-	public Tellability analyze(PlotDirectedSparseGraph analyzedGraphContainer) {
-		if(this.analysisResult != null) {
-			return this.analysisResult;
+		// Using index and name-based equality instead of graphTypeList.setSelected(g), which relies on equality,
+		// because computing graph equality is costly
+		if(g.getName() == null) {
+			throw new RuntimeException("Name of graph g has to be set");
 		}
+		for(int i = 0; i < this.graphTypeList.getItemCount(); i++) {
+			String otherName = this.graphTypeList.getItemAt(i).getName();
+			if(otherName.equals(g.getName())) {
+				this.graphTypeList.setSelectedIndex(i);
+			}
+		}
+	}
 
-		// Create analysed graph with semantically interpretable edges and collapsed vertices
-		PlotDirectedSparseGraph g = new FullGraphPPVisitor().apply(this.graph);
-		g = new CompactGraphPPVisitor().apply(g);
-		g.setName("Analyzed Plot Graph");
+	/**
+	 * Updates the UI to show results of tellability analysis, also safes the analysis results for later retrieval by
+	 * summarization algorithm and their like.
+	 * @param analysisResult
+	 */
+	public void displayAnalysisResult(Tellability analysisResult) {
+		this.analysisResult = analysisResult;
+		//Remove old analysis Results from view
+		this.infoPanel.removeAll();
 
-		// compute all necessary statictics for tellability
-		this.analysisResult = new Tellability(g);
 
+		// Add new analysis results
 		// Create GUI representation of tellability analysis
 		this.addInformation("#Functional Units: " + this.analysisResult.numFunctionalUnits);
 		this.addInformation("Highlight Units:");
 		this.infoPanel.add(this.unitComboBox);
 		this.addInformation("#Polyvalent Vertices: " + this.analysisResult.numPolyvalentVertices);
-		this.addInformation("Suspense: " + this.analysisResult.suspense);
-		this.addInformation("Tellability: " + this.analysisResult.compute());
+		this.addInformation("Abs Symmetry: " + String.format("%.2f", this.analysisResult.absoluteSymmetry));
+		this.addInformation("Abs Opposition: " + String.format("%.2f", this.analysisResult.absoluteOpposition));
+		this.addInformation("Abs Suspense: " + String.format("%.2f", this.analysisResult.absoluteSuspense));
+		this.addInformation("Balanced Tellability: " + String.format("%.2f", this.analysisResult.compute()));
 
 		//counterfactuality Button
 		this.createCounterfactButton();
 		//add Button to infopanel
 		this.infoPanel.add(this.counterfactButton);
-
-		// Insert spacing between motivation edges
-		g = new EdgeLayoutVisitor(9).apply(g);
-
-		this.addGraph(g);
-		this.graphTypeList.setSelectedItem(g);
-
-		if(analyzedGraphContainer != null) {
-			g.cloneInto(analyzedGraphContainer);
-		}
-
-		return this.analysisResult;
 	}
 
 	/**
-	 * Plots and displays the graph that is selected by {@code this.graphTypeList}.
+	 * Displays the graph that is selected by {@code this.graphTypeList} using the inBloom PlotGraphLayout.
 	 * @return the displayed JFrame
 	 */
 	public PlotGraphController visualizeGraph() {
-		Layout<Vertex, Edge> layout = new PlotGraphLayout((PlotDirectedSparseGraph)this.graphTypeList.getSelectedItem());
+		return this.visualizeGraph(new PlotGraphLayout((PlotDirectedSparseGraph)this.graphTypeList.getSelectedItem()));
+	}
 
+	/**
+	 * Displaying method that for debugging purposes can use another layout to represent the graph that is selected by
+	 * {@link this.graphTypeList}.
+	 * @return the displayed JFrame
+	 */
+	private PlotGraphController visualizeGraph(Layout<Vertex, Edge> layout) {
 		// Create a viewing server
 		this.visViewer = new VisualizationViewer<>(layout);
 		this.setUpAppearance(this.visViewer);
@@ -496,7 +515,6 @@ public class PlotGraphController extends JFrame implements PlotmasGraph, ActionL
 
 		return this;
 	}
-
 
 	/**
 	 * Sets up an VisualizationServer instance with all the details and renders defining the graphs appearance.

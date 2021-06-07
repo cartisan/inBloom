@@ -92,7 +92,8 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 	}
 
 	protected int analyzeColumn(Vertex vertex, List<Integer> encounteredSteps, int columnWidth) {
-    	logger.fine("  step: " + vertex.getStep() +"    vertex: " + vertex.getLabel());
+//    	logger.setLevel(Level.FINE);
+		logger.fine("  step: " + vertex.getStep() +"    vertex: " + vertex.getLabel());
 		// update pointer
         this.m_currentPoint.y += PlotGraphLayout.PAD_Y;
     	logger.fine("    initial pointer position: " + this.m_currentPoint.y);
@@ -107,16 +108,17 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
     	if (!encounteredSteps.contains(vertex.getStep())) {
     		// this is the first time this step appears in this column, its position is relevant
     		// add small vertical offset to indicate new step start
+    		logger.fine("    step relevant for stepStart position in this column");
             this.m_currentPoint.y += PlotGraphLayout.STEP_OFFSET;
+            logger.fine("    adding step offset, new pointer position: " + this.m_currentPoint.y);
 
-            logger.fine("    step relevant for stepStart position in this column");
 
     		if (this.stepStartAtY.containsKey(vertex.getStep())) {
     			// step was layouted by previous columns
     			this.updateStepLocation(vertex, this.stepStartAtY);
     		} else {
     			// found a step that was not layouted by previous columns
-    			this.addStepLocation(vertex, this.stepStartAtY, true);
+    			this.addStepLocation(vertex, true);
     		}
 
     		// shift current pointer to reflect y position according to layout, no matter which column is responsible for the layout
@@ -140,7 +142,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
         			this.updateStepLocation(vertex, this.stepEndAtY);
         		} else {
         			// found a step that was not layouted by previous columns
-        			this.addStepLocation(vertex, this.stepEndAtY, false);
+        			this.addStepLocation(vertex, false);
         		}
         	}
 
@@ -149,7 +151,14 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
         	// compute position for children
         	columnWidth = this.analyzeColumn(child, encounteredSteps, columnWidth);
         } else {
-        	logger.fine("  new pointer position: " + this.m_currentPoint.y);
+    		if (this.stepEndAtY.containsKey(vertex.getStep())) {
+    			// step was layouted by previous columns
+    			this.updateStepLocation(vertex, this.stepEndAtY);
+    		} else {
+    			// found a step that was not layouted by previous columns
+    			this.addStepLocation(vertex, false);
+    		}
+    		logger.fine("  new pointer position: " + this.m_currentPoint.y);
 
         	// found last vertex in column --> adopt canvas size
         	logger.fine("Column " + this.currentRoot.getLabel() + " steps start at y, dict: " + Arrays.toString(this.stepStartAtY.entrySet().toArray()));
@@ -164,28 +173,47 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 	 * @param stepLocationMap
 	 * @param start
 	 */
-	private void addStepLocation(Vertex vertex, HashMap<Integer, Integer> stepLocationMap, boolean start) {
-		// check if it was just skipped by previous columns
+	private void addStepLocation(Vertex vertex, boolean start) {
 		logger.fine("     adding step position");
-		if (stepLocationMap.keySet().stream().anyMatch(key -> key > vertex.getStep())) {
-			if (start) {
+		if (start) {
+			// check if it was just skipped by previous columns
+			if(this.stepStartAtY.keySet().stream().anyMatch(key -> key > vertex.getStep())) {
 				// put the skipped step in the place where previous columns located its successor (or itself, if bigger)
-				int succYKey = stepLocationMap.keySet().stream().filter(key -> key > vertex.getStep())
+				int succYKey = this.stepStartAtY.keySet().stream().filter(key -> key > vertex.getStep())
 															    .mapToInt(x -> x)
 															    .min().getAsInt();
-				logger.fine("      based on successor step " + succYKey + " present at: " + stepLocationMap.get(succYKey));
-				this.m_currentPoint.y = Integer.max(stepLocationMap.get(succYKey), this.m_currentPoint.y);
+				logger.fine("      based on successor step " + succYKey + " present at: " + this.stepStartAtY.get(succYKey));
+				this.m_currentPoint.y = Integer.max(this.stepStartAtY.get(succYKey), this.m_currentPoint.y);
 			} else {
-				// finishing adding new steps, delta-y to shift all following steps based on length of new step
-				int diff = this.m_currentPoint.y - this.stepStartAtY.get(vertex.getStep());
-				// starts as well as end of all lower steps are affected
-				this.updateSucceedingSteps(vertex.getStep(), diff, this.stepStartAtY);
-				this.updateSucceedingSteps(vertex.getStep(), diff, this.stepEndAtY);
-			}
-		}
+				// check if a predecessor existed in previous rows that has a lower end
+				int predecessor = this.stepEndAtY.keySet().stream().filter(key -> key < vertex.getStep())
+																   .mapToInt(v -> v)
+																   .max().orElse(-1);
+				if (predecessor > -1) {
+					logger.fine("      closest predecessor step " + predecessor + " present at: " + this.stepEndAtY.get(predecessor));
+					if (this.stepEndAtY.get(predecessor) >= this.m_currentPoint.y) {
+						this.m_currentPoint.y = this.stepEndAtY.get(predecessor) + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET;
+						logger.fine("       shifting down from this predecessor by: " + (PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET));
+					}
 
-		// safe the steps location in the layout
-		stepLocationMap.put(vertex.getStep(), this.m_currentPoint.y);
+					this.m_currentPoint.y =  Integer.max(this.m_currentPoint.y,
+														 this.stepEndAtY.get(predecessor) + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET);
+				}
+			}
+
+			// safe the steps location in the layout
+			this.stepStartAtY.put(vertex.getStep(), this.m_currentPoint.y);
+		} else {
+			// finishing adding new steps, delta-y to shift all following steps based on length of new step  + one step offset distance
+			int diff = this.m_currentPoint.y - this.stepStartAtY.get(vertex.getStep()) + PlotGraphLayout.PAD_Y + PlotGraphLayout.STEP_OFFSET;
+			// starts as well as end of all lower steps are affected
+			logger.fine("      shifting succeeding steps (start/end) down by " + diff);
+			this.updateSucceedingSteps(vertex.getStep(), diff, this.stepStartAtY);
+			this.updateSucceedingSteps(vertex.getStep(), diff, this.stepEndAtY);
+
+			// safe the steps location in the layout
+			this.stepEndAtY.put(vertex.getStep(), this.m_currentPoint.y);
+		}
 	}
 
 	/**
@@ -204,7 +232,7 @@ public class PlotGraphLayout extends AbstractLayout<Vertex, Edge> {
 			int diff = this.m_currentPoint.y - prevY;
 
 			// starts as well as end of all lower steps are affected
-			this.updateSucceedingSteps(vertex.getStep(), diff, this.stepStartAtY);
+			this.updateSucceedingSteps(vertex.getStep(), diff , this.stepStartAtY);
 			this.updateSucceedingSteps(vertex.getStep(), diff, this.stepEndAtY);
 			logger.fine("     shifting succeeding steps (start/end) down by " + diff);
 		} else {

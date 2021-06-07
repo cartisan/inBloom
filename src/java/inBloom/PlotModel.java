@@ -44,9 +44,7 @@ import inBloom.storyworld.ScheduledHappeningDirector;
 public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 	static protected Logger logger = Logger.getLogger(PlotModel.class.getName());
 
-	public static final boolean X_AXIS_IS_TIME = true;		// defines whether moods will be mapped based on plotTim or timeStep
-															// in latter case, average mood will be calculated over all cycles in a timeStep
-	public static final String DEFAULT_LOCATION_NAME = "far far away";
+	public static final String DEFAULT_LOCATION_NAME = "farFarAway";
 
 	protected HashMap<String, Character> characters = null;
 	protected HashMap<String, Location> locations = null;
@@ -197,11 +195,14 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 
 		for (Happening h : happenings) {
 			h.identifyCause(this.causalityMap);
-			h.execute(this);
-			this.environment.addEventPercept(h.getPatient(), h.getEventPercept());
+			// only execute h if its patient is still alive (otherwise getPatient returns null)
+			if(this.getCharacter(h.getPatient()) != null) {
+				h.execute(this);
+				this.environment.addEventPercept(h.getPatient(), h.getEventPercept());
 
-			// update saved storyworld state, so that the happening h is entered as causes for the change
-			this.noteStateChanges(h);
+				// update saved storyworld state, so that the happening h is entered as causes for the change
+				this.noteStateChanges(h);
+			}
 		}
 	}
 
@@ -219,18 +220,9 @@ public abstract class PlotModel<EnvType extends PlotEnvironment<?>> {
 		}
 	}
 
-	public void mapMood(String name, Mood mood) {
-		if (X_AXIS_IS_TIME) {
-			// time in ms based mood log
-			Long plotTime = PlotEnvironment.getPlotTimeNow();
-			this.moodMapper.addMood(name, plotTime, mood);
-			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + plotTime.toString());
-		} else {
-			// time-step based mood log
-			Integer timeStep = PlotLauncher.runner.getUserEnvironment().getStep();
-			this.moodMapper.addMood(name, new Long(timeStep), mood);
-			logger.fine("mapping " + name + "'s pleasure value: " + mood.getP() + " at time: " + timeStep.toString());
-		}
+	public void mapMood(String name, Mood mood, Integer reasoningCycleNum) {
+			this.moodMapper.addMood(name, reasoningCycleNum.longValue(), mood);
+			logger.fine("mapping " + name + "'s mood: " + mood.toString() + " at reasoning cycle: " + reasoningCycleNum.toString());
 	}
 
 	/**

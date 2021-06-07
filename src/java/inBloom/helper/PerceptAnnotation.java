@@ -1,22 +1,27 @@
 package inBloom.helper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import inBloom.graph.Edge;
 import jason.asSemantics.Emotion;
+import jason.asSyntax.ASSyntax;
+import jason.asSyntax.Term;
+import jason.asSyntax.parser.ParseException;
+
+import inBloom.graph.Edge;
 
 public class PerceptAnnotation {
     static Logger logger = Logger.getLogger(PerceptAnnotation.class.getName());
-	   
+
 	private List<String> annots;
-	
+
 	public static PerceptAnnotation fromEmotion(String emotion) {
 		PerceptAnnotation annot = new PerceptAnnotation();
-		
+
 		if (Emotion.getAllEmotions().contains(emotion)) {
 			annot.addAnnotation(Emotion.ANNOTATION_FUNCTOR, emotion);
 		}
@@ -24,28 +29,28 @@ public class PerceptAnnotation {
 			logger.warning("Error: Trying to add an invalid emotion to a percept: " + emotion);
 			throw new RuntimeException("Trying to add an invalid emotion to a percept: " + emotion);
 		}
-		
-		
+
+
 		return annot;
 	}
-	
+
 	public static PerceptAnnotation fromCause(String cause) {
 		PerceptAnnotation annot = new PerceptAnnotation();
 		annot.setCause(cause);
 		return annot;
 	}
-	
+
 	public PerceptAnnotation() {
 		this.annots = new LinkedList<>();
 	}
-	
+
 	/**
 	 * Creates a PerceptAnnotation from a number of emotion strings.
 	 * @param ems
 	 */
 	public PerceptAnnotation(String... ems) {
 		this();
-		
+
 		for (String em : Arrays.asList(ems)) {
     		if (Emotion.getAllEmotions().contains(em)) {
 				this.addAnnotation(Emotion.ANNOTATION_FUNCTOR, em);
@@ -55,18 +60,30 @@ public class PerceptAnnotation {
 			}
 		}
 	}
-	
+
 	@Override
 	public String toString(){
 		String result = "";
-		
+
 		if (!this.annots.isEmpty()) {
 			result += this.annots.stream().collect(Collectors.joining( ",", "[", "]") );
 		}
-				
+
 		return result;
 	}
-	
+
+	public List<Term> toTerms() {
+		List<Term> l = new ArrayList<>();
+		for (String a : this.annots) {
+			try {
+				l.add(ASSyntax.parseTerm(a));
+			} catch (ParseException e) {
+				logger.warning("Couldn't create ASL term from annotation: " + a);
+			}
+		}
+		return l;
+	}
+
 	public PerceptAnnotation addAnnotation(String functor, String... args) {
 		String annot = functor;
 		if (args.length > 0 ) {
@@ -79,17 +96,18 @@ public class PerceptAnnotation {
 			annot = annot.substring(0, annot.lastIndexOf(","));
 			annot += ")";
 		}
-		
+
 		this.annots.add(annot);
 		return this;
 	}
-	
+
 	public String separator(String literal1, String literal2) {
-		if ((literal1.equals("")) || (literal2.equals("")))
+		if (literal1.equals("") || literal2.equals("")) {
 			return "";
+		}
 		return ",";
 	}
-	
+
 	public PerceptAnnotation addTargetedEmotion(String emotion, String target) {
     	if (Emotion.getAllEmotions().contains(emotion)) {
 			this.addAnnotation(Emotion.ANNOTATION_FUNCTOR, emotion);
@@ -99,14 +117,14 @@ public class PerceptAnnotation {
 			logger.warning("Error: Trying to add an invalid emotion to a percept: " + emotion);
 			throw new RuntimeException("Trying to add an invalid emotion to a percept: " + emotion);
 		}
-    	
+
     	return this;
 	}
-	
+
 	public void setCause(String cause) {
 		this.addAnnotation(Edge.Type.CAUSALITY.toString(), TermParser.removeAnnots(cause));
 	}
-	
+
 	public void addCrossCharAnnotation(String eventName, long eventTime) {
 		Integer hashCode = Math.abs((eventName + eventTime).hashCode());	// need to take abs value because toString() puts negative numbers in brackets like "(-5)"
 		this.addAnnotation(Edge.Type.CROSSCHARACTER.toString(), hashCode.toString());

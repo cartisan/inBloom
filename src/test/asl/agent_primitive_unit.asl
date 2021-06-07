@@ -19,9 +19,6 @@ smelly(poo).
 		!do_stuff;
 	};
 	!intrinsic_motivation.
-
-+!do_stuff <-
-	do_stuff.
 	
 +self(has_purpose) <-
 	.suspend(intrinsic_motivation).
@@ -33,14 +30,11 @@ smelly(poo).
 /* Positive tradeoff in */
 /* mental notes         */
 /************************/
-
-+!take_day_off(X) : is_holiday(X) <-
-	.drop_intention(take_day_off(X)).
 	
 +!take_day_off(X) <-
 	.print("That was exhausting! I'm taking ", X, " off to relax.");
 	+is_day_off(X);
-	.appraise_emotion(joy, "self", "is_day_off(X)[source(self)]").
+	.appraise_emotion(joy, "is_day_off(X)[source(self)]", "self").
 
 +is_holiday(X) <-
 	-is_day_off(X).
@@ -50,48 +44,63 @@ smelly(poo).
 /*********************/
 
 -has(X) <-
+	+missing(X);
 	if(is_important(X)) {
-		.appraise_emotion(distress, "self", "has(X)[source(percept)]", false);
+		.appraise_emotion(distress, "has(X)", "self", 1);
 		+self(has_purpose);
-	};
-	+lost(X).
+		.print("I need to find my ", X, ", it's very important to me! :(");
+		!find(X);
+	}.
+	
++has(X) : not missing(X) & is_important(X) <-
+	.appraise_emotion(pride, "has(X)", "self").
 
-+has(X) : not lost(X) & is_important(X) <-
-	.appraise_emotion(pride, "self", "has(X)[source(percept)]").
-
-+has(X) : lost(X) <-
-	.appraise_emotion(relief, "self", "has(X)[source(percept)]");
+@p0[atomic]
++has(X) : missing(X) <-
+	.appraise_emotion(relief, "has(X)", "self");
 	.succeed_goal(find(X));
 	-self(has_purpose);
-	-lost(X);												  // creates termination edge to lost
-	.appraise_emotion(joy, "self", "lost(X)[source(self)]");  // artifice to create positive trade-off of second kind (see Wilke thesis pp. 19) 
+	-missing(X);												  // creates termination edge to missing
+	.appraise_emotion(joy, "missing(X)", "self");   // artifice to create positive trade-off of second kind (see Wilke thesis pp. 19) 
 	+is_bad(lost(X)).
 	
-	
-+lost(X) : is_important(X) <-
-	.print("I need to find my ", X, ", it's very important to me! :(");
-	!find(X).
 	
 @p1[atomic]
 +step_on(X) : smelly(X) <-
 	!clean.
+
++lost(X) <-
+	-has(X).
+	
+@p2[atomic]	
++found(X) <-
+	+has(X).
 	
 +avoid_accident <-
 	!get(drink).
 
+
++!do_stuff <-
+	do_stuff.
+
 +!find(X) <-
 	search(X);
-	if(lost(X)) {
+	if(not has(X)) {
 		!find(X)
 	}.
 
-@p2[atomic]	
+@p3[atomic]	
 +!clean <-
 	clean.
 	
 +!get(drink) <-
 	get(drink).
 
+/******************/
 /* Change of Mind */
+/******************/
+
 +bored <- !rethink_life.
-+!rethink_life <- .drop_desire(intrinsic_motivation).
++!rethink_life <- 
+	.drop_intention(intrinsic_motivation).	// creates termination edge to intrinsic_motivation
+//	.drop_desire(intrinsic_motivation).		// alternative way of doing this
